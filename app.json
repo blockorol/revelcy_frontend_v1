@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "revelcy-cross-app",
+    "slug": "revelcy-cross-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/r_icon_green_black.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/background_faces_with_revelcy.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "ios": {      
+      "infoPlist": {
+        "NSCameraUsageDescription": "Allow access to camera to upload token avatar (icon).",
+        "NSPhotoLibraryUsageDescription": "Allow access to photos to select token avatar (icon)."
+      },
+      "supportsTablet": true
+    },
+    "android": {
+      "permissions": ["READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE", "READ_MEDIA_IMAGES"],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/background_faces_with_revelcy.png",
+        "backgroundColor": "#000000"
+      }
+    },
+    "web": {
+      "favicon": "./assets/r_icon_green_black.png"
+    },
+    "plugins": []
+  }
+}
