@@ -58,7 +58,11 @@ export function PremarketInfo({ tokenInfo, isMobile, withJoinButton, onUpdated}:
           nowPercent={
             (100 * convertDecimalToToken(tokenInfo.dynamicInfo.marketCapTokenDec)) / DEFAULT_TOKEN_COUNT
           }
-          currentPrice={convertLamportToSmallCount(tokenInfo.dynamicInfo.currentPriceLamp)}
+          currentPrice={(() => {
+            const price = tokenInfo.dynamicInfo.currentPriceLamp;
+            console.log('PremarketInfo - currentPriceLamp:', price);
+            return price;
+          })()}
           joiners={joiners}
           background={colors.elevation.level1}
           widthAround={isMobile ? "100%" : undefined}

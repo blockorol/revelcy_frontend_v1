@@ -1,7 +1,7 @@
 import { API_HOST } from "env";
 import { BN } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
-import { convertSolanaToTokenBuy, DEFAULT_TOKEN_COUNT_DECIMAL, PremarketState } from "@utils/premarket";
+import { convertSolanaToTokenBuy, DEFAULT_TOKEN_COUNT_DECIMAL, PremarketState, convertTokenToDecimal } from "@utils/premarket";
 import axios from 'axios';
 import { toDecString } from "@api/tx_premarket";
 
@@ -287,23 +287,47 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
   
   const raw = await rawCall();
   console.log("raw resp:", raw)
+  
+  // Debug current price values
+  const currentPriceValue = raw.current_price_lamp ?? raw.current_price ?? raw.currentPriceLamp ?? raw.currentPrice ?? 0;
+  console.log("currentPriceValue from API:", currentPriceValue);
+  console.log("current_price_lamp:", raw.current_price_lamp);
+  console.log("current_price:", raw.current_price);
+  console.log("currentPriceLamp:", raw.currentPriceLamp);
+  console.log("currentPrice:", raw.currentPrice);
+  
   const reservedSolLamp = new BN(raw.reserved_sol_lamp);
   console.log("reservedSolLamp:", reservedSolLamp)
-  const tokenMarketCap = convertSolanaToTokenBuy({
+  const tokenMarketCapFromCurve = convertSolanaToTokenBuy({
     sol_amount: reservedSolLamp,
     reserves_sol: new BN(0),
     reserves_token: DEFAULT_TOKEN_COUNT_DECIMAL
   });
   
-  console.log("tokenMarketCap:", tokenMarketCap)
+  console.log("tokenMarketCapFromCurve:", tokenMarketCapFromCurve)
   
-  const reservedToken = DEFAULT_TOKEN_COUNT_DECIMAL.sub(tokenMarketCap)
+  const reservedToken = DEFAULT_TOKEN_COUNT_DECIMAL.sub(tokenMarketCapFromCurve)
 
   return {
     holdersCount: raw.holders_count,
-    currentPriceLamp: new BN(raw.current_price_lamp),
+    currentPriceLamp: Number(
+      raw.current_price_lamp ?? raw.current_price ?? raw.currentPriceLamp ?? raw.currentPrice ?? 0
+    ),
 
-    marketCapTokenDec: tokenMarketCap,
+    // marketCapTokenDec is a BN in 6-decimal units to be displayed via convertDecimalToToken
+    // API returns price most likely in SOL units (e.g., "0.000018").
+    // Market cap (in SOL) = price_in_SOL_per_token * total_supply_tokens (1e9)
+    marketCapTokenDec: (() => {
+      const priceInSolPerToken = Number(currentPriceValue) || 0;
+      const marketCapInSol = priceInSolPerToken * 1_000_000_000; // 1e9 tokens supply
+      // Convert numeric SOL amount to 6-decimal BN expected by convertDecimalToToken
+      const marketCapValueDec = convertTokenToDecimal(marketCapInSol);
+      console.log("marketCapTokenDec calculation:");
+      console.log("  - priceInSolPerToken:", priceInSolPerToken);
+      console.log("  - marketCapInSol:", marketCapInSol);
+      console.log("  - marketCapValueDec:", marketCapValueDec.toString());
+      return marketCapValueDec;
+    })(),
     marketCapSolLamp: reservedSolLamp,
 
     reservedTokenLamp: reservedToken,
@@ -361,15 +385,15 @@ export interface TokenCommunityInfo {
 }
 
 export interface TokenDynamicInfo {
-    holdersCount: number;
-    holders: HoldersInfo[]
-    currentPriceLamp: BN
+  holdersCount: number;
+  holders: HoldersInfo[]
+  currentPriceLamp: number
 
-    marketCapTokenDec: BN;
-    marketCapSolLamp: BN;
-    reservedTokenLamp: BN;
-    reservedSolLamp: BN;
-    change24h: number;
+  marketCapTokenDec: BN;
+  marketCapSolLamp: BN;
+  reservedTokenLamp: BN;
+  reservedSolLamp: BN;
+  change24h: number;
 }
 
 export interface HoldersInfo {
