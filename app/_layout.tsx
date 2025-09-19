@@ -2,12 +2,12 @@ import React, { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { PaperProvider } from 'react-native-paper';
 import { View, StyleSheet, useColorScheme, useWindowDimensions, StatusBar, Platform } from 'react-native';
-import { darkTheme } from '../theme/theme';
-import { NavigationBottom } from '../components/navigation/NavigationBottom';
-import { NavigationTop } from '../components/navigation/NavigationTop';
+import { darkTheme } from '@theme/theme';
+import { NavigationBottom } from '@components/navigation/NavigationBottom';
+import { NavigationTop } from '@components/navigation/NavigationTop';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { NetworkProvider } from '../storage/NetworkContext';
-import { WalletProvider } from '../storage/wallet-adapter/index';
+import { NetworkProvider } from '@storage/NetworkContext';
+import { WalletProvider } from '@storage/wallet-adapter/index';
 import * as SplashScreen from 'expo-splash-screen';
 import {
   useFonts,
