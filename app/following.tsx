@@ -14,7 +14,7 @@ const ExampleNavigationButtons = () => {
       <Text variant='bodyMedium' style={{color: 'black'}}> Version 0.0.17; network: {network.toString()}</Text>
       <View style={{flexDirection:"row"}}>
         <TextInput placeholder='premarketPDA' onChangeText={(val) => setPDA(val)} style={{flex:1}}/>
-        <Button mode="contained" onPress={() => router.push(`/premarket/${pda}`)}>
+        <Button mode="contained" onPress={() => router.push(`/token/${pda}`)}>
           Premarket Page
         </Button>
       </View>

@@ -30,7 +30,7 @@ export function NavigationList({isMobile}:Props) {
         iconActive="plus"
         iconNotActive="plus"
         label="Create Premarket"
-        route="/premarket/create"
+        route="/token/create"
         horizontal={!isMobile}
       />
     </View>

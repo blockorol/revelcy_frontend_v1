@@ -1,4 +1,4 @@
-// app/premarket/index.tsx
+// app/token/index.tsx
 import PremarketsPage from '@screens/PremarketsPage';
 
 export default function TokenPremarketPage() {

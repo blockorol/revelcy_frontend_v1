@@ -369,7 +369,7 @@ export default function PremarketCreationFlow() {
   const handleOnDone = async () => {
     console.log("handleOnDone move to page:", `/premarket/${premarketPDA}`);
     await clearDraft(storageKey); // очистить черновик после успеха
-    router.push(`/premarket/${premarketPDA}`);
+    router.push(`/token/${premarketPDA}`);
   };
 
   const getTokenData = (): TokenCreateFullData | undefined => {
