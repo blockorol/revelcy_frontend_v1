@@ -1,5 +1,4 @@
 // app/framer.tsx
-import React, { useCallback, useState } from "react";
 import { ActivityIndicator, Platform, View } from "react-native";
 import { useTheme } from "react-native-paper";
 import { WebView } from "react-native-webview";
@@ -7,13 +6,7 @@ import { WebView } from "react-native-webview";
 const FRAMER_URL = "https://revelcy.com/";
 
 export default function FramerScreen() {
-  const theme = useTheme();
-  const [refreshing, setRefreshing] = useState(false);
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 500);
-  }, []);
-
+  const theme = useTheme();  
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
       {Platform.OS === "web" ? (
