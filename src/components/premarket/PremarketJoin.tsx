@@ -6,6 +6,7 @@ import { joinToPremarket } from "@services/blockchain/premarket/joinPremarket";
 import { useAuth } from "@storage/AuthContext";
 import shortString from "@utils/address_shorter";
 import { useAnchorWalletSafe } from '@storage/wallet-adapter/useWallet.web';
+import { convertDecimalToToken } from "@utils/premarket";
 
 import {
   formatNumberCompact,
@@ -182,7 +183,7 @@ export function PremarketJoin({
         <HelperText type="info">
           ~
           {amountToken
-            ? formatNumberCompact(convertLamportToSmallCount(amountToken))
+            ? formatNumberCompact(convertDecimalToToken(amountToken))
             : 0}{" "}
           {tokenMainInfo.symbol}
         </HelperText>
