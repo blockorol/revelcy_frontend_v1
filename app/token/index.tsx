@@ -1,6 +1,6 @@
-// app/token/index.tsx
-import PremarketsPage from '@screens/PremarketsPage';
+// app/index.tsx
+import { Redirect } from 'expo-router';
 
-export default function TokenPremarketPage() {
-  return <PremarketsPage />;
+export default function Index() {
+  return <Redirect href="/discover" />;
 }

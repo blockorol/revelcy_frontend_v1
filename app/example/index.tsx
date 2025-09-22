@@ -1,6 +1,6 @@
 import React from "react";
 import { ScrollView } from "react-native";
-import { List, Divider, useTheme } from "react-native-paper";
+import { List, Text,  Divider, useTheme } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { getAllRoutes } from "./routes";
 
@@ -11,6 +11,8 @@ export default function ExampleIndex() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: 16 }}>
+      <Text variant='bodyMedium' style={{color: 'black'}}> Version 0.0.17; network: {network.toString()}</Text>
+      
       <List.Section title="EXAMPLE — PAGES">
         {groups.map(({ section, routes }, idx) => (
           <List.Accordion
