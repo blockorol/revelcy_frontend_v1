@@ -144,7 +144,7 @@ export default function EditTokenomicsForm({
                     
                     <View style={{paddingTop: 16, justifyContent: 'space-between',flexDirection: 'row', alignItems: 'center',}}>
                         <Text variant='bodySmall'>Cost</Text>
-                        <Text variant='bodySmall'>{round(0.2+(creatorInitialBuy??0),2)} SOL</Text>
+                        <Text variant='bodySmall'>{round(0.06+(creatorInitialBuy??0),2)} SOL</Text>
                     </View>
                 </View>
             </View>
