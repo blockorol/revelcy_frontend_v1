@@ -57,7 +57,7 @@ export async function premarketCreated(args: premarketCreatedArgs) {
     },
   };
 
-  const res = await fetch(`${API_HOST}/premarket/created`, {
+  const res = await fetch(`${API_HOST}/token/created`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
