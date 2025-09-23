@@ -61,7 +61,7 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, rai
   }, [raisedSOL, goalSOL]);
 
   const goToDetails = () => {
-    if (pubkeyStr) router.push(`/premarket/${pubkeyStr}`);
+    if (pubkeyStr) router.push(`/token/${pubkeyStr}`);
   };
 
   return (

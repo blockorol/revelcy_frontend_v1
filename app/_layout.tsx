@@ -5,8 +5,7 @@ import { View, StyleSheet, useColorScheme, useWindowDimensions, StatusBar, Platf
 import { darkTheme } from '@theme/theme';
 import { NavigationBottom } from '@components/navigation/NavigationBottom';
 import { NavigationTop } from '@components/navigation/NavigationTop';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { NetworkProvider } from '@storage/NetworkContext';
+import { NetworkProvider } from '@providers/NetworkContext';
 import { WalletProvider } from '@storage/wallet-adapter/index';
 import * as SplashScreen from 'expo-splash-screen';
 import {

@@ -6,6 +6,7 @@ import { joinToPremarket } from "@services/blockchain/premarket/joinPremarket";
 import { useAuth } from "@storage/AuthContext";
 import shortString from "@utils/address_shorter";
 import { useAnchorWalletSafe } from '@storage/wallet-adapter/useWallet.web';
+import { convertDecimalToToken } from "@utils/premarket";
 
 import {
   formatNumberCompact,
@@ -24,7 +25,7 @@ import {
   ActivityIndicator,
 } from "react-native-paper";
 import { useWallet } from "@storage/wallet-adapter";
-import { useNetwork } from "@storage/NetworkContext";
+import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
 import { useNotification } from "@storage/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider"; // <-- новый импорт
@@ -182,7 +183,7 @@ export function PremarketJoin({
         <HelperText type="info">
           ~
           {amountToken
-            ? formatNumberCompact(convertLamportToSmallCount(amountToken))
+            ? formatNumberCompact(convertDecimalToToken(amountToken))
             : 0}{" "}
           {tokenMainInfo.symbol}
         </HelperText>

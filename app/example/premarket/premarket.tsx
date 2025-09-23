@@ -9,7 +9,7 @@ import { useAnchorWalletSafe } from '@storage/wallet-adapter/useWallet.web';
 import { outOfPremarket } from '@services/blockchain/premarket/outOfPremarket';
 import { finishPremarket } from '@services/blockchain/premarket/finishPremarket';
 import BN from 'bn.js';
-import { SolanaNetwork, useNetwork } from '@storage/NetworkContext';
+import { SolanaNetwork, useNetwork } from '@providers/NetworkContext';
 import { getSolanaConnection } from '@services/blockchain/solana';
 
 export default function JoinScreen() {

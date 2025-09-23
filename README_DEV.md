@@ -22,6 +22,7 @@ Defined in both `babel.config.js` and `tsconfig.json` for full IDE and bundler s
 @assets     => ./assets
 @components => ./src/components
 @hooks      => ./src/hooks
+@providers   => ./src/providers
 @screens    => ./src/screens
 @services   => ./src/services
 @storage    => ./storage

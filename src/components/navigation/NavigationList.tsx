@@ -19,10 +19,18 @@ export function NavigationList({isMobile}:Props) {
     >
       <NavigationItem
         isMobile={isMobile}
-        iconActive="revelcy-r"
-        iconNotActive="revelcy-r"
-        label="How it works"
-        route="/following"
+        iconActive='binoculars'
+        iconNotActive='binoculars-outlined'
+        label="Explore"
+        route="/discover"
+        horizontal={!isMobile}
+      />
+      <NavigationItem
+        isMobile={isMobile}
+        iconActive="books"
+        iconNotActive="books"
+        label="Resources"
+        route="/resources"
         horizontal={!isMobile}
       />
       <NavigationItem
@@ -30,7 +38,7 @@ export function NavigationList({isMobile}:Props) {
         iconActive="plus"
         iconNotActive="plus"
         label="Create Premarket"
-        route="/premarket/create"
+        route="/token/create"
         horizontal={!isMobile}
       />
     </View>
@@ -45,7 +53,7 @@ const styles = StyleSheet.create({
   },
   desktopContainer: {
     flexDirection: 'row',
-    justifyContent: 'flex-start', // прижать влево
+    justifyContent: 'flex-start',
     alignItems: 'center',
     gap: 24,
     alignSelf: 'flex-start',

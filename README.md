@@ -38,7 +38,7 @@ HELIUS_KEY=<Your Helius api key>
 
 #### 🖥️ Web
 ```bash
-npm run web
+expo start --web
 ```
 
 #### 📱 Android
@@ -89,4 +89,4 @@ Then follow the terminal instructions to run on the desired platform.
 ## 🧑‍💻 Related Repositories
 
 - **Smart Contracts**: [blockorol/solana-program](https://github.com/blockorol/solana-program)
-- **Backend API**: [blockorol/revelcy-backend](https://github.com/blockorol/revelcy-backend)
+- **Backend API**: [blockorol/revelcy-backend](https://github.com/blockorol/revelcy-backend-v1)

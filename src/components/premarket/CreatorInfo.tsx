@@ -1,11 +1,10 @@
 import { premarketFinished, TokenMainInfo } from "@api/token";
-import { SvgIcon } from "@components/base/SvgIcon";
 import { finishPremarket, refundPremarket } from "@services/blockchain/premarket/finishPremarket";
 import { getTimeLeftLabel } from "@utils/premarket";
 import { useAuth } from "@storage/AuthContext";
 import { useWallet } from "@storage/wallet-adapter";
 import { useAnchorWalletSafe } from "@storage/wallet-adapter/useWallet.web";
-import { useNetwork } from "@storage/NetworkContext";
+import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
 import { useNotification } from "@storage/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
