@@ -1,6 +1,8 @@
 // @api/tx_premarket.ts
 import { API_HOST } from "env";
 import { BN } from "@coral-xyz/anchor";
+import { getHeaderJsonWithAuth } from "@api/helper";
+import { http } from "@api/http";
 
 export type Network = "devnet" | "mainnet-beta";
 
@@ -54,19 +56,13 @@ export async function getCreatePremarketTransaction(
   ensureDec("goal_sol_lamp", payload.goal_sol_lamp);
   ensureDec("max_sol_lamp", payload.max_sol_lamp);
   ensureDec("creator_allocate_lamp", payload.creator_allocate_lamp);
-
-  const res = await fetch(`${API_HOST}/premarket/tx/create`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const msg = await res.text();
-    console.log("failed with", payload)
-    throw new Error(`Failed to get create_premarket tx: ${msg}`);
+  try {
+    const data = await http.post<CreatePremarketTxResponse>(`${API_HOST}/premarket/tx/create`, { json: payload });
+    return data;
+  } catch (e: any) {
+    console.log("failed with", payload);
+    throw new Error(`Failed to get create_premarket tx: ${e.message ?? "Unknown error"}`);
   }
-  return (await res.json()) as CreatePremarketTxResponse;
 }
 
 /* ===== Join / Out ===== */
@@ -94,18 +90,14 @@ export async function getJoinPremarketTransaction(
     premarket_account: premarketAccountBase58,
     amount_sol_lamp: toDecString(amountSolLamp),
   };
-
-  const res = await fetch(`${API_HOST}/premarket/tx/join`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const msg = await res.text();
-    throw new Error(`Failed to get join tx: ${msg}`);
+  try {
+    const data = await http.post<TxOnlyResponse>(`${API_HOST}/premarket/tx/join`, {
+      json: payload,
+    });
+    return data;
+  } catch (e: any) {
+    throw new Error(`Failed to get join tx: ${e?.message ?? "Unknown error"}`);
   }
-  return (await res.json()) as TxOnlyResponse;
 }
 
 export interface OutPremarketTxRequest {
@@ -124,18 +116,15 @@ export async function getOutPremarketTransaction(
     user_pubkey: userPubkeyBase58,
     premarket_account: premarketAccountBase58,
   };
-
-  const res = await fetch(`${API_HOST}/premarket/tx/out`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const msg = await res.text();
-    throw new Error(`Failed to get out tx: ${msg}`);
+  
+  try {
+    const data = await http.post<TxOnlyResponse>(`${API_HOST}/premarket/tx/out`, {
+      json: payload,
+    });
+    return data;
+  } catch (e: any) {
+    throw new Error(`Failed to get out tx: ${e?.message ?? "Unknown error"}`);
   }
-  return (await res.json()) as TxOnlyResponse;
 }
 
 export interface FinishPremarketTxRequest {
@@ -148,17 +137,19 @@ export async function getFinishPremarketTransaction(
   premarketAccountBase58: string,
   network: "devnet" | "mainnet-beta"
 ): Promise<TxOnlyResponse> {
-  const res = await fetch(`${API_HOST}/premarket/tx/finish`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+  const payload = {
       network,
       user_pubkey: userPubkeyBase58,
       premarket_account: premarketAccountBase58,
-    }),
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json()) as TxOnlyResponse;
+  }
+  try {
+    const data = await http.post<TxOnlyResponse>(`${API_HOST}/premarket/tx/finish`, {
+      json: payload,
+    });
+    return data;
+  } catch (e: any) {
+    throw new Error(`Failed to get finish tx: ${e?.message ?? "Unknown error"}`);
+  }
 }
 
 export async function getRefundPremarketTransaction(
@@ -166,17 +157,19 @@ export async function getRefundPremarketTransaction(
   premarketAccountBase58: string,
   network: "devnet" | "mainnet-beta"
 ): Promise<TxOnlyResponse> {
-  const res = await fetch(`${API_HOST}/premarket/tx/kill`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      network,
-      user_pubkey: userPubkeyBase58,
-      premarket_account: premarketAccountBase58,
-    }),
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json()) as TxOnlyResponse;
+  const payload = {
+    network,
+    user_pubkey: userPubkeyBase58,
+    premarket_account: premarketAccountBase58,
+  }
+  try {
+    const data = await http.post<TxOnlyResponse>(`${API_HOST}/premarket/tx/kill`, {
+      json: payload,
+    });
+    return data;
+  } catch (e: any) {
+    throw new Error(`Failed to get kill tx: ${e?.message ?? "Unknown error"}`);
+  }
 }
 
 

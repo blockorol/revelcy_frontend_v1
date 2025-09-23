@@ -4,6 +4,8 @@ import { PublicKey } from "@solana/web3.js";
 import { convertSolanaToTokenBuy, DEFAULT_TOKEN_COUNT_DECIMAL, PremarketState, convertTokenToDecimal } from "@utils/premarket";
 import axios from 'axios';
 import { toDecString } from "@api/tx_premarket";
+import { getHeaderJsonWithAuth } from "@api/helper";
+import { http } from "@api/http";
 
 export interface premerketTransactionArgs {
   premarketPubKey: string;
@@ -57,20 +59,13 @@ export async function premarketCreated(args: premarketCreatedArgs) {
     },
   };
 
-  const res = await fetch(`${API_HOST}/token/created`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const msg = await res.text();
-    throw new Error(`Failed to create premarket: ${msg}`);
+  try {
+    await http.post(`${API_HOST}/premarket/created`, { json: payload });
+    return
+  } catch (e: any) {
+    console.log("failed with", payload);
+    throw new Error(`Failed to add premarket to whitelist: ${e.message ?? "Unknown error"}`);
   }
-
-  return await res.text();
 }
 
 
@@ -90,20 +85,13 @@ export async function updateAboutCommunity(premarketPubkey: string, args: TokenC
     },
   };
 
-  const res = await fetch(`${API_HOST}/premarket/update_community`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const msg = await res.text();
-    throw new Error(`Failed to update about premarket: ${msg}`);
+  try {
+    await http.post(`${API_HOST}/premarket/update_community`, { json: payload });
+    return
+  } catch (e: any) {
+    console.log("failed with", payload);
+    throw new Error(`Failed to update community: ${e.message ?? "Unknown error"}`);
   }
-
-  return await res.text();
 }
 
 export async function premarketFinished(args: {
@@ -114,7 +102,7 @@ export async function premarketFinished(args: {
   isKilled: boolean;
   network: "devnet" | "testnet"| "mainnet-beta";
 }) {
-  const body = {
+  const payload = {
     base: {
       premarket_pub_key: args.premarketPubKey,
       user_wallet: args.userWallet,
@@ -123,27 +111,20 @@ export async function premarketFinished(args: {
     },
     network: args.network
   };
-
-  const res = await fetch(
-    args.isKilled ?
-    `${API_HOST}/premarket/killed`:`${API_HOST}/premarket/finished`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!res.ok) {
-    console.error("❌ Failed to send premarket finished");
+  
+  try {
+    await http.post(args.isKilled ?
+    `${API_HOST}/premarket/killed`:`${API_HOST}/premarket/finished`, { json: payload });
+    return
+  } catch (e: any) {
+    console.log("failed with", payload);
+    throw new Error(`Failed to finish PM: ${e.message ?? "Unknown error"}`);
   }
-
-  return;
 }
 
 export async function userJoinedToPremarket(args: userJoinedToPremarketArgs) {
 
-  const body = {
+  const payload = {
     premarket_pub_key: args.premarketPubKey,
     user_wallet: args.userWallet,
     user_id: args.userId ?? null,
@@ -151,43 +132,33 @@ export async function userJoinedToPremarket(args: userJoinedToPremarketArgs) {
     join_amount_in_sol_lamport: toDecString(args.joinAmountInSolLamport),
   };
 
-  const res = await fetch(`${API_HOST}/premarket/user_joined`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
-  
-  if (!res.ok) {
-    console.error("Failed to send user join to premarket");
+  try {
+    await http.post(`${API_HOST}/premarket/user_joined`, { json: payload });
+    return
+  } catch (e: any) {
+    console.log("failed with", payload);
+    throw new Error(`Failed to add user to PM: ${e.message ?? "Unknown error"}`);
   }
-  
-  return
 }
 
 export async function userOutOfPremarket(args: premerketTransactionArgs) {
   console.log("send to BE: user out of premarket", args);
 
-  const body = {
+  const payload = {
     premarket_pub_key: args.premarketPubKey,
     user_wallet: args.userWallet,
     user_id: args.userId ?? null,
     tx: args.tx,
   };
 
-  const res = await fetch(`${API_HOST}/premarket/user_out`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!res.ok) {
-    console.error("Failed to send user out of premarket");
+  
+  try {
+    await http.post(`${API_HOST}/premarket/user_out`, { json: payload });
+    return
+  } catch (e: any) {
+    console.log("failed with", payload);
+    throw new Error(`Failed to add user out: ${e.message ?? "Unknown error"}`);
   }
-  return
 }
 
 export async function getPremarketInfo({
@@ -241,6 +212,7 @@ export async function getPremarketInfo({
     dynamicInfo,
   };
 }
+
 export async function getPremarketList({
   cursor,
   limit,
@@ -403,3 +375,4 @@ export interface HoldersInfo {
     amountSolLamp: BN;
     iconURL?: string;
 }
+
