@@ -1,7 +1,6 @@
 // @api/tx_premarket.ts
 import { API_HOST } from "env";
 import { BN } from "@coral-xyz/anchor";
-import { getHeaderJsonWithAuth } from "@api/helper";
 import { http } from "@api/http";
 
 export type Network = "devnet" | "mainnet-beta";

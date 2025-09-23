@@ -3,7 +3,7 @@ import { TokenDynamicInfo, TokenMainInfo } from "@api/token";
 import { PremarketJoin } from "@components/premarket/PremarketJoin";
 import { PremarketUserJoined } from "@components/premarket/PremarketUserJoined";
 import { CreatorInfo } from "@components/premarket/CreatorInfo";
-import { useAuth } from "@storage/AuthContext";
+import { useAuth } from "@providers/AuthContext";
 import { Button, useTheme, Text} from "react-native-paper";
 import { View } from "react-native";
 import { SvgIcon } from "@components/base/SvgIcon";

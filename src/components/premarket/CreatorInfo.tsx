@@ -1,7 +1,7 @@
 import { premarketFinished, TokenMainInfo } from "@api/token";
 import { finishPremarket, refundPremarket } from "@services/blockchain/premarket/finishPremarket";
 import { getTimeLeftLabel } from "@utils/premarket";
-import { useAuth } from "@storage/AuthContext";
+import { useAuth } from "@providers/AuthContext";
 import { useWallet } from "@storage/wallet-adapter";
 import { useAnchorWalletSafe } from "@storage/wallet-adapter/useWallet.web";
 import { useNetwork } from "@providers/NetworkContext";

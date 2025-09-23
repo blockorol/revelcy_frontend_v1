@@ -5,7 +5,7 @@ import { useWallet } from '@storage/wallet-adapter';
 import GreenButton from '@components/login/buttons/GreenButton';
 import { confirmLogin, startSession } from '@api/auth';
 import { getConnectToWallet } from '@hooks/connectWallet';
-import { useAuth } from '@storage/AuthContext';
+import { useAuth } from '@providers/AuthContext';
 
 interface WalletButtonProps {
   afterClick: () => void;

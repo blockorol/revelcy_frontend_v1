@@ -22,7 +22,7 @@ import { createPremarket, CreatePremarketArgs } from '@services/blockchain/prema
 import EditPremarketSettingsForm from '@components/token/create/EditPremarketSettings';
 import { convertSmallCountToLamport } from '@utils/premarket';
 import { premarketCreated, userJoinedToPremarket } from '@api/token';
-import { useAuth } from '@storage/AuthContext';
+import { useAuth } from '@providers/AuthContext';
 import { uploadImage } from '@api/files';
 import useIsMobile from '@hooks/useIsMobile';
 import { useNetwork } from '@providers/NetworkContext';

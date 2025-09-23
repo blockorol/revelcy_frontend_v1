@@ -1,6 +1,6 @@
 import TwoScreenContainer from "@components/base/container/TwoScreensContainer";
 import { useIsMobileForTwoScreenWithDemention } from "@hooks/useIsMobile";
-import { useAuth } from "@storage/AuthContext";
+import { useAuth } from "@providers/AuthContext";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
 import { View, Image } from "react-native";

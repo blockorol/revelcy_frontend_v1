@@ -2,7 +2,7 @@ import OneScreenContainer from "@components/base/container/OneScreenContainer";
 import { IconName, SvgIcon, SvgIconButton } from "@components/base/SvgIcon";
 import { WalletInfo } from "@components/login/WalletConnectionCheckerArea";
 import { useIsMobileForOneScreenWithDemention } from "@hooks/useIsMobile";
-import { useAuth } from "@storage/AuthContext";
+import { useAuth } from "@providers/AuthContext";
 import { LinearGradient } from "expo-linear-gradient";
 import { Linking, View } from "react-native";
 import { Avatar, Text, useTheme } from "react-native-paper";

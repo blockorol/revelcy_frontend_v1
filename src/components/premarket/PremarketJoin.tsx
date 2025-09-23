@@ -3,7 +3,7 @@ import { SvgIcon } from "@components/base/SvgIcon";
 import { LoginModal } from "@components/login/LoginButton";
 import { BN } from "@coral-xyz/anchor";
 import { joinToPremarket } from "@services/blockchain/premarket/joinPremarket";
-import { useAuth } from "@storage/AuthContext";
+import { useAuth } from "@providers/AuthContext";
 import shortString from "@utils/address_shorter";
 import { useAnchorWalletSafe } from '@storage/wallet-adapter/useWallet.web';
 import { convertDecimalToToken } from "@utils/premarket";

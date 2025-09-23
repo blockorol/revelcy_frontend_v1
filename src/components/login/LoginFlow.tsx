@@ -7,7 +7,7 @@ import LoginFirstArea from '@components/login/LoginFirstArea';
 import {useIsMobileWithDemention} from '@hooks/useIsMobile';
 import WalletConnectionChecker from '@components/login/WalletConnectionCheckerArea';
 import UserAvatar from '@components/login/UserAvatar';
-import { useAuth } from '@storage/AuthContext';
+import { useAuth } from '@providers/AuthContext';
 import { updateAvatar, updateUsername } from '@api/auth';
 import UserName from '@components/login/UserName';
 import { ExtendedMD3Colors } from '@theme/types';

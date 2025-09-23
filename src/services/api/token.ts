@@ -4,7 +4,6 @@ import { PublicKey } from "@solana/web3.js";
 import { convertSolanaToTokenBuy, DEFAULT_TOKEN_COUNT_DECIMAL, PremarketState, convertTokenToDecimal } from "@utils/premarket";
 import axios from 'axios';
 import { toDecString } from "@api/tx_premarket";
-import { getHeaderJsonWithAuth } from "@api/helper";
 import { http } from "@api/http";
 
 export interface premerketTransactionArgs {

@@ -1,7 +1,7 @@
 // @hooks/useJoinFlow.ts
 import BN from "bn.js";
 import { PublicKey } from "@solana/web3.js";
-import { useAuth } from "@storage/AuthContext";
+import { useAuth } from "@providers/AuthContext";
 import { useWallet } from "@storage/wallet-adapter";
 import { useAnchorWalletSafe } from "@storage/wallet-adapter/useWallet.web";
 import { useNetwork } from "@providers/NetworkContext";

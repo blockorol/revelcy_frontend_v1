@@ -3,7 +3,7 @@ import { StyleSheet, Pressable } from 'react-native';
 import { Avatar, Text, useTheme, Surface, Menu } from 'react-native-paper';
 import Login from '@components/login/LoginButton';
 import { SvgIcon } from '@components/base/SvgIcon';
-import { useAuth } from '@storage/AuthContext';
+import { useAuth } from '@providers/AuthContext';
 import shortString from '@utils/address_shorter';
 import { useUserModal } from '@storage/UserModalContext';
 import type { AppTheme, ExtendedMD3Colors } from '@theme/types';

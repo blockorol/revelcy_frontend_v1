@@ -23,7 +23,7 @@ registerTranslation('en', en);
 
 import { Buffer } from 'buffer';
 import process from 'process';
-import { AuthProvider } from '@storage/AuthContext';
+import { AuthProvider } from '@providers/AuthContext';
 import { ContentAreaProvider, useContentArea } from '@hooks/useContentArea';
 import { UserModalProvider } from '@storage/UserModalContext';
 import { NotificationProvider } from '@storage/NotificationContext';

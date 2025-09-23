@@ -11,7 +11,7 @@ import {
 } from "react-native-paper";
 import { useAnchorWalletSafe } from '@storage/wallet-adapter/useWallet.web';
 import { useWallet } from "@storage/wallet-adapter";
-import { useAuth } from "@storage/AuthContext";
+import { useAuth } from "@providers/AuthContext";
 import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
 import { useNotification } from "@storage/NotificationContext";

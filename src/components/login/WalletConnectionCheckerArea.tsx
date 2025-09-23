@@ -10,7 +10,7 @@ import { MD3Colors } from 'react-native-paper/lib/typescript/types';
 import { SvgIcon } from '@components/base/SvgIcon';
 import Loader from '@components/base/Loader';
 import HumanityLevel from '@components/login/HumanityLevel';
-import { convertJwtToUser, useAuth } from '@storage/AuthContext';
+import { convertJwtToUser, useAuth } from '@providers/AuthContext';
 interface WalletConnectionCheckerProps {
   height: DimensionValue
   width: number
