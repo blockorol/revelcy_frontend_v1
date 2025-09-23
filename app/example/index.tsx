@@ -3,15 +3,17 @@ import { ScrollView } from "react-native";
 import { List, Text,  Divider, useTheme } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { getAllRoutes } from "./routes";
+import { useNetwork } from "@providers/NetworkContext";
 
 export default function ExampleIndex() {
   const router = useRouter();
   const theme = useTheme();
   const groups = getAllRoutes();
+  const {network} = useNetwork();
 
   return (
     <ScrollView contentContainerStyle={{ padding: 16 }}>
-      <Text variant='bodyMedium' style={{color: 'black'}}> Version 0.0.17; network: {network.toString()}</Text>
+      <Text variant='bodyMedium' style={{color: 'black'}}> Version 0.0.19; network: {network.toString()}</Text>
       
       <List.Section title="EXAMPLE — PAGES">
         {groups.map(({ section, routes }, idx) => (
