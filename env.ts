@@ -25,6 +25,7 @@ if (platform === 'web') {
       PINATA_SECRET_KEY: extra.PINATA_SECRET_KEY ?? process.env.PINATA_SECRET_KEY,
       HOST_BACKEND: extra.HOST_BACKEND ?? process.env.HOST_BACKEND,
       HELIUS_KEY: extra.HELIUS_KEY ?? process.env.HELIUS_KEY,
+      NETWORK: extra.NETWORK ?? process.env.NETWORK,
     };
   }
 
