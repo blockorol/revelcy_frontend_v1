@@ -1,4 +1,3 @@
-import React from "react";
 import { ScrollView } from "react-native";
 import { List, Text,  Divider, useTheme } from "react-native-paper";
 import { useRouter } from "expo-router";
@@ -13,7 +12,7 @@ export default function ExampleIndex() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: 16 }}>
-      <Text variant='bodyMedium' style={{color: 'black'}}> Version 0.1.1; network: {network.toString()}</Text>
+      <Text variant='bodyMedium' style={{color: 'black'}}> Version 0.1.2; network: {network.toString()}</Text>
       
       <List.Section title="EXAMPLE — PAGES">
         {groups.map(({ section, routes }, idx) => (
@@ -22,7 +21,6 @@ export default function ExampleIndex() {
             title={section.toUpperCase()}
             left={(p) => <List.Icon {...p} icon="folder" />}
           >
-            {/* ссылка на индекс подпапки */}
             <List.Item
               title="— Открыть индекс подпапки —"
               left={(p) => <List.Icon {...p} icon="folder-outline" />}
