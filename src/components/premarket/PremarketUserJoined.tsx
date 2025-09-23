@@ -12,7 +12,7 @@ import {
 import { useAnchorWalletSafe } from '@storage/wallet-adapter/useWallet.web';
 import { useWallet } from "@storage/wallet-adapter";
 import { useAuth } from "@storage/AuthContext";
-import { useNetwork } from "@storage/NetworkContext";
+import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
 import { useNotification } from "@storage/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider"; // <-- используем провайдер

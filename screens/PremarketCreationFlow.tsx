@@ -25,7 +25,7 @@ import { premarketCreated, userJoinedToPremarket } from '@api/token';
 import { useAuth } from '@storage/AuthContext';
 import { uploadImage } from '@api/files';
 import useIsMobile from '@hooks/useIsMobile';
-import { useNetwork } from '@storage/NetworkContext';
+import { useNetwork } from '@providers/NetworkContext';
 import { getSolanaConnection } from '@services/blockchain/solana';
 import { useNotification } from '@storage/NotificationContext';
 
@@ -369,7 +369,7 @@ export default function PremarketCreationFlow() {
   const handleOnDone = async () => {
     console.log("handleOnDone move to page:", `/premarket/${premarketPDA}`);
     await clearDraft(storageKey); // очистить черновик после успеха
-    router.push(`/premarket/${premarketPDA}`);
+    router.push(`/token/${premarketPDA}`);
   };
 
   const getTokenData = (): TokenCreateFullData | undefined => {

@@ -1,4 +1,4 @@
-// app/premarket/create.tsx
+// app/token/create.tsx
 import PremarketCreationFlow from '@screens/PremarketCreationFlow';
 
 export default function TokenCreationPage() {

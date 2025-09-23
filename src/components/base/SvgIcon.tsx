@@ -10,6 +10,7 @@ import ArrowUp from '@assets/basic_icon/arrow-up.svg';
 import ArrowsClockwise from '@assets/basic_icon/arrows-clockwise.svg';
 import BinocularsOutlined from '@assets/basic_icon/binoculars-outlined.svg';
 import Binoculars from '@assets/basic_icon/binoculars.svg';
+import Books from '@assets/basic_icon/books.svg';
 import Check from '@assets/basic_icon/check.svg';
 import HeartOutlined from '@assets/basic_icon/heart-outlined.svg';
 import Heart from '@assets/basic_icon/heart.svg';
@@ -49,6 +50,7 @@ export const icons = {
   'arrows-clockwise': ArrowsClockwise,
   'binoculars-outlined': BinocularsOutlined,
   'binoculars': Binoculars,
+  'books': Books,
   'check': Check,
   'heart-outlined': HeartOutlined,
   'heart': Heart,
