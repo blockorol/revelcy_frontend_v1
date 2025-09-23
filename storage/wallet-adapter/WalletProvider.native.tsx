@@ -1,6 +1,6 @@
 import React, { createContext, useMemo, useState } from 'react';
 import { clusterApiUrl, Connection, PublicKey } from '@solana/web3.js';
-import { useNetwork } from '@storage/NetworkContext';
+import { useNetwork } from '@providers/NetworkContext';
 
 import { WalletContextType } from './walletTypes'
 

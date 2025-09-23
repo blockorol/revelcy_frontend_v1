@@ -5,7 +5,7 @@ import {
 } from '@solana/wallet-adapter-react';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { clusterApiUrl } from '@solana/web3.js';
-import { useNetwork } from '@storage/NetworkContext';
+import { useNetwork } from '@providers/NetworkContext';
 
 export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { network } = useNetwork();

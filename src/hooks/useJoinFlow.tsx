@@ -1,11 +1,10 @@
 // @hooks/useJoinFlow.ts
-import React from "react";
 import BN from "bn.js";
 import { PublicKey } from "@solana/web3.js";
 import { useAuth } from "@storage/AuthContext";
 import { useWallet } from "@storage/wallet-adapter";
 import { useAnchorWalletSafe } from "@storage/wallet-adapter/useWallet.web";
-import { useNetwork } from "@storage/NetworkContext";
+import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
 import { useNotification } from "@storage/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider";

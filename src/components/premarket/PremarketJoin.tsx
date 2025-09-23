@@ -25,7 +25,7 @@ import {
   ActivityIndicator,
 } from "react-native-paper";
 import { useWallet } from "@storage/wallet-adapter";
-import { useNetwork } from "@storage/NetworkContext";
+import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
 import { useNotification } from "@storage/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider"; // <-- новый импорт

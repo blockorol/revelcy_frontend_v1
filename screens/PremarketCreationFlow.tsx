@@ -25,7 +25,7 @@ import { premarketCreated, userJoinedToPremarket } from '@api/token';
 import { useAuth } from '@storage/AuthContext';
 import { uploadImage } from '@api/files';
 import useIsMobile from '@hooks/useIsMobile';
-import { useNetwork } from '@storage/NetworkContext';
+import { useNetwork } from '@providers/NetworkContext';
 import { getSolanaConnection } from '@services/blockchain/solana';
 import { useNotification } from '@storage/NotificationContext';
 

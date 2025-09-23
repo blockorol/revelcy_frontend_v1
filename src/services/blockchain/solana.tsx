@@ -1,5 +1,5 @@
 import { Connection } from "@solana/web3.js";
-import { SolanaNetwork } from "@storage/NetworkContext";
+import { SolanaNetwork } from "@providers/NetworkContext";
 import {HELIUS_KEY} from 'env'
 
 export function cn(...args: (string | false | null | undefined)[]): string {

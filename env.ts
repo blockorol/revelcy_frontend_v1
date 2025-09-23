@@ -9,6 +9,7 @@ type EnvVars = {
   PINATA_SECRET_KEY?: string;
   HOST_BACKEND?: string;
   HELIUS_KEY?: string;
+  NETWORK?: "devnet" | "mainnet-beta";
 };
 
 let ENV: EnvVars = getEnv(Platform.OS);
@@ -42,6 +43,7 @@ export const PINATA_API_KEY = getRequired('PINATA_API_KEY', ENV.PINATA_API_KEY);
 export const PINATA_SECRET_KEY = getRequired('PINATA_SECRET_KEY', ENV.PINATA_SECRET_KEY);
 export const API_HOST = getRequired('HOST_BACKEND', ENV.HOST_BACKEND);
 export const HELIUS_KEY = getRequired('HELIUS_KEY', ENV.HELIUS_KEY);
+export const NETWORK = ENV.NETWORK;
 
 
 // ---- Helpers ----
