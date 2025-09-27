@@ -8,6 +8,8 @@ export const MAX_WIDTH_ONE_CONTAINER_SIZE = 480;
 const MAX_WIDTH_MOBILE = 680
 const MAX_WIDTH_DESKTOP = 680
 
+const MOBILE_MENU_HEIGHT = 24
+
 export default function useIsMobile(): boolean {
     const { width, scale} = useWindowDimensions();
     // console.log(`useIsMobile: width= ${width}, scale= ${scale}`)
@@ -31,9 +33,14 @@ export function useIsMobileForTwoScreen(): boolean {
 
 export function useIsMobileForTwoScreenWithDemention(): IsMobileWithDemetionsTwoScreenResp {
     const { width, height } = useWindowDimensions();
-    const isMobile = width < MAX_WIDTH_TWO_CONTAINER_SIZE
+    const possibleHeight = height-MOBILE_MENU_HEIGHT;
+    const isMobile = width < MAX_WIDTH_TWO_CONTAINER_SIZE;
     return {
         maxWidth: isMobile ? MAX_WIDTH_MOBILE : MAX_WIDTH_DESKTOP,
+        screen: {
+            width: width,
+            height:  possibleHeight >0 ? possibleHeight:0,
+        },
         left: {
             width: isMobile?width:400,
             height: isMobile?undefined:height
@@ -49,6 +56,10 @@ export function useIsMobileForTwoScreenWithDemention(): IsMobileWithDemetionsTwo
 interface IsMobileWithDemetionsTwoScreenResp {
     isMobile: boolean;
     maxWidth: number;
+    screen: {
+        width: number;
+        height: number;
+    };
     left: {
         width: number;
         height?: number;
