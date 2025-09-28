@@ -1,6 +1,6 @@
 import { API_HOST } from "env";
 
-const PUMP_FUN_IPFS = `${API_HOST}/api/pump_ipfs`;
+const PUMP_FUN_IPFS = `${API_HOST}/proxy/pump_ipfs`;
 
 export async function uploadTokenMetadataToIPFS({avatar, tokenInfo}:
   {
