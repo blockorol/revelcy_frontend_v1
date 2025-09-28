@@ -170,7 +170,7 @@ export default function PremarketCreationFlow() {
         },
         telegram: tokenData.mainData.links.telegram,
         twitter: tokenData.mainData.links.twitter,
-        tokenWebsite: tokenData.mainData.links.website
+        website: tokenData.mainData.links.website
       };
       console.log(`metadata: ${metadata}; image: ${avatarIpfsUri}`);
 
