@@ -12,7 +12,7 @@ export default function ExampleIndex() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: 16 }}>
-      <Text variant='bodyMedium' style={{color: 'black'}}> Version 0.1.2; network: {network.toString()}</Text>
+      <Text variant='bodyMedium' style={{color: 'black'}}> Version 0.1.3; network: {network.toString()}</Text>
       
       <List.Section title="EXAMPLE — PAGES">
         {groups.map(({ section, routes }, idx) => (

@@ -1,4 +1,4 @@
-const PUMP_FUN_IPFS = 'https://pump.fun/api/ipfs';
+const PUMP_FUN_IPFS = '/api/pump-ipfs';
 
 export async function uploadTokenMetadataToIPFS({avatar, tokenInfo}:
   {
