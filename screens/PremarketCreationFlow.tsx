@@ -17,7 +17,7 @@ import {
 } from '@components/token/create/interface';
 import EditTokenomicsForm from '@components/token/create/EditTokenomicsForm';
 import { useAnchorWalletSafe, useWallet } from '@storage/wallet-adapter/useWallet.web';
-import { uploadBase64Image, uploadJsonMetadata } from '@services/files/ipfs';
+import { uploadTokenMetadataToIPFS } from '@services/files/ipfs/pumpfun';
 import { createPremarket, CreatePremarketArgs } from '@services/blockchain/premarket/createPremarket';
 import EditPremarketSettingsForm from '@components/token/create/EditPremarketSettings';
 import { convertSmallCountToLamport } from '@utils/premarket';
@@ -145,52 +145,6 @@ export default function PremarketCreationFlow() {
     });
   };
 
-  const uploadToIPFS = async (tokenData: TokenCreateFullData & { premarketSettingsData: PremarketSettingData; tokenomicsData: TokenomicsData; }) => {
-    console.log("uploadToIPFS in TokenCreationFLow");
-    try {
-      const fileName = `avatar_${tokenData.mainData.tokenName}.jpg`;
-      const avatarIpfsUri = await uploadBase64Image(tokenData.mainData.avatar, fileName);
-
-      if (!avatarIpfsUri) {
-        throw Error("avatar is not upload");
-      }
-      const descriptionUpdated =
-        `The presale was done with revelcy.com. More: https://revelcy.com/premarket \n${tokenData.mainData.description}`;
-
-      const metadata = {
-        name: tokenData.mainData.tokenName,
-        symbol: tokenData.mainData.tokenTicker,
-        description: descriptionUpdated,
-        image: avatarIpfsUri,
-        tags: [],
-        createdOn: "https://revelcy.com",
-        creator: {
-          name: "Revelcy",
-          site: "https://revelcy.com"
-        },
-        telegram: tokenData.mainData.links.telegram,
-        twitter: tokenData.mainData.links.twitter,
-        website: tokenData.mainData.links.website
-      };
-      console.log(`metadata: ${metadata}; image: ${avatarIpfsUri}`);
-
-      const metadataIpfsUri = await uploadJsonMetadata(metadata);
-
-      if (!metadataIpfsUri) {
-        throw Error("metadata is not upload");
-      }
-      console.log(`metadataIpfsUri: ${metadataIpfsUri}`);
-
-      return {
-        metadataUri: metadataIpfsUri,
-        avatarUri: avatarIpfsUri,
-      };
-    } catch (error) {
-      console.error('failed to upload to IPFS:', error);
-      return null;
-    }
-  };
-
   const handleLaunch = async () => {
     setLaunchState("Started launch process");
     // Зафиксируем, что мы на обзоре — пригодится при рефреше
@@ -239,7 +193,20 @@ export default function PremarketCreationFlow() {
     }
 
     setLaunchState("Uploading data to IPFS...");
-    const ipfsData = await uploadToIPFS(tokenData);
+    const ipfsData = await uploadTokenMetadataToIPFS({
+      avatar: tokenData.mainData.avatar,
+      tokenInfo: {
+        name: tokenData.mainData.tokenName,
+        symbol: tokenData.mainData.tokenTicker,
+        description: tokenData.mainData.description,
+        links: {
+          telegram: tokenData.mainData.links.telegram,
+          twitter: tokenData.mainData.links.twitter,
+          website: tokenData.mainData.links.website,
+        }
+      }
+    });
+
     if (!ipfsData) {
       setLaunchState(undefined);
       notify.error("failed to upload data to IPFS", {

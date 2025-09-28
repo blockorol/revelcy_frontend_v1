@@ -5,6 +5,66 @@ import Constants from 'expo-constants';
 
 const PINATA_JWT = Constants.expoConfig?.extra?.PINATA_JWT || '';
 
+export async function uploadTokenMetadataToIPFS ({avatar, tokenInfo}:
+  {
+    avatar: string,
+    tokenInfo: {
+      name: string;
+      symbol: string;
+      description?:string; 
+      links: {
+        telegram?:string; 
+        twitter?:string; 
+        website?:string; 
+      }
+    }
+  }
+) {
+    console.log("uploadToIPFS with pinata");
+    try {
+      const fileName = `avatar_${tokenInfo.name}.jpg`;
+      const avatarIpfsUri = await uploadBase64Image(avatar, fileName);
+
+      if (!avatarIpfsUri) {
+        throw Error("avatar is not upload");
+      }
+      const descriptionUpdated =
+        `The presale was done with revelcy.com. More: https://revelcy.com/premarket \n${tokenInfo.description}`;
+
+      const metadata = {
+        name: tokenInfo.name,
+        symbol: tokenInfo.symbol,
+        description: descriptionUpdated,
+        image: avatarIpfsUri,
+        tags: [],
+        createdOn: "https://revelcy.com",
+        creator: {
+          name: "Revelcy",
+          site: "https://revelcy.com"
+        },
+        telegram: tokenInfo.links.telegram,
+        twitter: tokenInfo.links.twitter,
+        website: tokenInfo.links.website
+      };
+      console.log(`metadata: ${metadata}; image: ${avatarIpfsUri}`);
+
+      const metadataIpfsUri = await uploadJsonMetadata(metadata);
+
+      if (!metadataIpfsUri) {
+        throw Error("metadata is not upload");
+      }
+      console.log(`metadataIpfsUri: ${metadataIpfsUri}`);
+
+      return {
+        metadataUri: metadataIpfsUri,
+        avatarUri: avatarIpfsUri,
+      };
+    } catch (error) {
+      console.error('failed to upload to IPFS:', error);
+      return null;
+    }
+  };
+
 export async function uploadBase64Image(base64Data: string, fileName: string): Promise<string | null> {
   try {
 
