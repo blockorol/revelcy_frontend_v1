@@ -40,13 +40,11 @@ export async function uploadTokenMetadataToIPFS({avatar, tokenInfo}:
       method: 'POST',
       body: formData,
     });
-    console.log("resp:",response)
-
     const result = await response.json();
     console.log("result:",result)
     return result?.metadataUri ? {
         metadataUri: result.metadataUri,
-        avatarUri: "null",
+        avatarUri: result?.metadata?.image,
     }: null
   } catch (error) {
     console.error('Failed during upload image to Pump.fun IPFS:', error);
