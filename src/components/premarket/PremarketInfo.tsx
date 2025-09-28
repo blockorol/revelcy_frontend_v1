@@ -12,8 +12,9 @@ interface PremarketInfoProps {
   isMobile: boolean;
   withJoinButton: boolean;
   onUpdated: () => Promise<void>;
+  width: number
 }
-export function PremarketInfo({ tokenInfo, isMobile, withJoinButton, onUpdated}: PremarketInfoProps) {
+export function PremarketInfo({ tokenInfo, isMobile, withJoinButton, onUpdated, width}: PremarketInfoProps) {
   const { colors } = useTheme() as AppTheme;
   const joiners = tokenInfo.dynamicInfo.holders
     .slice()
@@ -34,9 +35,9 @@ export function PremarketInfo({ tokenInfo, isMobile, withJoinButton, onUpdated}:
   return (
     <View
       style={{
-        backgroundColor: colors.surfaceContainerLowest,
+        backgroundColor: isMobile?'transparent':colors.surfaceContainerLowest,
         borderRadius: 20,
-        padding: 24,
+        padding: isMobile?16:24,
         gap: 32,
       }}
     >
@@ -50,6 +51,7 @@ export function PremarketInfo({ tokenInfo, isMobile, withJoinButton, onUpdated}:
         }}
       >
         <PremarketBondingCurve
+          width={width-(isMobile?72:48)}
           state={tokenInfo.mainInfo.state}
           onUpdated={onUpdated}
           premaketPubkey={tokenInfo.mainInfo.premarketPubkey}
@@ -60,7 +62,6 @@ export function PremarketInfo({ tokenInfo, isMobile, withJoinButton, onUpdated}:
           }
           currentPrice={(() => {
             const price = tokenInfo.dynamicInfo.currentPriceLamp;
-            console.log('PremarketInfo - currentPriceLamp:', price);
             return price;
           })()}
           joiners={joiners}

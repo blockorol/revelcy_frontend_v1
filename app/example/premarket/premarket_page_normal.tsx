@@ -13,7 +13,7 @@ import type {
 } from "@api/token";
 import BN from "bn.js";
 import { PublicKey } from "@solana/web3.js";
-import { TokenPremarketPageNormal } from "screens/TokenPremarketPage";
+import { TokenPremarketPageNormal, TokenPremarketPageMobile } from "screens/TokenPremarketPage";
 
 // ─────────────────────────────────────────────────────────────
 // Вариант 1: локально оборачиваем UniversalOverlayProvider
@@ -379,17 +379,24 @@ const MockFloatingOverlayButton: React.FC = () => {
 // ---------- Внутренняя часть ----------
 const Inner: React.FC = () => {
   const { token } = useMockToken();
-  const { left, screen } = useIsMobileForTwoScreenWithDemention();
+  const { isMobile, left, screen } = useIsMobileForTwoScreenWithDemention();
 
   return (
     <View style={{ flex: 1, position: "relative", minHeight: screen.height }}>
-      <TokenPremarketPageNormal
-        token={token}
-        left={left}
-        screenDem={screen}
-        refetchTokenInfo={async () => {}}
-      />
-      <MockFloatingOverlayButton />
+
+    {isMobile ?
+        (<TokenPremarketPageMobile
+            token={token}
+            refetchTokenInfo={async ()=>{}}
+            screenDem={screen}
+            />)
+        :(<TokenPremarketPageNormal
+            token={token}
+            refetchTokenInfo={async ()=>{}}
+            left={left}
+            screenDem={screen}
+            />)}
+  <MockFloatingOverlayButton />
     </View>
   );
 };
