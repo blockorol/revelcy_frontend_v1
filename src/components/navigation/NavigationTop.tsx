@@ -1,15 +1,18 @@
 // components/NavigationTop.tsx
 import React, { useMemo } from 'react';
 import { View, StyleSheet, Image, TouchableOpacity, useWindowDimensions } from 'react-native';
+import {Text} from 'react-native-paper'
 import { NavigationProfileWidget } from './NavigationProfileWidget';
 import { NavigationList } from './NavigationList';
 import { useIsMobileForTwoScreenWithDemention } from '@hooks/useIsMobile';
 import { router } from 'expo-router';
+import { useNetwork } from '@providers/NetworkContext';
 
 const H_PADDING = 16;
 const GAP = 24;
 
 export function NavigationTop() {
+  const {network} = useNetwork()
   const dem = useIsMobileForTwoScreenWithDemention();
   const { width: vw } = useWindowDimensions();
 
@@ -33,6 +36,7 @@ export function NavigationTop() {
               resizeMode="contain"
             />
           </TouchableOpacity>
+            {network === 'devnet'&&<Text variant='headlineLarge' style={{color:'red'}}>DEV</Text>}
           <View style={styles.profile}>
             <NavigationProfileWidget />
           </View>
@@ -53,6 +57,7 @@ export function NavigationTop() {
                 resizeMode="contain"
               />
             </TouchableOpacity>
+            {network === 'devnet'&&<Text variant='headlineLarge' style={{color:'red'}}>DEV</Text>}
             <View style={{ marginLeft: 16 }}>
               <NavigationList isMobile={dem.isMobile} />
             </View>
