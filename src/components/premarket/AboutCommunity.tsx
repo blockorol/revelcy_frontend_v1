@@ -1,6 +1,6 @@
 import { TokenCommunityInfo, updateAboutCommunity } from "@api/token";
 import { CommunityLinksGrid } from "@components/premarket/CommunityLinksGrid";
-import { View, Image } from "react-native";
+import { View, Image,ScrollView } from "react-native";
 import { useTheme, Text, Button } from "react-native-paper";
 import { ExpandableText } from '@components/base/ExpandableText';
 import { useState } from "react";
@@ -10,14 +10,16 @@ import OneScreenContainer from "@components/base/container/OneScreenContainer";
 import { uploadImage } from "@api/files";
 import { ExtendedMD3Colors } from "@theme/types";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
+import { useImageAspectRatio } from "@hooks/useImageAspectRatio";
 
 interface AboutCommunityProps {
   premarketPubkey: string;
   communityInfo?: TokenCommunityInfo;
+  isMobile: boolean
   isCreator?: boolean;
 }
 
-export function AboutCommunity({ premarketPubkey, communityInfo, isCreator }: AboutCommunityProps) {
+export function AboutCommunity({ premarketPubkey, communityInfo, isCreator, isMobile}: AboutCommunityProps) {
   const [communityInfoLocal, setCommunityInfo] = useState(communityInfo);
   const { open, close } = useOverlay();
   const colors = useTheme().colors as ExtendedMD3Colors;
@@ -31,6 +33,9 @@ export function AboutCommunity({ premarketPubkey, communityInfo, isCreator }: Ab
   ) {
     return <View />;
   }
+  const bannerUri = communityInfoLocal?.tokenBannerURL;
+  const bannerRatio = useImageAspectRatio(bannerUri, 16 / 9);
+
 
   const openEdit = () => {
     open(
@@ -76,43 +81,54 @@ export function AboutCommunity({ premarketPubkey, communityInfo, isCreator }: Ab
   return (
     <View
       style={{
-        backgroundColor: colors.surfaceContainerLowest,
+        backgroundColor: isMobile? 'transperent':colors.surfaceContainerLowest,
         borderRadius: 20,
-        padding: 24,
-        gap: 32,
+        padding: isMobile? 16:24,
+        gap: isMobile? 24 : 32,
+        width: '100%'
       }}
     >
-      {!!communityInfoLocal?.tokenBannerURL && (
-        <Image
-          source={{ uri: communityInfoLocal.tokenBannerURL }}
-          resizeMode="contain"
-          style={{
-            height: 272,
-            borderRadius: 20,
-            backgroundColor: colors.surfaceContainerLowest,
-            padding: 24,
-            paddingBottom: 32,
-          }}
-        />
+      {!!bannerUri && (
+        <View style={{ width: '100%', borderRadius: 20, overflow: 'hidden' }}>
+          {bannerRatio ? (
+            <Image
+              source={{ uri: bannerUri }}
+              style={{
+                width: '100%',
+                aspectRatio: bannerRatio,
+                backgroundColor: colors.surfaceContainerLowest,
+              }}
+              resizeMode="cover"
+            />
+          ) : (
+            <View
+              style={{
+                width: '100%',
+                aspectRatio: 16 / 9,
+                backgroundColor: colors.surfaceContainerLowest,
+              }}
+            />
+          )}
+        </View>
       )}
 
       <View
         style={{
-          flexDirection: "row",
+          flexDirection: isMobile? "column":"row",
           alignItems: "flex-start",
-          justifyContent: "space-between",
+          gap: 16,
+          justifyContent:isMobile?undefined:"space-between"
         }}
       >
         {!!communityInfoLocal?.description ? (
-          <View style={{ gap: 24, flex: 1 }}>
+          <View style={{ gap: isMobile?16:24, flex: 1 }}>
             <Text variant="titleLarge">
               About Community{" "}
               {isCreator && (
                 <Button mode='outlined' onPress={openEdit}>Edit</Button>
               )}
             </Text>
-
-            <ExpandableText text={communityInfoLocal.description} maxLineExpanded={2} />
+              <ExpandableText text={communityInfoLocal.description} maxLineExpanded={2} />
           </View>
         ) : isCreator && (
             <Button onPress={openEdit}>Add comunity info</Button>
@@ -121,7 +137,7 @@ export function AboutCommunity({ premarketPubkey, communityInfo, isCreator }: Ab
 
         {communityInfoLocal?.links && communityInfoLocal.links.length !== 0 && (
           <View style={{ flex: 1 }}>
-            <CommunityLinksGrid links={communityInfoLocal.links} />
+              <CommunityLinksGrid links={communityInfoLocal.links} isMobile={isMobile} />
           </View>
         )}
       </View>

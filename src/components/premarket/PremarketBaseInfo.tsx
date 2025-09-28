@@ -2,15 +2,16 @@ import { TokenMainInfo } from "@api/token";
 import { RoundIconLink } from "@components/premarket/RoundIcons";
 import { useIsMobileForTwoScreenWithDemention } from "@hooks/useIsMobile";
 import { getTimeLeftLabel } from "@utils/premarket";
-import { View } from "react-native";
+import { View, Image } from "react-native";
 import { Button, Text, useTheme } from "react-native-paper";
 import { ExpandableText } from '@components/base/ExpandableText';
 
 interface PremarketBaseInfoProps {
   tokenMainInfo: TokenMainInfo;
+  isMobile: boolean
 }
 
-export function PremarketBaseInfo({ tokenMainInfo }: PremarketBaseInfoProps) {
+export function PremarketBaseInfo({ tokenMainInfo, isMobile}: PremarketBaseInfoProps) {
   const theme = useTheme();
   const { left } = useIsMobileForTwoScreenWithDemention();
 
@@ -50,16 +51,28 @@ export function PremarketBaseInfo({ tokenMainInfo }: PremarketBaseInfoProps) {
   }
 
   return (
-    <View style={{ gap: 24 }}>
+    <View style={{ gap: 16, padding: isMobile?16:24}}>
+      {!!tokenMainInfo.imageURL && (
+        <View style={{padding: isMobile?24:0, paddingBottom: 18,}}>
+          <Image
+            source={{ uri: tokenMainInfo.imageURL }}
+            style={{
+              width: '100%',
+              aspectRatio: 1,
+              borderRadius: 20,
+              backgroundColor:  'transparent',
+            }}
+          />
+        </View>
+      )}
       <View
         style={{
-          width: left.width - 48,
           justifyContent: "space-between",
           alignItems: "center",
           flexDirection: "row",
         }}
       >
-        <View style={{ gap: 8 }}>
+        <View style={{ gap: 4}}>
           <Text variant="headlineSmall"> {tokenMainInfo?.name}</Text>
           <Text variant="labelLarge"> {tokenMainInfo?.symbol}</Text>
         </View>

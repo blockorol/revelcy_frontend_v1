@@ -51,7 +51,7 @@ export const ExpandableText: React.FC<ExpandableTextProps> = ({
       }}
     >
       <Text
-        variant="bodyLarge"
+        variant="bodyMedium"
         numberOfLines={expanded ? undefined : maxLineExpanded}
         ellipsizeMode="tail"
         style={{ flex: 1, marginRight: 8 }}
@@ -77,7 +77,7 @@ export const ExpandableText: React.FC<ExpandableTextProps> = ({
       {containerWidth != null && (
         <>
           <Text
-            variant="bodyLarge"
+            variant="bodyMedium"
             style={{
               position: "absolute",
               left: -9999,
@@ -90,7 +90,7 @@ export const ExpandableText: React.FC<ExpandableTextProps> = ({
           </Text>
 
           <Text
-            variant="bodyLarge"
+            variant="bodyMedium"
             numberOfLines={maxLineExpanded}
             ellipsizeMode="tail"
             style={{

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Linking } from 'react-native';
 import { Button, useTheme } from 'react-native-paper';
 import { SvgIcon } from '@components/base/SvgIcon';
+import { ScrollView } from 'react-native-gesture-handler';
 
 interface Link {
   text: string;
@@ -10,10 +11,11 @@ interface Link {
 }
 
 interface CommunityLinksGridProps {
+  isMobile: boolean;
   links: Link[];
 }
 
-export const CommunityLinksGrid: React.FC<CommunityLinksGridProps> = ({ links }) => {
+export const CommunityLinksGrid: React.FC<CommunityLinksGridProps> = ({ links, isMobile}) => {
   const { colors } = useTheme();
 
   const getIconName = (type: Link['type']) => {
@@ -28,12 +30,16 @@ export const CommunityLinksGrid: React.FC<CommunityLinksGridProps> = ({ links })
   };
 
   const rows = [];
-  for (let i = 0; i < links.length; i += 2) {
-    rows.push(links.slice(i, i + 2));
+  if (!isMobile) {
+    for (let i = 0; i < links.length; i += 2) {
+      rows.push(links.slice(i, i + 2));
+    }
+  } else {
+    rows.push(links)
   }
 
   return (
-    <View style={styles.grid}>
+    <ScrollView style={styles.grid}>
       {rows.map((row, rowIndex) => (
         <View key={rowIndex} style={styles.row}>
           {row.map((link, index) => (
@@ -53,12 +59,13 @@ export const CommunityLinksGrid: React.FC<CommunityLinksGridProps> = ({ links })
           {row.length === 1 && <View style={styles.cell} />} {/* заполнитель для выравнивания */}
         </View>
       ))}
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   grid: {
+    padding:8,
     width: '100%',
     gap: 12,
   },
