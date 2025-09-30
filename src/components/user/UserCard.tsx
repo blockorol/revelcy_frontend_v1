@@ -89,7 +89,7 @@ export function JoinedAndHumanity ({humanity, balance, pumpFun}: Stats) {
   return (
     <View>
     {(balance || humanity) &&
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+      <View style={styles.row}>
         <SvgIcon name='wallet-outlined' size={20} color={colors.onSurface} style={{paddingRight:4 }} />
         {humanity&&
           <View style={{ flexDirection: "row", alignItems: "center", gap: 2}}>
@@ -105,10 +105,10 @@ export function JoinedAndHumanity ({humanity, balance, pumpFun}: Stats) {
 
       {/* PumpFun Stats */}
       {pumpFun&&
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <View style={styles.row}>
           <SvgIcon name='pumpfun' size={20} color={colors.onSurface} style={{paddingRight:4 }} />
           {pumpFun.followers && (
-            <Text variant='labelMedium' style={{ color: colors.onSurfaceVariant}}>Followers <Text variant='labelMedium' style={{ color: colors.onSurface, fontWeight: 700}}>{pumpFun.followers}</Text></Text>
+            <Text variant='labelMedium' style={{ color: colors.onSurfaceVariant, }}>Followers <Text variant='labelMedium' style={{ color: colors.onSurface, fontWeight: 700}}>{pumpFun.followers}</Text></Text>
           )}
           
           {pumpFun.createdTokens && (
@@ -143,4 +143,11 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 12,
   },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    height: 20,
+    marginBottom: 4,
+  }
 });
