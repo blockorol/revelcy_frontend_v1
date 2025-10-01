@@ -73,8 +73,8 @@ export function PremarketBaseInfo({ tokenMainInfo, isMobile}: PremarketBaseInfoP
         }}
       >
         <View style={{ gap: 4}}>
-          <Text variant="headlineSmall" style={{color:theme.colors.onSurface}}> {tokenMainInfo?.name}</Text>
-          <Text variant="labelLarge" style={{color:theme.colors.onSurfaceVariant}}> {tokenMainInfo?.symbol}</Text>
+          <Text variant="headlineSmall" style={{color:theme.colors.onSurface}}>{tokenMainInfo?.name}</Text>
+          <Text variant="labelLarge" style={{color:theme.colors.onSurfaceVariant}}>{tokenMainInfo?.symbol}</Text>
         </View>
         <View
           style={{
