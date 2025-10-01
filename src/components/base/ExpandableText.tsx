@@ -54,7 +54,7 @@ export const ExpandableText: React.FC<ExpandableTextProps> = ({
         variant="bodyMedium"
         numberOfLines={expanded ? undefined : maxLineExpanded}
         ellipsizeMode="tail"
-        style={{ flex: 1, marginRight: 8 }}
+        style={{ flex: 1, marginRight: 8, color: colors.onSurface}}
       >
         {text}
       </Text>
