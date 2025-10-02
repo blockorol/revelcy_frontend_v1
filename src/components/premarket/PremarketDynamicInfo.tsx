@@ -2,9 +2,10 @@ import { TokenDynamicInfo, TokenMainInfo } from "@api/token";
 import {  } from "@components/token/create/interface";
 import { useIsMobileForTwoScreenWithDemention } from "@hooks/useIsMobile";
 import { convertDecimalToToken, convertLamportToSmallCount, formatNumberCompact } from "@utils/premarket";
-import { View, Image, StyleSheet} from "react-native";
+import { View, StyleSheet} from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import Svg, { Path } from 'react-native-svg';
+import { AvatarGroup } from "@components/base/AvatarGroup";
 
 interface PremarketDynamicInfoProps {
   tokenDynamicInfo: TokenDynamicInfo;
@@ -99,54 +100,11 @@ export function PremarketDynamicInfo({
           People
         </Text>
         <Text variant="displaySmall">{tokenDynamicInfo.holdersCount}</Text>
-        <View style={styles.avatarGroup}>
-          {tokenDynamicInfo.holders
-            .filter((holder) => holder.iconURL !== undefined)
-            .slice(0, 3).length > 0 ? (
-            tokenDynamicInfo.holders
-              .filter((holder) => holder.iconURL !== undefined)
-              .slice(0, 3)
-              .map((holder, index) => {
-                return (
-                  <View
-                    key={holder.iconURL || index}
-                    style={[
-                      styles.avatarCircle,
-                      {
-                        backgroundColor: theme.colors.surfaceVariant,
-                        marginLeft: index === 0 ? 0 : -10,
-                        zIndex: 3 - index,
-                        borderColor: theme.colors.onPrimary,
-                        borderWidth: 1,
-                      },
-                    ]}
-                  >
-                    <Image
-                      source={{ uri: holder.iconURL }}
-                      style={styles.avatarImage}
-                    />
-                  </View>
-                );
-              })
-          ) : (
-            // Default avatar when no images available
-            <View
-              style={[
-                styles.avatarCircle,
-                {
-                  backgroundColor: theme.colors.surfaceVariant,
-                  borderColor: theme.colors.onPrimary,
-                  borderWidth: 1,
-                },
-              ]}
-            >
-              <Image
-                source={require('../../../assets/avatar-placeholder.png')} // Update path to your default image
-                style={styles.avatarImage}
-              />
-            </View>
-          )}
-        </View>
+        <AvatarGroup 
+          holders={tokenDynamicInfo.holders}
+          maxAvatars={3}
+          size={20}
+        />
       </View>
 
       <View style={{ gap: 4, flex: 1, alignItems: "center" }}>
@@ -170,22 +128,5 @@ export function PremarketDynamicInfo({
 
 
 const styles = StyleSheet.create({
-    avatarGroup: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        height: 20,
-    },
-    avatarCircle: {
-        width: 20,
-        height: 20,
-        borderRadius: 10,
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
-    },
-    avatarImage: {
-        width: '100%',
-        height: '100%',
-        resizeMode: 'cover'
-    },
+    // Avatar styles moved to AvatarGroup component
 })

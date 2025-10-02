@@ -25,7 +25,8 @@ import QuestionMarkCircle from '@assets/basic_icon/question-mark-circle.svg';
 import QuestionMark from '@assets/basic_icon/question-mark.svg';
 import RevelcyLogo from '@assets/basic_icon/revelcy-logo.svg';
 import RevelcyR from '@assets/basic_icon/revelcy-r.svg';
-import RobotOutlined from '@assets/basic_icon/robot-outlined.svg'
+import RobotOutlined from '@assets/basic_icon/robot-outlined.svg';
+import Rocket from '@assets/basic_icon/Rocket.svg';
 import Search from '@assets/basic_icon/search.svg';
 import SmileOutlined from '@assets/basic_icon/smile-outlined.svg';
 import SmileSadOutlined from '@assets/basic_icon/smile-sad-outlined.svg';
@@ -64,6 +65,7 @@ export const icons = {
   'revelcy-logo': RevelcyLogo,
   'revelcy-r': RevelcyR,
   'robot-outlined': RobotOutlined,
+  'rocket': Rocket,
   'question-mark-circle': QuestionMarkCircle,
   'question-mark': QuestionMark,
   'search': Search,
