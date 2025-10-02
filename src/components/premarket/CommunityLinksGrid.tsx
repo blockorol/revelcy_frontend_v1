@@ -1,53 +1,85 @@
-import React from 'react';
-import { View, StyleSheet, Linking } from 'react-native';
-import { Button, useTheme } from 'react-native-paper';
-import { SvgIcon } from '@components/base/SvgIcon';
-import { ScrollView } from 'react-native-gesture-handler';
+import React from "react";
+import { ScrollView, View, StyleSheet, Linking } from "react-native";
+import { Button, useTheme } from "react-native-paper";
+import { SvgIcon } from "@components/base/SvgIcon";
 
 interface Link {
   text: string;
   url: string;
-  type: 'x' | 'tg' | 'other';
+  type: "x" | "tg" | "other";
 }
 
 interface CommunityLinksGridProps {
+  width: number;
   isMobile: boolean;
   links: Link[];
 }
 
-export const CommunityLinksGrid: React.FC<CommunityLinksGridProps> = ({ links, isMobile}) => {
+export const CommunityLinksGrid: React.FC<CommunityLinksGridProps> = ({
+  width,
+  links,
+  isMobile,
+}) => {
+  return isMobile ? (
+    <HorizontalButtons links={links} width={width} />
+  ) : (
+    <DesktopGrid links={links} />
+  );
+};
+
+const HorizontalButtons: React.FC<{ width: number, links: Link[] }> = ({ width, links }) => {
   const { colors } = useTheme();
 
-  const getIconName = (type: Link['type']) => {
-    switch (type) {
-      case 'x':
-        return 'x-logo';
-      case 'tg':
-        return 'tg-logo';
-      default:
-        return 'world-outlined';
-    }
-  };
-
-  const rows = [];
-  if (!isMobile) {
-    for (let i = 0; i < links.length; i += 2) {
-      rows.push(links.slice(i, i + 2));
-    }
-  } else {
-    rows.push(links)
-  }
+  const getIconName = (type: Link["type"]) =>
+    type === "x" ? "x-logo" : type === "tg" ? "tg-logo" : "world-outlined";
 
   return (
-    <ScrollView style={styles.grid}>
-      {rows.map((row, rowIndex) => (
-        <View key={rowIndex} style={styles.row}>
-          {row.map((link, index) => (
-            <View key={index} style={styles.cell}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={{width: width - 24, alignSelf: "stretch", flexGrow: 0, flexShrink: 0 }}
+      contentContainerStyle={styles.hContent}
+    >
+      {links.map((link) => (
+        <View key={link.url} style={styles.hItem}>
+          <Button
+            mode="outlined"
+            // не даём кнопке сжиматься (Paper на web иногда шринкает)
+            style={[styles.hButton, { flexShrink: 0 }]}
+            textColor={colors.onBackground}
+            onPress={() => Linking.openURL(link.url)}
+            icon={() => (
+              <SvgIcon name={getIconName(link.type)} color={colors.onBackground} size={20} />
+            )}
+          >
+            {link.text}
+          </Button>
+        </View>
+      ))}
+    </ScrollView>
+  );
+};
+
+
+const DesktopGrid: React.FC<{ links: Link[] }> = ({ links }) => {
+  const { colors } = useTheme();
+  const getIconName = (t: Link["type"]) =>
+    t === "x" ? "x-logo" : t === "tg" ? "tg-logo" : "world-outlined";
+
+  const rows: Link[][] = [];
+  for (let i = 0; i < links.length; i += 2) rows.push(links.slice(i, i + 2));
+
+  return (
+    <View style={[styles.grid, { padding: 8 }]}>
+      {rows.map((row, ri) => (
+        <View key={ri} style={styles.row}>
+          {row.map((link, i) => (
+            <View key={i} style={styles.cell}>
               <Button
                 mode="outlined"
                 textColor={colors.onBackground}
                 onPress={() => Linking.openURL(link.url)}
+                style={styles.dButton}
                 icon={() => (
                   <SvgIcon name={getIconName(link.type)} color={colors.onBackground} size={20} />
                 )}
@@ -56,25 +88,51 @@ export const CommunityLinksGrid: React.FC<CommunityLinksGridProps> = ({ links, i
               </Button>
             </View>
           ))}
-          {row.length === 1 && <View style={styles.cell} />} {/* заполнитель для выравнивания */}
+          {row.length === 1 && <View style={styles.cell} />}
         </View>
       ))}
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  // mobile
+  hContent: {
+    paddingHorizontal: 8,
+    // Не используем gap внутри горизонтального ScrollView на RNW — бывают баги с шириной
+  },
+  hItem: {
+    marginRight: 12,
+    flexShrink: 0,       // КРИТИЧНО: элемент не сжимается => контент шире контейнера => появляется скролл
+  },
+  hButton: {
+    height: 40,
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    justifyContent: "center",
+    // marginHorizontal: 2 — не обязателен
+  },
+
+
+  // desktop grid
   grid: {
-    padding:8,
-    width: '100%',
+    width: "100%",
     gap: 12,
+    justifyContent: "center",
   },
   row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     gap: 12,
   },
   cell: {
     flex: 1,
+  },
+  dButton: {
+    height: 40,
+    // borderRadius: 14,
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    justifyContent: "center",
   },
 });

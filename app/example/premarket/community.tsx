@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { TextInput, Button, useTheme } from 'react-native-paper';
 import { AboutCommunity } from '@components/premarket/AboutCommunity';
+import useIsMobile from '@hooks/useIsMobile';
 
 export default function UserCardExampleScreen() {
   const [isUserAvatar, setIsUserAvatar] = useState(false);
   const [description, setDescription] = useState("SomeDescription")
   const [tokenBannerURL, setTokenBannerURL] = useState<undefined|string>(undefined)
   const [isCreator, setIsCreator] = useState(false)
+  const isMobile = useIsMobile()
 
 
   return (
@@ -23,6 +25,7 @@ export default function UserCardExampleScreen() {
 
             } 
             premarketPubkey={"test"}
+            isMobile={isMobile}
             isCreator={isCreator}
             />
        </View>
