@@ -1,5 +1,5 @@
 import React from "react";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { Text, Avatar, useTheme } from "react-native-paper";
 import { formatDistanceToNow } from "date-fns";
 import { SvgIcon } from "@components/base/SvgIcon";
@@ -38,15 +38,9 @@ export const UserCard: React.FC<UserCardProps> = ({ baseInfo, tokenInfo, stats }
 
   return (
     <View
-      style={{
-        backgroundColor: colors.surface,
-        borderRadius: 24,
-        margin: 0,
-        width: 368,
-        height: 160
-      }}
+      style={styles.container}
     >
-        <View style={{flexDirection: "column", gap: 24, padding: 20}}>
+        <View style={{flexDirection: "column", gap: 24}}>
             {/* Header row */}
             <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
                 <Avatar.Image
@@ -56,11 +50,11 @@ export const UserCard: React.FC<UserCardProps> = ({ baseInfo, tokenInfo, stats }
                 <View style={{flex: 1, gap: 6, flexDirection: 'column',}}>
                 {baseInfo.username&&<Text variant='labelLarge' style={{color:colors.onSurface}}>{baseInfo.username}</Text>}
                 {tokenInfo.isCreator ? (
-                    <View style={{ backgroundColor: colors.surfaceVariant, borderRadius:6, paddingHorizontal:10, paddingVertical:2, width:67}}> 
+                    <View style={styles.creator}> 
                         <Text variant='labelMedium' style={{ color: colors.primary}}>Creator</Text>
                     </View>
                 ) : (
-                    <Text variant='labelMedium' style={{ color: colors.onSurfaceVariant}}>{joinedAgo}</Text>
+                    <Text variant='labelMedium' style={{ color: colors.onSurfaceVariant, opacity: 0.8 }}>{joinedAgo}</Text>
                 )}
                 </View>
 
@@ -86,7 +80,7 @@ export const UserCard: React.FC<UserCardProps> = ({ baseInfo, tokenInfo, stats }
 export function JoinedAndHumanity ({humanity, balance, pumpFun}: Stats) {
   const {colors} = useTheme()
   const humanityColor = 
-    humanity === "bot" ? colors.error : colors.secondary;
+    humanity === "bot" ? colors.error : colors.primary;
   const humanityLabel = 
     humanity === "bot" ? "Likely a bot" : 
     humanity === "human" ? "Human" : 
@@ -95,7 +89,7 @@ export function JoinedAndHumanity ({humanity, balance, pumpFun}: Stats) {
   return (
     <View>
     {(balance || humanity) &&
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+      <View style={styles.row}>
         <SvgIcon name='wallet-outlined' size={20} color={colors.onSurface} style={{paddingRight:4 }} />
         {humanity&&
           <View style={{ flexDirection: "row", alignItems: "center", gap: 2}}>
@@ -111,10 +105,10 @@ export function JoinedAndHumanity ({humanity, balance, pumpFun}: Stats) {
 
       {/* PumpFun Stats */}
       {pumpFun&&
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <View style={styles.row}>
           <SvgIcon name='pumpfun' size={20} color={colors.onSurface} style={{paddingRight:4 }} />
           {pumpFun.followers && (
-            <Text variant='labelMedium' style={{ color: colors.onSurfaceVariant}}>Followers <Text variant='labelMedium' style={{ color: colors.onSurface, fontWeight: 700}}>{pumpFun.followers}</Text></Text>
+            <Text variant='labelMedium' style={{ color: colors.onSurfaceVariant, }}>Followers <Text variant='labelMedium' style={{ color: colors.onSurface, fontWeight: 700}}>{pumpFun.followers}</Text></Text>
           )}
           
           {pumpFun.createdTokens && (
@@ -128,3 +122,32 @@ export function JoinedAndHumanity ({humanity, balance, pumpFun}: Stats) {
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#1C1B1C',
+    borderRadius: 24,
+    padding: 24,
+    margin: 0,
+    width: 368,
+    height: 196,
+    gap: 24,
+  },
+  creator: {
+    width: 71,
+    height: 20,
+    backgroundColor: 'rgba(0, 255, 119, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius:6,
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    height: 20,
+    marginBottom: 4,
+  }
+});

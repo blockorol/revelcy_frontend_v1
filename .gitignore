@@ -168,3 +168,4 @@ expo-env.d.ts
 *.tsbuildinfo
 
 .vscode/*
+.devcontainer

@@ -70,7 +70,7 @@ export function PremarketBaseInfo({ tokenMainInfo, isMobile}: PremarketBaseInfoP
   return (
     <View style={{ gap: 16, padding: isMobile?16:24}}>
       {!!tokenMainInfo.imageURL && (
-        <View style={{padding: isMobile?24:0, paddingBottom: 18,}}>
+        <View style={{padding: isMobile?24:0, paddingBottom: 8,}}>
           <Image
             source={{ uri: tokenMainInfo.imageURL }}
             style={{
@@ -90,8 +90,8 @@ export function PremarketBaseInfo({ tokenMainInfo, isMobile}: PremarketBaseInfoP
         }}
       >
         <View style={{ gap: 4}}>
-          <Text variant="headlineSmall"> {tokenMainInfo?.name}</Text>
-          <Text variant="labelLarge"> {tokenMainInfo?.symbol}</Text>
+          <Text variant="headlineSmall" style={{color:theme.colors.onSurface}}>{tokenMainInfo?.name}</Text>
+          <Text variant="labelLarge" style={{color:theme.colors.onSurfaceVariant}}>{tokenMainInfo?.symbol}</Text>
         </View>
         <View
           style={{
@@ -106,6 +106,7 @@ export function PremarketBaseInfo({ tokenMainInfo, isMobile}: PremarketBaseInfoP
               name="x-logo"
               colors={theme.colors}
               link={tokenMainInfo.links.twitter}
+              withoutBackgroud={true}
             />
           )}
           {tokenMainInfo?.links.webSite !== undefined && (
@@ -113,6 +114,7 @@ export function PremarketBaseInfo({ tokenMainInfo, isMobile}: PremarketBaseInfoP
               name="world-outlined"
               colors={theme.colors}
               link={tokenMainInfo.links.webSite}
+              withoutBackgroud={true}
             />
           )}
           {tokenMainInfo?.links.telegram !== undefined && (
@@ -120,6 +122,7 @@ export function PremarketBaseInfo({ tokenMainInfo, isMobile}: PremarketBaseInfoP
               name="tg-logo"
               colors={theme.colors}
               link={tokenMainInfo.links.telegram}
+              withoutBackgroud={true}
             />
           )}
         </View>
