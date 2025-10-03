@@ -141,7 +141,7 @@ export function PremarketDynamicInfo({
               ]}
             >
               <Image
-                source={require('../../../assets/avatar-placeholder.png')} // Update path to your default image
+                source={require('@assets/avatar-placeholder.png')} // Update path to your default image
                 style={styles.avatarImage}
               />
             </View>

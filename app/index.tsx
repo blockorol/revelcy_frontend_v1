@@ -5,8 +5,6 @@ import { WebView } from "react-native-webview";
 
 const FRAMER_URL = "https://revelcy.com/";
 
-//test
-
 export default function FramerScreen() {
   const theme = useTheme();  
   return (
