@@ -44,7 +44,6 @@ const HorizontalButtons: React.FC<{ width: number, links: Link[] }> = ({ width, 
         <View key={link.url} style={styles.hItem}>
           <Button
             mode="outlined"
-            // не даём кнопке сжиматься (Paper на web иногда шринкает)
             style={[styles.hButton, { flexShrink: 0 }]}
             textColor={colors.onBackground}
             onPress={() => Linking.openURL(link.url)}

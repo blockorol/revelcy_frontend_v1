@@ -119,7 +119,7 @@ export function AboutCommunity({
         }}
       >
         {!!communityInfoLocal?.description ? (
-          <View style={{ gap: isMobile ? 16 : 24, flex: 1, alignContent: 'flex-start', justifyContent: 'flex-start'}}>
+          <View style={{ gap: isMobile ? 16:24, flex: 1, alignContent: 'flex-start', justifyContent: 'flex-start'}}>
             <View style={{flex:1, gap: isMobile ? 8 : 16 }}>
               <Text variant="titleLarge">About Community</Text>
               {isCreator && (
@@ -138,10 +138,13 @@ export function AboutCommunity({
                 </Button>
               )}
             </View>
+            <View>
               <ExpandableText
                 text={communityInfoLocal.description}
                 maxLineExpanded={2}
               />
+              
+            </View>
           </View>
         ) : (
           isCreator && (
