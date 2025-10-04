@@ -45,9 +45,9 @@ export function PremarketInfo({ tokenInfo, isMobile, withJoinButton, onUpdated, 
       <View
         style={{
           flexDirection: isMobile ? "column" : "row",
-          alignContent: "center",
-          justifyContent: "center",
-          gap: 40,
+          alignContent: "flex-start",
+          justifyContent: "flex-start",
+          gap: 32,
         }}
       >
         <PremarketBondingCurve
