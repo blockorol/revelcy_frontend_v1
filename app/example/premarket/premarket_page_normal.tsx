@@ -61,11 +61,11 @@ function makeInitialMockToken(): TokenInfo {
     premarketDeadline: nowSec + 7 * oneDay,
     premarketCreated: nowSec - oneDay,
     createdByPubkey: "creator_wallet_mock",
-    state: "Active" as any, // подставь свой enum
+    state: "Active" as any,
   };
 
   const communityInfo: TokenCommunityInfo = {
-    description: "Join the Forest Friends to unlock interactive museum tours and family quests.",
+    description: "Join the Forest Friends to unlock interactive museum tours and family quests.Join the Forest Friends to unlock interactive museum tours and family quests.Join the Forest Friends to unlock interactive museum tours and family quests.Join the Forest Friends to unlock interactive museum tours and family quests.",
     tokenBannerURL: "https://picsum.photos/seed/forestbanner/1200/300",
     links: [
       { text: "Telegram", url: "https://t.me/forestfriends", type: "tg" },
@@ -379,7 +379,7 @@ const MockFloatingOverlayButton: React.FC = () => {
 // ---------- Внутренняя часть ----------
 const Inner: React.FC = () => {
   const { token } = useMockToken();
-  const { isMobile, left, screen } = useIsMobileForTwoScreenWithDemention();
+  const { isMobile, left, right, screen } = useIsMobileForTwoScreenWithDemention();
 
   return (
     <View style={{ flex: 1, position: "relative", minHeight: screen.height }}>
@@ -393,6 +393,7 @@ const Inner: React.FC = () => {
         :(<TokenPremarketPageNormal
             token={token}
             refetchTokenInfo={async ()=>{}}
+            rigth={right}
             left={left}
             screenDem={screen}
             />)}
