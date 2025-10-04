@@ -12,6 +12,7 @@ import BinocularsOutlined from '@assets/basic_icon/binoculars-outlined.svg';
 import Binoculars from '@assets/basic_icon/binoculars.svg';
 import Books from '@assets/basic_icon/books.svg';
 import Check from '@assets/basic_icon/check.svg';
+import CopyIcon from '@assets/basic_icon/copy_icon.svg';
 import HeartOutlined from '@assets/basic_icon/heart-outlined.svg';
 import Heart from '@assets/basic_icon/heart.svg';
 import InstagramLogoOutlined from '@assets/basic_icon/instagram-logo-outlined.svg';
@@ -53,6 +54,7 @@ export const icons = {
   'binoculars': Binoculars,
   'books': Books,
   'check': Check,
+  'copy-icon': CopyIcon,
   'heart-outlined': HeartOutlined,
   'heart': Heart,
   'instagram-logo-outlined': InstagramLogoOutlined,

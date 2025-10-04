@@ -44,17 +44,21 @@ export const ExpandableText: React.FC<ExpandableTextProps> = ({
     <View
       onLayout={onContainerLayout}
       style={{
-        justifyContent: "space-between",
-        alignItems: "center",
+        width: "100%",
         flexDirection: "row",
-        flexWrap: "wrap",
+        alignItems: "flex-start",
       }}
     >
       <Text
         variant="bodyMedium"
         numberOfLines={expanded ? undefined : maxLineExpanded}
         ellipsizeMode="tail"
-        style={{ flex: 1, marginRight: 8 }}
+        style={{
+          flexGrow: 1,
+          flexShrink: 1,
+          marginRight: 8,
+          color: colors.onSurface,
+        }}
       >
         {text}
       </Text>

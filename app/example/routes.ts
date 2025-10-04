@@ -13,6 +13,7 @@ export const exampleRoutes = {
   },
   ui: {
     color: "Цвета",
+    chips: "Chips",
     fonts: "Шрифты",
     icons: "Иконки",
     back: "",

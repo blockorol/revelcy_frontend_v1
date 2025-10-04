@@ -27,9 +27,10 @@ export default function LoginUsername() {
   <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: "space-between" , gap: 10 }}>
       <View style={{width:width+10, height:height+10, padding:5, backgroundColor:colors.surfaceVariant, justifyContent: "center"}}>
         <EditPremarketSettingsForm
-            onNext={(data: PremarketSettingData) => {}}
-            onClose={() => {}}
-
+          onNext={(data: PremarketSettingData) => { } }
+          onClose={() => { } } 
+          step={0} 
+          totalSteps={3}
         />
 
       </View>

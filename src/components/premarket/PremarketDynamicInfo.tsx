@@ -34,7 +34,7 @@ export function PremarketDynamicInfo({
             {formatNumberCompact(convertDecimalToToken(tokenDynamicInfo.marketCapTokenDec))}
           </Text>
           <Text variant="labelMedium" style={{ color: theme.colors.primary }}>
-            ✓ Completed
+            {tokenMainInfo?.finish_date ? `${convertTimeStampToDataMonth(tokenMainInfo.finish_date)} launched` : "No launch date available!"}
           </Text>
         </View>
       ) : (

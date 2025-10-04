@@ -23,7 +23,7 @@ export default function TokenPremarketPage({
   tokenId,
 }: TokenPremarketPageProps) {
   const theme = useTheme();
-  const { isMobile, left, screen } = useIsMobileForTwoScreenWithDemention();
+  const { isMobile, left, right, screen } = useIsMobileForTwoScreenWithDemention();
   const router = useRouter();
 
   const { token, loading, error, refetch } = usePremarketInfo(tokenId);
@@ -60,6 +60,7 @@ export default function TokenPremarketPage({
       token={token}
       refetchTokenInfo={refetch}
       left={left}
+      rigth={right}
       screenDem={screen}
     />
   );
@@ -69,6 +70,7 @@ export function TokenPremarketPageNormal({
   token,
   refetchTokenInfo,
   left,
+  rigth,
   screenDem,
 }: {
   token: TokenInfo;
@@ -77,6 +79,10 @@ export function TokenPremarketPageNormal({
     width: number;
     height?: number;
   };
+  rigth: {
+    width: number;
+    height?: number;
+  }
   screenDem: {
     width: number;
     height: number;
@@ -152,9 +158,9 @@ export function TokenPremarketPageNormal({
               premarketPubkey={token.mainInfo.premarketPubkey.toString()}
               communityInfo={token.communityInfo}
               isMobile={false}
+              width={rigth.width}
             />
             <PremarketInfo
-            
               width={left.width}
               tokenInfo={token}
               isMobile={false}
@@ -289,6 +295,7 @@ function BriefMobile({
           premarketPubkey={token.mainInfo.premarketPubkey.toString()}
           communityInfo={token.communityInfo}
           isMobile={true}
+          width={screenDem.width}
         />
         <PremarketInfo
           width={screenDem.width}
