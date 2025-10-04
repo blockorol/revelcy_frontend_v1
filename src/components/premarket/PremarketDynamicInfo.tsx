@@ -1,7 +1,8 @@
 import { TokenDynamicInfo, TokenMainInfo } from "@api/token";
 import {  } from "@components/token/create/interface";
 import { useIsMobileForTwoScreenWithDemention } from "@hooks/useIsMobile";
-import { convertDecimalToToken, convertLamportToSmallCount, formatNumberCompact } from "@utils/premarket";
+import shortString from "@utils/address_shorter";
+import { convertDecimalToToken, convertLamportToSmallCount, formatNumberCompact, convertTimeStampToDataMonth } from "@utils/premarket";
 import { View, Image, StyleSheet} from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import Svg, { Path } from 'react-native-svg';
@@ -33,7 +34,7 @@ export function PremarketDynamicInfo({
             {formatNumberCompact(convertDecimalToToken(tokenDynamicInfo.marketCapTokenDec))}
           </Text>
           <Text variant="labelMedium" style={{ color: theme.colors.primary }}>
-            ✓ Completed
+            {tokenMainInfo?.finish_date ? `${convertTimeStampToDataMonth(tokenMainInfo.finish_date)} launched` : "No launch date available!"}
           </Text>
         </View>
       ) : (
