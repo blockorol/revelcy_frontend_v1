@@ -8,6 +8,8 @@ interface ExpandableTextProps {
   text: string;
 }
 
+const TOGGLE_AREA_WIDTH = 40;
+
 export const ExpandableText: React.FC<ExpandableTextProps> = ({
   text,
   maxLineExpanded,
@@ -21,13 +23,18 @@ export const ExpandableText: React.FC<ExpandableTextProps> = ({
     setContainerWidth((prev) => (prev === w ? prev : w));
   }, []);
 
+  const measureWidth =
+    containerWidth != null
+      ? Math.max(0, containerWidth - TOGGLE_AREA_WIDTH)
+      : null;
+
   const [fullHeight, setFullHeight] = useState<number | null>(null);
   const [truncHeight, setTruncHeight] = useState<number | null>(null);
 
   useEffect(() => {
     setFullHeight(null);
     setTruncHeight(null);
-  }, [text, maxLineExpanded, containerWidth]);
+  }, [text, maxLineExpanded, measureWidth]);
 
   const needTruncate = useMemo(() => {
     if (fullHeight == null || truncHeight == null) return false;
@@ -41,51 +48,64 @@ export const ExpandableText: React.FC<ExpandableTextProps> = ({
   const showToggle = needTruncate || expanded;
 
   return (
-    <View
-      onLayout={onContainerLayout}
-      style={{
-        width: "100%",
-        flexDirection: "row",
-        alignItems: "flex-start",
-      }}
-    >
-      <Text
-        variant="bodyMedium"
-        numberOfLines={expanded ? undefined : maxLineExpanded}
-        ellipsizeMode="tail"
+    <View onLayout={onContainerLayout} style={{ width: "100%" }}>
+      <View
         style={{
-          flexGrow: 1,
-          flexShrink: 1,
-          marginRight: 8,
-          color: colors.onSurface,
+          width: "100%",
+          flexDirection: "row",
+          alignItems: "flex-start",
         }}
       >
-        {text}
-      </Text>
+        {/* Текст в колонке с паддингом справа под кнопку */}
+        <View style={{ flex: 1, paddingRight: TOGGLE_AREA_WIDTH }}>
+          <Text
+            variant="bodyMedium"
+            numberOfLines={expanded ? undefined : maxLineExpanded}
+            ellipsizeMode="tail"
+            style={{
+              color: colors.onSurface,
+            }}
+          >
+            {text}
+          </Text>
+        </View>
 
-      {showToggle && (
-        <IconButton
-          accessibilityRole="button"
-          accessibilityLabel={expanded ? "Collapse text" : "Expand text"}
-          icon={() => (
-            <MaterialCommunityIcons
-              name={expanded ? "chevron-up" : "chevron-down"}
-              size={20}
-              color={colors.onSurfaceVariant}
+        {/* Фиксированная зона под кнопку — ширина не меняется никогда */}
+        <View
+          style={{
+            width: TOGGLE_AREA_WIDTH,
+            alignItems: "flex-end",
+          }}
+        >
+          {showToggle ? (
+            <IconButton
+              accessibilityRole="button"
+              accessibilityLabel={expanded ? "Collapse text" : "Expand text"}
+              icon={() => (
+                <MaterialCommunityIcons
+                  name={expanded ? "chevron-up" : "chevron-down"}
+                  size={20}
+                  color={colors.onSurfaceVariant}
+                />
+              )}
+              onPress={() => setExpanded((v) => !v)}
             />
+          ) : (
+            // Плейсхолдер, чтобы макет не “прыгнул”
+            <View style={{ width: 40, height: 40 }} />
           )}
-          onPress={() => setExpanded((v) => !v)}
-        />
-      )}
+        </View>
+      </View>
 
-      {containerWidth != null && (
+      {/* Невидимые измерители, ширина = контейнер - зона кнопки */}
+      {measureWidth != null && (
         <>
           <Text
             variant="bodyMedium"
             style={{
               position: "absolute",
               left: -9999,
-              width: containerWidth,
+              width: measureWidth,
               opacity: 0,
             }}
             onLayout={(e) => setFullHeight(e.nativeEvent.layout.height)}
@@ -100,7 +120,7 @@ export const ExpandableText: React.FC<ExpandableTextProps> = ({
             style={{
               position: "absolute",
               left: -9999,
-              width: containerWidth,
+              width: measureWidth,
               opacity: 0,
             }}
             onLayout={(e) => setTruncHeight(e.nativeEvent.layout.height)}
