@@ -196,7 +196,7 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
   
 
   return (
-    <View style={{ backgroundColor: background ?? colors.surfaceContainerLow, borderRadius: 16, padding: 16, width: widthAround, height: heightAround }}>
+    <View style={{ backgroundColor: background ?? colors.surfaceContainerLowest, borderRadius: 16, padding: 16, width: widthAround, height: heightAround }}>
       <Svg height={height} width={width}>
         {/* axes */}
         {/* <Line x1={margin} y1={margin} x2={margin} y2={height - margin} stroke={colors.outlineVariant} />

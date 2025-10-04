@@ -52,6 +52,7 @@ export function PremarketInfo({ tokenInfo, isMobile, withJoinButton, onUpdated, 
       >
         <PremarketBondingCurve
           width={width-(isMobile?72:48)}
+          height={252}
           state={tokenInfo.mainInfo.state}
           onUpdated={onUpdated}
           premaketPubkey={tokenInfo.mainInfo.premarketPubkey}
@@ -67,6 +68,7 @@ export function PremarketInfo({ tokenInfo, isMobile, withJoinButton, onUpdated, 
           joiners={joiners}
           background={colors.elevation.level1}
           widthAround={isMobile ? "100%" : undefined}
+          heightAround={284}
         />
         <PremarketTimelineSection 
           withJoinButton={withJoinButton} 

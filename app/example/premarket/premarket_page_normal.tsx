@@ -62,6 +62,8 @@ function makeInitialMockToken(): TokenInfo {
     premarketCreated: nowSec - oneDay,
     createdByPubkey: "creator_wallet_mock",
     state: "Active" as any,
+    finish_date: 0,
+    token_mint: ""
   };
 
   const communityInfo: TokenCommunityInfo = {
