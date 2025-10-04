@@ -10,6 +10,7 @@ import { AboutCommunity } from "@components/premarket/AboutCommunity";
 import { PremarketInfo } from "@components/premarket/PremarketInfo";
 import { ExtendedMD3Colors } from "@theme/types";
 import { PremarketAction } from "@components/premarket/PremarketAction";
+import { YourEntry } from "@components/premarket/YourEntry";
 import { usePremarketInfo } from "@hooks/usePremarketInfo";
 import { HoldersInfo } from "@components/premarket/HoldersInfo";
 import { TokenInfo } from "@api/token";
@@ -111,7 +112,7 @@ export function TokenPremarketPageNormal({
           gap: 24,
         }}
       >
-        <View style={{ width: left.width, flexShrink: 0 }}>
+        <View style={{ width: left.width, flexShrink: 0, gap: 24 }}>
           <View
             style={{
               backgroundColor: colors.surfaceContainerLowest,
@@ -144,6 +145,13 @@ export function TokenPremarketPageNormal({
               </View>
             </View>
           </View>
+          {user && token.dynamicInfo.holders.find((h) => h.id === user.userId) !== undefined && (
+            <YourEntry 
+              premarketPubkey={token.mainInfo.premarketPubkey}
+              tokenDynamicInfo={token.dynamicInfo}
+              onUpdated={refetchTokenInfo}
+            />
+          )}
         </View>
         <View
           style={{
@@ -290,6 +298,13 @@ function BriefMobile({
           tokenDynamicInfo={token.dynamicInfo}
           onUpdated={refetchTokenInfo}
         />
+        {user && token.dynamicInfo.holders.find((h) => h.id === user.userId) !== undefined && (
+          <YourEntry 
+            premarketPubkey={token.mainInfo.premarketPubkey}
+            tokenDynamicInfo={token.dynamicInfo}
+            onUpdated={refetchTokenInfo}
+          />
+        )}
         <AboutCommunity
           isCreator={token.mainInfo.createdByPubkey === user?.walletAddress}
           premarketPubkey={token.mainInfo.premarketPubkey.toString()}
