@@ -1,7 +1,7 @@
 // ChipDisplay.tsx
 import * as React from "react";
 import { StyleSheet, ViewStyle } from "react-native";
-import {Text} from '@components/ui/Text'
+import { Text } from "@components/ui/Text";
 import { Chip as PaperChip, useTheme } from "react-native-paper";
 
 type BaseChipProps = React.ComponentProps<typeof PaperChip>;
@@ -86,46 +86,38 @@ export function ChipDisplay({
 
   // Состояние disabled — приглушим цвета
   const textColor = disabled ? theme.colors.onSurfaceDisabled : baseColor;
-  const outlineColor = disabled
-    ? theme.colors.outline
-    : baseColor; // обводка тем же цветом
+  const outlineColor = disabled ? theme.colors.outline : baseColor; // обводка тем же цветом
   const backgroundColor = disabled ? theme.colors.surfaceDisabled : bgSoft;
 
-return (
-  <PaperChip
-    mode={mode}
-    selected={false} // без галочки
-    disabled={disabled}
-    style={[
-      container,
-      {
-        backgroundColor,
-        borderColor: outlineColor,
-        borderWidth: mode === "outlined" ? StyleSheet.hairlineWidth : 0,
-        alignItems: "center",        // центр по вертикали
-        justifyContent: "center",    // центр по горизонтали (для контента внутри)
-      },
-      style,
-    ]}
-    {...rest}
-  >
-    {typeof children === "string" ? (
-      <Text
-        variant={textVariant}
-        style={{ color: textColor, textAlign: "center" }}
-      >
-        {children}
-      </Text>
-    ) : (
-      children
-    )}
-  </PaperChip>
-);
-
-
+  return (
+    <PaperChip
+      mode={mode}
+      selected={false}
+      disabled={disabled}
+      textStyle={{ margin: 0, padding: 0 }}
+      style={[
+        container,
+        {
+          backgroundColor,
+          borderColor: outlineColor,
+          borderWidth: mode === "outlined" ? StyleSheet.hairlineWidth : 0,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        style,
+      ]}
+      {...rest}
+    >
+      {typeof children === "string" ? (
+        <Text
+          variant={textVariant}
+          style={{ color: textColor, textAlign: "center" }}
+        >
+          {children}
+        </Text>
+      ) : (
+        children
+      )}
+    </PaperChip>
+  );
 }
-
-const styles = StyleSheet.create({
-  // оставлено для будущих доработок, если понадобятся общие оверрайды
-  chipDisplayOverride: {},
-});

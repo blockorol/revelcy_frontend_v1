@@ -42,7 +42,6 @@ export function AboutCommunity({
   }
 
   const bannerUri = communityInfoLocal?.tokenBannerURL;
-  const bannerRatio = 3/1;
 
   const openEdit = () => {
     open(
