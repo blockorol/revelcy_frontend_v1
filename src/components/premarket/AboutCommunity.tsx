@@ -123,8 +123,6 @@ export function AboutCommunity({
     />
   </View>
 )}
-
-
       <View
         style={{
           flexDirection: isMobile ? "column" : "row",
@@ -159,19 +157,16 @@ export function AboutCommunity({
           </View>
         ) : (
           isCreator && (
-            <Button
-              mode="outlined"
-              onPress={openEdit}
-              style={{
-                width: 40,
-                borderRadius: 14,
-                paddingHorizontal: 10,
-                paddingVertical: 20,
-                gap: 8,
-              }}
-            >
-              Add comunity info
-            </Button>
+            
+                <Button
+                  mode="outlined"
+                  onPress={openEdit}  
+                  style={{ borderRadius: 8, paddingHorizontal:0, margin:0 }}
+                  contentStyle={{ height: 30, paddingHorizontal: 16, margin:0 }}
+                  labelStyle={{margin:0}}
+                >
+                  <Text prominent variant='labelMedium'>Add comunity info</Text>
+                </Button>
           )
         )}
 
