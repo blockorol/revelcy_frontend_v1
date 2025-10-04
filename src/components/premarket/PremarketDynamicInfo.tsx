@@ -1,8 +1,8 @@
 import { TokenDynamicInfo, TokenMainInfo } from "@api/token";
 import {  } from "@components/token/create/interface";
 import { useIsMobileForTwoScreenWithDemention } from "@hooks/useIsMobile";
-import { convertDecimalToToken, convertLamportToSmallCount, formatNumberCompact } from "@utils/premarket";
-import { View, StyleSheet} from "react-native";
+import { convertDecimalToToken, convertLamportToSmallCount, formatNumberCompact, convertTimeStampToDataMonth } from "@utils/premarket";
+import { View, Image, StyleSheet} from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import Svg, { Path } from 'react-native-svg';
 import { AvatarGroup } from "@components/base/AvatarGroup";

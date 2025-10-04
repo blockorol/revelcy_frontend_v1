@@ -10,9 +10,6 @@ import { WalletProvider } from '@storage/wallet-adapter/index';
 import * as SplashScreen from 'expo-splash-screen';
 import {
   useFonts,
-  Inter_100Thin,
-  Inter_200ExtraLight,
-  Inter_300Light,
   Inter_400Regular,
   Inter_500Medium,
   Inter_600SemiBold,
@@ -43,7 +40,6 @@ SplashScreen.preventAutoHideAsync();
 
 export default function Layout() {
   const [fontsLoaded] = useFonts({
-    Inter_100Thin,
     Inter_400Regular,
     Inter_500Medium,
     Inter_600SemiBold,

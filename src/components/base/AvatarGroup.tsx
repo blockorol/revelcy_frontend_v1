@@ -6,12 +6,14 @@ interface Holder {
   iconURL?: string;
 }
 
+const DEFAULT_AVATAR = require('@assets/avatar-placeholder.png');
+
 interface AvatarGroupProps {
   holders: Holder[];
   maxAvatars?: number;
   size?: number;
   showDefaultAvatar?: boolean;
-  defaultAvatarSource?: any;
+  defaultAvatarSource?: typeof DEFAULT_AVATAR;
 }
 
 export const AvatarGroup: React.FC<AvatarGroupProps> = ({
@@ -19,7 +21,7 @@ export const AvatarGroup: React.FC<AvatarGroupProps> = ({
   maxAvatars = 3,
   size = 20,
   showDefaultAvatar = true,
-  defaultAvatarSource = require('../../../assets/avatar-placeholder.png'),
+  defaultAvatarSource = DEFAULT_AVATAR,
 }) => {
   const theme = useTheme();
   

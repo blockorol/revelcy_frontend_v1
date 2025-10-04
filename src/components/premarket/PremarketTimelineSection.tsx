@@ -121,24 +121,18 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
               justifyContent: 'center',
               alignItems: 'center',
             }}>
-              <Text style={{ fontSize: 12, fontWeight: 'bold', fontFamily: 'Inter_700Bold' }}>
+              <Text variant="labelMedium" style={{color:colors.onSurface}}>
                 + Buy{' '}
-              </Text>
-              <Text style={{ fontSize: 12, fontWeight: 'bold', fontFamily: 'Inter_700Bold' }}>
                 {formatNumberCompact(
-                  convertDecimalToToken(
-                    convertSolanaToTokenBuy({
-                      sol_amount: DEFAULT_BUY_AMOUNT_LAMP,
-                      reserves_sol: tokenInfo.dynamicInfo.reservedSolLamp,
-                      reserves_token: tokenInfo.dynamicInfo.reservedTokenLamp,
-                    })
-                  )
-                )}{' '}
-              </Text>
-              <Text style={{ fontSize: 12, fontWeight: '100', fontFamily: 'Inter_500Medium' }}>
+                    convertDecimalToToken(
+                      convertSolanaToTokenBuy({
+                        sol_amount: DEFAULT_BUY_AMOUNT_LAMP,
+                        reserves_sol: tokenInfo.dynamicInfo.reservedSolLamp,
+                        reserves_token: tokenInfo.dynamicInfo.reservedTokenLamp,
+                      })
+                    )
+                  )}{' '}
                 for{' '}
-              </Text>
-              <Text style={{ fontSize: 12, fontWeight: 'bold', fontFamily: 'Inter_700Bold' }}>
                 {DEFAULT_BUY_AMOUNT} SOL
               </Text>
           </Button>}
