@@ -55,7 +55,7 @@ export const ExpandableText: React.FC<ExpandableTextProps> = ({
         ellipsizeMode="tail"
         style={{
           flexGrow: 1,
-          flexShrink: 1, // ← критично на узком экране
+          flexShrink: 1,
           marginRight: 8,
           color: colors.onSurface,
         }}
