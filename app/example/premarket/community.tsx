@@ -3,12 +3,13 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { TextInput, Button, useTheme } from 'react-native-paper';
 import { AboutCommunity } from '@components/premarket/AboutCommunity';
 import useIsMobile from '@hooks/useIsMobile';
+import Slider from '@react-native-community/slider';
 
 export default function UserCardExampleScreen() {
-  const [isUserAvatar, setIsUserAvatar] = useState(false);
   const [description, setDescription] = useState("SomeDescription")
   const [tokenBannerURL, setTokenBannerURL] = useState<undefined|string>(undefined)
   const [isCreator, setIsCreator] = useState(false)
+  const [width, setWidth] = useState<number>(400)
   const isMobile = useIsMobile()
 
 
@@ -21,12 +22,13 @@ export default function UserCardExampleScreen() {
             <AboutCommunity communityInfo={{
                     description: description,
                     tokenBannerURL: tokenBannerURL,
-                    links: undefined}
-
+                    links: undefined,
+                  }
             } 
             premarketPubkey={"test"}
             isMobile={isMobile}
             isCreator={isCreator}
+            width={width}
             />
        </View>
       
@@ -37,10 +39,25 @@ export default function UserCardExampleScreen() {
             <Button onPress={() => setTokenBannerURL(undefined)}>{"remove banner"}</Button>
         </View>
         
+        
         <Text style={styles.label}>Creator: {isCreator?"it's creator": "it is not creator"}</Text>
         <View style={{ flexDirection: 'column', gap: 10 }}>
             <Button onPress={() => setIsCreator(!isCreator)}>{"change"}</Button>
         </View>
+        
+        <View style={{ flexDirection: 'column', gap: 10 }}>
+          <Slider
+            style={styles.controls}
+            minimumValue={1}
+            maximumValue={1000}
+            step={1}
+            value={width}
+            onValueChange={(v: React.SetStateAction<number>)=>{setWidth(v)}}
+            minimumTrackTintColor={'green'}
+            maximumTrackTintColor="#ddd"
+          />
+        </View>
+
       </View>
       </View>
     </ScrollView>
