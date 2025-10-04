@@ -2,9 +2,13 @@ import { TokenMainInfo } from "@api/token";
 import { RoundIconLink } from "@components/premarket/RoundIcons";
 import { useIsMobileForTwoScreenWithDemention } from "@hooks/useIsMobile";
 import { getTimeLeftLabel } from "@utils/premarket";
+import shortString from "@utils/address_shorter";
 import { View, Image } from "react-native";
-import { Button, Text, useTheme } from "react-native-paper";
+import { Text, useTheme } from "react-native-paper";
 import { ExpandableText } from '@components/base/ExpandableText';
+import Svg, { Circle, Path } from 'react-native-svg';
+import { SvgIcon } from '@components/base/SvgIcon';
+import { ChipDisplay } from '@components/ui/Chip';  
 
 interface PremarketBaseInfoProps {
   tokenMainInfo: TokenMainInfo;
@@ -15,32 +19,37 @@ export function PremarketBaseInfo({ tokenMainInfo, isMobile}: PremarketBaseInfoP
   const theme = useTheme();
   const { left } = useIsMobileForTwoScreenWithDemention();
 
+  // Function to truncate address/identifier
+  const truncateAddress = (address: string) => {
+    if (address.length <= 10) return address;
+    return `${address.slice(0, 4)}...${address.slice(-4)}`;
+  };
 
   const button = (state: "premarket" | "canceled" | "finished") => {
     return state === 'premarket' ? 
-    (<Button
-      textColor={theme.colors.secondary}
-      buttonColor={theme.colors.onSecondary}
-      focusable={false}
-    >Premarket</Button>
+    (<ChipDisplay
+      variant="secondary"
+      size="normal"
+      mode="flat"
+    >Premarket</ChipDisplay>
     ) : state === 'finished' ? (
-    <Button
-      textColor={theme.colors.onPrimary}
-      buttonColor={theme.colors.primary}
-      focusable={false}
-    >Launched</Button>
+    <ChipDisplay
+      variant="primary"
+      size="normal"
+      mode="flat"
+    >Launched</ChipDisplay>
   ) : state === 'canceled' ? (
-    <Button
-      textColor={theme.colors.onError}
-      buttonColor={theme.colors.error}
-      focusable={false}
-    >Refunded</Button>
+    <ChipDisplay
+      variant="error"
+      size="normal"
+      mode="flat"
+    >Refunded</ChipDisplay>
   ) : (
-    <Button
-      textColor={theme.colors.onPrimary}
-      buttonColor={theme.colors.primary}
-      focusable={false}
-    >{state}</Button>
+    <ChipDisplay
+      variant="primary"
+      size="normal"
+      mode="flat"
+    >{state}</ChipDisplay>
   ) 
   }
   let deadlineText = ""
@@ -117,13 +126,33 @@ export function PremarketBaseInfo({ tokenMainInfo, isMobile}: PremarketBaseInfoP
           justifyContent: "flex-start",
           alignItems: "center",
           flexDirection: "row",
-          gap: 16,
+          gap: 10,
         }}
       >
         {button(tokenMainInfo.state)}
-        <Text variant="labelLarge" style={{ color: theme.colors.secondary }}>
+        {tokenMainInfo.state === 'finished' && (
+            <Text variant="labelLarge">
+            {/* CHANGE tokenMainInfo.premarketPubkey to tokenMainInfo.mintAddress later!!! */}
+            {tokenMainInfo?.token_mint ? shortString(tokenMainInfo.token_mint) : "No token address available!"} 
+          </Text>
+        )}
+        {tokenMainInfo.state === 'finished' && (
+          <SvgIcon 
+            name="copy-icon" 
+            size={14} 
+            color={theme.colors.onSurfaceVariant} 
+          />
+        )}
+        <Text variant="labelLarge" style={{color:theme.colors.secondary}}>
           {deadlineText}
         </Text>
+        {(tokenMainInfo.state === 'premarket' || tokenMainInfo.state === 'canceled') && (
+          <SvgIcon 
+          name="question-mark-circle" 
+          size={24} 
+          color="#938F9566" 
+        />
+        )}
       </View>
     </View>
   );
