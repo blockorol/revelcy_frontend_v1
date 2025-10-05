@@ -109,7 +109,6 @@ const JoinerMarker: React.FC<{
     );
   }
 
-  // обычный круг
   return (
     <Circle
       cx={x}
