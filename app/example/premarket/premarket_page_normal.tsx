@@ -43,8 +43,8 @@ function makeInitialMockToken(): TokenInfo {
     // адреса холдеров — просто строки, НЕ base58
     walletAddress: `holder_wallet_${i + 1}`,
     joinTimestamp: nowSec - (i + 1) * (oneDay / 2),
-    amountSolLamp: new BN(0.1 * 1e9 * (i + 1)),
-    iconURL: undefined,
+    amountSolLamp: new BN(1 * 1e9 * (i + 1)),
+    iconURL: i===4?"https://picsum.photos/seed/forest/512":undefined,
   }));
 
   const mainInfo: TokenMainInfo = {

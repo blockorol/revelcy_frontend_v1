@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { DimensionValue, View, Image as RNImage } from 'react-native';
-import { Text, Button, useTheme } from 'react-native-paper';
-import { Svg, Path, Circle, Line, Image as SvgImage, Text as SvgText } from 'react-native-svg';
+import { Text, useTheme } from 'react-native-paper';
+import { Svg, Path, Circle, Line, Image as SvgImage, Text as SvgText, Defs, ClipPath, Polygon } from 'react-native-svg';
 import { BN } from '@coral-xyz/anchor';
 import { AppTheme } from '@theme/types';
 import {
@@ -10,10 +10,7 @@ import {
   convertSolToPercentOnStart,
   PremarketState,
 } from '@utils/premarket';
-import { useJoinFlow } from '@hooks/useJoinFlow';
-import { PublicKey } from '@solana/web3.js';
-
-const DEFAULT_BUY_AMOUNT = 0.5;
+import { MD3Colors, MD3Typescale } from 'react-native-paper/lib/typescript/types';
 
 interface BondingCurvePoint { sol_lamp: BN; persent: number }
 interface BondingCurvePointWithCoordinate extends BondingCurvePoint { x: number; y: number }
@@ -53,23 +50,6 @@ export interface Joiner {
   amount_sol_cumulative_lamp: BN;
 }
 
-interface PremarketBondingCurveProps {
-  state: PremarketState;
-  onUpdated: ()=>Promise<void>;
-  premaketPubkey: PublicKey;
-  withJoinButton: boolean;
-  goalPercent: number;
-  nowPercent: number;
-  currentPrice: number;
-  joiners: Joiner[];
-  background?: string;
-  maxSolDisplayed?: number;
-  width?: number;
-  height?: number;
-  widthAround?: DimensionValue;
-  heightAround?: DimensionValue;
-  margin?: number;
-}
 
 const imgOkCache = new Map<string, boolean>();
 function useImageExists(url?: string): boolean {
@@ -93,68 +73,144 @@ function useImageExists(url?: string): boolean {
   return ok;
 }
 
+const CurrentUserMarker: React.FC<{
+  x: number;
+  y: number;
+  color: string;
+  fonts: MD3Typescale;
+}> = ({ fonts, x, y, color }) => {
+  return (
+    <>
+      <SvgText
+        x={x}
+        y={y - 11 - 8}
+        textAnchor="middle"
+        fill={color}
+        fontSize={fonts.labelSmall.fontSize}
+        fontFamily={fonts.labelSmall.fontFamily}
+        fontWeight={fonts.labelSmall.fontWeight as any}
+      >
+        You
+      </SvgText>
+
+      <Polygon
+        points={`${x - 4},${y - 8 - 8} ${x + 4},${y - 8 - 8} ${x},${y - 8 - 3}`}
+        fill={color}
+      />
+    </>
+  );
+};
+
+
 const JoinerMarker: React.FC<{
+  isCurrentUser: boolean;
   url?: string;
   x: number;
   y: number;
   color: string;
-}> = ({ url, x, y, color }) => {
+  background: string;
+  fonts: MD3Typescale;
+}> = ({ isCurrentUser, fonts, url, x, y, color, background }) => {
   const exists = useImageExists(url);
+
   if (url && exists) {
     return (
-      <SvgImage
-        href={{ uri: url }}
-        width={16}
-        height={16}
-        x={x - 8}
-        y={y - 8}
-      />
+      <>  
+        {isCurrentUser && <CurrentUserMarker x={x} y={y} color={color} fonts={fonts}/>}
+        <Circle
+          cx={x}
+          cy={y}
+          r={8}
+          stroke={color}
+          strokeWidth={1}
+          fill={color}
+        />
+        <SvgImage
+          href={{ uri: url }}
+          width={16}
+          height={16}
+          x={x - 8}
+          y={y - 8}
+          clipPath={`url(#clip-${x}-${y})`}
+        />
+        <ClipPath id={`clip-${x}-${y}`}>
+          <Circle cx={x} cy={y} r={8} />
+        </ClipPath>
+      </>
     );
   }
-  return <Circle cx={x} cy={y} r={6} fill={color} />;
+
+  return (
+    <>
+      {isCurrentUser && <CurrentUserMarker x={x} y={y} color={color} fonts={fonts}/>}
+      <Circle
+        cx={x}
+        cy={y}
+        r={6}
+        fill={color}
+        stroke={background}
+        strokeWidth={1}
+      />
+    </>
+  );
 };
 
-function findPointBySol(points: BondingCurvePointWithCoordinate[], solLamp: BN) {
-  for (let i = 0; i < points.length; i++) {
-    const p = points[i];
-    if (p.sol_lamp.gte(solLamp)) return p;
-  }
-  return points[points.length - 1];
-}
 
-function findPointByPercent(points: BondingCurvePointWithCoordinate[], percent: number) {
-  for (let i = 0; i < points.length; i++) {
-    const p = points[i];
-    if (p.persent >= percent) return p;
-  }
-  return points[points.length - 1];
+
+interface PremarketBondingCurveProps {
+  currentUserId?: string;
+  state: PremarketState;
+
+  goalPercent: number;
+  nowPercent: number;
+  currentPrice: number;
+  joiners: Joiner[];
+  background?: string;
+  maxSolDisplayed?: number;
+  maxPercentDisplay?: number;
+  width?: number;
+  height?: number;
+  padding?: number;
+
+  widthAround?: DimensionValue;
+  heightAround?: DimensionValue;
 }
 
 export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
+  currentUserId="no_user",
   state,
-  onUpdated,
-  premaketPubkey,
-  withJoinButton,
   goalPercent,
   nowPercent,
   currentPrice,
   joiners,
   background,
   maxSolDisplayed = 100,
+  maxPercentDisplay = 90,
+
   width = 347,
   height = 250,
-  widthAround = 448,
-  heightAround = 284,
-  margin = 24,
+  padding = 16,
 }) => {
   const { colors, fonts } = useTheme() as AppTheme;
-  const { joinPremarketBySol } = useJoinFlow(onUpdated);
+  const widthSVG = width - padding*2
+  const heightSVG= height - padding*2
+  const graphMarginLeft = 16;
+  const graphMarginRight = 0;
+  const graphMarginBottom = 20;
+  const YLineWight = 22;
+  const XLineHeight = 22;
+
+  const dWidthGraph_SVG = graphMarginLeft + YLineWight;
+  const dHeightGraph_SVG = graphMarginBottom + XLineHeight;
+
+
+  const widthGraph = widthSVG - dWidthGraph_SVG - graphMarginRight
+  const heightGraph = heightSVG - dHeightGraph_SVG
 
   const solToY = (sol: number) => {
-    const h = height - 2 * margin;
-    return height - margin - (sol / maxSolDisplayed) * h;
+    return (heightGraph - (sol * heightGraph / maxSolDisplayed) );
   };
-  const percentToX = (p: number) => margin + ((width - 2 * margin) * p) / 100;
+  const percentToX = (p: number) => ((widthGraph * p )/ maxPercentDisplay) + dWidthGraph_SVG;
 
   const curvePoints: BondingCurvePointWithCoordinate[] = bondingCurvePoints.map((v) => ({
     persent: v.persent,
@@ -174,9 +230,19 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
     ""
   );
 
-
   const goalPoint = findPointByPercent(curvePoints, goalPercent);
   const nowPoint = findPointByPercent(curvePoints, nowPercent);
+
+  const goalTop = 
+    state === 'premarket' && goalPoint.y === nowPoint.y  ? 
+      goalPoint.y - (fonts.labelSmall.fontSize as number) * 0.2 :
+      goalPoint.y + (fonts.labelSmall.fontSize as number) / 2
+
+  const nowTop = 
+    goalPoint.y === nowPoint.y ? 
+      nowPoint.y + (fonts.labelSmall.fontSize as number) * 1.2 : 
+      nowPoint.y + (fonts.labelSmall.fontSize as number) / 2
+
   const goalColor = 
     state === 'canceled' ? colors.error : 
     state === 'finished' ? colors.primary :
@@ -186,28 +252,29 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
     state === 'finished' ? colors.onPrimary :
     colors.onSecondary
 
-  if (state !== 'premarket') {
-    withJoinButton = false
-  }
-
   if (state === 'canceled') {
     currentPrice = 0
   }
   
 
   return (
-    <View style={{ backgroundColor: background ?? colors.surfaceContainerLowest, borderRadius: 16, padding: 16, width: widthAround, height: heightAround }}>
-      <Svg height={height} width={width}>
+    <View style={{
+      backgroundColor: background,
+      borderRadius: 16,
+      padding: padding, width: width, height: height }}>
+      <Svg height={heightSVG} width={widthSVG}>
         {/* axes */}
-        {/* <Line x1={margin} y1={margin} x2={margin} y2={height - margin} stroke={colors.outlineVariant} />
-        <Line x1={margin} y1={height - margin} x2={width - margin} y2={height - margin} stroke={colors.outlineVariant} /> */}
+        {/* 
+        <Line x1={margin} y1={margin} x2={margin} y2={height - margin} stroke={colors.outlineVariant} />
+        <Line x1={margin} y1={height - margin} x2={width - margin} y2={height - margin} stroke={colors.outlineVariant} />
+         */}
 
         {/* curve */}
         <Path d={pathBefore} stroke={colors.primary} strokeWidth={4} fill="none" />
         <Path d={pathAfter} stroke={colors.inverseOnSurface} strokeWidth={4} fill="none" />
 
         {/* goal line */}
-        <Line x1={margin} x2={goalPoint.x -4} y1={goalPoint.y} y2={goalPoint.y} stroke={goalColor} strokeDasharray="10" />
+        <Line x1={YLineWight} x2={goalPoint.x -4} y1={goalPoint.y} y2={goalPoint.y} stroke={goalColor} strokeDasharray="10" />
         <Circle
           cx={goalPoint.x}
           cy={goalPoint.y}
@@ -219,7 +286,7 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
 
         {/* now line */}
         { state === 'premarket' &&
-          <Line x1={margin} x2={nowPoint.x} y1={nowPoint.y} y2={nowPoint.y} stroke={colors.primary} strokeDasharray="5" />
+          <Line x1={YLineWight} x2={nowPoint.x} y1={nowPoint.y} y2={nowPoint.y} stroke={colors.primary} strokeDasharray="5" />
         }
 
         {/* joiners */}
@@ -227,11 +294,14 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
           const point = findPointBySol(curvePoints, j.amount_sol_cumulative_lamp);
           return (
             <JoinerMarker
+              isCurrentUser={j.id === currentUserId}
               key={j.id}
               url={j.user_url}
               x={point.x}
               y={point.y}
               color={colors.primary}
+              background={colors.background}
+              fonts={fonts}
             />
           );
         })}
@@ -243,7 +313,7 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
             <SvgText
               key={`y-${y}`}
               x={0}
-              y={y}
+              y={y+fonts.labelSmall.fontSize/2}
               fill={colors.onSurfaceVariant}
               fontSize={fonts.labelSmall.fontSize}
               fontFamily={fonts.labelSmall.fontFamily}
@@ -255,14 +325,12 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
         })}
         <SvgText
           x={0}
-          y={margin}
+          y={fonts.labelSmall.fontSize}
           fill={colors.onSurfaceVariant}
           fontSize={fonts.labelSmall.fontSize}
           fontFamily={fonts.labelSmall.fontFamily}
           fontWeight={fonts.labelSmall.fontWeight as any}
-        >
-          SOL
-        </SvgText>
+        >SOL</SvgText>
 
         {/* X labels */}
         {[0, 25, 50, 75, 100].map((p) => {
@@ -270,63 +338,24 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
           return (
             <SvgText
               key={`x-${p}`}
-              x={x - 5} // -5 to seat %
-              y={height - margin / 10}
+              x={x}
+              y={heightSVG}
               fill={colors.onSurfaceVariant}
               fontSize={fonts.labelSmall.fontSize}
               fontFamily={fonts.labelSmall.fontFamily}
               fontWeight={fonts.labelSmall.fontWeight as any}
-            >
-              {p}%
-            </SvgText>
+              textAnchor="middle"
+            >{p}%</SvgText>
           );
         })}
       </Svg>
 
       {/* Right section */}
-      <View style={{ position: 'absolute', right: 16, bottom: margin * 3.3 }}>
-        <Text variant="labelSmall" style={{ color: colors.onSurfaceVariant }}>
+      <View style={{justifyContent:'flex-end', position: 'absolute', right: padding+graphMarginRight, bottom: (padding + dHeightGraph_SVG) }}>
+        <Text variant="labelSmall" style={{ color: colors.onSurfaceVariant, textAlign: 'right' }}>
           Current Price
         </Text>
-        {(() => {
-          if (currentPrice >= 1) {
-            return (
-              <Text variant="headlineSmall" style={{ color: colors.onBackground }}>
-                ${currentPrice}
-              </Text>
-            );
-          }
-          const { zeros, val } = convertNumberWithNull(currentPrice);
-          if (zeros < 3) {
-            return (
-              <Text variant="headlineSmall" style={{ color: colors.onBackground }}>
-                ${currentPrice}
-              </Text>
-            );
-          }
-          return (
-            <View style={{ flexDirection: 'row' }}>
-              <Text variant="headlineSmall" style={{ color: colors.onBackground }}>
-                $0.0
-              </Text>
-              <Text
-                variant="labelMedium"
-                style={{ color: colors.onBackground, transform: [{ translateY: (fonts.headlineSmall.fontSize as number) * 5 / 6 }] }}
-              >
-                {zeros}
-              </Text>
-              <Text variant="headlineSmall" style={{ color: colors.onBackground }}>
-                {val}
-              </Text>
-            </View>
-          );
-        })()}
-        {withJoinButton&& 
-          <Button mode="outlined" style={{ marginTop: 4 }}
-            onPress={() => joinPremarketBySol(premaketPubkey, DEFAULT_BUY_AMOUNT)}>
-            + Lock Price
-          </Button>
-        }
+        <CurrentPriceValue currentPrice={currentPrice} colors={colors} fonts={fonts}/>
       </View>
 
       {/* Labels */}
@@ -334,8 +363,8 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
         variant="labelSmall"
         style={{
           position: 'absolute',
-          left: 4,
-          top: goalPoint.y === nowPoint.y ? goalPoint.y - (fonts.labelSmall.fontSize as number) * 0.2 : goalPoint.y + (fonts.labelSmall.fontSize as number) / 2,
+          left: 9,
+          top: goalTop,
           backgroundColor: goalColor,
           color: onGoalColor,
           borderRadius: 6,
@@ -349,20 +378,81 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
           variant="labelSmall"
           style={{
             position: 'absolute',
-            left: 4,
-            top: goalPoint.y === nowPoint.y ? nowPoint.y + (fonts.labelSmall.fontSize as number) * 1.2 : nowPoint.y + (fonts.labelSmall.fontSize as number) / 2,
+            left: 0,
+            top: nowTop,
             backgroundColor: colors.primary,
             color: colors.onPrimary,
             borderRadius: 6,
             paddingHorizontal: 6,
           }}
-        >
-          Now
-        </Text>
+        >Now</Text>
       }
     </View>
   );
 };
+
+function CurrentPriceValue({
+  currentPrice,
+  colors,
+  fonts,
+}: {
+  currentPrice: number;
+  colors: MD3Colors;
+  fonts: MD3Typescale;
+}) {
+  if (currentPrice === 0) {
+    return (
+      <Text variant="headlineSmall" style={{ color: colors.onBackground }}>
+        $0.00
+      </Text>
+    );
+  }
+  if (currentPrice >= 1) {
+    const formattedPrice = formatMax5Significant(currentPrice);
+    return (
+      <Text variant="headlineSmall" style={{ color: colors.onBackground }}>
+        ${formattedPrice}
+      </Text>
+    );
+  }
+  const { zeros, val } = convertNumberWithNull(currentPrice);
+  if (zeros < 3) {
+    return (
+      <Text variant="headlineSmall" style={{ color: colors.onBackground }}>
+        ${currentPrice}
+      </Text>
+    );
+  }
+  return (
+    <View style={{ flexDirection: "row" }}>
+      <Text variant="headlineSmall" style={{ color: colors.onBackground }}>
+        $0.0
+      </Text>
+      <Text
+        variant="labelMedium"
+        style={{
+          color: colors.onBackground,
+          transform: [
+            { translateY: ((fonts.headlineSmall.fontSize as number) * 5) / 6 },
+          ],
+        }}
+      >
+        {zeros}
+      </Text>
+      <Text variant="headlineSmall" style={{ color: colors.onBackground }}>
+        {val}
+      </Text>
+    </View>
+  );
+}
+
+function formatMax5Significant(n: number): string {
+  if (n > 1000000) {
+    return n.toPrecision()
+  }
+  return n.toString()
+}
+
 
 function convertNumberWithNull(num: number): { zeros: number; val: number } {
   if (num === 0) return { zeros: 0, val: 0 };
@@ -377,4 +467,22 @@ function convertNumberWithNull(num: number): { zeros: number; val: number } {
   const leadingZeros = decimalStr.match(/^0*/)?.[0].length || 0;
   const rest = decimalStr.slice(leadingZeros);
   return { zeros: leadingZeros, val: parseInt(rest) };
+}
+
+
+
+function findPointBySol(points: BondingCurvePointWithCoordinate[], solLamp: BN) {
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i];
+    if (p.sol_lamp.gte(solLamp)) return p;
+  }
+  return points[points.length - 1];
+}
+
+function findPointByPercent(points: BondingCurvePointWithCoordinate[], percent: number) {
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i];
+    if (p.persent >= percent) return p;
+  }
+  return points[points.length - 1];
 }

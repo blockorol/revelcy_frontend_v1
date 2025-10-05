@@ -8,13 +8,14 @@ import { View } from "react-native";
 import { useTheme, Text} from "react-native-paper";
 
 interface PremarketInfoProps {
+  currentUserId?: string;
   tokenInfo: TokenInfo;
   isMobile: boolean;
   withJoinButton: boolean;
   onUpdated: () => Promise<void>;
   width: number
 }
-export function PremarketInfo({ tokenInfo, isMobile, withJoinButton, onUpdated, width}: PremarketInfoProps) {
+export function PremarketInfo({currentUserId, tokenInfo, isMobile, withJoinButton, onUpdated, width}: PremarketInfoProps) {
   const { colors } = useTheme() as AppTheme;
   const joiners = tokenInfo.dynamicInfo.holders
     .slice()
@@ -38,34 +39,30 @@ export function PremarketInfo({ tokenInfo, isMobile, withJoinButton, onUpdated, 
         backgroundColor: isMobile?'transparent':colors.surfaceContainerLowest,
         borderRadius: 20,
         padding: isMobile?16:24,
-        gap: 32,
+        gap: 16,
       }}
     >
-      <Text variant="titleLarge"> Premarket</Text>
+      <Text variant="titleLarge">Premarket</Text>
       <View
         style={{
           flexDirection: isMobile ? "column" : "row",
-          alignContent: "flex-start",
-          justifyContent: "flex-start",
+          alignContent: "center",
+          justifyContent: 'flex-start',
           gap: 32,
         }}
       >
         <PremarketBondingCurve
-          width={width-(isMobile?72:48)}
+          currentUserId={currentUserId}
+          width={isMobile?width-16*2:2*(width-32-24*2)/3}
           height={252}
           state={tokenInfo.mainInfo.state}
-          onUpdated={onUpdated}
-          premaketPubkey={tokenInfo.mainInfo.premarketPubkey}
-          withJoinButton={withJoinButton}
           goalPercent={tokenInfo.mainInfo.premarketGoalPers}
           nowPercent={
             (100 * convertDecimalToToken(tokenInfo.dynamicInfo.marketCapTokenDec)) / DEFAULT_TOKEN_COUNT
           }
           currentPrice={tokenInfo.dynamicInfo.currentPriceLamp}
           joiners={joiners}
-          background={colors.elevation.level1}
-          widthAround={isMobile ? "100%" : undefined}
-          heightAround={284}
+          background={colors.surfaceContainerLow}
         />
         <PremarketTimelineSection 
           withJoinButton={withJoinButton} 
