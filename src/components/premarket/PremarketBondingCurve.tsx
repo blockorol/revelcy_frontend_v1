@@ -362,6 +362,13 @@ function CurrentPriceValue({
   colors: MD3Colors;
   fonts: MD3Typescale;
 }) {
+  if (currentPrice === 0) {
+    return (
+      <Text variant="headlineSmall" style={{ color: colors.onBackground }}>
+        $0.00
+      </Text>
+    );
+  }
   if (currentPrice >= 1) {
     const formattedPrice = formatMax5Significant(currentPrice);
     return (
