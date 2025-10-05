@@ -8,13 +8,14 @@ import { View } from "react-native";
 import { useTheme, Text} from "react-native-paper";
 
 interface PremarketInfoProps {
+  currentUserId?: string;
   tokenInfo: TokenInfo;
   isMobile: boolean;
   withJoinButton: boolean;
   onUpdated: () => Promise<void>;
   width: number
 }
-export function PremarketInfo({ tokenInfo, isMobile, withJoinButton, onUpdated, width}: PremarketInfoProps) {
+export function PremarketInfo({currentUserId, tokenInfo, isMobile, withJoinButton, onUpdated, width}: PremarketInfoProps) {
   const { colors } = useTheme() as AppTheme;
   const joiners = tokenInfo.dynamicInfo.holders
     .slice()
@@ -51,6 +52,7 @@ export function PremarketInfo({ tokenInfo, isMobile, withJoinButton, onUpdated, 
         }}
       >
         <PremarketBondingCurve
+          currentUserId={currentUserId}
           width={isMobile?width-16*2:2*(width-32-24*2)/3}
           height={252}
           state={tokenInfo.mainInfo.state}

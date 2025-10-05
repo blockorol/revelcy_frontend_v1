@@ -161,6 +161,7 @@ export function TokenPremarketPageNormal({
               width={rigth.width}
             />
             <PremarketInfo
+              currentUserId={user?.userId}
               width={rigth.width}
               tokenInfo={token}
               isMobile={false}
@@ -298,6 +299,7 @@ function BriefMobile({
           width={screenDem.width}
         />
         <PremarketInfo
+          currentUserId={user?.userId}
           width={screenDem.width}
           tokenInfo={token}
           isMobile={true}

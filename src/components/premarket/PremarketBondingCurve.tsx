@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { DimensionValue, View, Image as RNImage } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
-import { Svg, Path, Circle, Line, Image as SvgImage, Text as SvgText, Defs, ClipPath } from 'react-native-svg';
+import { Svg, Path, Circle, Line, Image as SvgImage, Text as SvgText, Defs, ClipPath, Polygon } from 'react-native-svg';
 import { BN } from '@coral-xyz/anchor';
 import { AppTheme } from '@theme/types';
 import {
@@ -73,18 +73,50 @@ function useImageExists(url?: string): boolean {
   return ok;
 }
 
+const CurrentUserMarker: React.FC<{
+  x: number;
+  y: number;
+  color: string;
+  fonts: MD3Typescale;
+}> = ({ fonts, x, y, color }) => {
+  return (
+    <>
+      <SvgText
+        x={x}
+        y={y - 11 - 8}
+        textAnchor="middle"
+        fill={color}
+        fontSize={fonts.labelSmall.fontSize}
+        fontFamily={fonts.labelSmall.fontFamily}
+        fontWeight={fonts.labelSmall.fontWeight as any}
+      >
+        You
+      </SvgText>
+
+      <Polygon
+        points={`${x - 4},${y - 8 - 8} ${x + 4},${y - 8 - 8} ${x},${y - 8 - 3}`}
+        fill={color}
+      />
+    </>
+  );
+};
+
+
 const JoinerMarker: React.FC<{
+  isCurrentUser: boolean;
   url?: string;
   x: number;
   y: number;
   color: string;
   background: string;
-}> = ({ url, x, y, color, background }) => {
+  fonts: MD3Typescale;
+}> = ({ isCurrentUser, fonts, url, x, y, color, background }) => {
   const exists = useImageExists(url);
 
   if (url && exists) {
     return (
-      <>
+      <>  
+        {isCurrentUser && <CurrentUserMarker x={x} y={y} color={color} fonts={fonts}/>}
         <Circle
           cx={x}
           cy={y}
@@ -93,7 +125,6 @@ const JoinerMarker: React.FC<{
           strokeWidth={1}
           fill={color}
         />
-        {/* само фото */}
         <SvgImage
           href={{ uri: url }}
           width={16}
@@ -110,20 +141,24 @@ const JoinerMarker: React.FC<{
   }
 
   return (
-    <Circle
-      cx={x}
-      cy={y}
-      r={6}
-      fill={color}
-      stroke={background}
-      strokeWidth={1}
-    />
+    <>
+      {isCurrentUser && <CurrentUserMarker x={x} y={y} color={color} fonts={fonts}/>}
+      <Circle
+        cx={x}
+        cy={y}
+        r={6}
+        fill={color}
+        stroke={background}
+        strokeWidth={1}
+      />
+    </>
   );
 };
 
 
 
 interface PremarketBondingCurveProps {
+  currentUserId?: string;
   state: PremarketState;
 
   goalPercent: number;
@@ -142,6 +177,7 @@ interface PremarketBondingCurveProps {
 }
 
 export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
+  currentUserId="no_user",
   state,
   goalPercent,
   nowPercent,
@@ -258,12 +294,14 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
           const point = findPointBySol(curvePoints, j.amount_sol_cumulative_lamp);
           return (
             <JoinerMarker
+              isCurrentUser={j.id === currentUserId}
               key={j.id}
               url={j.user_url}
               x={point.x}
               y={point.y}
               color={colors.primary}
               background={colors.background}
+              fonts={fonts}
             />
           );
         })}
