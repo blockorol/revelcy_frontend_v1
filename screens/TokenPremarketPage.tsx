@@ -161,7 +161,7 @@ export function TokenPremarketPageNormal({
               width={rigth.width}
             />
             <PremarketInfo
-              width={rigth.width/2}
+              width={rigth.width}
               tokenInfo={token}
               isMobile={false}
               withJoinButton={
