@@ -33,19 +33,22 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, onUpdated }: Your
 
     // Find user's entry data
     const userEntry = tokenDynamicInfo.holders.find((holder) => holder.id === user?.userId);
+    if (!userEntry) {
+        return null;
+    }
     
     // Calculate user's rank/place in premarket
     const sortedHolders = tokenDynamicInfo.holders
         .slice()
         .sort((a, b) => a.joinTimestamp - b.joinTimestamp);
-    const userRank = userEntry ? sortedHolders.findIndex(holder => holder.id === userEntry.id) + 1 : 0;
+    const userRank = sortedHolders.findIndex(holder => holder.id === userEntry.id) + 1;
     
     // Calculate real values
-    const solValue = userEntry ? convertLamportToSmallCount(userEntry.amountSolLamp) : 0;
-    const entryPrice = userEntry && solValue > 0 ? 
-        convertLamportToSmallCount(new BN(tokenDynamicInfo.currentPriceLamp)) : 0;
-    const tokens = userEntry ? convertLamportToSmallCount(userEntry.amountSolLamp) : 0; // This should be calculated based on the bonding curve
-    const supplyPercent = userEntry && tokenDynamicInfo.marketCapSolLamp.gt(new BN(0)) ? 
+    const solValue = convertLamportToSmallCount(userEntry.amountSolLamp);
+    const entryPrice = solValue > 0 ? 
+        convertLamportToSmallCount(new BN(tokenDynamicInfo.currentPriceLamp)): 0;
+    const tokens = convertLamportToSmallCount(userEntry.amountSolLamp); // This should be calculated based on the bonding curve
+    const supplyPercent = tokenDynamicInfo.marketCapSolLamp.gt(new BN(0)) ? 
         (userEntry.amountSolLamp.toNumber() / tokenDynamicInfo.marketCapSolLamp.toNumber()) * 100 : 0;
 
     const renderLoader = (status: string) => (
@@ -150,7 +153,7 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, onUpdated }: Your
                         lineHeight: 10
                     }}
                 >
-                    Leave
+                    <Text>Leave</Text>
                 </Button>
             </View>
             
