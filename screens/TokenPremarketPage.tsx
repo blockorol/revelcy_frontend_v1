@@ -152,7 +152,7 @@ export function TokenPremarketPageNormal({
             maxWidth: 800,
           }}
         >
-          <View style={{ gap: 24 }}>
+          <View style={{ gap: 24}}>
             <AboutCommunity
               isCreator={token.mainInfo.createdByPubkey === user?.walletAddress}
               premarketPubkey={token.mainInfo.premarketPubkey.toString()}
@@ -161,7 +161,7 @@ export function TokenPremarketPageNormal({
               width={rigth.width}
             />
             <PremarketInfo
-              width={left.width}
+              width={rigth.width/2}
               tokenInfo={token}
               isMobile={false}
               withJoinButton={
