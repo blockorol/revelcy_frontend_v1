@@ -39,24 +39,25 @@ export function PremarketInfo({ tokenInfo, isMobile, withJoinButton, onUpdated, 
         borderRadius: 20,
         padding: isMobile?16:24,
         gap: 32,
+        
       }}
     >
-      <Text variant="titleLarge"> Premarket</Text>
+      <Text variant="titleLarge">Premarket</Text>
       <View
         style={{
           flexDirection: isMobile ? "column" : "row",
           alignContent: "center",
-          justifyContent: "center",
+          justifyContent: 'flex-start',
           gap: 40,
         }}
       >
         <PremarketBondingCurve
-          width={width-(isMobile?72:48)}
+          width={width-(isMobile?72:90)}
           height={252}
           state={tokenInfo.mainInfo.state}
           onUpdated={onUpdated}
           premaketPubkey={tokenInfo.mainInfo.premarketPubkey}
-          withJoinButton={withJoinButton}
+          withJoinButton={false}
           goalPercent={tokenInfo.mainInfo.premarketGoalPers}
           nowPercent={
             (100 * convertDecimalToToken(tokenInfo.dynamicInfo.marketCapTokenDec)) / DEFAULT_TOKEN_COUNT
@@ -67,7 +68,7 @@ export function PremarketInfo({ tokenInfo, isMobile, withJoinButton, onUpdated, 
           })()}
           joiners={joiners}
           background={colors.elevation.level1}
-          widthAround={isMobile ? "100%" : undefined}
+          widthAround={width-(isMobile?32:48)}
           heightAround={284}
         />
         <PremarketTimelineSection 

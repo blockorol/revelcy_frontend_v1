@@ -284,7 +284,7 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
       </Svg>
 
       {/* Right section */}
-      <View style={{ position: 'absolute', right: 16, bottom: margin * 3.3 }}>
+      <View style={{ position: 'absolute', right: 16, bottom: margin * 2 }}>
         <Text variant="labelSmall" style={{ color: colors.onSurfaceVariant }}>
           Current Price
         </Text>
