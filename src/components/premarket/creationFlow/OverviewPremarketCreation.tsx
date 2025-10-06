@@ -30,7 +30,16 @@ export default function OverviewPremarketCreation({ data, onLaunch, launchState,
     return `${s.slice(0, 4)}...${s.slice(-4)}`;
   }, [connected, publicKey]);
 
-  const { tokenName, tokenTicker, description, avatar, links } = data.mainData;
+  // Add null checks to prevent undefined errors
+  if (!data) {
+    return (
+      <View style={{ padding: 24, alignItems: 'center', justifyContent: 'center' }}>
+        <Text variant="bodyLarge">Loading...</Text>
+      </View>
+    );
+  }
+
+  const { tokenName, tokenTicker, description, avatar, links } = data.mainData || {};
   const { tokenomicsData, customData } = data;
 
   // custom links
@@ -46,7 +55,7 @@ export default function OverviewPremarketCreation({ data, onLaunch, launchState,
     customData?.description;
 
   // premaket data
-  const prem = (data as any).premarket as
+  const prem = (data as any)?.premarket as
     | { deadline?: number; goalPercent?: number; goalSol?: number }
     | undefined;
 
@@ -209,7 +218,7 @@ export default function OverviewPremarketCreation({ data, onLaunch, launchState,
           <RowLine
             icon='wallet-outlined'
             label="Creator initial buy"
-            value={`${tokenomicsData.creatorInitialBuy} SOL`}
+            value={`${tokenomicsData?.creatorInitialBuy || 0} SOL`}
           />
 
           {/* <BarLine label="Team allocation" pct={teamPct} />

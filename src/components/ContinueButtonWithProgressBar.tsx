@@ -20,7 +20,7 @@ export default function ContinueButtonWithProgressBar({
     progress 
 }: ContinueButtonWithProgressBarProps) {
     return (
-    <View style={{width:'100%', marginTop: 16, flexDirection: 'column', gap: 16}}>
+    <View style={{width:'100%', marginTop: 20, flexDirection: 'column', gap: 16}}>
         <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }}>
             {handleSaveForLatter && <Button
                 mode="text"
