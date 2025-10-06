@@ -6,7 +6,6 @@ import shortString from "@utils/address_shorter";
 import { View, Image } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { ExpandableText } from '@components/base/ExpandableText';
-import Svg, { Circle, Path } from 'react-native-svg';
 import { SvgIcon } from '@components/base/SvgIcon';
 import { ChipDisplay } from '@components/ui/Chip';  
 
@@ -18,12 +17,6 @@ interface PremarketBaseInfoProps {
 export function PremarketBaseInfo({ tokenMainInfo, isMobile}: PremarketBaseInfoProps) {
   const theme = useTheme();
   const { left } = useIsMobileForTwoScreenWithDemention();
-
-  // Function to truncate address/identifier
-  const truncateAddress = (address: string) => {
-    if (address.length <= 10) return address;
-    return `${address.slice(0, 4)}...${address.slice(-4)}`;
-  };
 
   const button = (state: "premarket" | "canceled" | "finished") => {
     return state === 'premarket' ? 
@@ -60,9 +53,9 @@ export function PremarketBaseInfo({ tokenMainInfo, isMobile}: PremarketBaseInfoP
   }
 
   return (
-    <View style={{ gap: 16, padding: isMobile?16:24}}>
+    <View style={{ gap: 16, paddingHorizontal: isMobile?16:24, paddingVertical: isMobile?0:24,}}>
       {!!tokenMainInfo.imageURL && (
-        <View style={{padding: isMobile?24:0, paddingBottom: 8,}}>
+        <View style={{paddingHorizontal: isMobile?24:0, paddingBottom: 8, paddingTop: 0}}>
           <Image
             source={{ uri: tokenMainInfo.imageURL }}
             style={{

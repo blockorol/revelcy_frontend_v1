@@ -110,12 +110,12 @@ export function ButtonDisplay({
       break;
     case "outlined":
       backgroundColor = "transparent";
-      textColor = base.bg;
+      textColor = theme.colors.onSurface;
       borderColor = base.outline;
       break;
     case "text":
       backgroundColor = "transparent";
-      textColor = base.bg;
+      textColor = theme.colors.onSurfaceVariant;
       borderColor = undefined;
       break;
     case "tonal":

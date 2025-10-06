@@ -13,22 +13,48 @@ import { SvgIcon } from "@components/base/SvgIcon";
 interface Props {
   tokenData: TokenInfo;
   holdersAmount: number;
-  onUpdated: () => Promise<void>;
   isMobile: boolean;
   limited: boolean;
 }
-export function HoldersInfo({ tokenData, holdersAmount, onUpdated, isMobile, limited}: Props) {
+const DEFAULT_SHOW_COUNT = 2;
+const STEP_SHOW_COUNT = 2;
+export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Props) {
+  const [showCount, setShowCount] = useState(DEFAULT_SHOW_COUNT)
   const [order, setOrder] = useState<OrderValue>("SUPPLY")
   const { colors } = useTheme() as AppTheme;
   const holders = tokenData.dynamicInfo.holders
   const totalRaised = convertLamportToSmallCount(tokenData.dynamicInfo.reservedSolLamp)
+  const sortedHolders = useMemo(() => {
+  if (!holders) return [];
+
+  const list = [...holders]; // не мутируем исходный массив
+
+  switch (order) {
+    case "JOINED_ASC":
+      list.sort((a, b) => a.joinTimestamp - b.joinTimestamp);
+      break;
+
+    case "JOINED_DESC":
+      list.sort((a, b) => b.joinTimestamp - a.joinTimestamp);
+      break;
+
+    case "SUPPLY":
+    default:
+      list.sort((a, b) => b.amountSolLamp.cmp(a.amountSolLamp));
+      break;
+  }
+
+  return list.slice(0, showCount);
+}, [holders, order, showCount]);
+
 
   return (
     <View
       style={{
-        backgroundColor: colors.surfaceContainerLowest,
+        backgroundColor: isMobile?undefined:colors.surfaceContainerLowest,
         borderRadius: isMobile?16:24 ,
         padding: 24,
+        paddingBottom: 0,
         gap: 16,
       }}
     >
@@ -40,8 +66,8 @@ export function HoldersInfo({ tokenData, holdersAmount, onUpdated, isMobile, lim
         <OrderMenu value={order} onChange={setOrder}/>
       </View>
      
-      <View style={{}}>
-        {holders.map((holder, ) => {
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 20, rowGap: 16 }}>
+        {sortedHolders.map((holder, ) => {
           const amount = convertLamportToSmallCount(holder.amountSolLamp)
           return (
             <View key={holder.walletAddress} style={{}}>
@@ -64,12 +90,32 @@ export function HoldersInfo({ tokenData, holdersAmount, onUpdated, isMobile, lim
         })
         }
       </View>
-
+      {!limited&&showCount<holdersAmount&&
+        <TouchableRipple
+        style={{
+          height: 40,
+          justifyContent: 'center',
+          alignItems: 'center',
+          borderRadius: 16
+        }}
+        onPress={() => { setShowCount(showCount+STEP_SHOW_COUNT) }}
+        >
+          <View style={{
+            flexDirection: "row",
+            gap: 2,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+            <Text variant='labelMedium' prominent selectionColor={colors.onSurface}>Show more</Text>
+            <SvgIcon name='caret-down' color={colors.onSurface} size={16}/>
+          </View>
+        </TouchableRipple>
+      }
     </View>
   );
 }
 
-type OrderValue = "SUPPLY" | "CREATED_ASC" | "CREATED_DESC";
+type OrderValue = "SUPPLY" | "JOINED_ASC" | "JOINED_DESC";
 
 type PropsOrderMenu = {
   value: OrderValue;
@@ -87,8 +133,8 @@ export const OrderMenu: React.FC<PropsOrderMenu> = ({ value, onChange, anchor })
   const defs = useMemo(
     () => ([
       { label: "Highest",  icon: "percent" as const, target: "SUPPLY" as const },
-      { label: "Earliest", icon: "hourglass-up" as const, target: "CREATED_ASC" as const },
-      { label: "Latest",   icon: "hourglass-down" as const, target: "CREATED_DESC" as const },
+      { label: "Earliest", icon: "hourglass-up" as const, target: "JOINED_ASC" as const },
+      { label: "Latest",   icon: "hourglass-down" as const, target: "JOINED_DESC" as const },
     ]),
     []
   );
