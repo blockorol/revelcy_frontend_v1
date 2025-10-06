@@ -8,7 +8,7 @@ export const MAX_WIDTH_ONE_CONTAINER_SIZE = 480;
 export const MAX_WIDTH_MOBILE = 680
 const MAX_WIDTH_DESKTOP = 680
 
-const MOBILE_MENU_HEIGHT = 24
+const MOBILE_MENU_HEIGHT = 41+68
 
 export default function useIsMobile(): boolean {
     const { width, scale} = useWindowDimensions();

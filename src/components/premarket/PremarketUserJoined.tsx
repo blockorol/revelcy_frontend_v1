@@ -15,7 +15,7 @@ import { useAuth } from "@providers/AuthContext";
 import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
 import { useNotification } from "@storage/NotificationContext";
-import { useOverlay } from "@storage/UniversalOverlayProvider"; // <-- используем провайдер
+import { useOverlay } from "@storage/UniversalOverlayProvider";
 
 interface PremarketUserJoinedProps {
   premarketPubkey: PublicKey;

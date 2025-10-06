@@ -16,6 +16,9 @@ import { HoldersInfo } from "@components/premarket/HoldersInfo";
 import { TokenInfo } from "@api/token";
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import React from "react";
+import { ButtonDisplay } from "@components/ui/Button";
+
+const SLIDER_HEIGHT = 48
 
 interface TokenPremarketPageProps {
   tokenId: string;
@@ -182,8 +185,9 @@ export function TokenPremarketPageNormal({
             />
             <HoldersInfo
               tokenData={token}
-              holdersAmount={token.dynamicInfo.holdersCount}
-              onUpdated={refetchTokenInfo}
+              holdersAmount={token.dynamicInfo.holdersCount}              
+              isMobile={false}
+              limited={false}
             />
           </View>
         </View>
@@ -206,37 +210,39 @@ export function TokenPremarketPageMobile({
 }) {
   const theme = useTheme()
   const colors = theme.colors as ExtendedMD3Colors
+  
+  const [index, setIndex] = React.useState(0);
+  const toPeopleSection = ()=>{setIndex(1)}
   const renderScene = SceneMap({
-    first: ()=>BriefMobile({token, refetchTokenInfo, screenDem}),
+    first: ()=>BriefMobile({token, refetchTokenInfo, screenDem, toPeopleSection}),
     second:()=> PeopleMobile({token, refetchTokenInfo, screenDem}),
   });
   const layout = useWindowDimensions();
-  const [index, setIndex] = React.useState(0);
 
   const routes = [
     { key: 'first', title: 'Brief' },
     { key: 'second', title: 'People' },
   ];
   const renderTabBar = (props: any) => (
-    <TabBar
-      {...props}
-      // общий стиль бара
-      style={[
-        styles.tabbar,
-        {
-          backgroundColor: theme.colors.background,
-          borderBottomColor: colors.outlineVariant,
-        },
-      ]}
-      contentContainerStyle={styles.tabbarContent}
-      tabStyle={styles.tabStyle}
-      pressColor="transparent"
-      indicatorStyle={[styles.indicatorStyle, {
-        backgroundColor: colors.onSurface,
+    <View style={{width: "100%", backgroundColor: theme.colors.background, justifyContent: 'center', alignItems:'center'}}>
+      <TabBar
+        {...props}
+        style={[
+          styles.tabbar,
+          {
+            backgroundColor: theme.colors.background,
+            borderBottomColor: colors.outlineVariant,
+          },
+        ]}
+        contentContainerStyle={styles.tabbarContent}
+        tabStyle={styles.tabStyle}
+        pressColor="transparent"
+        indicatorStyle={[styles.indicatorStyle, {
+          backgroundColor: colors.onSurface,
           borderBottomColor: colors.outlineVariant}]}
-      indicatorContainerStyle={styles.indicatorContainerStyle}
-      
-    />
+        indicatorContainerStyle={styles.indicatorContainerStyle}
+      />
+    </View>
   );
 
 
@@ -247,9 +253,6 @@ export function TokenPremarketPageMobile({
       onIndexChange={setIndex}
       initialLayout={{ width: layout.width }}
       renderTabBar={renderTabBar}
-
-
-
     />
   );
 }
@@ -258,6 +261,7 @@ function BriefMobile({
   token,
   refetchTokenInfo,
   screenDem,
+  toPeopleSection
 }: {
   token: TokenInfo;
   refetchTokenInfo: () => Promise<void>;
@@ -265,15 +269,19 @@ function BriefMobile({
     width: number;
     height: number;
   };
+  toPeopleSection: ()=>void
 }) {
-  
   const { user } = useAuth();
   const theme = useTheme();
 
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
-      style={{ height: screenDem.height, width: "100%",  backgroundColor: theme.colors.background,}}
+      style={{
+        height: screenDem.height - SLIDER_HEIGHT,
+        maxHeight: screenDem.height - SLIDER_HEIGHT,
+        width: "100%", 
+        backgroundColor: theme.colors.background,}}
     >
       <View
         style={{
@@ -287,6 +295,7 @@ function BriefMobile({
           width: "100%",
           alignSelf: "center",
           gap: 24,
+          // marginBottom: 70
         }}
       >
         <PremarketBaseInfo tokenMainInfo={token.mainInfo} isMobile={true} />
@@ -328,8 +337,10 @@ function BriefMobile({
         <HoldersInfo
           tokenData={token}
           holdersAmount={token.dynamicInfo.holdersCount}
-          onUpdated={refetchTokenInfo}
+          isMobile={true}
+          limited={true}
         />
+        <ButtonDisplay variant='primary' mode='text' onPress={toPeopleSection} style={{width:'100%', marginTop:-10}}>View all</ButtonDisplay>
       </View>
     </ScrollView>
   );
@@ -372,7 +383,8 @@ function PeopleMobile({
         <HoldersInfo
           tokenData={token}
           holdersAmount={token.dynamicInfo.holdersCount}
-          onUpdated={refetchTokenInfo}
+          isMobile={true}
+          limited={false}       
         />
       </View>
     </ScrollView>
@@ -385,20 +397,25 @@ const styles = StyleSheet.create({
     elevation: 0,
     shadowOpacity: 0,
     borderBottomWidth: StyleSheet.hairlineWidth,
+    width: "50%"
   },
   tabbarContent: {
     justifyContent: "center",
   },
   tabStyle: {
-    width: "25%",
+    textAlign: 'center',
     marginHorizontal: 20,
     paddingHorizontal: 0,
   },
   indicatorStyle: { 
-    justifyContent: "center", height: 2, width:'25%', marginLeft: '25%'
+    justifyContent: "center", height: 3, 
+    width: "14%",
+    alignSelf:'center',
+    marginLeft: "18%"
   },
   indicatorContainerStyle: {
     justifyContent: "center",
+    alignItems: 'center'
   },
 }
 );
