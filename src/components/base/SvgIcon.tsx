@@ -91,6 +91,10 @@ export const icons = {
   'x-logo': XLogo,
 };
 
+export const withStroke: Partial<Record<IconName, boolean>> = {
+  pumpfun: true,
+};
+
 export type IconName = keyof typeof icons;
 
 export interface SvgIconProps {
@@ -106,6 +110,7 @@ export interface SvgIconProps {
 export const SvgIcon: React.FC<SvgIconProps> = ({ name, size = 24, sizeAround, color, style, elementRef }) => {
   const Icon = icons[name];
   if (!Icon) return null;
+  const withStrokeVal = withStroke[name]??false;
 
   return (
     <View style={{
@@ -114,7 +119,7 @@ export const SvgIcon: React.FC<SvgIconProps> = ({ name, size = 24, sizeAround, c
         justifyContent: 'center',
         alignItems: 'center'
       }}>
-      <Icon width={size} height={size} fill={color} style={style} ref={elementRef} />
+      <Icon width={size} height={size} stroke={withStrokeVal?color:undefined} fill={color} style={style} ref={elementRef} />
     </View>
   )
 };
