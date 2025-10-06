@@ -14,6 +14,7 @@ export const exampleRoutes = {
   ui: {
     color: "Цвета",
     chips: "Chips",
+    buttons: "Buttons",
     fonts: "Шрифты",
     icons: "Иконки",
     back: "",
