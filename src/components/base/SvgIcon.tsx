@@ -15,9 +15,12 @@ import Check from '@assets/basic_icon/check.svg';
 import CopyIcon from '@assets/basic_icon/copy_icon.svg';
 import HeartOutlined from '@assets/basic_icon/heart-outlined.svg';
 import Heart from '@assets/basic_icon/heart.svg';
+import HourglassDown from '@assets/basic_icon/hourglass-down.svg';
+import HourglassUp from '@assets/basic_icon/hourglass-up.svg';
 import InstagramLogoOutlined from '@assets/basic_icon/instagram-logo-outlined.svg';
 import InfoCircle from '@assets/basic_icon/info-circle.svg'
 import NotificationOutlined from '@assets/basic_icon/notification-outlined.svg';
+import Percent from '@assets/basic_icon/percent.svg'
 import Pumpfun from '@assets/basic_icon/pumpfun.svg'
 import Privy from '@assets/basic_icon/privy.svg';
 import PlantOutlined from '@assets/basic_icon/plant-outlined.svg'
@@ -57,9 +60,12 @@ export const icons = {
   'copy-icon': CopyIcon,
   'heart-outlined': HeartOutlined,
   'heart': Heart,
+  'hourglass-down': HourglassDown,
+  'hourglass-up': HourglassUp,
   'instagram-logo-outlined': InstagramLogoOutlined,
   'info-circle': InfoCircle,
   'notification-outlined': NotificationOutlined,
+  'percent': Percent,
   'pumpfun': Pumpfun,
   'plant-outlined': PlantOutlined,
   'plus': Plus,
