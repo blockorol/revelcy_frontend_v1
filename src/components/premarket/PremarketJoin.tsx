@@ -1,16 +1,14 @@
 import { TokenDynamicInfo, TokenMainInfo, userJoinedToPremarket } from "@api/token";
 import { SvgIcon } from "@components/base/SvgIcon";
-import { LoginModal } from "@components/login/LoginButton";
 import { BN } from "@coral-xyz/anchor";
 import { joinToPremarket } from "@services/blockchain/premarket/joinPremarket";
-import { useAuth } from "@providers/AuthContext";
+import { UserInfo } from "@providers/AuthContext";
 import shortString from "@utils/address_shorter";
 import { useAnchorWalletSafe } from '@storage/wallet-adapter/useWallet.web';
 import { convertDecimalToToken } from "@utils/premarket";
 
 import {
   formatNumberCompact,
-  convertLamportToSmallCount,
   convertSolanaToTokenBuy,
   convertSmallCountToLamport,
 } from "@utils/premarket";
@@ -18,32 +16,73 @@ import { useState } from "react";
 import { View } from "react-native";
 import {
   HelperText,
-  Button,
+  Button as ButtonPaper,
   TextInput,
   Text,
   useTheme,
   ActivityIndicator,
+  Portal,
 } from "react-native-paper";
+import {Button} from "@components/ui/Button"
 import { useWallet } from "@storage/wallet-adapter";
 import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
 import { useNotification } from "@storage/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider"; // <-- новый импорт
+import { ShareTextButton } from "@components/base/ButtonShare";
+import React from "react";
+import { MobileBottomSheet } from "@components/ui/MobileBottomSheet";
 
 interface PremarketJoinProps {
   tokenDynamicInfo: TokenDynamicInfo;
   tokenMainInfo: TokenMainInfo;
   onUpdated: () => void;
+  user: UserInfo,
+  currentURL: string
+  isMobile: boolean
 }
 
-export function PremarketJoin({
+export function PremarketJoin({ isMobile, ...props }:PremarketJoinProps) {
+  const [visible, setVisible] = React.useState(false);
+
+  if (!isMobile) return <PremarketJoinBase {...props} isMobile={false} />;
+
+  return (
+    <View style={{ flex: 1, width: '100%'}}>
+      <Portal.Host>
+
+          <View style={{
+          flexDirection: "row",
+          justifyContent: "center",
+          alignItems: "center",
+          width: '100%',
+          gap: 16
+        }}>
+            <Button style={{flex:4}} mode="contained" onPress={() => setVisible(true)}>
+              Join Premarket
+            </Button>
+            <ShareTextButton style={{flex: 1}} shareMessage={`Join to premarket on: ${props.currentURL}`}/>
+          </View>
+          <MobileBottomSheet
+            visible={visible}
+            onDismiss={() => setVisible(false)}
+          >
+          <PremarketJoinBase {...props} isMobile={true} />
+        </MobileBottomSheet>
+      
+        </Portal.Host>
+    </View>
+  );
+}
+function PremarketJoinBase({
   tokenDynamicInfo,
   tokenMainInfo,
-  onUpdated
+  onUpdated,
+  user,
+  currentURL,
+  isMobile
 }: PremarketJoinProps) {
   const notify = useNotification();
-  const [visibleLogin, setVisibleLogin] = useState(false);
-  const { user } = useAuth();
   const { network } = useNetwork();
   const currentConnection = getSolanaConnection(network);
   const { connected, connect } = useWallet();
@@ -93,11 +132,6 @@ export function PremarketJoin({
     if (amountSol === undefined) {
       console.error("no amountSol");
       notify.warning("Please set amount in SOL");
-      return;
-    }
-    if (!user) {
-      console.error("user is not loggined");
-      setVisibleLogin(true);
       return;
     }
     if (!wallet || !connected) {
@@ -204,21 +238,23 @@ export function PremarketJoin({
         }}
       >
         {["0.1 min", "0.5", "1", "2 max"].map((label) => (
-          <Button
+          <ButtonPaper
             key={label}
             mode="outlined"
             onPress={() => handleInputChange(label.split(" ")[0])}
             style={{
-              width: 80,
               height: 24,
-              paddingHorizontal: 8,
-              paddingVertical: 2,
               justifyContent: "center",
             }}
-            labelStyle={[theme.fonts.labelMedium, { margin: 0 }]}
+            labelStyle={[theme.fonts.labelMedium, { 
+              margin: 0, 
+              paddingHorizontal: 8,
+              paddingVertical: 2,
+              width: 80,
+            }]}
           >
             {label}
-          </Button>
+          </ButtonPaper>
         ))}
       </View>
 
@@ -227,20 +263,21 @@ export function PremarketJoin({
           flexDirection: "row",
           justifyContent: "center",
           alignItems: "center",
+          width: '100%',
+          gap: 16
         }}
       >
         <Button
-          icon={() => <SvgIcon name="plus" size={20} />}
+          style={{flex: 4}}
+          leftSvgIconName="plus"
           mode="contained"
           onPress={handleJoin}
         >
           Join Premarket
         </Button>
+        
+        {!isMobile&&<ShareTextButton style={{flex: 1}} shareMessage={`Join to premarket on: ${currentURL}`}/>}
       </View>
-
-      {!user && (
-        <LoginModal visible={visibleLogin} setVisible={setVisibleLogin} />
-      )}
     </View>
   );
 }

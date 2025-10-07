@@ -10,7 +10,7 @@ import {
   Divider,
   Icon,
 } from "react-native-paper";
-import { ButtonDisplay } from "@components/ui/Button"; // твой компонент из ответа выше
+import { Button } from "@components/ui/Button";
 import { IconName, icons } from "@components/base/SvgIcon";
 
 type Variant = "primary" | "secondary" | "error";
@@ -126,7 +126,7 @@ const AllButtonsScreen: React.FC = () => {
       {/* Превью выбранной конфигурации */}
       <Text style={styles.sectionTitle}>Preview</Text>
       <View style={styles.preview}>
-        <ButtonDisplay {...buttonProps}>{label}</ButtonDisplay>
+        <Button {...buttonProps}>{label}</Button>
       </View>
 
       <Divider style={{ marginVertical: 16, backgroundColor: "#555" }} />
@@ -138,7 +138,7 @@ const AllButtonsScreen: React.FC = () => {
           SIZES.flatMap((s) =>
             MODES.map((m) => (
               <View key={`${v}-${s}-${m}`} style={styles.card}>
-                <ButtonDisplay
+                <Button
                   variant={v}
                   size={s}
                   mode={m}
@@ -147,7 +147,7 @@ const AllButtonsScreen: React.FC = () => {
                   leftSvgIconName={leftSvgIconName}
                 >
                   {label}
-                </ButtonDisplay>
+                </Button>
                 <Text style={styles.cardLabel}>
                   {v} · {s} · {m}
                 </Text>
