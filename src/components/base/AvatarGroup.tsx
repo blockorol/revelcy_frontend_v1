@@ -12,16 +12,12 @@ interface AvatarGroupProps {
   holders: Holder[];
   maxAvatars?: number;
   size?: number;
-  showDefaultAvatar?: boolean;
-  defaultAvatarSource?: typeof DEFAULT_AVATAR;
 }
 
 export const AvatarGroup: React.FC<AvatarGroupProps> = ({
   holders,
   maxAvatars = 3,
   size = 20,
-  showDefaultAvatar = true,
-  defaultAvatarSource = DEFAULT_AVATAR,
 }) => {
   const theme = useTheme();
   
@@ -41,35 +37,16 @@ export const AvatarGroup: React.FC<AvatarGroupProps> = ({
   const avatarSize = size;
   const borderWidth = 1;
 
+  // Don't render anything if no holders
+  if (allHolders.length === 0) {
+    return null;
+  }
+
   return (
     <View style={styles.avatarGroup}>
-      {allHolders.length > 0 ? (
-        allHolders.map((holder, index) => (
-          <View
-            key={holder.iconURL || `default-${index}`}
-            style={[
-              styles.avatarCircle,
-              {
-                width: avatarSize,
-                height: avatarSize,
-                borderRadius: avatarSize / 2,
-                backgroundColor: theme.colors.surfaceVariant,
-                marginLeft: index === 0 ? 0 : -10,
-                zIndex: index + 1,
-                borderColor: theme.colors.onPrimary,
-                borderWidth: borderWidth,
-              },
-            ]}
-          >
-            <Image
-              source={holder.iconURL ? { uri: holder.iconURL } : defaultAvatarSource}
-              style={styles.avatarImage}
-            />
-          </View>
-        ))
-      ) : showDefaultAvatar ? (
-        // Show default avatar if no holders at all
+      {allHolders.map((holder, index) => (
         <View
+          key={holder.iconURL || `default-${index}`}
           style={[
             styles.avatarCircle,
             {
@@ -77,17 +54,19 @@ export const AvatarGroup: React.FC<AvatarGroupProps> = ({
               height: avatarSize,
               borderRadius: avatarSize / 2,
               backgroundColor: theme.colors.surfaceVariant,
+              marginLeft: index === 0 ? 0 : -10,
+              zIndex: index + 1,
               borderColor: theme.colors.onPrimary,
               borderWidth: borderWidth,
             },
           ]}
         >
           <Image
-            source={defaultAvatarSource}
+            source={holder.iconURL ? { uri: holder.iconURL } : DEFAULT_AVATAR}
             style={styles.avatarImage}
           />
         </View>
-      ) : null}
+      ))}
     </View>
   );
 };
