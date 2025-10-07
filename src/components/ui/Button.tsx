@@ -1,4 +1,4 @@
-// ButtonDisplay.tsx
+// Button.tsx
 import * as React from "react";
 import { View, ViewStyle } from "react-native";
 import { Button as PaperButton, useTheme } from "react-native-paper";
@@ -64,7 +64,7 @@ const sizeStyles: Record<
   },
 };
 
-export function ButtonDisplay({
+export function Button({
   variant = "primary",
   size = "normal",
   mode = "contained",

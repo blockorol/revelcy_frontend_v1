@@ -16,7 +16,7 @@ import { HoldersInfo } from "@components/premarket/HoldersInfo";
 import { TokenInfo } from "@api/token";
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import React from "react";
-import { ButtonDisplay } from "@components/ui/Button";
+import { Button } from "@components/ui/Button";
 
 const SLIDER_HEIGHT = 48
 
@@ -144,6 +144,7 @@ export function TokenPremarketPageNormal({
                   tokenMainInfo={token.mainInfo}
                   tokenDynamicInfo={token.dynamicInfo}
                   onUpdated={refetchTokenInfo}
+                  isMobile={false}
                 />
               </View>
             </View>
@@ -275,6 +276,8 @@ function BriefMobile({
   const theme = useTheme();
 
   return (
+    
+    <View>
     <ScrollView
       showsVerticalScrollIndicator={false}
       style={{
@@ -302,11 +305,6 @@ function BriefMobile({
         <PremarketDynamicInfo
           tokenMainInfo={token.mainInfo}
           tokenDynamicInfo={token.dynamicInfo}
-        />
-        <PremarketAction
-          tokenMainInfo={token.mainInfo}
-          tokenDynamicInfo={token.dynamicInfo}
-          onUpdated={refetchTokenInfo}
         />
         {user && token.dynamicInfo.holders.find((h) => h.id === user.userId) !== undefined && (
           <YourEntry 
@@ -340,9 +338,43 @@ function BriefMobile({
           isMobile={true}
           limited={true}
         />
-        <ButtonDisplay variant='primary' mode='text' onPress={toPeopleSection} style={{width:'100%', marginTop:-10}}>View all</ButtonDisplay>
+        <Button variant='primary' mode='text' onPress={toPeopleSection} style={{width:'100%', marginTop:-10}}>View all</Button>
+      </View>
+      <View  // hack to spase for PremarketAction
+        style={{
+          paddingBottom: 0,
+          alignItems: "center",
+          zIndex: -999, 
+          opacity: 0, 
+        }}>
+        <PremarketAction
+          tokenMainInfo={token.mainInfo}
+          tokenDynamicInfo={token.dynamicInfo}
+          onUpdated={refetchTokenInfo}
+          isMobile={true}
+        />
+
       </View>
     </ScrollView>
+    
+      <View
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          alignItems: "center",
+          zIndex: 999,
+        }}
+      >
+        <PremarketAction
+          tokenMainInfo={token.mainInfo}
+          tokenDynamicInfo={token.dynamicInfo}
+          onUpdated={refetchTokenInfo}
+          isMobile={true}
+        />
+        </View>
+        </View>
   );
 }
 

@@ -1,102 +1,147 @@
 import { TokenDynamicInfo, TokenMainInfo } from "@api/token";
 
 import { PremarketJoin } from "@components/premarket/PremarketJoin";
-import { PremarketUserJoined } from "@components/premarket/PremarketUserJoined";
 import { CreatorInfo } from "@components/premarket/CreatorInfo";
 import { useAuth } from "@providers/AuthContext";
-import { Button, useTheme, Text} from "react-native-paper";
+import { useTheme, Text } from "react-native-paper";
 import { View } from "react-native";
-import { SvgIcon } from "@components/base/SvgIcon";
+import { Button } from "@components/ui/Button";
+import OneScreenContainer from "@components/base/container/OneScreenContainer";
+import LoginFlow from "@components/login/LoginFlow";
+import { useOverlay } from "@storage/UniversalOverlayProvider";
+import { ShareTextButton } from "@components/base/ButtonShare";
 
 interface PremarketActionProps {
   tokenMainInfo: TokenMainInfo;
   tokenDynamicInfo: TokenDynamicInfo;
   onUpdated: () => Promise<void>;
+  isMobile: boolean;
 }
 
-export function PremarketAction({ tokenMainInfo, tokenDynamicInfo, onUpdated}: PremarketActionProps) {
-    const { user } = useAuth();
-    if (!user) {
-        return <Button> Login</Button>
-    }
-    const isCreator = tokenMainInfo.createdByPubkey === user.walletAddress
-    const userJoined = tokenDynamicInfo.holders.find((holder) =>  holder.id === user.userId) !== undefined
+export function PremarketAction({
+  tokenMainInfo,
+  tokenDynamicInfo,
+  onUpdated,
+  isMobile,
+}: PremarketActionProps) {
 
-    switch (tokenMainInfo.state) {
-        case 'premarket':
-            return <PremarketActionPremarket 
-                tokenMainInfo={tokenMainInfo}
-                tokenDynamicInfo={tokenDynamicInfo}
-                isCreator={isCreator}
-                userJoined={userJoined}
-                onUpdated={onUpdated}
-                />
-        case 'canceled':
-            return <PremarketActionCanceled />
-        case 'finished':
-            return <PremarketActionLaunched />
-
-    }
-    
+  switch (tokenMainInfo.state) {
+    case "premarket":
+      return  <PremarketActionPremarket
+          tokenMainInfo={tokenMainInfo}
+          tokenDynamicInfo={tokenDynamicInfo}
+          onUpdated={onUpdated}
+          isMobile={isMobile}
+        />
+    case "canceled":
+      return <PremarketActionCanceled />;
+    case "finished":
+      return <PremarketActionLaunched />;
+  }
 }
-
 
 interface PremarketActionLaunchedProps {
   tokenMainInfo: TokenMainInfo;
   tokenDynamicInfo: TokenDynamicInfo;
-  isCreator: boolean;
-  userJoined: boolean;
   onUpdated: () => Promise<void>;
+  isMobile: boolean;
 }
 
-export function PremarketActionPremarket({ tokenMainInfo, tokenDynamicInfo, isCreator, userJoined, onUpdated}: PremarketActionLaunchedProps) {
-    const {colors} = useTheme()
+export function PremarketActionPremarket({
+  tokenMainInfo,
+  tokenDynamicInfo,
+  onUpdated,
+  isMobile
+}: PremarketActionLaunchedProps) {
+  let { user } = useAuth();
+  const { open, close } = useOverlay();
+  const { colors } = useTheme();
+  const currentURL = window.location.href;
 
-    const now = Math.floor(Date.now() / 1000);
-    const isDeadline = tokenMainInfo.premarketDeadline < now
+  const renderLogin = () => (
+    <OneScreenContainer>
+      <LoginFlow onCloseButton={close} />
+    </OneScreenContainer>
+  );
 
+  if (!user) {
+    user = {
+        walletAddress: "holder_wallet_22",
+        userId: "user_1222",
+        jwt: "lll",
+        username:"username",
+        avatarUrl: "undefined",
+    }
+    // return (
+    //   <View style={{flexDirection: "row", padding: isMobile ? 16 : 24, width: "100%", gap: 16}}>
+    //     <Button style={{flex: 3}} onPress={() => open(renderLogin())}>Login</Button>
+    //     <ShareTextButton style={{flex: 1}} shareMessage={`Join to premarket on: ${currentURL}`}/>
+    //   </View>
+    // );
+  }
+
+    const isCreator = tokenMainInfo.createdByPubkey === user.walletAddress;
+    const userJoined =
+    tokenDynamicInfo.holders.find((holder) => holder.id === user.userId) !==
+    undefined;
+
+  const now = Math.floor(Date.now() / 1000);
+  const isDeadline = tokenMainInfo.premarketDeadline < now;
+  if (isCreator) {
     return (
-        <View style={{ gap: 48, alignItems:'center' }}>
-            {
-                isDeadline ? <Text variant='labelSmall' style={{color:colors.onSurfaceVariant}}>Waiting for creator action: Finish premarket</Text> :
-                userJoined ?
-                    <PremarketUserJoined 
-                        onUpdated={onUpdated}
-                        premarketPubkey={tokenMainInfo.premarketPubkey}
-                    />
-                        :
-                    <PremarketJoin
-                        tokenMainInfo={tokenMainInfo}
-                        tokenDynamicInfo={tokenDynamicInfo}
-                        onUpdated={onUpdated}
-                    />
-            }
-            {
-                isCreator && <CreatorInfo 
-                tokenMainInfo={tokenMainInfo}
-                isGoalReached={tokenMainInfo.premarketGoalSolLamp.lte(tokenDynamicInfo.marketCapSolLamp)}
-                onUpdated={onUpdated}
-                />
-            }
-        </View>
-    )
-}
+    <View style={{ gap: 48, alignItems: "center", padding: isMobile?16:24, width: '100%', backgroundColor: isMobile?colors.shadow:undefined}}>
+        <CreatorInfo
+            tokenMainInfo={tokenMainInfo}
+            isDeadLine={isDeadline}
+            isGoalReached={tokenMainInfo.premarketGoalSolLamp.lte(
+            tokenDynamicInfo.marketCapSolLamp
+            )}
+            onUpdated={onUpdated}
+            currentURL={currentURL}
+        />
+    </View>
+)}
 
+  return (
+    <View style={{ gap: 48, alignItems: "center", padding: isMobile?16:24, width: '100%',backgroundColor: isMobile?colors.shadow:undefined}}>
+      {isDeadline ? (
+        <Text variant="labelSmall" style={{ color: colors.onSurfaceVariant }}>
+          Waiting for creator action: Finish premarket
+        </Text>
+      ) : userJoined ? (
+        <ShareTextButton style={{width: "100%"}} shareMessage={`Join to premarket on: ${currentURL}`}>Share</ShareTextButton>
+      ) : (
+        <PremarketJoin
+          tokenMainInfo={tokenMainInfo}
+          tokenDynamicInfo={tokenDynamicInfo}
+          onUpdated={onUpdated}
+          user={user}
+          currentURL={currentURL}
+          isMobile={isMobile}
+        />
+      )}
+    </View>
+  );
+}
 
 export function PremarketActionCanceled() {
-    return (
-        <View style={{ gap: 48 }}>
-        </View>
-    )
+  return null;
 }
 
-
 export function PremarketActionLaunched() {
-    const {colors} = useTheme()
-    return (
-        <View style={{ flexDirection: 'row', gap:16 }}>
-            <Button mode='contained' style={{width:270}}>Buy</Button> 
-            <Button mode='contained'> <SvgIcon name='tg-logo' color={colors.onPrimary}/> </Button>
-        </View>
-    )
+  const { colors } = useTheme();
+  return (
+    <View style={{ flexDirection: "row", gap: 16 }}>
+      {/* <Button mode='contained' disabled  style={{width:270}}>Buy</Button>  */}
+      <Button
+        mode="contained"
+        leftSvgIconName="pumpfun"
+        textColor={colors.onPrimary}
+        style={{ width: "100%" }}
+      >
+        {" "}
+        View
+      </Button>
+    </View>
+  );
 }
