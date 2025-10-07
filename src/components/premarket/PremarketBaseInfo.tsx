@@ -64,7 +64,7 @@ export function PremarketBaseInfo({ tokenMainInfo, tokenDynamicInfo, isMobile}: 
     >Times Up</ChipDisplay>
   ) : state === 'expired' ? (
     <ChipDisplay
-      variant="primary"
+      variant="error"
       size="normal"
       mode="flat"
     >Expired</ChipDisplay>
@@ -80,7 +80,7 @@ export function PremarketBaseInfo({ tokenMainInfo, tokenDynamicInfo, isMobile}: 
 
   if (tokenMainInfo.state === "premarket") {
     const deadline = getTimeLeftLabel(tokenMainInfo.premarketDeadline)
-    deadlineText = deadline === 'Expired' ? "reached deadline":  deadline+" left"
+    deadlineText = deadline === 'Expired' ?"reached deadline" :  deadline+" left"
   }
 
   return (
@@ -167,7 +167,7 @@ export function PremarketBaseInfo({ tokenMainInfo, tokenDynamicInfo, isMobile}: 
             color={theme.colors.onSurfaceVariant} 
           />
         )}
-        <Text variant="labelLarge" style={{color:theme.colors.secondary}}>
+        <Text variant="labelLarge" style={{color: deadlineText === "reached deadline" ? theme.colors.error : theme.colors.secondary}}>
           {deadlineText}
         </Text>
         {(tokenMainInfo.state === 'premarket' || tokenMainInfo.state === 'canceled') && (
