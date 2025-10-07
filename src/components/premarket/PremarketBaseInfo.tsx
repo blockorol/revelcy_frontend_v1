@@ -1,4 +1,4 @@
-import { TokenMainInfo } from "@api/token";
+import { TokenMainInfo, TokenDynamicInfo } from "@api/token";
 import { RoundIconLink } from "@components/premarket/RoundIcons";
 import { useIsMobileForTwoScreenWithDemention } from "@hooks/useIsMobile";
 import { getTimeLeftLabel } from "@utils/premarket";
@@ -11,14 +11,33 @@ import { ChipDisplay } from '@components/ui/Chip';
 
 interface PremarketBaseInfoProps {
   tokenMainInfo: TokenMainInfo;
+  tokenDynamicInfo: TokenDynamicInfo;
   isMobile: boolean
 }
 
-export function PremarketBaseInfo({ tokenMainInfo, isMobile}: PremarketBaseInfoProps) {
+export function PremarketBaseInfo({ tokenMainInfo, tokenDynamicInfo, isMobile}: PremarketBaseInfoProps) {
   const theme = useTheme();
   const { left } = useIsMobileForTwoScreenWithDemention();
 
-  const button = (state: "premarket" | "canceled" | "finished") => {
+  // Determine the effective state based on conditions
+  const getEffectiveState = () => {
+    const now = Math.floor(Date.now() / 1000);
+    const isPremarket = tokenMainInfo.state === 'premarket';
+    const isDeadlinePassed = tokenMainInfo.premarketDeadline < now;
+    const isGoalNotReached = tokenDynamicInfo.reservedSolLamp.lt(tokenMainInfo.premarketGoalSolLamp);
+    
+    // If it's premarket and deadline passed and goal reached, show "times_up"
+    if (isPremarket && isDeadlinePassed && !isGoalNotReached) {
+      return 'times_up';
+    }
+    if (isPremarket && isDeadlinePassed && isGoalNotReached) {
+      return 'expired';
+    }
+    
+    return tokenMainInfo.state;
+  };
+
+  const button = (state: "premarket" | "canceled" | "finished" | "times_up" | "expired") => {
     return state === 'premarket' ? 
     (<ChipDisplay
       variant="secondary"
@@ -37,6 +56,18 @@ export function PremarketBaseInfo({ tokenMainInfo, isMobile}: PremarketBaseInfoP
       size="normal"
       mode="flat"
     >Refunded</ChipDisplay>
+  ) : state === 'times_up' ? (
+    <ChipDisplay
+      variant="primary"
+      size="normal"
+      mode="flat"
+    >Times Up</ChipDisplay>
+  ) : state === 'expired' ? (
+    <ChipDisplay
+      variant="primary"
+      size="normal"
+      mode="flat"
+    >Expired</ChipDisplay>
   ) : (
     <ChipDisplay
       variant="primary"
@@ -122,7 +153,7 @@ export function PremarketBaseInfo({ tokenMainInfo, isMobile}: PremarketBaseInfoP
           gap: 10,
         }}
       >
-        {button(tokenMainInfo.state)}
+        {button(getEffectiveState())}
         {tokenMainInfo.state === 'finished' && (
             <Text variant="labelLarge">
             {/* CHANGE tokenMainInfo.premarketPubkey to tokenMainInfo.mintAddress later!!! */}
