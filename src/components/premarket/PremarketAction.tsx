@@ -65,19 +65,12 @@ export function PremarketActionPremarket({
   );
 
   if (!user) {
-    user = {
-        walletAddress: "holder_wallet_22",
-        userId: "user_1222",
-        jwt: "lll",
-        username:"username",
-        avatarUrl: "undefined",
-    }
-    // return (
-    //   <View style={{flexDirection: "row", padding: isMobile ? 16 : 24, width: "100%", gap: 16}}>
-    //     <Button style={{flex: 3}} onPress={() => open(renderLogin())}>Login</Button>
-    //     <ShareTextButton style={{flex: 1}} shareMessage={`Join to premarket on: ${currentURL}`}/>
-    //   </View>
-    // );
+    return (
+      <View style={{flexDirection: "row", padding: isMobile ? 16 : 24, width: "100%", gap: 16}}>
+        <Button style={{flex: 3}} onPress={() => open(renderLogin())}>Login</Button>
+        <ShareTextButton style={{flex: 1}} shareMessage={`Join to premarket on: ${currentURL}`}/>
+      </View>
+    );
   }
 
     const isCreator = tokenMainInfo.createdByPubkey === user.walletAddress;
