@@ -187,8 +187,8 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
   maxSolDisplayed = 100,
   maxPercentDisplay = 90,
 
-  width = 347,
-  height = 250,
+  width = 448,
+  height = 252,
   padding = 16,
 }) => {
   const { colors, fonts } = useTheme() as AppTheme;

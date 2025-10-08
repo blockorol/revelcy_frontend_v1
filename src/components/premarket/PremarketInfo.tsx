@@ -53,7 +53,7 @@ export function PremarketInfo({currentUserId, tokenInfo, isMobile, withJoinButto
       >
         <PremarketBondingCurve
           currentUserId={currentUserId}
-          width={isMobile?width-16*2:2*(width-32-24*2)/3}
+          width={isMobile?width-16*2:448}
           height={252}
           state={tokenInfo.mainInfo.state}
           goalPercent={tokenInfo.mainInfo.premarketGoalPers}
