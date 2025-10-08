@@ -54,7 +54,7 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
         backgroundColor: isMobile?undefined:colors.surfaceContainerLowest,
         borderRadius: isMobile?16:24 ,
         padding: 24,
-        paddingBottom: 0,
+        paddingBottom: 24,
         gap: 16,
       }}
     >
