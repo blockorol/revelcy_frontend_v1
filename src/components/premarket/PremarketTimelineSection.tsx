@@ -252,6 +252,7 @@ const styles = StyleSheet.create({
   },
   countdownText: {
     minHeight: 30,
+    minWidth: 100,
     marginTop: 4,
   },
 });

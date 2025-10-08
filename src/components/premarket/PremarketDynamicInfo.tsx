@@ -23,10 +23,13 @@ export function PremarketDynamicInfo({
         justifyContent: "space-between",
         alignItems: "flex-start",
         flexDirection: "row",
+        paddingHorizontal: 24,
+        paddingVertical: 24,
+        gap: 40,
       }}
     >
       {tokenMainInfo.state === "finished" ? (
-        <View style={{ gap: 4, flex: 1, alignItems: "center" }}>
+        <View style={{alignItems: "flex-start" }}>
           <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
             Current Mcap
           </Text>
@@ -38,7 +41,7 @@ export function PremarketDynamicInfo({
           </Text>
         </View>
       ) : (
-        <View style={{ gap: 4, flex: 1, alignItems: "center" }}>
+        <View style={{alignItems: "flex-start" }}>
           <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
             Current Mcap
           </Text>
@@ -90,10 +93,7 @@ export function PremarketDynamicInfo({
 
       <View
         style={{
-          gap: 4,
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "flex-start",
+          alignItems: "flex-start",
         }}
       >
         <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
@@ -107,7 +107,10 @@ export function PremarketDynamicInfo({
         />
       </View>
 
-      <View style={{ gap: 4, flex: 1, alignItems: "center" }}>
+      <View style={{ 
+        alignItems: "flex-start",
+      }}
+      >
         <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
           Achieved
         </Text>
