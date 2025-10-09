@@ -70,8 +70,9 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   containerMobile: {
-    flexGrow: 1,
-    flexShrink: 1,
+    flex: 1,
+    // flexGrow: 1,
+    // flexShrink: 1,
     alignSelf: 'stretch',
   },
   horizontalContainer: {
