@@ -109,7 +109,6 @@ export default function EditTokenomicsForm({
             }}>
             <View>
                 <TokenCreateFormHeader title={"Edit Tokenomics"} theme={theme} onBack={onBack} onClose={onClose} />
-        
                 <TextInput
                     label="Creator Buy"
                     value={displayValue}

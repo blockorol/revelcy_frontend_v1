@@ -278,7 +278,9 @@ export default function PremarketCreationFlow() {
             premarketDeadline: tokenData.premarketSettingsData.deadline,
             premarketCreated: Math.floor(Date.now() / 1000),
             createdByPubkey: wallet.publicKey.toString(),
-            state: 'premarket'
+            state: 'premarket',
+            finish_date: 1759577538, // CHANGE IT
+            token_mint: "BPx1ne2A6fFzS57GRqDkuQWuXWLo34tsz2WdvYS8pump", // CHANGE IT
           },
           communityInfo: {
             description: tokenData.customData.description ?? "",
@@ -360,10 +362,14 @@ export default function PremarketCreationFlow() {
         height: '100%',
       }}
     >
-      <View style={{ maxWidth: 500, maxHeight: 1000, width: '100%', height: isMobile ? '100%' : '85%' }}>
+      <View style={{ maxWidth: 480, maxHeight: 792, width: '100%', height: isMobile ? '100%' : '85%' }}>
         {step === FLOW_STEP.TOKEN_BASE_INFO && (
           <CreateTokenForm
             onNext={handleAfterSetTokenBaseInfo}
+            onClose={async () => {
+              await clearDraft(storageKey);
+              router.back();
+            }}
             step={1}
             totalSteps={4}
             presetData={tokenMainData}

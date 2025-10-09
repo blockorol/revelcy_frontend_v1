@@ -19,7 +19,7 @@ export default function TokenCreateFormHeader(
         <View style={{width: '100%', justifyContent: 'space-between',flexDirection: 'row', alignItems: 'center',}}>
             <View style={{ paddingRight:8, paddingLeft:8, gap: 16, flexDirection: 'row', alignItems: 'center',}}>
                 <SvgIcon name="plant-outlined" size={24} color={theme.colors.onSurface}/>
-                <Text variant='titleLarge' style={{color: theme.colors.onSurface, marginBottom: 4}}>{title}</Text>
+                <Text variant='titleLarge' style={{color: theme.colors.onSurface}}>{title}</Text>
             </View>
             {onClose&&<IconButton icon="close" size={18} iconColor={theme.colors.onSurface} onPress={onClose} />}
             {onBack&&<SvgIconButton name='arrow-left' size={18} color={theme.colors.onSurface} onPress={onBack} />}

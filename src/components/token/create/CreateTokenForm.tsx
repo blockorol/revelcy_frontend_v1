@@ -76,132 +76,130 @@ export default function CreateTokenForm({presetData, onNext, onClose,
 
   return (
     <ScrollView showsVerticalScrollIndicator={false} style = {{backgroundColor: colors.surfaceContainerLowest, borderRadius: isMobile?0:16}}>
-      <View style={{ padding: 24, justifyContent: 'space-between', alignItems: 'stretch', width: '100%', height: '100%'}}>
-        <View style={{gap:32}}>
-          <TokenCreateFormHeader title="Create Token" theme={theme} onClose={onClose} onBack={onBack}  />
+      <View style={{ padding: 24, justifyContent: 'space-between', alignItems: 'stretch', width: '100%', height: '100%', gap: 48}}>
+        <View style={{gap:16}}>
+          <TokenCreateFormHeader title="Token Details" theme={theme} onClose={onClose} onBack={onBack}  />
+          <View style={{gap:64}}>  
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, width: '100%', }}> 
+              <TouchableOpacity onPress={pickAvatar} style={{ alignSelf: 'center' }}>
+                <View
+                  style={{
+                    width: 112,
+                    height: 112,
+                    borderRadius: 32,
+                    backgroundColor: colors.surfaceContainerHigh,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {avatar ? (
+                    <Image source={{ uri: avatar }} style={{  width: '100%', height: '100%'  }} />
+                  ) : (
+                    <Text variant='bodySmall' style={{ fontSize: 40, color: theme.colors.onSurface }}>+</Text>
+                  )}
+                </View>
+              </TouchableOpacity>
+              <View style={{flexDirection: 'column', gap: 4, justifyContent:'center', alignItems: 'baseline'}}>
+                <Text variant="bodyLarge">Image, video or gif</Text>
+                <View>
+                  <Text variant="bodySmall">This will be shown as</Text>
+                  <Text variant="bodySmall">your Token’s picture</Text>
+                </View>
+              </View> 
+            </View>
+            <View style={{flexDirection: 'column', gap: 48}}>
+              <TextInput
+                label="Token Name"
+                value={tokenName}
+                onChangeText={setTokenName}
+                maxLength={20}
+                placeholder="eg. Bitcoin"
+                style={{ flex:1 }}
+              />
+              <TextInput
+                label="Token Ticker"
+                value={tokenTicker}
+                onChangeText={setTokenTicker}
+                maxLength={5}
+                placeholder="eg. BTC"
+                style={{ flex:1 }}
+              />
+              <TextInputMultiline
+                id="Description"
+                label="Description"
+                value={description}
+                onChangeValue={setDescription}
+                placeholder="Describe your token..."
+              />
+              <View style={{gap:48}}>
+                {enableTg && (
+                  <View>
+                    <TextInput
+                      label="Telegram"
+                      value={telegram}
+                      onChangeText={(val) => setTelegram(normalizeUrl(val))}
+                      placeholder="https://t.me/"
+                      mode="flat"
+                    />
+                    <TouchableOpacity style={styles.badgeClose} onPress={() => setEnableTg(false)}>
+                      <Badge style={[styles.badge, {backgroundColor:'transparent', color: colors.onBackground,}]}>✕</Badge>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                
+                {enableTwitter && (
+                  <View>
+                    <TextInput
+                      label="Twitter"
+                      value={twitter}
+                      onChangeText={(val) => setTwitter(normalizeUrl(val))}
+                      placeholder="x.com/"
+                    />
+                    <TouchableOpacity style={styles.badgeClose} onPress={() => setEnableTwitter(false)}>
+                      <Badge style={[styles.badge, {backgroundColor:'transparent', color: colors.onBackground,}]}>✕</Badge>
+                    </TouchableOpacity>
+                  </View>
+                )}
+
+                
+                {enableWebsite && (
+                  <View>
+                    <TextInput
+                      label="Website"
+                      value={website}
+                      onChangeText={(val) => setWebsite(normalizeUrl(val))}
+                    />
+                    <TouchableOpacity style={styles.badgeClose} onPress={() => setEnableWebsite(false)}>
+                      <Badge style={[styles.badge, {backgroundColor:'transparent', color: colors.onBackground,}]}>✕</Badge>
+                    </TouchableOpacity>
+                  </View>
+                )}
 
 
-          {/* token icon */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap:16, width: '100%', }}>
-            <TouchableOpacity onPress={pickAvatar} style={{ alignSelf: 'center' }}>
-              <View
-                style={{
-                  width: 112,
-                  height: 112,
-                  borderRadius: 32,
-                  backgroundColor: colors.surfaceContainerHigh,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  overflow: 'hidden',
-                }}
-              >
-                {avatar ? (
-                  <Image source={{ uri: avatar }} style={{  width: '100%', height: '100%'  }} />
-                ) : (
-                  <Text variant='bodySmall' style={{ fontSize: 40, color: theme.colors.onSurface }}>+</Text>
+                {/* Social Icons Actions */}
+                { !(enableTwitter && enableTg && enableWebsite) && (
+                  <View style={{ flexDirection: 'row', justifyContent: 'flex-start', width:'100%', paddingTop: 8 }}>
+                      <View style={{flexDirection: 'row', gap:16, height:24}}>
+                        <SvgIcon name="add-circle-outlined" color={theme.colors.onSurfaceVariant} size={24} />
+                        {!enableTg && (
+                          <SvgIconButton size={24} name="tg-logo" color={theme.colors.onSurface} onPress={() => setEnableTg(true)}/>
+                        )}
+                        {!enableTwitter && (
+                          <SvgIconButton size={24} name="x-logo" color={theme.colors.onSurface} onPress={() => setEnableTwitter(true)}/>
+                        )}
+                        {!enableWebsite && (
+                          <SvgIconButton size={24} name="world-outlined" color={theme.colors.onSurface} onPress={() => setEnableWebsite(true)}/>
+                        )}
+                    </View>
+                  </View>
                 )}
               </View>
-            </TouchableOpacity>
-            <View style={{flexDirection: 'column', gap: 4, justifyContent:'center', alignItems: 'baseline',}}>
-              <Text variant="bodyLarge">Image, video or gif</Text>
-              <Text variant="bodySmall">This will be shown as your avatar</Text>
             </View>
           </View>
-            
-          <View style={{flexDirection: 'column', gap: 16,}}>
-            <TextInput
-              label="Token Name"
-              value={tokenName}
-              onChangeText={setTokenName}
-              maxLength={20}
-              placeholder="eg. Bitcoin"
-              style={{ flex:1 }}
-            />
-
-            <TextInput
-              label="Token Ticker"
-              value={tokenTicker}
-              onChangeText={setTokenTicker}
-              maxLength={5}
-              placeholder="eg. BTC"
-              style={{ flex:1 }}
-            />
-            <TextInputMultiline
-              id="Description"
-              label="Description"
-              value={description}
-              onChangeValue={setDescription}
-              placeholder="Describe your token..."
-            />
-          </View>
-          
-          <View>
-            {enableTg && (
-              <View>
-                <TextInput
-                  label="Telegram"
-                  value={telegram}
-                  onChangeText={(val) => setTelegram(normalizeUrl(val))}
-                  placeholder="https://t.me/"
-                  mode="flat"
-                />
-                <TouchableOpacity style={styles.badgeClose} onPress={() => setEnableTg(false)}>
-                  <Badge style={[styles.badge, {backgroundColor:'transparent', color: colors.onBackground,}]}>✕</Badge>
-                </TouchableOpacity>
-              </View>
-            )}
-            
-            {enableTwitter && (
-              <View>
-                <TextInput
-                  label="Twitter"
-                  value={twitter}
-                  onChangeText={(val) => setTwitter(normalizeUrl(val))}
-                  placeholder="x.com/"
-                />
-                <TouchableOpacity style={styles.badgeClose} onPress={() => setEnableTwitter(false)}>
-                  <Badge style={[styles.badge, {backgroundColor:'transparent', color: colors.onBackground,}]}>✕</Badge>
-                </TouchableOpacity>
-              </View>
-            )}
-
-            
-            {enableWebsite && (
-              <View>
-                <TextInput
-                  label="Website"
-                  value={website}
-                  onChangeText={(val) => setWebsite(normalizeUrl(val))}
-                />
-                <TouchableOpacity style={styles.badgeClose} onPress={() => setEnableWebsite(false)}>
-                  <Badge style={[styles.badge, {backgroundColor:'transparent', color: colors.onBackground,}]}>✕</Badge>
-                </TouchableOpacity>
-              </View>
-            )}
-
-
-            {/* Social Icons Actions */}
-            { !(enableTwitter && enableTg && enableWebsite) && (
-              <View style={{ flexDirection: 'row', justifyContent: 'flex-start', width:'100%', paddingTop: 8 }}>
-                  <View style={{flexDirection: 'row', gap:16, height:24}}>
-                    <SvgIcon name="add-circle-outlined" color={theme.colors.onSurfaceVariant} size={24} />
-                    {!enableTg && (
-                      <SvgIconButton size={24} name="tg-logo" color={theme.colors.onSurface} onPress={() => setEnableTg(true)}/>
-                    )}
-                    {!enableTwitter && (
-                      <SvgIconButton size={24} name="x-logo" color={theme.colors.onSurface} onPress={() => setEnableTwitter(true)}/>
-                    )}
-                    {!enableWebsite && (
-                      <SvgIconButton size={24} name="world-outlined" color={theme.colors.onSurface} onPress={() => setEnableWebsite(true)}/>
-                    )}
-                </View>
-              </View>
-            )}
-          </View>
-
         </View>
-
-        <ContinueAndProgress 
+        <View style={{gap:16}}>
+          <ContinueAndProgress 
             theme={theme}
             progress={{
               before:(step-1)/totalSteps,
@@ -209,9 +207,10 @@ export default function CreateTokenForm({presetData, onNext, onClose,
             }}
             handleSubmit={handleSubmit}
             isFilledAll={isFilledAll}
-            />
-    </View>
-  </ScrollView>
+          />
+        </View>
+      </View>
+    </ScrollView>
   );
 }
 
