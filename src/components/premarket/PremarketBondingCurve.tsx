@@ -218,14 +218,22 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
     x: percentToX(v.persent),
     y: solToY(convertLamportToSmallCount(v.sol_lamp)),
   }));
-  const beforeNow = curvePoints.filter(p => p.persent <= nowPercent);
-  const afterNow = curvePoints.filter(p => p.persent >= nowPercent);
+  
+  // Find the last buyer's position (highest cumulative SOL amount)
+  const lastBuyerPercent = joiners.length > 0 
+    ? findPointBySol(curvePoints, joiners.reduce((max, joiner) => 
+        joiner.amount_sol_cumulative_lamp.gt(max.amount_sol_cumulative_lamp) ? joiner : max
+      ).amount_sol_cumulative_lamp).persent
+    : 0;
+  
+  const beforeLastBuyer = curvePoints.filter(p => p.persent <= lastBuyerPercent);
+  const afterLastBuyer = curvePoints.filter(p => p.persent >= lastBuyerPercent);
 
-  const pathBefore = beforeNow.reduce(
+  const pathBefore = beforeLastBuyer.reduce(
     (acc, p, i) => (i === 0 ? `M${p.x},${p.y}` : `${acc} L${p.x},${p.y}`),
     ""
   );
-  const pathAfter = afterNow.reduce(
+  const pathAfter = afterLastBuyer.reduce(
     (acc, p, i) => (i === 0 ? `M${p.x},${p.y}` : `${acc} L${p.x},${p.y}`),
     ""
   );
@@ -242,6 +250,9 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
     goalPoint.y === nowPoint.y ? 
       nowPoint.y + (fonts.labelSmall.fontSize as number) * 1.2 : 
       nowPoint.y + (fonts.labelSmall.fontSize as number) / 2
+
+  // Check if labels overlap (within 30px vertical distance)
+  const labelsOverlap = Math.abs(goalTop - nowTop) < 30
 
   const goalColor = 
     state === 'canceled' ? colors.error : 
@@ -274,7 +285,7 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
         <Path d={pathAfter} stroke={colors.inverseOnSurface} strokeWidth={4} fill="none" />
 
         {/* goal line */}
-        <Line x1={YLineWight} x2={goalPoint.x -4} y1={goalPoint.y} y2={goalPoint.y} stroke={goalColor} strokeDasharray="10" />
+        <Line x1={YLineWight} x2={goalPoint.x -4} y1={goalPoint.y} y2={goalPoint.y} stroke={goalColor} strokeDasharray="4" />
         <Circle
           cx={goalPoint.x}
           cy={goalPoint.y}
@@ -285,8 +296,8 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
         />
 
         {/* now line */}
-        { state === 'premarket' &&
-          <Line x1={YLineWight} x2={nowPoint.x} y1={nowPoint.y} y2={nowPoint.y} stroke={colors.primary} strokeDasharray="5" />
+        { state === 'premarket' && !labelsOverlap &&
+          <Line x1={YLineWight} x2={nowPoint.x} y1={nowPoint.y} y2={nowPoint.y} stroke={colors.primary} strokeDasharray="4" />
         }
 
         {/* joiners */}
@@ -363,7 +374,7 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
         variant="labelSmall"
         style={{
           position: 'absolute',
-          left: 9,
+          left: 8,
           top: goalTop,
           backgroundColor: goalColor,
           color: onGoalColor,
@@ -373,12 +384,12 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
       >
         Goal
       </Text>
-      { state === 'premarket' &&
+      { state === 'premarket' && !labelsOverlap &&
         <Text
           variant="labelSmall"
           style={{
             position: 'absolute',
-            left: 0,
+            left: 8,
             top: nowTop,
             backgroundColor: colors.primary,
             color: colors.onPrimary,
