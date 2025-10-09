@@ -190,4 +190,4 @@ export function convertTimeStampToDataMonth(timestamp: number): string {
   return `${day} ${monthShort}`;
 }
 
-export type PremarketState = 'premarket' | 'canceled' | 'finished';
+export type PremarketState = 'premarket' | 'canceled' | 'finished' | 'times_up' | 'expired';

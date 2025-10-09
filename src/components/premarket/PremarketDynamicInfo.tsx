@@ -10,22 +10,30 @@ import { AvatarGroup } from "@components/base/AvatarGroup";
 interface PremarketDynamicInfoProps {
   tokenDynamicInfo: TokenDynamicInfo;
   tokenMainInfo: TokenMainInfo;
+  isMobile: boolean;
 }
 export function PremarketDynamicInfo({
   tokenDynamicInfo,
   tokenMainInfo,
+  isMobile,
 }: PremarketDynamicInfoProps) {
   const theme = useTheme();
   const { left } = useIsMobileForTwoScreenWithDemention();
+  
+  // Don't render if premarket state is canceled (refunded)
+  if (tokenMainInfo.state === "canceled") {
+    return null;
+  }
+  
   return (
     <View
       style={{
         justifyContent: "space-between",
         alignItems: "flex-start",
         flexDirection: "row",
-        paddingHorizontal: 24,
-        paddingVertical: 24,
+        paddingHorizontal: isMobile?16:24,
         gap: 40,
+        width: isMobile ? "100%" : "auto",
       }}
     >
       {tokenMainInfo.state === "finished" ? (

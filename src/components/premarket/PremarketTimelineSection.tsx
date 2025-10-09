@@ -103,7 +103,7 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
             </TextProminent>
           </View>
         }
-        {state === 'premarket' ?
+        {state === 'premarket'  ?
         <View style={{ position: 'relative', paddingLeft: 20, paddingVertical: 24, gap: 12, width: 280}}>
           <View style={styles.countdownText}>{timeLeft}</View>
           {withJoinButton && <Button 
@@ -220,22 +220,29 @@ const getTimeLeft = (deadlineTs: number, colors: any) => {
   }
   if (m > 0) {
     return (
-      <Text style={{ color: colors.onSurface, fontSize: 18, fontWeight: '100', fontFamily: 'Arial' }}>
+      <Text style={{ color: colors.onSurface, fontSize: 25, fontWeight: '800', fontFamily: 'Inter_100Thin'}}>
         {m}m {s}s
       </Text>
     );
   }
+  if (s > 0) {
+    return (
+      <Text style={{ color: colors.onSurface, fontSize: 25, fontWeight: '800', fontFamily: 'Inter_100Thin'}}>
+        {s}s
+      </Text>
+    );
+  }
   return (
-    <Text style={{ color: colors.onSurface, fontSize: 18, fontWeight: '100', fontFamily: 'Arial' }}>
-      {s}s
+    <Text style={{ color: colors.onSurface, fontSize: 25, fontWeight: '800', fontFamily: 'Inter_100Thin'}}>
+      Deadline reached
     </Text>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 16,
-    paddingHorizontal: 5,
+    //paddingVertical: 16,
+    //paddingHorizontal: 5,
     gap: 8,
   },
   row: {

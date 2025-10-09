@@ -80,11 +80,11 @@ export function PremarketBaseInfo({ tokenMainInfo, tokenDynamicInfo, isMobile}: 
 
   if (tokenMainInfo.state === "premarket") {
     const deadline = getTimeLeftLabel(tokenMainInfo.premarketDeadline)
-    deadlineText = deadline === 'Expired' ?"reached deadline" :  deadline+" left"
+    deadlineText = deadline === 'Expired' ?"Deadline reached" :  deadline+" left"
   }
 
   return (
-    <View style={{ gap: 16, paddingHorizontal: isMobile?16:24, paddingVertical: isMobile?0:24,}}>
+    <View style={{ gap: 16, paddingHorizontal: isMobile?16:24, paddingTop: isMobile?0:24,}}>
       {!!tokenMainInfo.imageURL && (
         <View style={{paddingHorizontal: isMobile?24:0, paddingBottom: 8, paddingTop: 0}}>
           <Image
@@ -167,7 +167,7 @@ export function PremarketBaseInfo({ tokenMainInfo, tokenDynamicInfo, isMobile}: 
             color={theme.colors.onSurfaceVariant} 
           />
         )}
-        <Text variant="labelLarge" style={{color: deadlineText === "reached deadline" ? theme.colors.error : theme.colors.secondary}}>
+        <Text variant="labelLarge" style={{color: deadlineText === "Deadline reached" ? theme.colors.error : theme.colors.secondary}}>
           {deadlineText}
         </Text>
         {(tokenMainInfo.state === 'premarket' || tokenMainInfo.state === 'canceled') && (

@@ -19,9 +19,10 @@ interface YourEntryProps {
   premarketPubkey: PublicKey;
   tokenDynamicInfo: TokenDynamicInfo;
   onUpdated: () => void;
+  isMobile: boolean;
 }
 
-export function YourEntry({ premarketPubkey, tokenDynamicInfo, onUpdated }: YourEntryProps) {
+export function YourEntry({ premarketPubkey, tokenDynamicInfo, onUpdated, isMobile }: YourEntryProps) {
     const theme = useTheme();
     const { network } = useNetwork();
     const connection = getSolanaConnection(network);

@@ -47,7 +47,8 @@ export function PremarketInfo({currentUserId, tokenInfo, isMobile, withJoinButto
         style={{
           flexDirection: isMobile ? "column" : "row",
           alignContent: "center",
-          justifyContent: 'flex-start',
+          justifyContent: isMobile ? 'flex-start' : 'center',
+          alignItems: isMobile ? 'stretch' : 'center',
           gap: 32,
         }}
       >

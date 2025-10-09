@@ -82,7 +82,7 @@ export function PremarketActionPremarket({
   const isDeadline = tokenMainInfo.premarketDeadline < now;
   if (isCreator) {
     return (
-    <View style={{ gap: 48, alignItems: "center", padding: isMobile?16:24, width: '100%', backgroundColor: isMobile?colors.shadow:undefined}}>
+    <View style={{ gap: 48, alignItems: "center", paddingTop: 0, paddingBottom: 0, paddingLeft: isMobile?16:24, paddingRight: isMobile?16:24, width: '100%', backgroundColor: isMobile?colors.shadow:undefined}}>
         <CreatorInfo
             tokenMainInfo={tokenMainInfo}
             isDeadLine={isDeadline}
@@ -96,13 +96,13 @@ export function PremarketActionPremarket({
 )}
 
   return (
-    <View style={{ gap: 48, alignItems: "center", padding: isMobile?16:24, width: '100%',backgroundColor: isMobile?colors.shadow:undefined}}>
+    <View style={{ gap: 48, alignItems: "center", width: '100%',backgroundColor: isMobile?colors.shadow:undefined}}>
       {isDeadline ? (
         <Text variant="labelSmall" style={{ color: colors.onSurfaceVariant }}>
           Waiting for creator action: Finish premarket
         </Text>
       ) : userJoined ? (
-        <ShareTextButton style={{width: "100%"}} shareMessage={`Join to premarket on: ${currentURL}`}>Share</ShareTextButton>
+        <ShareTextButton style={{width: "90%"}} shareMessage={`Join to premarket on: ${currentURL}`}>Share</ShareTextButton>
       ) : (
         <PremarketJoin
           tokenMainInfo={tokenMainInfo}

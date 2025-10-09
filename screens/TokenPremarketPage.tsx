@@ -139,6 +139,7 @@ export function TokenPremarketPageNormal({
                 <PremarketDynamicInfo
                   tokenMainInfo={token.mainInfo}
                   tokenDynamicInfo={token.dynamicInfo}
+                  isMobile={false}
                 />
                 <PremarketAction
                   tokenMainInfo={token.mainInfo}
@@ -154,6 +155,7 @@ export function TokenPremarketPageNormal({
               premarketPubkey={token.mainInfo.premarketPubkey}
               tokenDynamicInfo={token.dynamicInfo}
               onUpdated={refetchTokenInfo}
+              isMobile={false}
             />
           )}
         </View>
@@ -178,9 +180,9 @@ export function TokenPremarketPageNormal({
               tokenInfo={token}
               isMobile={false}
               withJoinButton={
-                user === null ||
+                (user === null ||
                 token.dynamicInfo.holders.find((h) => h.id === user.userId) ===
-                  undefined
+                  undefined) && token.mainInfo.premarketDeadline > Math.floor(Date.now() / 1000)
               }
               onUpdated={refetchTokenInfo}
             />
@@ -305,12 +307,14 @@ function BriefMobile({
         <PremarketDynamicInfo
           tokenMainInfo={token.mainInfo}
           tokenDynamicInfo={token.dynamicInfo}
+          isMobile={true}
         />
         {user && token.dynamicInfo.holders.find((h) => h.id === user.userId) !== undefined && (
           <YourEntry 
             premarketPubkey={token.mainInfo.premarketPubkey}
             tokenDynamicInfo={token.dynamicInfo}
             onUpdated={refetchTokenInfo}
+            isMobile={true}
           />
         )}
         <AboutCommunity
@@ -326,9 +330,9 @@ function BriefMobile({
           tokenInfo={token}
           isMobile={true}
           withJoinButton={
-            user === null ||
+            (user === null ||
             token.dynamicInfo.holders.find((h) => h.id === user.userId) ===
-              undefined
+              undefined) && token.mainInfo.premarketDeadline > Math.floor(Date.now() / 1000)
           }
           onUpdated={refetchTokenInfo}
         />
