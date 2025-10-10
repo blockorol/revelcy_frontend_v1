@@ -99,7 +99,10 @@ export function TokenPremarketPageNormal({
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
-      style={{ height: screenDem.height }}
+      style={{ 
+        height: screenDem.height, 
+        backgroundColor: theme.colors.background,
+      }}
     >
       <View
         style={{
