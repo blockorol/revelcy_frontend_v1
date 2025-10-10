@@ -84,7 +84,12 @@ export function PremarketBaseInfo({ tokenMainInfo, tokenDynamicInfo, isMobile}: 
   }
 
   return (
-    <View style={{ gap: 16, paddingHorizontal: isMobile?16:24, paddingTop: isMobile?0:24,}}>
+    <View style={{ 
+      gap: 16, 
+      paddingHorizontal: isMobile?16:24, 
+      paddingTop: isMobile?0:24,
+      width: '100%',
+      }}>
       {!!tokenMainInfo.imageURL && (
         <View style={{paddingHorizontal: isMobile?24:0, paddingBottom: 8, paddingTop: 0}}>
           <Image
