@@ -93,9 +93,9 @@ const FILLED: RulesByState = {
 // Outlined
 const OUTLINED: RulesByState = {
   enabled: { bg: "transparent", text: "onSurface", border: "outline" },
-  hovered: { bg: "surfaceContainerHighest", text: "onSurface", border: "outline" },
-  focused: { bg: "surfaceContainerHighest", text: "onSurface", border: "main" }, // border = main
-  pressed: { bg: "surfaceContainerHighest", text: "onSurface", border: "outline" },
+  hovered: { bg: "surfaceContainerHighest", text: "onSurface", border: "main" },
+  focused: { bg: "surfaceContainerHighest", text: "onSurface", border: "main" },
+  pressed: { bg: "surfaceContainerHighest", text: "onSurface", border: "main" },
   disabled: { bg: "transparent", text: "onSurfaceVariant", border: "outline" },
 };
 
@@ -171,6 +171,7 @@ function materialize(
     textColor: map(rule.text),
     borderColor: rule.border === "none" ? undefined : map(rule.border as Token),
     hasBorder: rule.border !== "none",
+    main: main,
   };
 }
 
@@ -204,7 +205,7 @@ export function Button({
     : "enabled";
 
   const rule = RULES[mode][state];
-  const { backgroundColor, textColor, borderColor, hasBorder } = materialize(
+  const { backgroundColor, textColor, borderColor, hasBorder, main } = materialize(
     rule,
     variant,
     theme.colors as ExtendedMD3Colors
@@ -265,19 +266,24 @@ export function Button({
         } as any)
       : {};
 
+  const convertedMode = mode === 'tonal' ? 'contained-tonal' : mode
+
   return (
     <PaperButton
-      mode={mode as any}
+      mode={convertedMode}
       disabled={disabled}
       onPress={onPress}
       style={[containerStyle, style]}
       contentStyle={contentStyle}
-      labelStyle={{ marginHorizontal: 0, marginVertical: 0}}
+      labelStyle={{ 
+        lineHeight: 0,
+        marginHorizontal: 0, marginVertical: 0}}
       uppercase={false}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
+      textColor={main}
       {...webHoverProps}
       {...rest}
     >
