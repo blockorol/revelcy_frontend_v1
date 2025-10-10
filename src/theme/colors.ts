@@ -2,6 +2,7 @@
 import type { ExtendedMD3Colors } from "@theme/types";
 
 const COROL_UNSETTED = "#5e2204"
+const COROL_UNSETTED_2 = "#ddfe04"
 
 
 const sharedOverrides = {
@@ -75,7 +76,7 @@ export const darkColors: ExtendedMD3Colors = {
   tertiaryContainer: colorHexAndOpacity(COROL_UNSETTED, 1),
   errorContainer: colorHexAndOpacity(COROL_UNSETTED, 1),
   onPrimaryContainer: colorHexAndOpacity(COROL_UNSETTED, 0.5),
-  onSecondaryContainer: colorHexAndOpacity(COROL_UNSETTED, 0.5),
+  onSecondaryContainer: colorHexAndOpacity(COROL_UNSETTED_2, 1),
   onTertiary: colorHexAndOpacity(COROL_UNSETTED, 0.5),
   onTertiaryContainer: colorHexAndOpacity(COROL_UNSETTED, 0.5),
   onErrorContainer: colorHexAndOpacity(COROL_UNSETTED, 0.5),

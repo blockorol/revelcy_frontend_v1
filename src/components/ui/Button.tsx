@@ -1,10 +1,11 @@
 // Button.tsx
 import * as React from "react";
-import { View, ViewStyle } from "react-native";
+import { View, ViewStyle, Platform } from "react-native";
 import { Button as PaperButton, useTheme } from "react-native-paper";
 import { Text } from "@components/ui/Text";
 import { SvgIcon } from "@components/base/SvgIcon";
 import type { IconName } from "@components/base/SvgIcon";
+import { ExtendedMD3Colors } from "@theme/types";
 
 type BaseButtonProps = Omit<
   React.ComponentProps<typeof PaperButton>,
@@ -14,18 +15,15 @@ type BaseButtonProps = Omit<
 export type ButtonVariant = "primary" | "secondary" | "error";
 export type ButtonSize = "normal" | "small";
 export type ButtonMode = "contained" | "outlined" | "text" | "elevated" | "tonal";
+type ButtonState = "enabled" | "hovered" | "focused" | "pressed" | "disabled";
 
 type Props = BaseButtonProps & {
   variant?: ButtonVariant;
   size?: ButtonSize;
   mode?: ButtonMode;
   children?: React.ReactNode;
-
-  // paper icon
   leftIcon?: React.ReactNode | ((color: string, size: number) => React.ReactNode);
-  // custon svgIcon
   leftSvgIconName?: IconName;
-
   prominentText?: boolean;
 };
 
@@ -64,6 +62,118 @@ const sizeStyles: Record<
   },
 };
 
+type Token =
+  | "main"
+  | "onMain"
+  | "onSurface"
+  | "onSurfaceVariant"
+  | "outline"
+  | "surfaceContainerLow"
+  | "surfaceContainerHighest"
+  | "transparent";
+
+type VisualRule = {
+  bg: Token;
+  text: Token;
+  border: Token | "none";
+};
+
+type RulesByState = Record<ButtonState, VisualRule>;
+type RulesByMode = Record<ButtonMode, RulesByState>;
+
+// Filled (contained) — по ТЗ, Tonal = как Filled
+const FILLED: RulesByState = {
+  enabled: { bg: "main", text: "onMain", border: "none" },
+  hovered: { bg: "main", text: "onMain", border: "none" },
+  focused: { bg: "main", text: "onMain", border: "none" },
+  pressed: { bg: "main", text: "onMain", border: "none" },
+  disabled: { bg: "surfaceContainerHighest", text: "onSurface", border: "none" },
+};
+
+// Outlined
+const OUTLINED: RulesByState = {
+  enabled: { bg: "transparent", text: "onSurface", border: "outline" },
+  hovered: { bg: "surfaceContainerHighest", text: "onSurface", border: "outline" },
+  focused: { bg: "surfaceContainerHighest", text: "onSurface", border: "main" }, // border = main
+  pressed: { bg: "surfaceContainerHighest", text: "onSurface", border: "outline" },
+  disabled: { bg: "transparent", text: "onSurfaceVariant", border: "outline" },
+};
+
+// Text
+const TEXT: RulesByState = {
+  enabled: { bg: "transparent", text: "onSurface", border: "none" },
+  hovered: { bg: "surfaceContainerHighest", text: "onSurface", border: "none" },
+  focused: { bg: "surfaceContainerHighest", text: "onSurface", border: "none" },
+  pressed: { bg: "surfaceContainerHighest", text: "onSurface", border: "none" },
+  disabled: { bg: "transparent", text: "onSurfaceVariant", border: "none" },
+};
+
+// Elevated (по ТЗ)
+const ELEVATED: RulesByState = {
+  enabled: { bg: "transparent", text: "onSurface", border: "none" },
+  hovered: { bg: "surfaceContainerHighest", text: "onSurface", border: "none" },
+  focused: { bg: "surfaceContainerHighest", text: "onSurface", border: "none" },
+  pressed: { bg: "surfaceContainerHighest", text: "onSurface", border: "none" },
+  disabled: { bg: "transparent", text: "onSurfaceVariant", border: "none" },
+};
+
+const RULES: RulesByMode = {
+  contained: FILLED,
+  tonal: FILLED, // Tonal = как Filled
+  outlined: OUTLINED,
+  text: TEXT,
+  elevated: ELEVATED,
+};
+
+function materialize(
+  rule: VisualRule,
+  variant: ButtonVariant,
+  themeColors: ExtendedMD3Colors
+) {
+  const main =
+    variant === "secondary"
+      ? themeColors.secondary
+      : variant === "error"
+      ? themeColors.error
+      : themeColors.primary;
+
+  const onMain =
+    variant === "secondary"
+      ? themeColors.onSecondary
+      : variant === "error"
+      ? themeColors.onError
+      : themeColors.onPrimary;
+
+  const map = (t: Token): string => {
+    switch (t) {
+      case "main":
+        return main;
+      case "onMain":
+        return onMain;
+      case "onSurface":
+        return themeColors.onSurface;
+      case "onSurfaceVariant":
+        return themeColors.onSurfaceVariant;
+      case "outline":
+        return themeColors.outline;
+      case "surfaceContainerLow":
+        return themeColors.surfaceContainerLow;
+      case "surfaceContainerHighest":
+        return themeColors.surfaceContainerHighest;
+      case "transparent":
+      default:
+        return "transparent";
+    }
+  };
+
+  return {
+    backgroundColor: map(rule.bg),
+    textColor: map(rule.text),
+    borderColor: rule.border === "none" ? undefined : map(rule.border as Token),
+    hasBorder: rule.border !== "none",
+  };
+}
+
 export function Button({
   variant = "primary",
   size = "normal",
@@ -79,12 +189,26 @@ export function Button({
 }: Props) {
   const theme = useTheme();
 
-  const base =
-    variant === "secondary"
-      ? { fg: theme.colors.onSecondary, bg: theme.colors.secondary, outline: theme.colors.secondary }
-      : variant === "error"
-      ? { fg: theme.colors.onError, bg: theme.colors.error, outline: theme.colors.error }
-      : { fg: theme.colors.onPrimary, bg: theme.colors.primary, outline: theme.colors.primary };
+  const [hovered, setHovered] = React.useState(false);   // web only
+  const [pressed, setPressed] = React.useState(false);
+  const [focused, setFocused] = React.useState(false);
+
+  const state: ButtonState = disabled
+    ? "disabled"
+    : pressed
+    ? "pressed"
+    : focused
+    ? "focused"
+    : hovered
+    ? "hovered"
+    : "enabled";
+
+  const rule = RULES[mode][state];
+  const { backgroundColor, textColor, borderColor, hasBorder } = materialize(
+    rule,
+    variant,
+    theme.colors as ExtendedMD3Colors
+  );
 
   const {
     height,
@@ -96,43 +220,6 @@ export function Button({
     iconSize,
     iconGap,
   } = sizeStyles[size];
-
-  let backgroundColor: string | undefined;
-  let borderColor: string | undefined;
-  let textColor: string;
-
-  switch (mode) {
-    case "contained":
-    case "elevated":
-      backgroundColor = base.bg;
-      textColor = base.fg;
-      borderColor = undefined;
-      break;
-    case "outlined":
-      backgroundColor = "transparent";
-      textColor = theme.colors.onSurface;
-      borderColor = base.outline;
-      break;
-    case "text":
-      backgroundColor = "transparent";
-      textColor = theme.colors.onSurfaceVariant;
-      borderColor = undefined;
-      break;
-    case "tonal":
-      backgroundColor = theme.colors.secondary;
-      textColor = theme.colors.onSecondary;
-      borderColor = undefined;
-      break;
-  }
-
-  if (disabled) {
-    textColor = theme.colors.onSurfaceDisabled;
-    backgroundColor =
-      mode === "contained" || mode === "elevated" || mode === "tonal"
-        ? theme.colors.surfaceDisabled
-        : "transparent";
-    borderColor = mode === "outlined" ? theme.colors.outline : undefined;
-  }
 
   const hasIcon = !!leftIcon || !!leftSvgIconName;
 
@@ -147,7 +234,7 @@ export function Button({
     borderRadius: radius,
     backgroundColor,
     borderColor,
-    borderWidth: mode === "outlined" ? 1 : 0,
+    borderWidth: hasBorder ? 1 : 0,
     overflow: "hidden",
   };
 
@@ -170,6 +257,14 @@ export function Button({
     return null;
   };
 
+  const webHoverProps =
+    Platform.OS === "web"
+      ? ({
+          onMouseEnter: () => setHovered(true),
+          onMouseLeave: () => setHovered(false),
+        } as any)
+      : {};
+
   return (
     <PaperButton
       mode={mode as any}
@@ -179,10 +274,17 @@ export function Button({
       contentStyle={contentStyle}
       labelStyle={{ marginHorizontal: 0, marginVertical: 0}}
       uppercase={false}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      {...webHoverProps}
       {...rest}
     >
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
-        {hasIcon && <View style={{ marginRight: iconGap }}>{renderIcon()}</View>}
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
+        {!!(leftIcon || leftSvgIconName) && (
+          <View style={{ marginRight: iconGap }}>{renderIcon()}</View>
+        )}
         {typeof children === "string" ? (
           <Text
             variant={textVariant}

@@ -29,7 +29,7 @@ export function NavigationList({isMobile}:Props) {
         isMobile={isMobile}
         iconActive="books"
         iconNotActive="books"
-        label="Resources"
+        label="About"
         route="/resources"
         horizontal={!isMobile}
       />
