@@ -74,11 +74,11 @@ function NavigationBurgerMenuItemsList({ onClose }: NavProps) {
           );
         })}
 
-        <View style={styles.lineContainer} id="menu-profile-widget">
+        <View style={[styles.lineContainer]}>
           <NavigationProfileWidget style={styles.lineLogin} isMobile={false} />
         </View>
 
-        <View style={[styles.lineContainer, styles.lineContact]} id="menu-contacts">
+        <View style={[styles.lineContainer, styles.lineContact]}>
           <View style={{ flexDirection: "row" }}>
             <TouchableRipple
               onPress={() => {openX()}}
