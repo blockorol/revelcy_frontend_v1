@@ -1,30 +1,36 @@
 // components/LoginPopup.tsx
-import React, { useState} from 'react';
-import { View, StyleSheet, DimensionValue, TouchableOpacity, Image} from 'react-native';
-import { HelperText, Text, useTheme } from 'react-native-paper';
-import GreenButton from '@components/login/buttons/GreenButton';
-import * as ImagePicker from 'expo-image-picker';
-import { SvgIcon } from '@components/base/SvgIcon';
-import { ExtendedMD3Colors } from '@theme/types';
+import React, { useState } from "react";
+import {
+  View,
+  StyleSheet,
+  DimensionValue,
+  TouchableOpacity,
+  Image,
+} from "react-native";
+import { HelperText, Text, useTheme } from "react-native-paper";
+import GreenButton from "@components/login/buttons/GreenButton";
+import * as ImagePicker from "expo-image-picker";
+import { SvgIcon } from "@components/base/SvgIcon";
+import { ExtendedMD3Colors } from "@theme/types";
 
 interface WalletConnectionCheckerProps {
-  height: DimensionValue
-  width: number
-  toNext: () => void
-  setUploadAvatarToServer: (avatarUri:string) => Promise<void>
+  height: DimensionValue;
+  width: number;
+  toNext: () => void;
+  setUploadAvatarToServer: (avatarUri: string) => Promise<void>;
 }
 
-
-
 export default function UserAvatar({
-  height, width, 
-  toNext, setUploadAvatarToServer
+  height,
+  width,
+  toNext,
+  setUploadAvatarToServer,
 }: WalletConnectionCheckerProps) {
-  const theme = useTheme()
-  const colors = theme.colors as ExtendedMD3Colors;    
-  const [avatarUri, setAvatarUri] = useState("")
-  const [error, setError] = useState<undefined|string>("")
-    const pickAvatar = async () => {
+  const theme = useTheme();
+  const colors = theme.colors as ExtendedMD3Colors;
+  const [avatarUri, setAvatarUri] = useState("");
+  const [error, setError] = useState<undefined | string>("");
+  const pickAvatar = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       aspect: [1, 1],
@@ -38,101 +44,140 @@ export default function UserAvatar({
   };
 
   return (
-    <View style={{
+    <View
+      style={{
         backgroundColor: colors.surfaceContainerLow,
         flex: 1,
-        justifyContent: 'space-between',
-        height:height,
+        justifyContent: "space-between",
+        height: height,
         width: width,
-    }}>
-      <View style={[styles.headerContainer, {gap:80}]}>
-        <View style={[styles.headerContainer,{gap:8}]}>
-          <Text
-            variant="titleMedium"
-            style={{ color: colors.onBackground }}
-          > Get profile picture </Text>
-          
-          <Text
-            variant="labelMedium"
-            style={{ color: colors.onBackground }}
-          > You can update this later in your profile </Text>
+      }}
+    >
+      <View style={[styles.headerContainer, { gap: 72 }]}>
+        <View style={[styles.headerContainer, { gap: 8 }]}>
+          <Text variant="titleMedium" style={{ color: colors.onSurface }}>
+            Get profile picture
+          </Text>
+          <Text variant="labelMedium" style={{ color: colors.onSurface }}>
+            You can update this later in your profile
+          </Text>
         </View>
 
-
-        {/* token icon */}
-        <View style={{ flexDirection: 'column', alignItems: 'center', gap:16, width: '100%' }}>
-          <View style={{ position: 'relative' }}>
-            <TouchableOpacity onPress={pickAvatar} style={{ alignSelf: 'center' }}>
+        <View
+          style={{
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 16,
+            width: "100%",
+          }}
+        >
+          <View style={{ position: "relative" }}>
+            <TouchableOpacity
+              onPress={pickAvatar}
+              style={{ alignSelf: "center" }}
+            >
               <View
                 style={{
-                  width: 76,
-                  height: 76,
+                  width: 112,
+                  height: 112,
                   borderRadius: 9999,
                   backgroundColor: colors.surfaceVariant,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  overflow: 'hidden',
+                  alignItems: "center",
+                  justifyContent: "center",
+                  overflow: "hidden",
                 }}
               >
                 {avatarUri ? (
-                  <Image source={{ uri: avatarUri }} style={{ width: '100%', height: '100%' }} />
+                  <Image
+                    source={{ uri: avatarUri }}
+                    style={{ width: "100%", height: "100%" }}
+                  />
                 ) : (
-                  <Text style={{ fontSize: 24, color: colors.onSurface }}>+</Text>
+                  <SvgIcon
+                    name="plus"
+                    size={24}
+                    color={theme.colors.onSurface}
+                  />
                 )}
               </View>
             </TouchableOpacity>
 
-            {/* Кружок с иконкой снизу слева */}
             {avatarUri && (
               <TouchableOpacity
                 onPress={pickAvatar}
                 style={{
-                  position: 'absolute',
+                  height: 32,
+                  width: 32,
+                  position: "absolute",
                   bottom: 0,
                   right: 0,
-                  backgroundColor: colors.surfaceVariant,
+                  backgroundColor: colors.surfaceContainerHighest,
                   borderRadius: 9999,
                   padding: 4,
+                  justifyContent: "center",
+                  alignContent: "center",
                 }}
               >
-                <SvgIcon name='arrows-clockwise' size={16} color="white" />
+                <SvgIcon
+                  name="arrows-clockwise"
+                  size={20}
+                  color={colors.onSurface}
+                />
               </TouchableOpacity>
             )}
           </View>
 
-          <View style={{flexDirection: 'column', gap: 4, justifyContent:'center',alignItems: 'center'}}>
-            <Text style={{ ...theme.fonts.bodyLarge, textAlign: 'center', color: colors.onSurface}}>
+          <View
+            style={{
+              flexDirection: "column",
+              gap: 4,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Text
+              variant="bodyLarge"
+              style={{
+                textAlign: "center",
+                color: colors.onSurface,
+              }}
+            >
               Avatar
             </Text>
-            <Text style={{ ...theme.fonts.bodySmall, textAlign: 'center', fontSize:12, color: colors.onSurfaceVariant }}>
+            <Text
+              variant="bodySmall"
+              style={{
+                textAlign: "center",
+                color: colors.onSurfaceVariant,
+              }}
+            >
               Image or gif
             </Text>
           </View>
         </View>
-
-
       </View>
-      
-      <View style={[styles.headerContainer, {gap:40}]}>
-        <GreenButton buttonText='Finish' onClick={async () => {
-          try {
-            await setUploadAvatarToServer(avatarUri)
-            toNext()
-          } catch {
-            console.log("error: Some error")
-            setError(" Something went wrong. Please, try again")
-          }
-        }}/>
+
+      <View style={[styles.headerContainer, { gap: 40 }]}>
+        <GreenButton
+          buttonText="Finish"
+          onClick={async () => {
+            try {
+              await setUploadAvatarToServer(avatarUri);
+              toNext();
+            } catch {
+              setError(" Something went wrong. Please, try again");
+            }
+          }}
+        />
       </View>
     </View>
   );
 }
 
-
 const styles = StyleSheet.create({
   headerContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
   },
 });

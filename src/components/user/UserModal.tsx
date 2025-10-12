@@ -244,7 +244,7 @@ export const UserModalInternal: React.FC<UserModalProps> = ({
         
         {isPersonal && (
           <View style={{paddingTop: 56, paddingHorizontal: '30%', justifyContent: "center"}}>
-            <Button size="small" mode="outlined" onPress={logout}>
+            <Button size="small" mode="outlined" onPress={()=>{logout();onClose()}}>
               Log out
             </Button>
           </View>

@@ -19,6 +19,7 @@ export function NavigationList({isMobile}:Props) {
     >
       {navigationItems.map((navigationItem)=>
         <NavigationItem
+          key={`nav-item-${navigationItem.label}`}
           isMobile={isMobile}
           iconActive={navigationItem.iconActive}
           iconNotActive={navigationItem.iconNotActive}
