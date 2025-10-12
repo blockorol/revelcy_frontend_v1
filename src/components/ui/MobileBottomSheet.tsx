@@ -19,7 +19,6 @@ export function MobileBottomSheet({
 
   const translateY = React.useRef(new Animated.Value(0)).current;
 
-  // анимация к целевому положению (0 — открыто; 100% — скрыто)
   const to = React.useCallback((y: number, cb?: () => void) => {
     Animated.timing(translateY, {
       toValue: y,
