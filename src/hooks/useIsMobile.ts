@@ -10,8 +10,7 @@ export const MAX_WIDTH_MOBILE = 680
 const MAX_WIDTH_DESKTOP = 680
 
 export default function useIsMobile(): boolean {
-    const { width, scale} = useWindowDimensions();
-    // console.log(`useIsMobile: width= ${width}, scale= ${scale}`)
+    const { width} = useWindowDimensions();
     return width < MAX_WIDTH_ONE_CONTAINER_SIZE;
 }
 

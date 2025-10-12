@@ -6,22 +6,23 @@ import { useAuth } from "@providers/AuthContext";
 import shortString from "@utils/address_shorter";
 import type { AppTheme, ExtendedMD3Colors } from "@theme/types";
 
-export function NavigationProfileWidget({ isMobile, style}: {
-  isMobile: boolean,
-  style?: ViewStyle
+export function NavigationProfileWidget({
+  isMobile,
+  style,
+}: {
+  isMobile: boolean;
+  style?: ViewStyle;
 }) {
   const { user } = useAuth();
   const { colors } = useTheme() as AppTheme;
   const mdColors = colors as ExtendedMD3Colors;
 
   if (!user) {
-    return (
-      <Login style={style} />        
-    );
+    return <Login style={style} />;
   }
 
   return (
-    <View style={style}>
+    <View style={[style, styles.containerStyle]}>
       {user.avatarUrl ? (
         <Avatar.Image
           size={24}
@@ -48,8 +49,11 @@ export function NavigationProfileWidget({ isMobile, style}: {
 }
 
 const styles = StyleSheet.create({
-  surface: {
-    borderRadius: 100,
+  containerStyle: {
+    flexDirection: "row",
+    gap: 12,
+    alignContent: "center",
     justifyContent: "center",
+    alignSelf: "center",
   },
 });
