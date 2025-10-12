@@ -15,7 +15,7 @@ export default function NavigationBurgerMenu() {
     <SvgIconButton
       size={30}
       color={colors.onSurface}
-      onPress={() => open(<NavigationBurgerMenuItemsList onClose={close} />)}
+      onPress={() => open(<NavigationBurgerMenuItemsList onClose={close}/>)}
       name="menu"
     />
   );
@@ -33,6 +33,7 @@ function NavigationBurgerMenuItemsList({ onClose }: NavProps) {
       <View style={{ backgroundColor: colors.background }}>
         
         <View
+          id="main-menu-item"
           style={[
             styles.lineContainer,
             styles.lineMainMenu,
@@ -62,6 +63,7 @@ function NavigationBurgerMenuItemsList({ onClose }: NavProps) {
         {navigationItems.map((navigationItem) => {
           return (
             <NavigationBurgerMenuItemLine
+              key={`nav-${navigationItem.label}`}
               label={navigationItem.label}
               icon={navigationItem.iconActive}
               action={() => {
@@ -72,11 +74,11 @@ function NavigationBurgerMenuItemsList({ onClose }: NavProps) {
           );
         })}
 
-        <View style={styles.lineContainer}>
+        <View style={styles.lineContainer} id="menu-profile-widget">
           <NavigationProfileWidget style={styles.lineLogin} isMobile={false} />
         </View>
 
-        <View style={[styles.lineContainer, styles.lineContact]}>
+        <View style={[styles.lineContainer, styles.lineContact]} id="menu-contacts">
           <View style={{ flexDirection: "row" }}>
             <TouchableRipple
               onPress={() => {openX()}}
