@@ -194,7 +194,7 @@ export function WalletInfo({walletConnectionDate, transactionCount, balance, hum
             }}
           />
           <View style={{flex: 1,gap:8}}>
-            <Text>Wallet</Text>
+            <Text variant='titleMedium'>Wallet</Text>
             {
               (enabledFeatures.dateAndBalance === true) && (
                 (walletConnectionDate===undefined) ? (
