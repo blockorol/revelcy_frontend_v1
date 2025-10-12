@@ -1,4 +1,5 @@
 // hooks/useIsMobile.ts
+import { useContentArea } from "@hooks/useContentArea";
 import { useWindowDimensions } from "react-native"
 
 export const MAX_WIDTH_SIZE = 800;
@@ -8,8 +9,6 @@ export const MAX_WIDTH_ONE_CONTAINER_SIZE = 480;
 export const MAX_WIDTH_MOBILE = 680
 const MAX_WIDTH_DESKTOP = 680
 
-const MOBILE_MENU_HEIGHT = 41+68
-
 export default function useIsMobile(): boolean {
     const { width, scale} = useWindowDimensions();
     // console.log(`useIsMobile: width= ${width}, scale= ${scale}`)
@@ -17,12 +16,13 @@ export default function useIsMobile(): boolean {
 }
 
 export function useIsMobileForOneScreenWithDemention(): IsMobileWithDemetionsResp {
-    const { width, height} = useWindowDimensions();
+    const { width} = useWindowDimensions();
+    const {contentHeight} = useContentArea(); 
 
     return {
         isMobile: width < MAX_WIDTH_ONE_CONTAINER_SIZE,
         width:width,
-        height: height
+        height: contentHeight
     };
 }
 
@@ -32,22 +32,22 @@ export function useIsMobileForTwoScreen(): boolean {
 }
 
 export function useIsMobileForTwoScreenWithDemention(): IsMobileWithDemetionsTwoScreenResp {
-    const { width, height } = useWindowDimensions();
-    const possibleHeight = height-MOBILE_MENU_HEIGHT;
+    const { width } = useWindowDimensions();
+    const {contentHeight} = useContentArea(); 
     const isMobile = width < MAX_WIDTH_TWO_CONTAINER_SIZE;
     return {
         maxWidth: isMobile ? MAX_WIDTH_MOBILE : MAX_WIDTH_DESKTOP,
         screen: {
             width: width,
-            height:  possibleHeight >0 ? possibleHeight:0,
+            height:  contentHeight,
         },
         left: {
             width: isMobile?width:400,
-            height: isMobile?undefined:height
+            height: isMobile?undefined:contentHeight
         },
         right:  {
             width: isMobile?width:width-400,
-            height: isMobile?undefined:height
+            height: isMobile?undefined:contentHeight
         },
         isMobile: isMobile
     }
