@@ -7,6 +7,7 @@ import { NavigationList } from './NavigationList';
 import { useIsMobileForTwoScreenWithDemention } from '@hooks/useIsMobile';
 import { router } from 'expo-router';
 import { useNetwork } from '@providers/NetworkContext';
+import NavigationBurgerMenu from '@components/navigation/NavigationBurgerMenu';
 
 const H_PADDING = 16;
 const GAP = 24;
@@ -36,9 +37,10 @@ export function NavigationTop() {
               resizeMode="contain"
             />
           </TouchableOpacity>
-            {network === 'devnet'&&<Text variant='headlineLarge' style={{color:'red'}}>DEV</Text>}
+            {network === 'devnet'&&<Text variant='headlineSmall' style={{color:'red'}}>DEV</Text>}
           <View style={styles.profile}>
-            <NavigationProfileWidget />
+            <NavigationProfileWidget isMobile/>
+            <NavigationBurgerMenu />
           </View>
         </View>
       </View>
@@ -57,7 +59,7 @@ export function NavigationTop() {
                 resizeMode="contain"
               />
             </TouchableOpacity>
-            {network === 'devnet'&&<Text variant='headlineLarge' style={{color:'red'}}>DEV</Text>}
+            {network === 'devnet'&&<Text variant='headlineSmall' style={{color:'red'}}>DEV</Text>}
             <View style={{ marginLeft: 16 }}>
               <NavigationList isMobile={dem.isMobile} />
             </View>
@@ -67,7 +69,7 @@ export function NavigationTop() {
         <View style={{ flex: 1 }} />
 
         <View style={styles.profile}>
-          <NavigationProfileWidget />
+          <NavigationProfileWidget isMobile={false} />
         </View>
       </View>
     </View>
@@ -98,10 +100,15 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
   },
   logo: {
-    width: 110,
-    height: 30,
+    paddingVertical: 16,
+    width: 96,
+    height: 24,
   },
   profile: {
-    flexShrink: 0,
+    paddingVertical: 13,
+    flexDirection: 'row',
+    gap: 16,
+    justifyContent: 'center',
+    alignItems:'center'
   },
 });

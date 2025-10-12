@@ -3,7 +3,6 @@ import { Stack } from 'expo-router';
 import { PaperProvider } from 'react-native-paper';
 import { View, StyleSheet, useColorScheme, useWindowDimensions, StatusBar, Platform } from 'react-native';
 import { darkTheme } from '@theme/theme';
-import { NavigationBottom } from '@components/navigation/NavigationBottom';
 import { NavigationTop } from '@components/navigation/NavigationTop';
 import { NetworkProvider } from '@providers/NetworkContext';
 import { WalletProvider } from '@storage/wallet-adapter/index';
@@ -74,7 +73,7 @@ function InnerLayout() {
     const scheme = useColorScheme();
 
   const theme = darkTheme;
-  const { setTopHeight, setBottomHeight } = useContentArea();
+  const { setTopHeight } = useContentArea();
   console.log("Platform", Platform.OS);
 
   
@@ -113,9 +112,11 @@ function InnerLayout() {
                 <NavigationTop />
               </View>
                 <Stack screenOptions={{ headerShown: false }} />
-              <View onLayout={(e) => setBottomHeight(e.nativeEvent.layout.height)}>
-                <NavigationBottom />
-              </View>
+              {/* 
+                <View onLayout={(e) => setBottomHeight(e.nativeEvent.layout.height)}>
+                  <NavigationBottom />
+                </View> 
+              */}
             </View>
             </UniversalOverlayProvider>
           </UserModalProvider>
