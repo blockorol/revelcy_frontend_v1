@@ -15,7 +15,8 @@
     "ios": {      
       "infoPlist": {
         "NSCameraUsageDescription": "Allow access to camera to upload token avatar (icon).",
-        "NSPhotoLibraryUsageDescription": "Allow access to photos to select token avatar (icon)."
+        "NSPhotoLibraryUsageDescription": "Allow access to photos to select token avatar (icon).",
+        "LSApplicationQueriesSchemes": ["tg", "twitter"]
       },
       "supportsTablet": true
     },

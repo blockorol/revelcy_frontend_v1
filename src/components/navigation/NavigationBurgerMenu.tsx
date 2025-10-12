@@ -6,6 +6,7 @@ import { NavigationProfileWidget } from "@components/navigation/NavigationProfil
 import { router } from "expo-router";
 import { navigationItems } from "@components/navigation/NavigationItems";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
+import { openMailto, openTelegram, openX } from "@utils/openLinks";
 
 export default function NavigationBurgerMenu() {
   const { open, close } = useOverlay();
@@ -78,7 +79,7 @@ function NavigationBurgerMenuItemsList({ onClose }: NavProps) {
         <View style={[styles.lineContainer, styles.lineContact]}>
           <View style={{ flexDirection: "row" }}>
             <TouchableRipple
-              onPress={() => {}}
+              onPress={() => {openX()}}
               style={{ padding: 16, paddingRight: 40 }}
             >
               <SvgIcon name="x-logo" size={24} color={colors.onSurface} />
@@ -92,7 +93,7 @@ function NavigationBurgerMenuItemsList({ onClose }: NavProps) {
               }}
             />
             <TouchableRipple
-              onPress={() => {}}
+              onPress={() => {openTelegram()}}
               style={{ padding: 16, paddingHorizontal: 40 }}
             >
               <SvgIcon name="tg-logo" size={24} color={colors.onSurface} />
@@ -106,7 +107,7 @@ function NavigationBurgerMenuItemsList({ onClose }: NavProps) {
               }}
             />
             <TouchableRipple
-              onPress={() => {}}
+              onPress={() => {openMailto()}}
               style={{ padding: 16, paddingLeft: 40 }}
             >
               <SvgIcon name="mail" size={24} color={colors.onSurface} />
