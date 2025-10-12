@@ -84,7 +84,7 @@ export function MobileBottomSheet({
               borderTopRightRadius: 24,
               paddingBottom: 16,
               paddingTop: 8,
-              paddingHorizontal: 16,
+              paddingHorizontal: 0,
             }}
           >
             {/* ручка + крестик */}
