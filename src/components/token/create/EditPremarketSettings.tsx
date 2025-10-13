@@ -75,7 +75,7 @@ export default function EditPremarketSettingsForm({
             justifyContent: 'space-between',
              alignItems: 'stretch', width: '100%', height:'100%', maxWidth: 500, maxHeight:isMobile?"100%":1000  }}>
             <View style={{height:"100%"}}>
-            <TokenCreateFormHeader title={"Premarket"} theme={theme} onClose={onClose} onBack={onBack} />
+            <TokenCreateFormHeader title={"Premarket"} theme={theme} onClose={onClose} />
                 <View style={{paddingTop: 20}}>
                     <Text variant='bodySmall'> Premarket Deadline</Text>
                     <DateTimeEditField
@@ -119,6 +119,7 @@ export default function EditPremarketSettingsForm({
                 }}
                 handleSubmit={handleSubmit}
                 isFilledAll={isFilledAll}
+                onBack={onBack}
             />
         </View>
     </ScrollView>

@@ -3,7 +3,8 @@ import BN from "bn.js";
 export interface TokenCreateFullData {
     mainData: TokenMainData;
     customData: CustomizeTokenData;
-    tokenomicsData: TokenomicsData
+    tokenomicsData: TokenomicsData;
+    premarket: PremarketSettingData;
 
 }
 export interface TokenMainData {

@@ -163,7 +163,7 @@ interface PremarketBondingCurveProps {
 
   goalPercent: number;
   nowPercent: number;
-  currentPrice: number;
+  currentPrice?: number;
   joiners: Joiner[];
   background?: string;
   maxSolDisplayed?: number;
@@ -362,12 +362,14 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
       </Svg>
 
       {/* Right section */}
+      {currentPrice &&
       <View style={{justifyContent:'flex-end', position: 'absolute', right: padding+graphMarginRight, bottom: (padding + dHeightGraph_SVG) }}>
         <Text variant="labelSmall" style={{ color: colors.onSurfaceVariant, textAlign: 'right' }}>
           Current Price
         </Text>
         <CurrentPriceValue currentPrice={currentPrice} colors={colors} fonts={fonts}/>
       </View>
+      }
 
       {/* Labels */}
       <Text
