@@ -58,9 +58,9 @@ export default function OverviewPremarketCreation({
       ),
     },
     "wrong connection": {
-      text: "Wallet and loing have different address, please reconnect",
+      text: "Wallet and current user have different address, please reconnect or relogin",
       button: (
-        <View>
+        <View style={{flexDirection:'row', padding: 8}}>
           <Button onPress={disconnect} variant="primary" size="normal">
             Disconned
           </Button>
@@ -92,7 +92,7 @@ export default function OverviewPremarketCreation({
     if (!connected || !publicKey) {
       return errorMapper["connection"];
     }
-    if (publicKey.toString() !== user.userId) {
+    if (publicKey.toString() !== user.walletAddress) {
       return errorMapper["wrong connection"];
     }
     if (!data) {
