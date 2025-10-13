@@ -123,7 +123,6 @@ export default function CustomizeTokenForm({
             title={"About Community"}
             theme={theme}
             onClose={onClose}
-            onBack={onBack} 
           />
 
           {/* Banner Upload */}
@@ -326,6 +325,7 @@ export default function CustomizeTokenForm({
           }:undefined}
           handleSubmit={handleSubmit}
           isFilledAll={isFilledAll}
+          onBack={onBack}
         />
       </View>
     </ScrollView>

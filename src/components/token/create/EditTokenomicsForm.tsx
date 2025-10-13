@@ -5,6 +5,7 @@ import { TokenomicsData } from "@components/token/create/interface";
 import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeader";
 import useIsMobile from "@hooks/useIsMobile";
 import { ExtendedMD3Colors } from "@theme/types";
+import { round } from "@utils/numbers";
 import { convertSolToPercentOnStart } from "@utils/premarket";
 import { convertNumberWithRaw } from "@utils/setterWithValidate";
 import React, { useState } from "react";
@@ -108,7 +109,7 @@ export default function EditTokenomicsForm({
             minHeight: 300  
             }}>
             <View>
-                <TokenCreateFormHeader title={"Edit Tokenomics"} theme={theme} onBack={onBack} onClose={onClose} />
+                <TokenCreateFormHeader title={"Edit Tokenomics"} theme={theme} onClose={onClose} />
                 <TextInput
                     label="Creator Buy"
                     value={displayValue}
@@ -134,7 +135,7 @@ export default function EditTokenomicsForm({
                     }}>
                         <DonutWithLegend 
                         slices={[
-                            {value:percent, label:"Creator (You)", color: theme.colors.primary},
+                            {value:round(percent, 1), label:"Creator (You)", color: theme.colors.primary},
                             {value:20, label:"Pumpswap pool", color: theme.colors.secondary},
                             {value:round(80-percent, 1), label:"Bonding curve", color: theme.colors.onSurface},
                         ]}
@@ -156,14 +157,10 @@ export default function EditTokenomicsForm({
                 }}
                 handleSubmit={handleSubmit}
                 isFilledAll={isFilledAll}
+                onBack={onBack}
             />
         </View>
     </ScrollView>
     );
-}
-
-
-function round(val: number, fractionDigits: number): number {
-    return Number(val.toFixed(fractionDigits))
 }
       

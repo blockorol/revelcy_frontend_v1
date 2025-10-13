@@ -12,6 +12,7 @@ import BinocularsOutlined from "@assets/basic_icon/binoculars-outlined.svg";
 import Binoculars from "@assets/basic_icon/binoculars.svg";
 import Books from "@assets/basic_icon/books.svg";
 import CaretDown from "@assets/basic_icon/caret-down.svg";
+import CaretLeft from '@assets/basic_icon/caret-left.svg';
 import Check from "@assets/basic_icon/check.svg";
 import CopyIcon from "@assets/basic_icon/copy_icon.svg";
 import HeartOutlined from "@assets/basic_icon/heart-outlined.svg";
@@ -67,6 +68,7 @@ export const icons = {
   binoculars: Binoculars,
   books: Books,
   "caret-down": CaretDown,
+  'caret-left':CaretLeft,
   check: Check,
   "copy-icon": CopyIcon,
   "heart-outlined": HeartOutlined,

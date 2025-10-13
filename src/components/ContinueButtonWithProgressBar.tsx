@@ -1,8 +1,10 @@
+import { SvgIconButton } from "@components/base/SvgIcon";
 import { View } from "react-native"
 import { Button, MD3Theme, ProgressBar } from "react-native-paper"
 
 export type ContinueButtonWithProgressBarProps = {
     theme: MD3Theme;
+    onBack?:()=> void
     handleSubmit: () => void;
     handleSaveForLatter?: () => void;
     isFilledAll: () => boolean;
@@ -14,14 +16,15 @@ export type ContinueButtonWithProgressBarProps = {
 
 export default function ContinueButtonWithProgressBar({ 
     theme,
-
-    handleSubmit, handleSaveForLatter, 
+    onBack, handleSubmit, handleSaveForLatter, 
     isFilledAll,
     progress 
 }: ContinueButtonWithProgressBarProps) {
     return (
     <View style={{width:'100%', marginTop: 20, flexDirection: 'column', gap: 16}}>
-        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', alignContent:'center'}}>
+            {onBack&&<SvgIconButton name='caret-left' onPress={onBack} color={theme.colors.onSurfaceVariant} size={32}/>}
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', alignContent:'center', gap: 8 }}>
             {handleSaveForLatter && <Button
                 mode="text"
                 onPress={handleSaveForLatter}
@@ -38,6 +41,7 @@ export default function ContinueButtonWithProgressBar({
                 labelStyle={{ color: theme.colors.onPrimary }}
             >Continue</Button>
             
+        </View>
         </View>
         {progress&&
             <ProgressBar color={theme.colors.primary} progress={isFilledAll()?progress.after:progress.before}/>

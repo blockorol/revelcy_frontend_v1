@@ -342,13 +342,14 @@ export default function PremarketCreationFlow() {
   };
 
   const getTokenData = (): TokenCreateFullData | undefined => {
-    if (tokenMainData === undefined || customizeTokenData === undefined || tokenomicsData === undefined) {
+    if (tokenMainData === undefined || customizeTokenData === undefined || tokenomicsData === undefined || premarketSettingsData === undefined) {
       return undefined;
     }
     return {
       mainData: tokenMainData,
       customData: customizeTokenData,
-      tokenomicsData: tokenomicsData
+      tokenomicsData: tokenomicsData,
+      premarket: premarketSettingsData
     };
   };
   return (
