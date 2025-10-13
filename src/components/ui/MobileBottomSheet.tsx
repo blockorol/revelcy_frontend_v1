@@ -19,7 +19,6 @@ export function MobileBottomSheet({
 
   const translateY = React.useRef(new Animated.Value(0)).current;
 
-  // анимация к целевому положению (0 — открыто; 100% — скрыто)
   const to = React.useCallback((y: number, cb?: () => void) => {
     Animated.timing(translateY, {
       toValue: y,
@@ -85,7 +84,7 @@ export function MobileBottomSheet({
               borderTopRightRadius: 24,
               paddingBottom: 16,
               paddingTop: 8,
-              paddingHorizontal: 16,
+              paddingHorizontal: 0,
             }}
           >
             {/* ручка + крестик */}

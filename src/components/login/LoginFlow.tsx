@@ -13,10 +13,11 @@ import UserName from '@components/login/UserName';
 import { ExtendedMD3Colors } from '@theme/types';
 
 interface LoginFlowProps {
+  loginFlowStateOverride?: LoginState
   onCloseButton?: () => void;
 }
 
-enum LoginState {
+export enum LoginState {
   FIRST = "FIRST",
   WALLET_CONNECTING = "WALLET_CONNECTING",
   SET_USER_NAME = "SET_USER_NAME",
@@ -36,7 +37,7 @@ const DEF_PADDINGS: Paddings = {
   bottom: 48,
 }
 
-export default function LoginFlow({onCloseButton}:LoginFlowProps) {
+export default function LoginFlow({onCloseButton, loginFlowStateOverride}:LoginFlowProps) {
   const colors  = useTheme().colors as ExtendedMD3Colors;
   const {isMobile, width, height} = useIsMobileWithDemention();
   const { login } = useAuth();
@@ -60,7 +61,7 @@ export default function LoginFlow({onCloseButton}:LoginFlowProps) {
   } : WEB_PROP
 
 
-  const [loginFlowState, setLoginFlowState] = useState<LoginState>(LoginState.FIRST);
+  const [loginFlowState, setLoginFlowState] = useState<LoginState>(loginFlowStateOverride??LoginState.FIRST);
 
   useEffect(() => {
     if (moveBetweenStateRef.current) {

@@ -1,13 +1,18 @@
-import React, { useEffect } from 'react';
-import { Stack } from 'expo-router';
-import { PaperProvider } from 'react-native-paper';
-import { View, StyleSheet, useColorScheme, useWindowDimensions, StatusBar, Platform } from 'react-native';
-import { darkTheme } from '@theme/theme';
-import { NavigationBottom } from '@components/navigation/NavigationBottom';
-import { NavigationTop } from '@components/navigation/NavigationTop';
-import { NetworkProvider } from '@providers/NetworkContext';
-import { WalletProvider } from '@storage/wallet-adapter/index';
-import * as SplashScreen from 'expo-splash-screen';
+import React, { useEffect } from "react";
+import { Stack } from "expo-router";
+import { PaperProvider } from "react-native-paper";
+import {
+  View,
+  StyleSheet,
+  useColorScheme,
+  StatusBar,
+  Platform,
+} from "react-native";
+import { darkTheme } from "@theme/theme";
+import { NavigationTop } from "@components/navigation/NavigationTop";
+import { NetworkProvider } from "@providers/NetworkContext";
+import { WalletProvider } from "@storage/wallet-adapter/index";
+import * as SplashScreen from "expo-splash-screen";
 import {
   useFonts,
   Inter_100Thin,
@@ -16,24 +21,23 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
   Inter_900Black,
-} from '@expo-google-fonts/inter';
-import { en, registerTranslation } from 'react-native-paper-dates';
+} from "@expo-google-fonts/inter";
+import { en, registerTranslation } from "react-native-paper-dates";
 
-registerTranslation('en', en);
+registerTranslation("en", en);
 
+import { Buffer } from "buffer";
+import process from "process";
+import { AuthProvider } from "@providers/AuthContext";
+import { ContentAreaProvider, useContentArea } from "@hooks/useContentArea";
+import { UserModalProvider } from "@storage/UserModalContext";
+import { NotificationProvider } from "@storage/NotificationContext";
+import { UniversalOverlayProvider } from "@storage/UniversalOverlayProvider";
 
-import { Buffer } from 'buffer';
-import process from 'process';
-import { AuthProvider } from '@providers/AuthContext';
-import { ContentAreaProvider, useContentArea } from '@hooks/useContentArea';
-import { UserModalProvider } from '@storage/UserModalContext';
-import { NotificationProvider } from '@storage/NotificationContext';
-import { UniversalOverlayProvider } from '@storage/UniversalOverlayProvider';
-
-if (typeof globalThis.Buffer === 'undefined') {
+if (typeof globalThis.Buffer === "undefined") {
   globalThis.Buffer = Buffer;
 }
-if (typeof globalThis.process === 'undefined') {
+if (typeof globalThis.process === "undefined") {
   globalThis.process = process;
 }
 
@@ -46,7 +50,7 @@ export default function Layout() {
     Inter_500Medium,
     Inter_600SemiBold,
     Inter_700Bold,
-    Inter_900Black
+    Inter_900Black,
   });
 
   useEffect(() => {
@@ -71,23 +75,23 @@ export default function Layout() {
 }
 
 function InnerLayout() {
-    const scheme = useColorScheme();
+  const scheme = useColorScheme();
 
   const theme = darkTheme;
-  const { setTopHeight, setBottomHeight } = useContentArea();
-  console.log("Platform", Platform.OS);
+  const { setTopHeight } = useContentArea();
 
-  
   useEffect(() => {
-    if (Platform.OS === 'web') {
+    if (Platform.OS === "web") {
       const darkColor = darkTheme.colors.background;
       const currentColor = darkColor;
 
       const setMetaThemeColor = (color: string) => {
-        let meta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
+        let meta = document.querySelector(
+          'meta[name="theme-color"]'
+        ) as HTMLMetaElement;
         if (!meta) {
-          meta = document.createElement('meta');
-          meta.name = 'theme-color';
+          meta = document.createElement("meta");
+          meta.name = "theme-color";
           document.head.appendChild(meta);
         }
         meta.content = color;
@@ -97,33 +101,38 @@ function InnerLayout() {
     }
   }, [scheme]);
 
-
   return (
-      <PaperProvider theme={theme}>
-        <NotificationProvider>
-          <UserModalProvider>
-            <UniversalOverlayProvider>
+    <PaperProvider theme={theme}>
+      <NotificationProvider>
+        <UserModalProvider>
+          <UniversalOverlayProvider>
             <StatusBar
-              barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'}
+              barStyle={scheme === "dark" ? "light-content" : "dark-content"}
               backgroundColor={theme.colors.background}
             />
 
-            <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+            <View
+              style={[
+                styles.container,
+                { backgroundColor: theme.colors.background },
+              ]}
+            >
               <View onLayout={(e) => setTopHeight(e.nativeEvent.layout.height)}>
                 <NavigationTop />
               </View>
-                <Stack screenOptions={{ headerShown: false }} />
-              <View onLayout={(e) => setBottomHeight(e.nativeEvent.layout.height)}>
-                <NavigationBottom />
-              </View>
+              <Stack screenOptions={{ headerShown: false }} />
+              {/* 
+                <View onLayout={(e) => setBottomHeight(e.nativeEvent.layout.height)}>
+                  <NavigationBottom />
+                </View> 
+              */}
             </View>
-            </UniversalOverlayProvider>
-          </UserModalProvider>
-        </NotificationProvider>
-      </PaperProvider>
+          </UniversalOverlayProvider>
+        </UserModalProvider>
+      </NotificationProvider>
+    </PaperProvider>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {

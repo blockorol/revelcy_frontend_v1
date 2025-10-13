@@ -1,8 +1,8 @@
 // components/NavigationList.tsx
-import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { NavigationItem } from './NavigationItem';
 import { useTheme } from 'react-native-paper';
+import { navigationItems } from '@components/navigation/NavigationItems';
 
 export interface Props {
   isMobile: boolean
@@ -17,30 +17,17 @@ export function NavigationList({isMobile}:Props) {
         isMobile ? styles.mobileContainer : styles.desktopContainer,
       ]}
     >
-      <NavigationItem
-        isMobile={isMobile}
-        iconActive='binoculars'
-        iconNotActive='binoculars-outlined'
-        label="Explore"
-        route="/discover"
-        horizontal={!isMobile}
-      />
-      <NavigationItem
-        isMobile={isMobile}
-        iconActive="books"
-        iconNotActive="books"
-        label="About"
-        route="/resources"
-        horizontal={!isMobile}
-      />
-      <NavigationItem
-        isMobile={isMobile}
-        iconActive="plus"
-        iconNotActive="plus"
-        label="Create"
-        route="/token/create"
-        horizontal={!isMobile}
-      />
+      {navigationItems.map((navigationItem)=>
+        <NavigationItem
+          key={`nav-item-${navigationItem.label}`}
+          isMobile={isMobile}
+          iconActive={navigationItem.iconActive}
+          iconNotActive={navigationItem.iconNotActive}
+          label={navigationItem.label}
+          route={navigationItem.route}
+          horizontal={!isMobile}
+          />
+      )}
     </View>
   );
 }

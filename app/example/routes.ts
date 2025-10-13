@@ -26,6 +26,8 @@ export const exampleRoutes = {
     two_container: "двойной контейнер",
   },
   user: {
+    login_flow: "login flow",  
+    user_modal: "user modal",
     profileWidget: "логин и разлогин",
     checker_login_logic: "",
     login_username: "",

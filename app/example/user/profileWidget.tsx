@@ -14,7 +14,7 @@ export default function LoginUsername() {
   return (
   <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: "space-between" , gap: 10 }}>
       <View style={{width:300, height:300, padding:5, backgroundColor:colors.surfaceVariant, justifyContent: "center"}}>
-        <NavigationProfileWidget/>
+        <NavigationProfileWidget isMobile/>
       </View>
 
       <View style={{width:300, height:300, padding:5, backgroundColor:colors.surfaceVariant, justifyContent: "center"}}>

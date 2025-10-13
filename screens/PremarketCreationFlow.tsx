@@ -357,13 +357,13 @@ export default function PremarketCreationFlow() {
       style={{
         flex: 1,
         backgroundColor: theme.colors.shadow,
-        justifyContent: 'center',
+        justifyContent: isMobile?'flex-start':'center',
         alignItems: 'center',
         width: '100%',
         height: '100%',
       }}
     >
-      <View style={{ maxWidth: 480, maxHeight: 792, width: '100%', height: isMobile ? '100%' : '85%' }}>
+      <View style={{ maxWidth: 480, maxHeight: isMobile? undefined:792, width: '100%', height: isMobile?'100%': '90%'  }}>
         {step === FLOW_STEP.TOKEN_BASE_INFO && (
           <CreateTokenForm
             onNext={handleAfterSetTokenBaseInfo}
