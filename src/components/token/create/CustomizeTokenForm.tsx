@@ -139,7 +139,7 @@ export default function CustomizeTokenForm({
           backgroundColor: colors.surfaceContainerLowest,
           width: "100%",
           paddingHorizontal: isMobile ? 16 : 24,
-          paddingVertical: 40,
+          paddingVertical: isMobile ? 40 : 24,
           gap: 24,
         }}
       >
@@ -221,13 +221,12 @@ export default function CustomizeTokenForm({
                     />
                   ) : (
                     <>
-                      <Text
-                        prominent
-                        variant="titleLarge"
-                        style={{ color: theme.colors.onSurface }}
-                      >
-                        +
-                      </Text>
+                      <SvgIcon name="plus" color={colors.onSurface} size={24}/>
+                      <View style={{opacity:0.7, alignItems:'center'}}>
+                      <Text variant='labelMedium' style={{color:colors.onSurfaceVariant}}>Upload image or GIF</Text>
+                      <Text variant='labelSmall' style={{color:colors.onSurfaceVariant}}>Recommended 1500x500px</Text>
+                      <Text variant='labelSmall' style={{color:colors.onSurfaceVariant}}>Max 5 Mb</Text>
+                      </View>
                     </>
                   )}
                 </View>
@@ -245,7 +244,6 @@ export default function CustomizeTokenForm({
             </Text>
 
             <TextInputMultiline
-              label="Description"
               value={description}
               onChangeValue={setDescription}
               placeholder="Describe your community..."
@@ -313,9 +311,10 @@ export default function CustomizeTokenForm({
                         alignItems: "center",
                       }}
                     >
-                      <IconButton
-                        icon="close"
-                        size={20}
+                      <SvgIconButton
+                        name='x-circle-outlined'
+                        size={24}
+                        color={colors.onSurface}
                         onPress={() => removeLink(index)}
                       />
                     </View>
@@ -394,7 +393,7 @@ export async function pickImageWithLimited(args?: {
     allowsEditing: true,
     quality: 0.6,
   });
-  if (res.canceled) throw "no picked";
+  if (res.canceled) throw "No image was selected";
 
   let asset = res.assets[0];
   let uri = asset.uri;

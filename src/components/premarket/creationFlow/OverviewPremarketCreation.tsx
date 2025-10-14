@@ -156,8 +156,8 @@ export default function OverviewPremarketCreation({
           justifyContent: "flex-start",
           alignItems: "stretch",
           width: "100%",
-          paddingHorizontal: 16,
-          paddingVertical: 40,
+          paddingHorizontal: isMobile ? 16 : 24,
+          paddingVertical: isMobile ? 40 : 24,
         }}
       >
         {launchState && (
