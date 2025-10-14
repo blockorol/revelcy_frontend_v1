@@ -76,10 +76,11 @@ interface IsMobileWithDemetionsResp {
 }
 
 export function useIsMobileWithDemention(): IsMobileWithDemetionsResp {
-    const { width, height} = useWindowDimensions();
+    const { width} = useWindowDimensions();
+    const {contentHeight} = useContentArea(); 
     return {
         isMobile: width < MAX_WIDTH_SIZE,
         width:width,
-        height: height
+        height: contentHeight
     };
 }
