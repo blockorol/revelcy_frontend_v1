@@ -23,7 +23,7 @@ export default function ContinueButtonWithProgressBar({
   progress,
 }: ContinueButtonWithProgressBarProps) {
   return (
-    <View style={{ width: "100%", flexDirection: "column", gap: 16 }}>
+    <View style={{ width: "100%", flexDirection: "column", gap: 16, paddingTop: 24 }}>
       <View
         style={{
           flexDirection: "row",

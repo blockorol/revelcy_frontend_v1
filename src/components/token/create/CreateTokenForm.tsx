@@ -88,9 +88,9 @@ export default function CreateTokenForm({presetData, onNext, onClose,
           backgroundColor: colors.surfaceContainerLowest,
           width: "100%",
           paddingHorizontal: isMobile ? 16 : 24,
-          paddingTop: isMobile ? 40 : 24,
+          paddingVertical: isMobile ? 40 : 24,
           maxWidth: 500,
-          minHeight: isMobile ? height - 40 : height * 0.85 - 24,
+          minHeight: isMobile ? height: height * 0.9,
           justifyContent: "space-between",
         }}
       >
