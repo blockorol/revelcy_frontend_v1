@@ -72,10 +72,13 @@ export default function ContinueButtonWithProgressBar({
         </View>
       </View>
       {progress && (
+        <View style={{height:4, width: "100%", borderRadius: 4}}> 
         <ProgressBar
           color={theme.colors.primary}
           progress={isFilledAll() ? progress.after : progress.before}
+          style={{borderRadius: 4}}
         />
+        </View>
       )}
     </View>
   );
