@@ -24,15 +24,15 @@ type CustomizeTokenProps = {
   steps?: {
     current: number;
     total: number;
-  }
+  };
   presetData?: {
     banner?: {
       data?: string;
       url?: string;
     };
     description?: string;
-    links?: Link[]
-  }
+    links?: Link[];
+  };
 };
 
 export default function CustomizeTokenForm({
@@ -40,16 +40,20 @@ export default function CustomizeTokenForm({
   onClose,
   onBack,
   steps,
-  presetData
+  presetData,
 }: CustomizeTokenProps) {
-  const isMobile = useIsMobile()
-  
+  const isMobile = useIsMobile();
+
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
-  const [banner, setBanner] = useState<string | undefined>(presetData?.banner?.data);
-  const [description, setDescription] = useState<string>(presetData?.description??"");
+  const [banner, setBanner] = useState<string | undefined>(
+    presetData?.banner?.data
+  );
+  const [description, setDescription] = useState<string>(
+    presetData?.description ?? ""
+  );
 
-  const [links, setLinks] = useState<Link[]>(presetData?.links??[]);
+  const [links, setLinks] = useState<Link[]>(presetData?.links ?? []);
 
   const addTelegramLink = () => {
     setLinks((prev) => [...prev, { text: "", url: "", type: "tg" }]);
@@ -84,13 +88,14 @@ export default function CustomizeTokenForm({
   };
 
   const handleSubmit = () => {
-    onNext({ 
-      description, 
+    onNext({
+      description,
       banner: {
         data: banner,
-        url:presetData?.banner?.url
-      }, 
-      links:links });
+        url: presetData?.banner?.url,
+      },
+      links: links,
+    });
   };
 
   const isFilledAll = (): boolean => {
@@ -103,13 +108,16 @@ export default function CustomizeTokenForm({
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
-      style={{ backgroundColor: colors.surfaceContainerLowest, borderRadius: 16 }}
+      style={{
+        backgroundColor: colors.surfaceContainerLowest,
+        borderRadius: 16,
+      }}
     >
       <View
         style={{
           padding: 24,
           backgroundColor: colors.surfaceContainerLowest,
-          borderRadius:  isMobile?0:16,
+          borderRadius: isMobile ? 0 : 16,
           justifyContent: "space-between",
           alignItems: "stretch",
           width: "100%",
@@ -177,9 +185,9 @@ export default function CustomizeTokenForm({
                   overflow: "hidden",
                 }}
               >
-                {(banner || presetData?.banner?.url) ? (
+                {banner || presetData?.banner?.url ? (
                   <Image
-                    source={{ uri: banner??presetData?.banner?.url}}
+                    source={{ uri: banner ?? presetData?.banner?.url }}
                     style={{ width: "100%", height: "100%" }}
                   />
                 ) : (
@@ -204,10 +212,13 @@ export default function CustomizeTokenForm({
             placeholder="Describe your community..."
             mode="outlined"
             style={{ borderWidth: 0, backgroundColor: "transparent" }}
-            theme={{ colors: {...colors, 
-      outline: 'transparent', 
-      outlineVariant: 'transparent', // RN Paper 5+
-    },  }}
+            theme={{
+              colors: {
+                ...colors,
+                outline: "transparent",
+                outlineVariant: "transparent", // RN Paper 5+
+              },
+            }}
           />
 
           {/* links */}
@@ -319,10 +330,14 @@ export default function CustomizeTokenForm({
         </View>
         <ContinueAndProgress
           theme={theme}
-          progress={steps?{
-            before:(steps.current-1)/steps.total,
-            after:(steps.current)/steps.total
-          }:undefined}
+          progress={
+            steps
+              ? {
+                  before: (steps.current - 1) / steps.total,
+                  after: steps.current / steps.total,
+                }
+              : undefined
+          }
           handleSubmit={handleSubmit}
           isFilledAll={isFilledAll}
           onBack={onBack}
