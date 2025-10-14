@@ -2,7 +2,7 @@ import { TokenCommunityInfo, updateAboutCommunity } from "@api/token";
 import { CommunityLinksGrid } from "@components/premarket/CommunityLinksGrid";
 import { View, Image, ScrollView } from "react-native";
 import { useTheme, Button } from "react-native-paper";
-import { Text } from "@components/ui/Text"
+import { Text } from "@components/ui/Text";
 import { ExpandableText } from "@components/base/ExpandableText";
 import { useState } from "react";
 import CustomizeTokenForm from "@components/token/create/CustomizeTokenForm";
@@ -99,50 +99,70 @@ export function AboutCommunity({
       }}
     >
       {!!bannerUri && (
-  <View
-    style={{
-      width: "100%",
-      aspectRatio: 3,               
-      borderRadius: 20,
-      overflow: "hidden",          
-      backgroundColor: colors.surfaceContainerLowest,
-    }}
-  >
-    <Image
-      source={{ uri: bannerUri }}
-      style={{
-        width: "100%",
-        height: "100%",
-        // @ts-ignore
-        objectFit: "cover",
-        // @ts-ignore
-        objectPosition: "center",
-      }}
-      resizeMode="cover"
-    />
-  </View>
-)}
+        <View
+          style={{
+            width: "100%",
+            aspectRatio: 3,
+            borderRadius: 20,
+            overflow: "hidden",
+            backgroundColor: colors.surfaceContainerLowest,
+          }}
+        >
+          <Image
+            source={{ uri: bannerUri }}
+            style={{
+              width: "100%",
+              height: "100%",
+              // @ts-ignore
+              objectFit: "cover",
+              // @ts-ignore
+              objectPosition: "center",
+            }}
+            resizeMode="cover"
+          />
+        </View>
+      )}
       <View
         style={{
           flexDirection: isMobile ? "column" : "row",
           alignItems: "flex-start",
           gap: 16,
-          justifyContent: isMobile ? 'center' : "space-between",
+          justifyContent: isMobile ? "center" : "space-between",
         }}
       >
         {!!communityInfoLocal?.description ? (
-          <View style={{flex: 1,  gap: isMobile ? 16:24, alignContent: 'flex-start', justifyContent: 'flex-start'}}>
-            <View style={{flex:1, flexDirection: "row", gap: isMobile ? 8 : 16, alignItems: 'center', }}>
+          <View
+            style={{
+              flex: 1,
+              gap: isMobile ? 16 : 24,
+              alignContent: "flex-start",
+              justifyContent: "flex-start",
+            }}
+          >
+            <View
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                gap: isMobile ? 8 : 16,
+                alignItems: "center",
+              }}
+            >
               <Text variant="titleLarge">About Community</Text>
               {isCreator && (
                 <Button
                   mode="outlined"
-                  onPress={openEdit}  
-                  style={{ borderRadius: 8, paddingHorizontal:0, margin:0 }}
-                  contentStyle={{ height: 30, paddingHorizontal: 16, margin:0 }}
-                  labelStyle={{margin:0}}
+                  onPress={openEdit}
+                  style={{ borderRadius: 8, paddingHorizontal: 0, margin: 0 }}
+                  contentStyle={{
+                    height: 30,
+                    paddingHorizontal: 16,
+                    margin: 0,
+                  }}
+                  labelStyle={{ margin: 0 }}
                 >
-                  <Text prominent variant='labelMedium'>Edit</Text>
+                  <Text prominent variant="labelMedium">
+                    Edit
+                  </Text>
                 </Button>
               )}
             </View>
@@ -151,26 +171,26 @@ export function AboutCommunity({
                 text={communityInfoLocal.description}
                 maxLineExpanded={2}
               />
-              
             </View>
           </View>
         ) : (
           isCreator && (
-            
-                <Button
-                  mode="outlined"
-                  onPress={openEdit}  
-                  style={{ borderRadius: 8, paddingHorizontal:0, margin:0 }}
-                  contentStyle={{ height: 30, paddingHorizontal: 16, margin:0 }}
-                  labelStyle={{margin:0}}
-                >
-                  <Text prominent variant='labelMedium'>Add comunity info</Text>
-                </Button>
+            <Button
+              mode="outlined"
+              onPress={openEdit}
+              style={{ borderRadius: 8, paddingHorizontal: 0, margin: 0 }}
+              contentStyle={{ height: 30, paddingHorizontal: 16, margin: 0 }}
+              labelStyle={{ margin: 0 }}
+            >
+              <Text prominent variant="labelMedium">
+                Add comunity info
+              </Text>
+            </Button>
           )
         )}
 
         {communityInfoLocal?.links && communityInfoLocal.links.length !== 0 && (
-          <View> 
+          <View>
             <CommunityLinksGrid
               links={communityInfoLocal.links}
               isMobile={isMobile}

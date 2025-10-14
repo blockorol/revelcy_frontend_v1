@@ -7,8 +7,15 @@ import {
   ScrollView,
   StyleSheet,
 } from "react-native";
+import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
-import { TextInput, useTheme, Text, IconButton } from "react-native-paper";
+import {
+  TextInput,
+  useTheme,
+  IconButton,
+  HelperText,
+} from "react-native-paper";
+import { Text } from "@components/ui/Text";
 import ContinueAndProgress from "@components/ContinueButtonWithProgressBar";
 import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeader";
 import { SvgIcon, SvgIconButton } from "@components/base/SvgIcon";
@@ -16,6 +23,9 @@ import { CustomizeTokenData, Link } from "@components/token/create/interface";
 import normalizeUrl from "@utils/url";
 import useIsMobile from "@hooks/useIsMobile";
 import { ExtendedMD3Colors } from "@theme/types";
+import { round } from "@utils/numbers";
+import TextInputMultiline from "@components/base/form/TextInputMutiline";
+import { Button } from "@components/ui/Button";
 
 type CustomizeTokenProps = {
   onNext: (data: CustomizeTokenData) => void;
@@ -24,15 +34,15 @@ type CustomizeTokenProps = {
   steps?: {
     current: number;
     total: number;
-  }
+  };
   presetData?: {
     banner?: {
       data?: string;
       url?: string;
     };
     description?: string;
-    links?: Link[]
-  }
+    links?: Link[];
+  };
 };
 
 export default function CustomizeTokenForm({
@@ -40,16 +50,23 @@ export default function CustomizeTokenForm({
   onClose,
   onBack,
   steps,
-  presetData
+  presetData,
 }: CustomizeTokenProps) {
-  const isMobile = useIsMobile()
-  
+  const isMobile = useIsMobile();
+
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
-  const [banner, setBanner] = useState<string | undefined>(presetData?.banner?.data);
-  const [description, setDescription] = useState<string>(presetData?.description??"");
 
-  const [links, setLinks] = useState<Link[]>(presetData?.links??[]);
+  const [banner, setBanner] = useState<string | undefined>(
+    presetData?.banner?.data
+  );
+  const [bannerError, setBannerError] = useState<string | undefined>(undefined);
+
+  const [description, setDescription] = useState<string>(
+    presetData?.description ?? ""
+  );
+
+  const [links, setLinks] = useState<Link[]>(presetData?.links ?? []);
 
   const addTelegramLink = () => {
     setLinks((prev) => [...prev, { text: "", url: "", type: "tg" }]);
@@ -73,24 +90,25 @@ export default function CustomizeTokenForm({
   };
 
   const pickBanner = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.5,
-    });
-
-    if (!result.canceled) {
-      setBanner(result.assets[0].uri);
+    try {
+      const url = await pickImageWithLimited({ max_bytes: 5000 * 1024 });
+      if (!!!url) return;
+      setBanner(url);
+      setBannerError(undefined);
+    } catch (e) {
+      setBannerError(e as string);
     }
   };
 
   const handleSubmit = () => {
-    onNext({ 
-      description, 
+    onNext({
+      description,
       banner: {
         data: banner,
-        url:presetData?.banner?.url
-      }, 
-      links:links });
+        url: presetData?.banner?.url,
+      },
+      links: links,
+    });
   };
 
   const isFilledAll = (): boolean => {
@@ -100,31 +118,60 @@ export default function CustomizeTokenForm({
     return noFilledLinks === undefined;
   };
 
+  const convertLinkIcon = (type: string) => {
+    return type === "x"
+      ? "x-logo"
+      : type === "tg"
+      ? "tg-logo"
+      : "world-outlined";
+  };
+
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
-      style={{ backgroundColor: colors.surfaceContainerLowest, borderRadius: 16 }}
+      style={{
+        backgroundColor: colors.surfaceContainerLowest,
+        borderRadius: isMobile ? 0 : 16,
+      }}
     >
       <View
         style={{
-          padding: 24,
           backgroundColor: colors.surfaceContainerLowest,
-          borderRadius:  isMobile?0:16,
-          justifyContent: "space-between",
-          alignItems: "stretch",
           width: "100%",
-          height: "100%",
-          maxWidth: 500,
-          maxHeight: 1000,
+          paddingHorizontal: isMobile ? 16 : 24,
+          paddingVertical: isMobile ? 40 : 24,
+          gap: 24,
         }}
       >
-        <View style={{ gap: 30 }}>
-          <TokenCreateFormHeader
-            title={"About Community"}
-            theme={theme}
-            onClose={onClose}
-          />
+        <TokenCreateFormHeader
+          title={"About Community"}
+          theme={theme}
+          onClose={onClose}
+        />
+        <View style={{ flexDirection: "row", gap: 16 }}>
+          <SvgIcon name="info-circle" color={colors.primary} size={24} />
+          <View style={{ gap: 8, maxWidth: 392}}>
+            <Text
+              variant="bodyMedium"
+              style={{ color: colors.onSurfaceVariant }}
+            >
+              Early Community is the key to Token’s success.
+            </Text>
+            <Text
+              variant="bodyMedium"
+              style={{ color: colors.onSurfaceVariant }}
+            >
+              Explain what your Community is about, add calls to action for
+              people to participate
+            </Text>
+          </View>
+        </View>
 
+        <View
+          style={{
+            gap: 56,
+          }}
+        >
           {/* Banner Upload */}
           <View
             style={{
@@ -134,195 +181,191 @@ export default function CustomizeTokenForm({
               width: "100%",
             }}
           >
-            <View
-              style={{
-                flexDirection: "column",
-                gap: 4,
-                justifyContent: "center",
-                alignItems: "baseline",
-              }}
-            >
               <Text
+                variant='labelLarge'
+                prominent
                 style={{
-                  ...theme.fonts.bodyLarge,
-                  textAlign: "left",
                   color: colors.onSurface,
+                  alignSelf:'flex-start'
                 }}
               >
                 Community Banner
               </Text>
-              <Text
-                style={{
-                  ...theme.fonts.bodySmall,
-                  textAlign: "left",
-                  color: colors.onSurfaceVariant,
-                }}
-              >
-                {`This banner will be shown on your About Community’s section `}
-              </Text>
-            </View>
 
-            <TouchableOpacity
-              onPress={pickBanner}
-              style={{ alignSelf: "center" }}
+            <View
+              style={{
+                flexDirection: "column",
+                alignItems: "center",
+                width: "100%",
+              }}
             >
-              <View
-                style={{
-                  height: 120,
-                  width: 380,
-                  borderRadius: 24,
-                  backgroundColor: colors.surfaceContainerHighest,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  overflow: "hidden",
-                }}
+              <TouchableOpacity
+                onPress={pickBanner}
+                style={{ alignSelf: "center" }}
               >
-                {(banner || presetData?.banner?.url) ? (
-                  <Image
-                    source={{ uri: banner??presetData?.banner?.url}}
-                    style={{ width: "100%", height: "100%" }}
-                  />
-                ) : (
-                  <>
-                    <Text
-                      style={{ fontSize: 24, color: theme.colors.onSurface }}
-                    >
-                      +
-                    </Text>
-                  </>
-                )}
-              </View>
-            </TouchableOpacity>
+                <View
+                  style={{
+                    height: 120,
+                    width: 380,
+                    borderRadius: 24,
+                    backgroundColor: colors.surfaceContainerHighest,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                  }}
+                >
+                  {banner || presetData?.banner?.url ? (
+                    <Image
+                      source={{ uri: banner ?? presetData?.banner?.url }}
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  ) : (
+                    <>
+                      <SvgIcon name="plus" color={colors.onSurface} size={24}/>
+                      <View style={{opacity:0.7, alignItems:'center'}}>
+                      <Text variant='labelMedium' style={{color:colors.onSurfaceVariant}}>Upload image or GIF</Text>
+                      <Text variant='labelSmall' style={{color:colors.onSurfaceVariant}}>Recommended 1500x500px</Text>
+                      <Text variant='labelSmall' style={{color:colors.onSurfaceVariant}}>Max 5 Mb</Text>
+                      </View>
+                    </>
+                  )}
+                </View>
+              </TouchableOpacity>
+              {bannerError && (
+                <HelperText type="error">{bannerError}</HelperText>
+              )}
+            </View>
           </View>
 
-          <TextInput
-            label="Description"
-            value={description}
-            onChangeText={setDescription}
-            maxLength={150}
-            multiline
-            placeholder="Describe your community..."
-            mode="outlined"
-            style={{ borderWidth: 0, backgroundColor: "transparent" }}
-            theme={{ colors: {...colors, 
-      outline: 'transparent', 
-      outlineVariant: 'transparent', // RN Paper 5+
-    },  }}
-          />
+          {/* Community Description  */}
+          <View style={{ gap: 20, alignContent: "flex-start" }}>
+            <Text variant="labelLarge" prominent>
+              Community Description
+            </Text>
+
+            <TextInputMultiline
+              value={description}
+              onChangeValue={setDescription}
+              placeholder="Describe your community..."
+            />
+          </View>
 
           {/* links */}
-          <View>
-            <Text variant="bodyLarge">CTA Buttons</Text>
-            <Text variant="bodySmall">
-              Add call-to-action buttons to help your community engage, explore,
-              or take action easily
+          <View style={{ gap: 20 }}>
+            <Text variant="labelLarge" prominent>
+              Community Calls to Action
             </Text>
-            {links.map((link, index) => (
-              <View key={index} style={styles.linkBlock}>
-                <View style={styles.headerRow}>
-                  <TextInput
-                    label={`Button ${index + 1}`}
-                    placeholder="e.g. Subscribe to..."
-                    value={link.text}
-                    onChangeText={(val) => updateLink(index, "text", val)}
-                    mode="flat"
-                    underlineColor="transparent"
-                    theme={{ colors: { outline: "transparent" } }}
-                    style={{ flex: 30, backgroundColor: "transparent" }}
-                  />
-                  <View
-                    style={{
-                      flexDirection: "column",
-                      flex: 1,
-                      alignSelf: "flex-start",
-                      alignItems: "center",
-                    }}
-                  >
-                    <IconButton
-                      icon="close"
-                      size={20}
-                      onPress={() => removeLink(index)}
-                      style={{ flex: 1 }}
-                    />
-                    <View style={{ flex: 10 }} />
+            <View style={{ flexDirection: "column", gap: 16 }}>
+              {links.map((link, index) => (
+                <View
+                  key={index}
+                  style={{
+                    paddingVertical: 12,
+                    paddingHorizontal: 16,
+                    borderRadius: 20,
+                    backgroundColor: colors.surfaceContainerLow,
+                  }}
+                >
+                  <View style={[styles.headerRow, {}]}>
+                    <View style={{ gap: 12, alignItems: "flex-start" , flex:1}}>
+                      <Button
+                        mode="outlined"
+                        leftSvgIconName={convertLinkIcon(link.type)}
+                        size="small"
+                      >
+                        {link.text}
+                      </Button>
+
+                      <TextInput
+                        label="Call to Action text"
+                        placeholder="e.g. Subcribe to..."
+                        maxLength={30}
+                        value={link.text}
+                        onChangeText={(val) => updateLink(index, "text", val)}
+                        mode="flat"
+                        underlineColor="transparent"
+                        theme={{ colors: { outline: "transparent" } }}
+                        style={{ height: 40, backgroundColor: "transparent", width: '100%'}}
+                      />
+                      <TextInput
+                        label={"URL"}
+                        placeholder="e.g. https://example.com/..."
+                        value={link.url}
+                        onChangeText={(val) =>
+                          updateLink(index, "url", normalizeUrl(val))
+                        }
+                        mode="flat"
+                        underlineColor="transparent"
+                        theme={{ colors: { outline: "transparent" } }}
+                        style={{
+                          backgroundColor: "transparent",
+                          height: 40,
+                          width: "100%",
+                        }}
+                      />
+                    </View>
+                    <View
+                      style={{
+                        flexDirection: "column",
+                        justifyContent: 'center',
+                        alignItems: "center",
+                      }}
+                    >
+                      <SvgIconButton
+                        name='x-circle-outlined'
+                        size={24}
+                        color={colors.onSurface}
+                        onPress={() => removeLink(index)}
+                      />
+                    </View>
                   </View>
                 </View>
-                <View style={{ flexDirection: "row", gap: "20" }}>
-                  <SvgIcon
-                    name={
-                      link.type === "x"
-                        ? "x-logo"
-                        : link.type === "tg"
-                        ? "tg-logo"
-                        : "world-outlined"
-                    }
-                    size={24}
-                    color={colors.onSurface}
-                  />
-                  <TextInput
-                    placeholder={
-                      link.type === "x"
-                        ? "t.me/"
-                        : link.type === "tg"
-                        ? "t.me/"
-                        : "example.com/"
-                    }
-                    label="URL"
-                    value={link.url}
-                    onChangeText={(val) =>
-                      updateLink(index, "url", normalizeUrl(val))
-                    }
-                    mode="flat"
-                    underlineColor="transparent"
-                    theme={{ colors: { outline: "transparent" } }}
-                    style={{ backgroundColor: "transparent", flex: 1 }}
-                  />
-                </View>
-              </View>
-            ))}
+              ))}
+            </View>
 
-            {/* Social Icons Actions */}
-            {
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "flex-start",
-                  width: "100%",
-                  paddingTop: 34,
-                }}
-              >
-                <View style={{ flexDirection: "row", gap: 16, height: 24 }}>
-                  <SvgIcon
-                    name="add-circle-outlined"
-                    color={theme.colors.onSurfaceVariant}
-                  />
+            {/* Add link */}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "flex-start",
+                width: "100%",
+              }}
+            >
+              <View style={{ flexDirection: "row", gap: 16, height: 24 }}>
+                <SvgIcon
+                  name="add-circle-outlined"
+                  color={theme.colors.onSurfaceVariant}
+                />
 
-                  <SvgIconButton
-                    name="tg-logo"
-                    color={theme.colors.onSurface}
-                    onPress={() => addTelegramLink()}
-                  />
-                  <SvgIconButton
-                    name="x-logo"
-                    color={theme.colors.onSurface}
-                    onPress={() => addXLink()}
-                  />
-                  <SvgIconButton
-                    name="world-outlined"
-                    color={theme.colors.onSurface}
-                    onPress={() => addOtherLink()}
-                  />
-                </View>
+                <SvgIconButton
+                  name="tg-logo"
+                  color={theme.colors.onSurface}
+                  onPress={() => addTelegramLink()}
+                />
+                <SvgIconButton
+                  name="x-logo"
+                  color={theme.colors.onSurface}
+                  onPress={() => addXLink()}
+                />
+                <SvgIconButton
+                  name="world-outlined"
+                  color={theme.colors.onSurface}
+                  onPress={() => addOtherLink()}
+                />
               </View>
-            }
+            </View>
           </View>
         </View>
         <ContinueAndProgress
           theme={theme}
-          progress={steps?{
-            before:(steps.current-1)/steps.total,
-            after:(steps.current)/steps.total
-          }:undefined}
+          progress={
+            steps
+              ? {
+                  before: (steps.current - 1) / steps.total,
+                  after: steps.current / steps.total,
+                }
+              : undefined
+          }
           handleSubmit={handleSubmit}
           isFilledAll={isFilledAll}
           onBack={onBack}
@@ -333,14 +376,59 @@ export default function CustomizeTokenForm({
 }
 
 const styles = StyleSheet.create({
-  linkBlock: {
-    backgroundColor: "transparent",
-    borderRadius: 8,
-  },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
   },
 });
+
+export async function pickImageWithLimited(args?: {
+  max_bytes?: number;
+  max_widht?: number;
+  max_height?: number;
+  aspect?: number;
+}) {
+  const res = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: "images",
+    allowsEditing: true,
+    quality: 0.6,
+  });
+  if (res.canceled) throw "No image was selected";
+
+  let asset = res.assets[0];
+  let uri = asset.uri;
+  if (!args) return uri;
+
+  if (args.max_widht && asset.width > args.max_widht)
+    throw `width too long, limit ${args.max_widht} px`;
+  if (args.max_height && asset.height > args.max_height)
+    throw `height too long, limit ${args.max_height} px`;
+  if (args.aspect && round(asset.width / asset.height, 1) !== args.aspect)
+    throw `aspect should be ${args.aspect}`;
+
+  if (args.max_bytes) {
+    let size = await getFileSize(uri);
+    if (size > args.max_bytes)
+      throw `image too high, limit ${(args.max_bytes / 1024).toFixed(0)} Kb`;
+  }
+
+  return uri;
+}
+
+async function getFileSize(uri: string): Promise<number> {
+  try {
+    if (uri.startsWith("file://") || uri.startsWith("/")) {
+      const info = await FileSystem.getInfoAsync(uri);
+
+      if (!info.exists) {
+        return 0;
+      }
+      return info.size;
+    }
+
+    const blob = await fetch(uri).then((r) => r.blob());
+    return blob.size;
+  } catch {
+    return 0;
+  }
+}
