@@ -58,7 +58,7 @@ export default function OverviewPremarketCreation({
     "wrong connection": {
       text: "Wallet and current user have different address, please reconnect or relogin",
       button: (
-        <View style={{flexDirection:'row', padding: 8}}>
+        <View style={{ flexDirection: "row", padding: 8 }}>
           <Button onPress={disconnect} variant="primary" size="normal">
             Disconned
           </Button>
@@ -116,7 +116,9 @@ export default function OverviewPremarketCreation({
       </View>
     );
   }
-  const percent = convertSolToPercentOnStart(data.tokenomicsData.creatorInitialBuy)
+  const percent = convertSolToPercentOnStart(
+    data.tokenomicsData.creatorInitialBuy
+  );
 
   const { tokenName, tokenTicker, description, avatar, links } =
     data.mainData || {};
@@ -469,14 +471,27 @@ export default function OverviewPremarketCreation({
             </Text>
 
             {/* todo: add circle */}
-            <DonutWithLegend 
-            slices={[
-                {value:round(percent, 1), additional: data.tokenomicsData.creatorInitialBuy.toFixed(2), label:"Creator (You)", color: theme.colors.primary},
-                {value:20, label:"Pumpswap pool", color: theme.colors.secondary},
-                {value:round(80-percent, 1), label:"Bonding curve", color: theme.colors.onSurface},
-            ]}
+            <DonutWithLegend
+              slices={[
+                {
+                  value: round(percent, 1),
+                  additional: data.tokenomicsData.creatorInitialBuy.toFixed(2),
+                  label: "Creator (You)",
+                  color: theme.colors.primary,
+                },
+                {
+                  value: 20,
+                  label: "Pumpswap pool",
+                  color: theme.colors.secondary,
+                },
+                {
+                  value: round(80 - percent, 1),
+                  label: "Bonding curve",
+                  color: theme.colors.onSurface,
+                },
+              ]}
             />
-            
+
             <View style={{ gap: 8 }}>
               <View
                 style={{
@@ -545,7 +560,6 @@ export default function OverviewPremarketCreation({
                 </Text>
               </View>
             </View>
-            
 
             {/* todo: availble amount */}
             {/* <RowLine
@@ -571,13 +585,20 @@ export default function OverviewPremarketCreation({
 
           <View
             style={{
-              flexDirection: 'row',
-              justifyContent:'space-between',
+              flexDirection: "row",
+              justifyContent: "space-between",
               alignItems: "center",
               gap: 16,
             }}
           >
-          {onBack&&<SvgIconButton name='caret-left' size={32} onPress={onBack} color={colors.onSurface}/>}
+            {onBack && (
+              <SvgIconButton
+                name="caret-left"
+                size={32}
+                onPress={onBack}
+                color={colors.onSurface}
+              />
+            )}
             {!error ? (
               <Button mode="contained" onPress={onLaunch}>
                 {`Start premarket with ${shortAddress}`}
