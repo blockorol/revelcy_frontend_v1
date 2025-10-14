@@ -38,7 +38,7 @@ export default function OverviewPremarketCreation({
 }: Props) {
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
-  const { isMobile, width } = useIsMobileWithDemention();
+  const { isMobile, width,height } = useIsMobileWithDemention();
   const { publicKey, connected, connect, disconnect } = useWallet();
   const { user, logout } = useAuth();
   const solanaFee = 0.02;
@@ -158,6 +158,7 @@ export default function OverviewPremarketCreation({
           width: "100%",
           paddingHorizontal: isMobile ? 16 : 24,
           paddingVertical: isMobile ? 40 : 24,
+          minHeight: isMobile ? height: height * 0.9,
         }}
       >
         {launchState && (

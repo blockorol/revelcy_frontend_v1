@@ -1,3 +1,4 @@
+import { AppTheme } from "@theme/types";
 import React, { useState } from "react";
 import { View } from "react-native";
 import { Portal, Modal, Surface, Text, Button, useTheme } from "react-native-paper";
@@ -18,13 +19,13 @@ export function DatePickerMD3FromCalendar({
   onConfirm,
   label = "Select date",
 }: Props) {
-  const { colors } = useTheme() as any;
+  const { colors } = useTheme() as AppTheme;
   const C = {
     primary: colors.primary,
     onPrimary: colors.onPrimary,
     onSurface: colors.onSurface,
     onSurfaceVariant: colors.onSurfaceVariant,
-    surfaceContainerLow: colors.surfaceContainerLow ?? colors.surface,
+    surfaceContainerLow: colors.surfaceContainerLow,
     outline: colors.outline,
   };
 
