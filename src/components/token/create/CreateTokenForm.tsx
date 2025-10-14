@@ -11,7 +11,7 @@ import normalizeUrl from '@utils/url';
 import { SvgIcon, SvgIconButton } from '@components/base/SvgIcon';
 import TextInputMultiline from '@components/base/form/TextInputMutiline';
 import TextInput from '@components/base/form/TextInput';
-import useIsMobile from '@hooks/useIsMobile';
+import useIsMobile, { useIsMobileWithDemention } from '@hooks/useIsMobile';
 import { MD3ElevationColors } from 'react-native-paper/lib/typescript/types';
 import { ExtendedMD3Colors } from '@theme/types';
 
@@ -29,7 +29,7 @@ export default function CreateTokenForm({presetData, onNext, onClose,
   onBack, step, totalSteps}: CreateTokenFormProps) {
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
-  const isMobile = useIsMobile();
+  const {isMobile, height} = useIsMobileWithDemention();
   
   const [tokenName, setTokenName] = useState(presetData?.tokenName??'');
   const [tokenTicker, setTokenTicker] = useState(presetData?.tokenTicker??'');
@@ -75,8 +75,25 @@ export default function CreateTokenForm({presetData, onNext, onClose,
   }
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false} style = {{backgroundColor: colors.surfaceContainerLowest, borderRadius: isMobile?0:16}}>
-      <View style={{ padding: 24, justifyContent: 'space-between', alignItems: 'stretch', width: '100%', height: '100%', gap: 48}}>
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      style={{
+        backgroundColor: colors.surfaceContainerLowest,
+        borderRadius: isMobile ? 0 : 16,
+        height: height,
+      }}
+    >
+      <View
+        style={{
+          backgroundColor: colors.surfaceContainerLowest,
+          width: "100%",
+          paddingHorizontal: isMobile ? 16 : 24,
+          paddingTop: isMobile ? 40 : 24,
+          maxWidth: 500,
+          minHeight: isMobile ? height - 40 : height * 0.85 - 24,
+          justifyContent: "space-between",
+        }}
+      >
         <View style={{gap:16}}>
           <TokenCreateFormHeader title="Token Details" theme={theme} onClose={onClose} onBack={onBack}  />
           <View style={{gap:64}}>  

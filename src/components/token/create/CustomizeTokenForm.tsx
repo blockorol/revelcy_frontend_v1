@@ -21,7 +21,7 @@ import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeade
 import { SvgIcon, SvgIconButton } from "@components/base/SvgIcon";
 import { CustomizeTokenData, Link } from "@components/token/create/interface";
 import normalizeUrl from "@utils/url";
-import useIsMobile from "@hooks/useIsMobile";
+import { useIsMobileWithDemention } from "@hooks/useIsMobile";
 import { ExtendedMD3Colors } from "@theme/types";
 import { round } from "@utils/numbers";
 import TextInputMultiline from "@components/base/form/TextInputMutiline";
@@ -52,7 +52,7 @@ export default function CustomizeTokenForm({
   steps,
   presetData,
 }: CustomizeTokenProps) {
-  const isMobile = useIsMobile();
+  const { isMobile, height } = useIsMobileWithDemention();
 
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
@@ -139,219 +139,248 @@ export default function CustomizeTokenForm({
           backgroundColor: colors.surfaceContainerLowest,
           width: "100%",
           paddingHorizontal: isMobile ? 16 : 24,
-          paddingVertical: isMobile ? 40 : 24,
-          gap: 24,
+          paddingTop: isMobile ? 40 : 24,
+          maxWidth: 500,
+          minHeight: isMobile ? height - 40 : height * 0.85 - 24,
+          justifyContent: "space-between",
         }}
       >
-        <TokenCreateFormHeader
-          title={"About Community"}
-          theme={theme}
-          onClose={onClose}
-        />
-        <View style={{ flexDirection: "row", gap: 16 }}>
-          <SvgIcon name="info-circle" color={colors.primary} size={24} />
-          <View style={{ gap: 8, maxWidth: 392}}>
-            <Text
-              variant="bodyMedium"
-              style={{ color: colors.onSurfaceVariant }}
-            >
-              Early Community is the key to Token’s success.
-            </Text>
-            <Text
-              variant="bodyMedium"
-              style={{ color: colors.onSurfaceVariant }}
-            >
-              Explain what your Community is about, add calls to action for
-              people to participate
-            </Text>
+        <View style={{ gap: 24, flex: 1 }}>
+          <TokenCreateFormHeader
+            title={"About Community"}
+            theme={theme}
+            onClose={onClose}
+          />
+          <View style={{ flexDirection: "row", gap: 16 }}>
+            <SvgIcon name="info-circle" color={colors.primary} size={24} />
+            <View style={{ gap: 8, maxWidth: 392 }}>
+              <Text
+                variant="bodyMedium"
+                style={{ color: colors.onSurfaceVariant }}
+              >
+                Early Community is the key to Token’s success.
+              </Text>
+              <Text
+                variant="bodyMedium"
+                style={{ color: colors.onSurfaceVariant }}
+              >
+                Explain what your Community is about, add calls to action for
+                people to participate
+              </Text>
+            </View>
           </View>
-        </View>
 
-        <View
-          style={{
-            gap: 56,
-          }}
-        >
-          {/* Banner Upload */}
           <View
             style={{
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 16,
-              width: "100%",
+              gap: 56,
             }}
           >
+            {/* Banner Upload */}
+            <View
+              style={{
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 16,
+                width: "100%",
+              }}
+            >
               <Text
-                variant='labelLarge'
+                variant="labelLarge"
                 prominent
                 style={{
                   color: colors.onSurface,
-                  alignSelf:'flex-start'
+                  alignSelf: "flex-start",
                 }}
               >
                 Community Banner
               </Text>
 
-            <View
-              style={{
-                flexDirection: "column",
-                alignItems: "center",
-                width: "100%",
-              }}
-            >
-              <TouchableOpacity
-                onPress={pickBanner}
-                style={{ alignSelf: "center" }}
+              <View
+                style={{
+                  flexDirection: "column",
+                  alignItems: "center",
+                  width: "100%",
+                }}
               >
-                <View
-                  style={{
-                    height: 120,
-                    width: 380,
-                    borderRadius: 24,
-                    backgroundColor: colors.surfaceContainerHighest,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    overflow: "hidden",
-                  }}
+                <TouchableOpacity
+                  onPress={pickBanner}
+                  style={{ alignSelf: "center" }}
                 >
-                  {banner || presetData?.banner?.url ? (
-                    <Image
-                      source={{ uri: banner ?? presetData?.banner?.url }}
-                      style={{ width: "100%", height: "100%" }}
-                    />
-                  ) : (
-                    <>
-                      <SvgIcon name="plus" color={colors.onSurface} size={24}/>
-                      <View style={{opacity:0.7, alignItems:'center'}}>
-                      <Text variant='labelMedium' style={{color:colors.onSurfaceVariant}}>Upload image or GIF</Text>
-                      <Text variant='labelSmall' style={{color:colors.onSurfaceVariant}}>Recommended 1500x500px</Text>
-                      <Text variant='labelSmall' style={{color:colors.onSurfaceVariant}}>Max 5 Mb</Text>
-                      </View>
-                    </>
-                  )}
-                </View>
-              </TouchableOpacity>
-              {bannerError && (
-                <HelperText type="error">{bannerError}</HelperText>
-              )}
+                  <View
+                    style={{
+                      height: 120,
+                      width: 380,
+                      borderRadius: 24,
+                      backgroundColor: colors.surfaceContainerHighest,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {banner || presetData?.banner?.url ? (
+                      <Image
+                        source={{ uri: banner ?? presetData?.banner?.url }}
+                        style={{ width: "100%", height: "100%" }}
+                      />
+                    ) : (
+                      <>
+                        <SvgIcon
+                          name="plus"
+                          color={colors.onSurface}
+                          size={24}
+                        />
+                        <View style={{ opacity: 0.7, alignItems: "center" }}>
+                          <Text
+                            variant="labelMedium"
+                            style={{ color: colors.onSurfaceVariant }}
+                          >
+                            Upload image or GIF
+                          </Text>
+                          <Text
+                            variant="labelSmall"
+                            style={{ color: colors.onSurfaceVariant }}
+                          >
+                            Recommended 1500x500px
+                          </Text>
+                          <Text
+                            variant="labelSmall"
+                            style={{ color: colors.onSurfaceVariant }}
+                          >
+                            Max 5 Mb
+                          </Text>
+                        </View>
+                      </>
+                    )}
+                  </View>
+                </TouchableOpacity>
+                {bannerError && (
+                  <HelperText type="error">{bannerError}</HelperText>
+                )}
+              </View>
             </View>
-          </View>
 
-          {/* Community Description  */}
-          <View style={{ gap: 20, alignContent: "flex-start" }}>
-            <Text variant="labelLarge" prominent>
-              Community Description
-            </Text>
+            {/* Community Description  */}
+            <View style={{ gap: 20, alignContent: "flex-start" }}>
+              <Text variant="labelLarge" prominent>
+                Community Description
+              </Text>
 
-            <TextInputMultiline
-              value={description}
-              onChangeValue={setDescription}
-              placeholder="Describe your community..."
-            />
-          </View>
+              <TextInputMultiline
+                value={description}
+                onChangeValue={setDescription}
+                placeholder="Describe your community..."
+              />
+            </View>
 
-          {/* links */}
-          <View style={{ gap: 20 }}>
-            <Text variant="labelLarge" prominent>
-              Community Calls to Action
-            </Text>
-            <View style={{ flexDirection: "column", gap: 16 }}>
-              {links.map((link, index) => (
-                <View
-                  key={index}
-                  style={{
-                    paddingVertical: 12,
-                    paddingHorizontal: 16,
-                    borderRadius: 20,
-                    backgroundColor: colors.surfaceContainerLow,
-                  }}
-                >
-                  <View style={[styles.headerRow, {}]}>
-                    <View style={{ gap: 12, alignItems: "flex-start" , flex:1}}>
-                      <Button
-                        mode="outlined"
-                        leftSvgIconName={convertLinkIcon(link.type)}
-                        size="small"
+            {/* links */}
+            <View style={{ gap: 20 }}>
+              <Text variant="labelLarge" prominent>
+                Community Calls to Action
+              </Text>
+              <View style={{ flexDirection: "column", gap: 16 }}>
+                {links.map((link, index) => (
+                  <View
+                    key={index}
+                    style={{
+                      paddingVertical: 12,
+                      paddingHorizontal: 16,
+                      borderRadius: 20,
+                      backgroundColor: colors.surfaceContainerLow,
+                    }}
+                  >
+                    <View style={[styles.headerRow, {}]}>
+                      <View
+                        style={{ gap: 12, alignItems: "flex-start", flex: 1 }}
                       >
-                        {link.text}
-                      </Button>
+                        <Button
+                          mode="outlined"
+                          leftSvgIconName={convertLinkIcon(link.type)}
+                          size="small"
+                        >
+                          {link.text}
+                        </Button>
 
-                      <TextInput
-                        label="Call to Action text"
-                        placeholder="e.g. Subcribe to..."
-                        maxLength={30}
-                        value={link.text}
-                        onChangeText={(val) => updateLink(index, "text", val)}
-                        mode="flat"
-                        underlineColor="transparent"
-                        theme={{ colors: { outline: "transparent" } }}
-                        style={{ height: 40, backgroundColor: "transparent", width: '100%'}}
-                      />
-                      <TextInput
-                        label={"URL"}
-                        placeholder="e.g. https://example.com/..."
-                        value={link.url}
-                        onChangeText={(val) =>
-                          updateLink(index, "url", normalizeUrl(val))
-                        }
-                        mode="flat"
-                        underlineColor="transparent"
-                        theme={{ colors: { outline: "transparent" } }}
+                        <TextInput
+                          label="Call to Action text"
+                          placeholder="e.g. Subcribe to..."
+                          maxLength={30}
+                          value={link.text}
+                          onChangeText={(val) => updateLink(index, "text", val)}
+                          mode="flat"
+                          underlineColor="transparent"
+                          theme={{ colors: { outline: "transparent" } }}
+                          style={{
+                            height: 40,
+                            backgroundColor: "transparent",
+                            width: "100%",
+                          }}
+                        />
+                        <TextInput
+                          label={"URL"}
+                          placeholder="e.g. https://example.com/..."
+                          value={link.url}
+                          onChangeText={(val) =>
+                            updateLink(index, "url", normalizeUrl(val))
+                          }
+                          mode="flat"
+                          underlineColor="transparent"
+                          theme={{ colors: { outline: "transparent" } }}
+                          style={{
+                            backgroundColor: "transparent",
+                            height: 40,
+                            width: "100%",
+                          }}
+                        />
+                      </View>
+                      <View
                         style={{
-                          backgroundColor: "transparent",
-                          height: 40,
-                          width: "100%",
+                          flexDirection: "column",
+                          justifyContent: "center",
+                          alignItems: "center",
                         }}
-                      />
-                    </View>
-                    <View
-                      style={{
-                        flexDirection: "column",
-                        justifyContent: 'center',
-                        alignItems: "center",
-                      }}
-                    >
-                      <SvgIconButton
-                        name='x-circle-outlined'
-                        size={24}
-                        color={colors.onSurface}
-                        onPress={() => removeLink(index)}
-                      />
+                      >
+                        <SvgIconButton
+                          name="x-circle-outlined"
+                          size={24}
+                          color={colors.onSurface}
+                          onPress={() => removeLink(index)}
+                        />
+                      </View>
                     </View>
                   </View>
+                ))}
+              </View>
+
+              {/* Add link */}
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "flex-start",
+                  width: "100%",
+                }}
+              >
+                <View style={{ flexDirection: "row", gap: 16, height: 24 }}>
+                  <SvgIcon
+                    name="add-circle-outlined"
+                    color={theme.colors.onSurfaceVariant}
+                  />
+
+                  <SvgIconButton
+                    name="tg-logo"
+                    color={theme.colors.onSurface}
+                    onPress={() => addTelegramLink()}
+                  />
+                  <SvgIconButton
+                    name="x-logo"
+                    color={theme.colors.onSurface}
+                    onPress={() => addXLink()}
+                  />
+                  <SvgIconButton
+                    name="world-outlined"
+                    color={theme.colors.onSurface}
+                    onPress={() => addOtherLink()}
+                  />
                 </View>
-              ))}
-            </View>
-
-            {/* Add link */}
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "flex-start",
-                width: "100%",
-              }}
-            >
-              <View style={{ flexDirection: "row", gap: 16, height: 24 }}>
-                <SvgIcon
-                  name="add-circle-outlined"
-                  color={theme.colors.onSurfaceVariant}
-                />
-
-                <SvgIconButton
-                  name="tg-logo"
-                  color={theme.colors.onSurface}
-                  onPress={() => addTelegramLink()}
-                />
-                <SvgIconButton
-                  name="x-logo"
-                  color={theme.colors.onSurface}
-                  onPress={() => addXLink()}
-                />
-                <SvgIconButton
-                  name="world-outlined"
-                  color={theme.colors.onSurface}
-                  onPress={() => addOtherLink()}
-                />
               </View>
             </View>
           </View>
