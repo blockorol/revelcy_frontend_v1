@@ -22,8 +22,6 @@ import LoginButton from "@components/login/LoginButton";
 import { DonutWithLegend } from "@components/base/DonutWithLegend";
 import { round } from "@utils/numbers";
 
-type validationError = "user" | "connection" | "wrong connection" | "no data";
-
 type Props = {
   data: TokenCreateFullData;
   onLaunch: () => void;
