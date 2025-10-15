@@ -40,7 +40,10 @@ export default function EditTokenomicsForm({
     string | undefined
   >(
     presetData?.creatorInitialBuy
-      ? presetData?.creatorInitialBuy.toString() + SUFFIX
+      ? (() => {
+          const valueStr = presetData.creatorInitialBuy.toString();
+          return valueStr.endsWith(SUFFIX) ? valueStr : valueStr + SUFFIX;
+        })()
       : undefined
   );
   const [errorCreatorInitialBuy, setErrorCreatorInitialBuy] = useState<
@@ -52,7 +55,10 @@ export default function EditTokenomicsForm({
       : 0
   );
   const displayValue =
-    (creatorInitialBuyRawStr && `${creatorInitialBuyRawStr}${SUFFIX}`) || "";
+    (creatorInitialBuyRawStr && 
+     (creatorInitialBuyRawStr.endsWith(SUFFIX) 
+       ? creatorInitialBuyRawStr 
+       : `${creatorInitialBuyRawStr}${SUFFIX}`)) || "";
   const [selection, setSelection] = React.useState<{
     start: number;
     end: number;
@@ -134,7 +140,7 @@ export default function EditTokenomicsForm({
           width: "100%",
           paddingHorizontal: isMobile ? 16 : 24,
           paddingVertical: isMobile ? 40 : 24,
-          maxWidth: 500,
+          //maxWidth: 500,
           minHeight: isMobile ? height : height * 0.9,
           justifyContent: "space-between",
         }}
@@ -145,20 +151,24 @@ export default function EditTokenomicsForm({
             theme={theme}
             onClose={onClose}
           />
-          <TextInput
-            label="Creator Buy"
-            value={displayValue}
-            onChangeText={handleCreatorInitialBuyChangeWithSuffix}
-            onSelectionChange={handleSelectionChange}
-            selection={selection}
-            inputMode="decimal"
-            keyboardType="decimal-pad"
-            placeholder="Up to 80% in sol"
-            mode="flat"
-            style={{ backgroundColor: "transparent" }}
-            theme={{ colors: colors }}
-            errorValue={errorCreatorInitialBuy}
-          />
+          <View style={{
+            paddingTop: 20,
+          }}> 
+            <TextInput
+              label="Creator Buy"
+              value={displayValue}
+              onChangeText={handleCreatorInitialBuyChangeWithSuffix}
+              onSelectionChange={handleSelectionChange}
+              selection={selection}
+              inputMode="decimal"
+              keyboardType="decimal-pad"
+              placeholder="Up to 80% in sol"
+              mode="flat"
+              style={{ backgroundColor: "transparent" }}
+              theme={{ colors: colors }}
+              errorValue={errorCreatorInitialBuy}
+            />
+          </View>
           <View style={{ paddingTop: 40 }}>
             <View
               style={{
