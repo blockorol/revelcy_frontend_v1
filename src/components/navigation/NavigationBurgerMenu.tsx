@@ -3,7 +3,7 @@ import { View, Image, StyleSheet } from "react-native";
 import { TouchableRipple, useTheme } from "react-native-paper";
 import { Text } from "@components/ui/Text";
 import { NavigationProfileWidget } from "@components/navigation/NavigationProfileWidget";
-import { router } from "expo-router";
+import { router, usePathname } from "expo-router";
 import { navigationItems } from "@components/navigation/NavigationItems";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import { openMailto, openTelegram, openX } from "@utils/openLinks";
@@ -25,6 +25,7 @@ interface NavProps {
 }
 function NavigationBurgerMenuItemsList({ onClose }: NavProps) {
   const { colors } = useTheme();
+  const pathname = usePathname();
   return (
     <TouchableRipple
       onPress={onClose}
@@ -61,6 +62,7 @@ function NavigationBurgerMenuItemsList({ onClose }: NavProps) {
           }}
         />
         {navigationItems.map((navigationItem) => {
+          const isCreatePremarketDisabled = navigationItem.label === "Create Premarket" && pathname === "/token/create";
           return (
             <NavigationBurgerMenuItemLine
               key={`nav-${navigationItem.label}`}
@@ -70,6 +72,7 @@ function NavigationBurgerMenuItemsList({ onClose }: NavProps) {
                 router.push(navigationItem.route);
                 onClose();
               }}
+              disabled={isCreatePremarketDisabled}
             />
           );
         })}
@@ -125,16 +128,29 @@ interface MenuItemLineProps {
   icon: IconName;
   label: string;
   action: () => void;
+  disabled?: boolean;
 }
 function NavigationBurgerMenuItemLine({
   icon,
   label,
   action,
+  disabled = false,
 }: MenuItemLineProps) {
   const { colors } = useTheme();
   return (
-    <TouchableRipple onPress={action}>
-      <View style={[styles.lineContainer, styles.lineNavigationItem]}>
+    <TouchableRipple 
+      onPress={() => {
+        if (!disabled) {
+          action();
+        }
+      }}
+      disabled={disabled}
+    >
+      <View style={[
+        styles.lineContainer, 
+        styles.lineNavigationItem,
+        { opacity: disabled ? 0.5 : 1 }
+      ]}>
         <SvgIcon name={icon} color={colors.onSurface} size={24} />
         <Text variant="labelMedium" style={{ color: colors.onSurface }}>
           {label}
