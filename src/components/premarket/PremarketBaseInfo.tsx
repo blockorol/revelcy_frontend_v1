@@ -161,8 +161,7 @@ export function PremarketBaseInfo({ tokenMainInfo, tokenDynamicInfo, isMobile}: 
         {button(getEffectiveState())}
         {tokenMainInfo.state === 'finished' && (
             <Text variant="labelLarge">
-            {/* CHANGE tokenMainInfo.premarketPubkey to tokenMainInfo.mintAddress later!!! */}
-            {tokenMainInfo?.token_mint ? shortString(tokenMainInfo.token_mint) : "No token address available!"} 
+            {tokenMainInfo.tokenMint ? shortString(tokenMainInfo.tokenMint) : "No token address available!"} 
           </Text>
         )}
         {tokenMainInfo.state === 'finished' && (

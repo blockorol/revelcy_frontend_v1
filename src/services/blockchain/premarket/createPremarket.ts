@@ -33,7 +33,7 @@ export async function createPremarket(
   }
   
 
-  const { transaction, premarket_account_pda } = await getCreatePremarketTransaction(
+  const { transaction, premarket_account_pda, mint_address } = await getCreatePremarketTransaction(
     args,
     wallet.publicKey.toBase58(),
     network
@@ -55,5 +55,6 @@ export async function createPremarket(
     txId: report,
     premarketPDA: new PublicKey(premarket_account_pda),
     report,
+    mintAddress: mint_address
   };
 }

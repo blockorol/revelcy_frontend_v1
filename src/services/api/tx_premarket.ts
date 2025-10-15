@@ -10,6 +10,7 @@ export type Network = "devnet" | "mainnet-beta";
 export interface CreatePremarketTxResponse {
   transaction: string;            // base64(Transaction)
   premarket_account_pda: string;  // base58
+  mint_address: string;
 }
 
 export interface CreatePremarketTxRequest {
