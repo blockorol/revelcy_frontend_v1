@@ -46,8 +46,6 @@ export async function premarketCreated(args: premarketCreatedArgs) {
       premarket_deadline: args.mainInfo.premarketDeadline,
       premarket_created: args.mainInfo.premarketCreated,
       state: args.mainInfo.state, 
-      finish_date: 1759577538, // CHANGE IT
-      token_mint: "BPx1ne2A6fFzS57GRqDkuQWuXWLo34tsz2WdvYS8pump", // CHANGE IT
     },
     community_info: {
       description: args.communityInfo.description,
@@ -192,8 +190,8 @@ export async function getPremarketInfo({
     premarketCreated: data.blockchain_info.premarket_created,
     createdByPubkey: data.blockchain_info.creator_address,
     state: data.blockchain_info.state,
-    finish_date: 1759577538, // CHANGE IT
-    token_mint: "BPx1ne2A6fFzS57GRqDkuQWuXWLo34tsz2WdvYS8pump", // CHANGE IT
+    finishDate: data.blockchain_info.finish_date || undefined,
+    tokenMint: data.blockchain_info.token_mint,
   };
 
   const communityInfo: TokenCommunityInfo = {
@@ -341,8 +339,8 @@ export interface TokenMainInfo {
     premarketCreated: number;
     createdByPubkey: string;      // creator pubkey
     state: PremarketState;
-    finish_date: number;
-    token_mint: string;
+    finishDate?: number;
+    tokenMint?: string;
 }
 
 export interface TokenLinks {

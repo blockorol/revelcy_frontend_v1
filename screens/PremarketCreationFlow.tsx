@@ -279,8 +279,8 @@ export default function PremarketCreationFlow() {
             premarketCreated: Math.floor(Date.now() / 1000),
             createdByPubkey: wallet.publicKey.toString(),
             state: 'premarket',
-            finish_date: 1759577538, // CHANGE IT
-            token_mint: "BPx1ne2A6fFzS57GRqDkuQWuXWLo34tsz2WdvYS8pump", // CHANGE IT
+            finishDate: undefined, // will be set when premarket finished
+            tokenMint:  undefined, // will be set on BE
           },
           communityInfo: {
             description: tokenData.customData.description ?? "",
