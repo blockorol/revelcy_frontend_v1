@@ -238,7 +238,7 @@ export default function PremarketCreationFlow() {
       );
 
       setLaunchState("Transaction created...");
-      console.log(`createBondedToken done! tx: ${resp.txId}; premarket: ${resp.premarketPDA.toString()}`);
+      console.log(`createBondedToken done! tx: ${resp.txId}; premarket: ${resp.premarketPDA.toString()}; mint: ${resp.mintAddress}`);
       setPremarketPDA(resp.premarketPDA.toString());
       setTxId(resp.txId);
 
@@ -280,7 +280,7 @@ export default function PremarketCreationFlow() {
             createdByPubkey: wallet.publicKey.toString(),
             state: 'premarket',
             finishDate: undefined, // will be set when premarket finished
-            tokenMint:  undefined, // will be set on BE
+            tokenMint:  resp.mintAddress,
           },
           communityInfo: {
             description: tokenData.customData.description ?? "",

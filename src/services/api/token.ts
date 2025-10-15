@@ -45,6 +45,7 @@ export async function premarketCreated(args: premarketCreatedArgs) {
       premarket_goal_sol_lamp: toDecString(args.mainInfo.premarketGoalSolLamp),
       premarket_deadline: args.mainInfo.premarketDeadline,
       premarket_created: args.mainInfo.premarketCreated,
+      mint_address: args.mainInfo.tokenMint,
       state: args.mainInfo.state, 
     },
     community_info: {
@@ -190,8 +191,8 @@ export async function getPremarketInfo({
     premarketCreated: data.blockchain_info.premarket_created,
     createdByPubkey: data.blockchain_info.creator_address,
     state: data.blockchain_info.state,
-    finishDate: data.blockchain_info.finish_date || undefined,
-    tokenMint: data.blockchain_info.token_mint,
+    finishDate: data.blockchain_info.premarket_finished || undefined,
+    tokenMint: data.blockchain_info.mint_address,
   };
 
   const communityInfo: TokenCommunityInfo = {
