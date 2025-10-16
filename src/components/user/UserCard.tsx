@@ -1,8 +1,9 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
-import { Text, Avatar, useTheme } from "react-native-paper";
+import { Text, useTheme } from "react-native-paper";
 import { formatDistanceToNow } from "date-fns";
 import { SvgIcon } from "@components/base/SvgIcon";
+import { Avatar } from "@components/ui/Avatar";
 
 export interface UserCardProps {
   baseInfo: {
@@ -43,9 +44,10 @@ export const UserCard: React.FC<UserCardProps> = ({ baseInfo, tokenInfo, stats }
         <View style={{flexDirection: "column", gap: 24}}>
             {/* Header row */}
             <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-                <Avatar.Image
-                size={48}
-                source={baseInfo.avatarUrl ? { uri: baseInfo.avatarUrl } : require("@assets/avatar-placeholder.png")}
+                <Avatar 
+                  size={48}                
+                  source={baseInfo.avatarUrl}
+                  walletAddress={baseInfo.walletAddress}
                 />
                 <View style={{flex: 1, gap: 6, flexDirection: 'column',}}>
                 {baseInfo.username&&<Text variant='labelLarge' style={{color:colors.onSurface}}>{baseInfo.username}</Text>}

@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import {
   View,
   Linking,
-  Image,
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
-import { Avatar, IconButton, Text, useTheme } from "react-native-paper";
+import { Text, useTheme } from "react-native-paper";
+import {Avatar} from "@components/ui/Avatar"
 import { Button } from "@components/ui/Button";
 import { SvgIconButton, SvgIcon, IconName } from "@components/base/SvgIcon";
 import { LinearGradient } from "expo-linear-gradient";
@@ -122,34 +122,7 @@ export const UserModalInternal: React.FC<UserModalProps> = ({
           <View style={styles.userInfoContainer}>
             {/* Avatar or fallback */}
             <View style={{ width: 112, height: 112, padding: 0, margin: 0 }}>
-              {!avatarFailed ? (
-                <Avatar.Image
-                  source={{ uri: user.avatarUrl ?? "" }}
-                  onError={() => setAvatarFailed(true)}
-                  style={{
-                    width: 112,
-                    height: 112,
-                    borderRadius: 56,
-                    borderWidth: 2,
-                    borderColor: colors.primary,
-                    backgroundColor: 'transparent',
-                  }}
-                />
-              ) : (
-                <View style={{
-                    borderColor: colors.primary,
-                    borderRadius: 56,
-                    borderWidth: 2,
-                    backgroundColor: colors.surfaceVariant,
-                    opacity: 0.6
-                    }}> 
-                  <SvgIcon
-                    name="smile-outlined"
-                    size={112}
-                    color={colors.primary}
-                  />
-                </View>
-              )}
+              <Avatar size={112} source={user.avatarUrl} walletAddress={user.walletAddress} />
               {isPersonal && (
                 <TouchableOpacity
                   onPress={pickAvatar}
