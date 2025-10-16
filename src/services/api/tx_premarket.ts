@@ -5,6 +5,8 @@ import { http } from "@api/http";
 
 export type Network = "devnet" | "mainnet-beta";
 
+const RETRY_TX_GEN = 3;
+
 /* ===== Create Premarket ===== */
 
 export interface CreatePremarketTxResponse {
@@ -51,13 +53,16 @@ export async function getCreatePremarketTransaction(
     max_sol_lamp: toDecString(argsPremarket.max_sol_lamp),
     creator_allocate_lamp: toDecString(argsPremarket.creator_allocate_lamp),
   };
-  console.log("payload", payload)
+  console.log("payload", payload);
 
   ensureDec("goal_sol_lamp", payload.goal_sol_lamp);
   ensureDec("max_sol_lamp", payload.max_sol_lamp);
   ensureDec("creator_allocate_lamp", payload.creator_allocate_lamp);
   try {
-    const data = await http.post<CreatePremarketTxResponse>(`${API_HOST}/premarket/tx/create`, { json: payload });
+    const data = await http.post<CreatePremarketTxResponse>(
+      `${API_HOST}/premarket/tx/create`,
+      { json: payload, retry: RETRY_TX_GEN }
+    );
     return data;
   } catch (e: any) {
     console.log("failed with", payload);
@@ -91,9 +96,10 @@ export async function getJoinPremarketTransaction(
     amount_sol_lamp: toDecString(amountSolLamp),
   };
   try {
-    const data = await http.post<TxOnlyResponse>(`${API_HOST}/premarket/tx/join`, {
-      json: payload,
-    });
+    const data = await http.post<TxOnlyResponse>(
+      `${API_HOST}/premarket/tx/join`,
+      { json: payload, retry: RETRY_TX_GEN }
+    );
     return data;
   } catch (e: any) {
     throw new Error(`Failed to get join tx: ${e?.message ?? "Unknown error"}`);
@@ -116,11 +122,11 @@ export async function getOutPremarketTransaction(
     user_pubkey: userPubkeyBase58,
     premarket_account: premarketAccountBase58,
   };
-  
   try {
-    const data = await http.post<TxOnlyResponse>(`${API_HOST}/premarket/tx/out`, {
-      json: payload,
-    });
+    const data = await http.post<TxOnlyResponse>(
+      `${API_HOST}/premarket/tx/out`,
+      { json: payload, retry: RETRY_TX_GEN }
+    );
     return data;
   } catch (e: any) {
     throw new Error(`Failed to get out tx: ${e?.message ?? "Unknown error"}`);
@@ -132,20 +138,18 @@ export interface FinishPremarketTxRequest {
   user_pubkey: string;
   premarket_account: string;
 }
+
 export async function getFinishPremarketTransaction(
   userPubkeyBase58: string,
   premarketAccountBase58: string,
   network: "devnet" | "mainnet-beta"
 ): Promise<TxOnlyResponse> {
-  const payload = {
-      network,
-      user_pubkey: userPubkeyBase58,
-      premarket_account: premarketAccountBase58,
-  }
+  const payload = { network, user_pubkey: userPubkeyBase58, premarket_account: premarketAccountBase58 };
   try {
-    const data = await http.post<TxOnlyResponse>(`${API_HOST}/premarket/tx/finish`, {
-      json: payload,
-    });
+    const data = await http.post<TxOnlyResponse>(
+      `${API_HOST}/premarket/tx/finish`,
+      { json: payload, retry: RETRY_TX_GEN }
+    );
     return data;
   } catch (e: any) {
     throw new Error(`Failed to get finish tx: ${e?.message ?? "Unknown error"}`);
@@ -157,31 +161,27 @@ export async function getRefundPremarketTransaction(
   premarketAccountBase58: string,
   network: "devnet" | "mainnet-beta"
 ): Promise<TxOnlyResponse> {
-  const payload = {
-    network,
-    user_pubkey: userPubkeyBase58,
-    premarket_account: premarketAccountBase58,
-  }
+  const payload = { network, user_pubkey: userPubkeyBase58, premarket_account: premarketAccountBase58 };
   try {
-    const data = await http.post<TxOnlyResponse>(`${API_HOST}/premarket/tx/kill`, {
-      json: payload,
-    });
+    const data = await http.post<TxOnlyResponse>(
+      `${API_HOST}/premarket/tx/kill`,
+      { json: payload, retry: RETRY_TX_GEN }
+    );
     return data;
   } catch (e: any) {
     throw new Error(`Failed to get kill tx: ${e?.message ?? "Unknown error"}`);
   }
 }
 
-
 export function toDecString(x: BN | string | number | bigint): string {
   if (BN.isBN(x)) return (x as BN).toString(10);
   if (typeof x === "bigint") return x.toString(10);
-  if (typeof x === "number") return Math.trunc(x).toString(10); // не юзать для > 2^53-1
+  if (typeof x === "number") return Math.trunc(x).toString(10);
   if (typeof x === "string") {
     const s = x.trim();
     if (/^0x[0-9a-f]+$/i.test(s)) return new BN(s.slice(2), 16).toString(10);
     if (/^[0-9a-f]+$/i.test(s) && /[a-f]/i.test(s)) return new BN(s, 16).toString(10);
-    if (/^\d+$/.test(s)) return s; // уже десятичная
+    if (/^\d+$/.test(s)) return s;
     throw new Error(`Invalid numeric string: "${x}"`);
   }
   throw new Error(`Unsupported type: ${typeof x}`);
