@@ -2,9 +2,10 @@ import { API_HOST } from "env";
 import { BN } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
 import { convertSolanaToTokenBuy, DEFAULT_TOKEN_COUNT_DECIMAL, PremarketState, convertTokenToDecimal } from "@utils/premarket";
-import axios from 'axios';
 import { toDecString } from "@api/tx_premarket";
 import { http } from "@api/http";
+
+const RETRY_DEFAULT = 6;
 
 export interface premerketTransactionArgs {
   premarketPubKey: string;
@@ -12,7 +13,6 @@ export interface premerketTransactionArgs {
   userId?: string;
   tx: string;
 }
-
 
 export interface premarketCreatedArgs extends premerketTransactionArgs {
   mainInfo: TokenMainInfo,
@@ -60,14 +60,13 @@ export async function premarketCreated(args: premarketCreatedArgs) {
   };
 
   try {
-    await http.post(`${API_HOST}/premarket/created`, { json: payload });
-    return
+    await http.post(`${API_HOST}/premarket/created`, { json: payload, retry: RETRY_DEFAULT });
+    return;
   } catch (e: any) {
     console.log("failed with", payload);
     throw new Error(`Failed to add premarket to whitelist: ${e.message ?? "Unknown error"}`);
   }
 }
-
 
 export async function updateAboutCommunity(premarketPubkey: string, args: TokenCommunityInfo) {
   console.log("send to BE: updateAboutCommunity", args);
@@ -86,8 +85,8 @@ export async function updateAboutCommunity(premarketPubkey: string, args: TokenC
   };
 
   try {
-    await http.post(`${API_HOST}/premarket/update_community`, { json: payload });
-    return
+    await http.post(`${API_HOST}/premarket/update_community`, { json: payload, retry: RETRY_DEFAULT });
+    return;
   } catch (e: any) {
     console.log("failed with", payload);
     throw new Error(`Failed to update community: ${e.message ?? "Unknown error"}`);
@@ -113,9 +112,11 @@ export async function premarketFinished(args: {
   };
   
   try {
-    await http.post(args.isKilled ?
-    `${API_HOST}/premarket/killed`:`${API_HOST}/premarket/finished`, { json: payload });
-    return
+    await http.post(
+      args.isKilled ? `${API_HOST}/premarket/killed` : `${API_HOST}/premarket/finished`,
+      { json: payload, retry: RETRY_DEFAULT }
+    );
+    return;
   } catch (e: any) {
     console.log("failed with", payload);
     throw new Error(`Failed to finish PM: ${e.message ?? "Unknown error"}`);
@@ -123,7 +124,6 @@ export async function premarketFinished(args: {
 }
 
 export async function userJoinedToPremarket(args: userJoinedToPremarketArgs) {
-
   const payload = {
     premarket_pub_key: args.premarketPubKey,
     user_wallet: args.userWallet,
@@ -133,8 +133,8 @@ export async function userJoinedToPremarket(args: userJoinedToPremarketArgs) {
   };
 
   try {
-    await http.post(`${API_HOST}/premarket/user_joined`, { json: payload });
-    return
+    await http.post(`${API_HOST}/premarket/user_joined`, { json: payload, retry: RETRY_DEFAULT });
+    return;
   } catch (e: any) {
     console.log("failed with", payload);
     throw new Error(`Failed to add user to PM: ${e.message ?? "Unknown error"}`);
@@ -151,10 +151,9 @@ export async function userOutOfPremarket(args: premerketTransactionArgs) {
     tx: args.tx,
   };
 
-  
   try {
-    await http.post(`${API_HOST}/premarket/user_out`, { json: payload });
-    return
+    await http.post(`${API_HOST}/premarket/user_out`, { json: payload, retry: RETRY_DEFAULT });
+    return;
   } catch (e: any) {
     console.log("failed with", payload);
     throw new Error(`Failed to add user out: ${e.message ?? "Unknown error"}`);
@@ -168,9 +167,8 @@ export async function getPremarketInfo({
 }): Promise<TokenInfo> {
   const url = `${API_HOST}/premarket/get_main_info?premarket_id=${tokenPubKey}`;
 
-  const response = await axios.get(url);
-  const data = response.data;
-  console.log("premarket_info:", data)
+  const data = await http.get<any>(url, { retry: RETRY_DEFAULT });
+  console.log("premarket_info:", data);
 
   const mainInfo: TokenMainInfo = {
     id: data.blockchain_info.id,
@@ -204,9 +202,9 @@ export async function getPremarketInfo({
       type: link.type,
     })) || [],
   };
-  const dynamicInfo = await fetchTokenDynamicInfo(tokenPubKey)
+  const dynamicInfo = await fetchTokenDynamicInfo(tokenPubKey);
   
-  console.log("Premarket dynamicInfo:", dynamicInfo)
+  console.log("Premarket dynamicInfo:", dynamicInfo);
 
   return {
     mainInfo,
@@ -223,8 +221,7 @@ export async function getPremarketList({
   limit: number;  // page size
 }): Promise<{ items: TokenMainInfo[]; total: number }> {
   const url = `${API_HOST}/premarket/get_list?cursor=${cursor}&limit=${limit}`;
-  const response = await axios.get(url);
-  const data = response.data;
+  const data = await http.get<any>(url, { retry: RETRY_DEFAULT });
 
   const items: TokenMainInfo[] = (data.premarkets ?? []).map((b: any) => ({
     id: b.id,
@@ -252,16 +249,11 @@ export async function getPremarketList({
   return { items, total };
 }
 
-
 export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenDynamicInfo> {
-  const rawCall = async () => {
-    const res = await fetch(`${API_HOST}/premarket/get_dynamic_info?premarket_id=${premarketId}`);
-    return await res.json();
-  }
-  
-  const raw = await rawCall();
-  console.log("raw resp:", raw)
-  
+  const url = `${API_HOST}/premarket/get_dynamic_info?premarket_id=${premarketId}`;
+  const raw = await http.get<any>(url, { retry: RETRY_DEFAULT });
+  console.log("raw resp:", raw);
+
   // Debug current price values
   const currentPriceValue = raw.current_price_lamp ?? raw.current_price ?? raw.currentPriceLamp ?? raw.currentPrice ?? 0;
   console.log("currentPriceValue from API:", currentPriceValue);
@@ -271,30 +263,25 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
   console.log("currentPrice:", raw.currentPrice);
   
   const reservedSolLamp = new BN(raw.reserved_sol_lamp);
-  console.log("reservedSolLamp:", reservedSolLamp)
+  console.log("reservedSolLamp:", reservedSolLamp);
   const tokenMarketCapFromCurve = convertSolanaToTokenBuy({
     sol_amount: reservedSolLamp,
     reserves_sol: new BN(0),
     reserves_token: DEFAULT_TOKEN_COUNT_DECIMAL
   });
   
-  console.log("tokenMarketCapFromCurve:", tokenMarketCapFromCurve)
+  console.log("tokenMarketCapFromCurve:", tokenMarketCapFromCurve);
   
-  const reservedToken = DEFAULT_TOKEN_COUNT_DECIMAL.sub(tokenMarketCapFromCurve)
+  const reservedToken = DEFAULT_TOKEN_COUNT_DECIMAL.sub(tokenMarketCapFromCurve);
 
   return {
     holdersCount: raw.holders_count,
     currentPriceLamp: Number(
       raw.current_price_lamp ?? raw.current_price ?? raw.currentPriceLamp ?? raw.currentPrice ?? 0
     ),
-
-    // marketCapTokenDec is a BN in 6-decimal units to be displayed via convertDecimalToToken
-    // API returns price most likely in SOL units (e.g., "0.000018").
-    // Market cap (in SOL) = price_in_SOL_per_token * total_supply_tokens (1e9)
     marketCapTokenDec: (() => {
       const priceInSolPerToken = Number(currentPriceValue) || 0;
       const marketCapInSol = priceInSolPerToken * 1_000_000_000; // 1e9 tokens supply
-      // Convert numeric SOL amount to 6-decimal BN expected by convertDecimalToToken
       const marketCapValueDec = convertTokenToDecimal(marketCapInSol);
       console.log("marketCapTokenDec calculation:");
       console.log("  - priceInSolPerToken:", priceInSolPerToken);
@@ -303,12 +290,9 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
       return marketCapValueDec;
     })(),
     marketCapSolLamp: reservedSolLamp,
-
     reservedTokenLamp: reservedToken,
     reservedSolLamp: reservedSolLamp,
-
     change24h: raw.change_24h,
-
     holders: raw.holders.map((h: any): HoldersInfo => ({
       id: h.id ?? "",
       walletAddress: h.wallet_address,
