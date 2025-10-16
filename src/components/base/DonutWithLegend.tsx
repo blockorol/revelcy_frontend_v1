@@ -54,7 +54,7 @@ export const DonutWithLegend = ({ slices }: DonutWithLegendProp) => {
         )}
       </View>
 
-      <PieChart widthAndHeight={widthAndHeight} series={series} cover={0.6} />
+      <PieChart widthAndHeight={widthAndHeight} series={series} cover={0.5} />
     </View>
   );
 };
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
   legendRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 6,
+    marginBottom: 18,
   },
   dot: {
     width: 10,
