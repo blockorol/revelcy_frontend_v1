@@ -1,8 +1,10 @@
+import { Avatar } from '@components/ui/Avatar';
 import React from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import { useTheme } from 'react-native-paper';
 
 interface Holder {
+  walletAddress: string
   iconURL?: string;
 }
 
@@ -46,7 +48,7 @@ export const AvatarGroup: React.FC<AvatarGroupProps> = ({
     <View style={styles.avatarGroup}>
       {allHolders.map((holder, index) => (
         <View
-          key={holder.iconURL || `default-${index}`}
+          key={holder.walletAddress}
           style={[
             styles.avatarCircle,
             {
@@ -56,15 +58,10 @@ export const AvatarGroup: React.FC<AvatarGroupProps> = ({
               backgroundColor: theme.colors.surfaceVariant,
               marginLeft: index === 0 ? 0 : -10,
               zIndex: index + 1,
-              borderColor: theme.colors.onPrimary,
-              borderWidth: borderWidth,
             },
           ]}
         >
-          <Image
-            source={holder.iconURL ? { uri: holder.iconURL } : DEFAULT_AVATAR}
-            style={styles.avatarImage}
-          />
+          <Avatar size={avatarSize} source={holder.iconURL} walletAddress={holder.walletAddress} />
         </View>
       ))}
     </View>

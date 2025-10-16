@@ -1,11 +1,11 @@
 import { StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
-import { Avatar, Text, useTheme, Surface } from "react-native-paper";
+import {  Text, useTheme, Surface } from "react-native-paper";
 import Login from "@components/login/LoginButton";
-import { SvgIcon } from "@components/base/SvgIcon";
 import { useAuth } from "@providers/AuthContext";
 import shortString from "@utils/address_shorter";
 import type { AppTheme, ExtendedMD3Colors } from "@theme/types";
 import { useUserModal } from "@storage/UserModalContext";
+import { Avatar } from "@components/ui/Avatar";
 
 export function NavigationProfileWidget({
   isMobile,
@@ -27,19 +27,7 @@ export function NavigationProfileWidget({
   return (
     <TouchableOpacity onPress={openPersonalUserModal}>
       <View style={[style, styles.containerStyle]}>
-        {user.avatarUrl ? (
-          <Avatar.Image
-            size={24}
-            source={{ uri: user.avatarUrl }}
-            style={{
-              backgroundColor: mdColors.elevation.level1,
-              borderColor: mdColors.primary,
-              borderWidth: 1,
-            }}
-          />
-        ) : (
-          <SvgIcon name="smile-outlined" size={24} color={mdColors.primary} />
-        )}
+        <Avatar size={24} source={user.avatarUrl} walletAddress={user.walletAddress} />
 
         {!isMobile && (
           <Text
