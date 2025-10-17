@@ -300,6 +300,7 @@ export default function EditTokenomicsForm({
               <DonutWithLegend
                 slices={[
                   {
+                    additional: creatorInitialBuy?.toFixed(2),
                     value: round(percent, 1),
                     label: "Creator (You)",
                     color: theme.colors.primary,
