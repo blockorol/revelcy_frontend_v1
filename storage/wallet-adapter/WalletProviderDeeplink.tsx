@@ -3,6 +3,7 @@ import nacl from 'tweetnacl';
 import bs58 from 'bs58';
 import { MobileIntent, PendingAction, WalletContextValue, WalletReactContext, WalletState } from './WalletContext';
 import { useNetwork } from '@providers/NetworkContext';
+import { PublicKey } from '@solana/web3.js';
 
 const MOBILE_UL_BASE = 'https://phantom.app/ul/v1';
 const MOBILE_FLOW_TIMEOUT_MS = 60000; // 60s
@@ -209,6 +210,7 @@ useEffect(() => {
           ...prev,
           connected: true,
           publicKeyBase58: walletPubBase58,
+          publicKey: new PublicKey(walletPubBase58),
           isMobileFallbackActive: true,
         }));
         clearPending();
@@ -272,7 +274,6 @@ useEffect(() => {
     resetLastSignature,
     wallet: { name: 'Phantom' },
     select: async (_name: string) => { /* no-op */ },
-    publicKey: state.publicKeyBase58,
   }), [state, connect, signMessage, disconnect, resetLastSignature]);
 
   return (

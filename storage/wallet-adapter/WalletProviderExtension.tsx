@@ -43,7 +43,7 @@ const AdapterBridge: React.FC<{
     return {
       connected,
       publicKeyBase58,
-      publicKey: publicKeyBase58,
+      publicKey: adapter.publicKey ?? undefined,
       isExtensionAvailable: true,
       isMobileFallbackActive: false,
       pending: null,

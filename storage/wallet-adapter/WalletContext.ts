@@ -1,3 +1,4 @@
+import { PublicKey } from '@solana/web3.js';
 import React, { createContext, useContext } from 'react';
 
 export type Cluster = 'devnet' | 'testnet' | 'mainnet-beta';
@@ -14,6 +15,7 @@ export interface WalletState {
   isMobileFallbackActive: boolean;
   lastSignature?: Uint8Array;
   pending?: PendingAction | null;
+  publicKey?: PublicKey;           // ✅ объект PublicKey
 }
 
 export interface WalletContextValue extends WalletState {
@@ -25,7 +27,6 @@ export interface WalletContextValue extends WalletState {
   // совместимость со «старым» API
   wallet?: { name: string } | null;
   select?: (name: string) => Promise<void>;
-  publicKey?: string; // алиас publicKeyBase58
 }
 
 export const WalletReactContext = createContext<WalletContextValue | null>(null);
