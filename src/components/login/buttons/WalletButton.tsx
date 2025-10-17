@@ -41,7 +41,7 @@ export default function WalletButton({ afterClick, overrideSaveJwt}: WalletButto
       try {
         const { nonce, jwt: jwtSession } = await startSession();
         const encoded = new TextEncoder().encode(nonce);
-        const signed = await signMessage(encoded, 'utf8');
+        const signed = await signMessage(encoded);
         const { jwt, isNewUser} = await confirmLogin({
           walletAddress: publicKey.toString(),
           signature: signed,
@@ -86,7 +86,8 @@ export function AnoterWalletButton({overrideSaveJwt}:{
 
   const handleReconnect = useCallback(async () => {
     setConnecting(true);
-    await disconnect();
+    if (disconnect)
+      await disconnect();
     if (select) {
       await select('Phantom');
     }
@@ -103,7 +104,7 @@ export function AnoterWalletButton({overrideSaveJwt}:{
       try {
         const { nonce, jwt: jwtSession } = await startSession();
         const encoded = new TextEncoder().encode(nonce);
-        const signed = await signMessage(encoded, 'utf8');
+        const signed = await signMessage(encoded);
         const { jwt, isNewUser } = await confirmLogin({
           walletAddress: publicKey.toString(),
           signature: signed,

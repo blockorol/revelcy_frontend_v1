@@ -20,6 +20,7 @@ export function getConnectToWallet (): () => Promise<boolean> {
             }
             console.log('Connecting to wallet...');
             await connect();
+            console.log('Done...');
             return true;
         } catch (err) {
             console.warn('Wallet connection failed:', err);

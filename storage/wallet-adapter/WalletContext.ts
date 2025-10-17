@@ -1,17 +1,11 @@
-export type Cluster = 'devnet' | 'testnet' | 'mainnet-beta';
+import React, { createContext, useContext } from 'react';
 
+export type Cluster = 'devnet' | 'testnet' | 'mainnet-beta';
 export type MobileIntent = 'connect' | 'signMessage';
 
 export type PendingAction =
   | { id: string; type: 'connect' }
   | { id: string; type: 'signMessage'; message: Uint8Array };
-
-export interface WalletSession {
-  dappSecretKey: Uint8Array;     // 64 bytes
-  dappPublicKey: Uint8Array;     // 32 bytes
-  sharedSecret?: Uint8Array;     // 32 bytes, after connect
-  phantomPublicKeyBase58?: string;
-}
 
 export interface WalletState {
   connected: boolean;
@@ -28,11 +22,16 @@ export interface WalletContextValue extends WalletState {
   disconnect?: () => void;
   resetLastSignature: () => void;
 
-  // ✅ совместимость со старым API:
-  wallet?: { name: string } | null;  // напр. { name: 'Phantom' }
+  // совместимость со «старым» API
+  wallet?: { name: string } | null;
   select?: (name: string) => Promise<void>;
-  publicKey?: string;            // алиас publicKeyBase58
+  publicKey?: string; // алиас publicKeyBase58
 }
 
-// для твоего мока native
-export type WalletContextType = WalletContextValue;
+export const WalletReactContext = createContext<WalletContextValue | null>(null);
+
+export function useWallet(): WalletContextValue {
+  const ctx = useContext(WalletReactContext);
+  if (!ctx) throw new Error('useWallet must be used within <WalletProvider />');
+  return ctx;
+}

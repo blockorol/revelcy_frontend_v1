@@ -1,22 +1,28 @@
-import React, { useMemo } from 'react';
-import {
-  ConnectionProvider,
-  WalletProvider as SolanaWalletProvider,
-} from '@solana/wallet-adapter-react';
-import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
-import { clusterApiUrl } from '@solana/web3.js';
-import { useNetwork } from '@providers/NetworkContext';
+import React from 'react';
+import { WalletProviderExtension } from './WalletProviderExtension';
+import { WalletProviderDeeplink } from './WalletProviderDeeplink';
+import { WalletReactContext } from './WalletContext';
+
+// утилиты выбора
+function isMobileUA() {
+  if (typeof navigator === 'undefined') return false;
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+function isPhantomExtensionAvailable() {
+  return typeof window !== 'undefined' && !!(window as any).solana?.isPhantom;
+}
 
 export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { network } = useNetwork();
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
-  const wallets = useMemo(() => [new PhantomWalletAdapter()], []);
+  const shouldUseExtension = !isMobileUA();
 
-  return (
-    <ConnectionProvider endpoint={endpoint}>
-      <SolanaWalletProvider wallets={wallets} autoConnect>
-        {children}
-      </SolanaWalletProvider>
-    </ConnectionProvider>
-  );
+  if (shouldUseExtension) {
+    // десктоп + расширение Phantom
+    return <WalletProviderExtension>{children}</WalletProviderExtension>;
+  }
+
+  // мобайл или форс — уходим в deeplink-провайдер
+  return <WalletProviderDeeplink>{children}</WalletProviderDeeplink>;
 };
+
+// экспортируем контекст на случай, если ты его используешь напрямую где-то
+export { WalletReactContext } from './WalletContext';
