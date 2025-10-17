@@ -381,6 +381,10 @@ export default function PremarketCreationFlow() {
           <EditTokenomicsForm
             onBack={()=>setStep(FLOW_STEP.TOKEN_BASE_INFO)}
             onNext={handleAfterTokenomics}
+            onClose={async () => {
+              await clearDraft(storageKey);
+              router.back();
+            }}
             step={2}
             totalSteps={4}
             presetData={tokenomicsData}
@@ -391,6 +395,10 @@ export default function PremarketCreationFlow() {
           <EditPremarketSettingsForm
             onBack={()=>setStep(FLOW_STEP.TOKENOMICS)}
             onNext={handleAfterPremarketSettings}
+            onClose={async () => {
+              await clearDraft(storageKey);
+              router.back();
+            }}
             step={3}
             totalSteps={4}
             presetData={premarketSettingsData}
@@ -401,6 +409,10 @@ export default function PremarketCreationFlow() {
           <CustomizeTokenForm
             onBack={()=>setStep(FLOW_STEP.PREMARKET_SETTINGS)}
             onNext={handleAfterCunstomizeToken}
+            onClose={async () => {
+              await clearDraft(storageKey);
+              router.back();
+            }}
             steps={{ current: 4, total: 4 }}
             presetData={customizeTokenData}
           />
@@ -409,6 +421,10 @@ export default function PremarketCreationFlow() {
         {step === FLOW_STEP.OVERVIEW && (
           <OverviewPremarketCreation
             onBack={()=>setStep(FLOW_STEP.CUSTOMIZE_TOKEN)}
+            onClose={async () => {
+              await clearDraft(storageKey);
+              router.back();
+            }}
             launchState={launchState}
             onLaunch={handleLaunch}
             data={getTokenData()!}

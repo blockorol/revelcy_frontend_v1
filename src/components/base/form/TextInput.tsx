@@ -33,6 +33,7 @@ export default function TextInput(props: Props) {
     <View>
       <PaperTextInput
         {...rest}
+        value={value}
         mode={mode}
         underlineColor={underlineColor}
         theme={theme}

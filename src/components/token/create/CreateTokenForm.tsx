@@ -1,5 +1,5 @@
 // components/token/CreateTokenForm.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Badge, Text, useTheme } from 'react-native-paper';
@@ -7,7 +7,7 @@ import ContinueAndProgress from '@components/ContinueButtonWithProgressBar';
 import TokenCreateFormHeader from '@components/token/create/TokenCreateFormHeader';
 import { TokenMainData } from '@components/token/create/interface';
 import { ScrollView } from 'react-native-gesture-handler';
-import normalizeUrl from '@utils/url';
+import normalizeUrl, { normalizeTelegramUrl, normalizeTwitterUrl, normalizeWebsiteUrl } from '@utils/url';
 import { SvgIcon, SvgIconButton } from '@components/base/SvgIcon';
 import TextInputMultiline from '@components/base/form/TextInputMutiline';
 import TextInput from '@components/base/form/TextInput';
@@ -42,7 +42,6 @@ export default function CreateTokenForm({presetData, onNext, onClose,
   const [enableTg, setEnableTg] = useState(presetData?.links.telegram !== undefined);
   const [enableTwitter, setEnableTwitter] = useState(presetData?.links.twitter !== undefined);
   const [enableWebsite, setEnableWebsite] = useState(presetData?.links.website !== undefined);
-
 
   const pickAvatar = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -155,8 +154,8 @@ export default function CreateTokenForm({presetData, onNext, onClose,
                     <TextInput
                       label="Telegram"
                       value={telegram}
-                      onChangeText={(val) => setTelegram(normalizeUrl(val))}
-                      placeholder="https://t.me/"
+                      onChangeText={(val) => setTelegram(normalizeTelegramUrl(val))}
+                      placeholder="t.me/username"
                       mode="flat"
                     />
                     <TouchableOpacity style={styles.badgeClose} onPress={() => setEnableTg(false)}>
@@ -170,8 +169,8 @@ export default function CreateTokenForm({presetData, onNext, onClose,
                     <TextInput
                       label="Twitter"
                       value={twitter}
-                      onChangeText={(val) => setTwitter(normalizeUrl(val))}
-                      placeholder="x.com/"
+                      onChangeText={(val) => setTwitter(normalizeTwitterUrl(val))}
+                      placeholder="x.com/username"
                     />
                     <TouchableOpacity style={styles.badgeClose} onPress={() => setEnableTwitter(false)}>
                       <Badge style={[styles.badge, {backgroundColor:'transparent', color: colors.onBackground,}]}>✕</Badge>
@@ -185,7 +184,8 @@ export default function CreateTokenForm({presetData, onNext, onClose,
                     <TextInput
                       label="Website"
                       value={website}
-                      onChangeText={(val) => setWebsite(normalizeUrl(val))}
+                      onChangeText={(val) => setWebsite(normalizeWebsiteUrl(val))}
+                      placeholder="example.com"
                     />
                     <TouchableOpacity style={styles.badgeClose} onPress={() => setEnableWebsite(false)}>
                       <Badge style={[styles.badge, {backgroundColor:'transparent', color: colors.onBackground,}]}>✕</Badge>
