@@ -156,65 +156,113 @@ export const WalletProviderDeeplink: React.FC<{ children: React.ReactNode }> = (
   }, []);
 
   // обработчик редиректа
-  useEffect(() => {
+useEffect(() => {
+  const processReturn = () => {
     const href = window.location.href;
     const url = new URL(href);
-    const cb = url.searchParams.get('phantom_callback');
-    const intent = url.searchParams.get('intent') as MobileIntent | null;
-    const reqId = url.searchParams.get('req_id');
-    if (cb !== '1' || !intent || !reqId) return;
 
-    url.searchParams.delete('phantom_callback');
-    url.searchParams.delete('intent');
-    url.searchParams.delete('req_id');
-    window.history.replaceState({}, '', url.toString());
+    // 1) наши (необязательные) маркеры
+    const phantomCallback = url.searchParams.get('phantom_callback');
+    const intentQP = url.searchParams.get('intent') as MobileIntent | null;
+    const reqIdQP = url.searchParams.get('req_id');
 
+    // 2) реальные ключевые параметры от Phantom (могут быть в query или в hash)
+    const getFromHash = (key: string) => {
+      const m = (url.hash || '').match(new RegExp(`${key}=([^&]+)`));
+      return m ? decodeURIComponent(m[1]) : null;
+    };
+    const phantomPubB58 =
+      url.searchParams.get('phantom_encryption_public_key') || getFromHash('phantom_encryption_public_key');
+    const data = url.searchParams.get('data') || getFromHash('data');
+    const nonce = url.searchParams.get('nonce') || getFromHash('nonce');
+    const errorCode = url.searchParams.get('errorCode') || getFromHash('errorCode');
+
+    // Если нет основных полей — выходим тихо
+    if (!phantomPubB58 || !data || !nonce) return;
+
+    // Считаем pending из localStorage и определяем intent из него, если наш маркер отсутствует
     const pendingStr = localStorage.getItem('wallet_pending');
     if (!pendingStr) return;
     const pending: PendingAction = JSON.parse(pendingStr);
-    if (pending.id !== reqId) return;
+
+    // Если Phantom вернул ошибку — очищаем и выходим
+    if (errorCode) {
+      clearPending();
+      console.error('Phantom returned errorCode:', errorCode);
+      return;
+    }
 
     const sess = ensureSession();
-    const phantomPubB58 =
-      url.searchParams.get('phantom_encryption_public_key') || getFromHash(url, 'phantom_encryption_public_key');
-    const data = url.searchParams.get('data') || getFromHash(url, 'data');
-    const nonce = url.searchParams.get('nonce') || getFromHash(url, 'nonce');
-    const errorCode = url.searchParams.get('errorCode') || getFromHash(url, 'errorCode');
 
-    if (errorCode) { clearPending(); console.error('Phantom errorCode:', errorCode); return; }
-    if (!phantomPubB58 || !data || !nonce) { clearPending(); console.error('Missing Phantom params'); return; }
-
-    if (intent === 'connect') {
+    // Если это connect (по нашему pending.type)
+    if (pending.type === 'connect') {
       const sharedSecret = deriveSharedSecret(sess.dappSecretKey, phantomPubB58);
       sess.sharedSecret = sharedSecret;
-      const parsed = decryptPayload(sharedSecret, nonce, data);
-      const walletPubBase58: string = parsed?.public_key;
-      if (!walletPubBase58) { clearPending(); console.error('No public_key'); return; }
 
-      sessionRef.current = sess;
-      setState(prev => ({
-        ...prev,
-        connected: true,
-        publicKeyBase58: walletPubBase58,
-        isMobileFallbackActive: true,
-      }));
-      clearPending();
-      window.dispatchEvent(new CustomEvent('wallet:connected'));
+      try {
+        const parsed = decryptPayload(sharedSecret, nonce, data);
+        const walletPubBase58: string = parsed?.public_key;
+        if (!walletPubBase58) throw new Error('Connect response missing public_key');
+
+        sessionRef.current = sess;
+        setState(prev => ({
+          ...prev,
+          connected: true,
+          publicKeyBase58: walletPubBase58,
+          isMobileFallbackActive: true,
+        }));
+        clearPending();
+
+        // Сообщаем ожидающему промису
+        window.dispatchEvent(new CustomEvent('wallet:connected'));
+      } catch (e) {
+        clearPending();
+        console.error('Failed to handle connect response:', e);
+      }
       return;
     }
 
-    if (intent === 'signMessage') {
-      if (!sess.sharedSecret) { clearPending(); console.error('No shared secret'); return; }
-      const parsed = decryptPayload(sess.sharedSecret, nonce, data);
-      const sigB58: string = parsed?.signature;
-      if (!sigB58) { clearPending(); console.error('No signature'); return; }
-      const signature = bs58.decode(sigB58);
-      setState(prev => ({ ...prev, lastSignature: signature }));
-      clearPending();
-      window.dispatchEvent(new CustomEvent('wallet:signed', { detail: signature }));
+    // Если это signMessage
+    if (pending.type === 'signMessage') {
+      if (!sess.sharedSecret) {
+        clearPending();
+        console.error('No shared secret for signMessage');
+        return;
+      }
+      try {
+        const parsed = decryptPayload(sess.sharedSecret, nonce, data);
+        const sigB58: string = parsed?.signature;
+        if (!sigB58) throw new Error('signMessage response missing signature');
+        const signature = bs58.decode(sigB58);
+
+        setState(prev => ({ ...prev, lastSignature: signature }));
+        clearPending();
+
+        // Сообщаем ожидающему промису
+        window.dispatchEvent(new CustomEvent('wallet:signed', { detail: signature }));
+      } catch (e) {
+        clearPending();
+        console.error('Failed to handle signMessage response:', e);
+      }
       return;
     }
-  }, [clearPending, ensureSession]);
+  };
+
+  // Обработка при монтировании (после возвращения со страницы Phantom произойдёт reload/SPA-навиг.)
+  processReturn();
+
+  // На случай, если роутер SPA меняет адрес без перезагрузки
+  const onPop = () => processReturn();
+  window.addEventListener('popstate', onPop);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') processReturn();
+  });
+
+  return () => {
+    window.removeEventListener('popstate', onPop);
+  };
+}, [clearPending, ensureSession, setState]);
+
 
   const value: WalletContextValue = useMemo(() => ({
     ...state,
