@@ -3,6 +3,7 @@ import { TextInput as PaperTextInput, HelperText, useTheme, Text } from 'react-n
 import { View, StyleProp, TextStyle } from 'react-native';
 import { ExtendedMD3Colors } from '@theme/types';
 
+
 type Props = {
   id?: string;
   label?: string;
@@ -26,8 +27,20 @@ export default function TextInputMultiline({
   const {colors} = useTheme() as {colors: ExtendedMD3Colors};
   const [isFocused, setIsFocused] = useState(false);
 
+  const [inputHeight, setInputHeight] = useState(56);
+
+  const handleContentSizeChange = (e: any) => {
+    const height = e.nativeEvent.contentSize.height;
+    setInputHeight(prev => {
+      return height < prev ? height : Math.max(prev, height);
+    });
+  };
+  
   const handleChangeText = (text: string) => {
     onChangeValue(text);
+    if (text.trim().length === 0) {
+      setInputHeight(56);
+    }
   };
 
   return (
@@ -41,17 +54,18 @@ export default function TextInputMultiline({
         underlineColor="transparent"
         theme={{ colors: { outline: 'transparent' } }}
         error={!!errorValue}
+        onContentSizeChange={handleContentSizeChange}
         style={[
           {
             backgroundColor: 'transparent',
             textAlignVertical: 'top',
-            minHeight: 56, 
+            height: Math.max(56, inputHeight), 
           },
           style
         ]}
         right={errorValue ? <PaperTextInput.Icon icon="alert-circle" color={colors.error} /> : null}
+        label=" "
         placeholder=""
-        label=""
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
       />
