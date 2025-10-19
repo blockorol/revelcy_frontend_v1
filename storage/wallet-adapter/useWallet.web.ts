@@ -1,30 +1,9 @@
-import { useWallet as useSolanaWallet, AnchorWallet} from '@solana/wallet-adapter-react';
-import { SignerWalletAdapter } from '@solana/wallet-adapter-base';
+import { useContext } from 'react';
+import { WalletReactContext as WalletContext } from './WalletProvider.web';
+import type { WalletContextValue } from './walletTypes';
 
-
-export const useWallet = () => {
-  const { connected, publicKey, connect, disconnect, select, wallet, signMessage} = useSolanaWallet();
-  return { connected, publicKey, connect, disconnect, select, wallet, signMessage};
-};
-
-export const useAnchorWalletSafe = (): AnchorWallet | undefined => {
-  const walletContext = useSolanaWallet();
-  const adapter = walletContext.wallet?.adapter;
-
-  if (
-    walletContext.connected &&
-    walletContext.publicKey &&
-    adapter &&
-    'signTransaction' in adapter &&
-    'signAllTransactions' in adapter
-  ) {
-    const signerAdapter = adapter as SignerWalletAdapter;
-
-    return {
-      publicKey: walletContext.publicKey,
-      signTransaction: signerAdapter.signTransaction.bind(signerAdapter),
-      signAllTransactions: signerAdapter.signAllTransactions.bind(signerAdapter),
-    };
-  }
-  return undefined;
-};
+export function useWallet(): WalletContextValue {
+  const ctx = useContext(WalletContext);
+  if (!ctx) throw new Error('useWallet must be used within <WalletProvider />');
+  return ctx;
+}
