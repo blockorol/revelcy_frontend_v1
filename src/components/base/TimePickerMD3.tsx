@@ -1,7 +1,8 @@
 
 import * as React from 'react';
 import { View, StyleSheet, TextInput as RNTextInput } from 'react-native';
-import { Portal, Modal, Surface, Text, Button, useTheme } from 'react-native-paper';
+import { Portal, Modal, Surface, Text, useTheme } from 'react-native-paper';
+import {Button} from "@components/ui/Button"
 
 /**
  * TimePickerMD3
@@ -46,13 +47,12 @@ export default function TimePickerMD3({
     outline: (theme.colors as any).outline ?? (theme as any).colors.outline,
   };
 
-  const now = React.useMemo(() => new Date(), [visible]);
   const initial: TimeValue = React.useMemo(
     () => ({
-      hour: clamp(value?.getHours() ?? now.getHours(), 0, 23),
-      minute: clamp(value?.getMinutes() ?? Math.round(now.getMinutes()), 0, 59),
+      hour: clamp(value?.getHours() ?? 0, 0, 23),
+      minute: clamp(value?.getMinutes() ?? 0, 0, 59),
     }),
-    [value, now]
+    [value]
   );
 
   const [hour, setHour] = React.useState(initial.hour);
@@ -83,8 +83,7 @@ export default function TimePickerMD3({
               colors={C}
             />
 
-            <Text style={[styles.colon, { color: C.onSurface }]}>:</Text>
-
+              <Text style={[styles.colon, { color: C.onSurface }]}>:</Text>
             <TimeField
               ariaLabel="Minute"
               value={minute}
@@ -99,7 +98,7 @@ export default function TimePickerMD3({
             <Button
               mode="outlined"
               onPress={onDismiss}
-              style={[styles.cancelBtn, { borderColor: C.outline, backgroundColor: 'transparent' }]}
+              style={[styles.btn, { borderColor: C.outline, backgroundColor: 'transparent' }]}
               textColor={C.onSurface}
             >
               Cancel
@@ -107,7 +106,7 @@ export default function TimePickerMD3({
             <Button
               mode="contained"
               onPress={onSave}
-              style={styles.saveBtn}
+              style={styles.btn}
               buttonColor={C.primary}
               textColor={C.onPrimary}
             >
@@ -239,22 +238,19 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   } as any,
   colon: {
-    fontSize: 64,
+    fontSize: 60,
     fontWeight: '700',
     marginHorizontal: 14,
+    marginBottom: 23
   },
   actions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 8,
+    gap:8,
   },
-  cancelBtn: {
+  btn: {
     flex: 1,
-    marginRight: 12,
-    borderWidth: 1,
-  },
-  saveBtn: {
-    flex: 1,
-    marginLeft: 12,
+    minWidth: 104
   },
 });
