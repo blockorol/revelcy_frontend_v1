@@ -4,6 +4,7 @@ import { PublicKey } from "@solana/web3.js";
 import { convertSolanaToTokenBuy, DEFAULT_TOKEN_COUNT_DECIMAL, PremarketState, convertTokenToDecimal } from "@utils/premarket";
 import { toDecString } from "@api/tx_premarket";
 import { http } from "@api/http";
+import shortString from "@utils/address_shorter";
 
 const RETRY_DEFAULT = 6;
 
@@ -299,6 +300,7 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
       joinTimestamp: h.join_timestamp,
       iconURL: h.icon_url ?? undefined,
       amountSolLamp: new BN(h.amount_sol_lamp),
+      username: h.username??shortString(h.wallet_address)
     })),
   };
 }
@@ -362,5 +364,6 @@ export interface HoldersInfo {
     joinTimestamp: number;
     amountSolLamp: BN;
     iconURL?: string;
+    username: string;
 }
 

@@ -9,7 +9,7 @@ import React, { useMemo, useState } from "react";
 import { Menu, useTheme, TouchableRipple, Divider } from "react-native-paper";
 import { SvgIcon } from "@components/base/SvgIcon";
 
-
+const TOTAL_TOKEN_COUNT = 1_000_000_000
 interface Props {
   tokenData: TokenInfo;
   holdersAmount: number;
@@ -81,7 +81,7 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
                 tokenInfo={{
                   userJoined: holder.joinTimestamp,
                   amount: amount,
-                  amountProcent:(100*amount/totalRaised),
+                  amountProcent:(100*amount/TOTAL_TOKEN_COUNT),
                   isCreator: tokenData.mainInfo.createdByPubkey === holder?.walletAddress
                 }}
               />
@@ -175,7 +175,7 @@ export const OrderMenu: React.FC<PropsOrderMenu> = ({ value, onChange, anchor })
         style={[commonItemStyle, { backgroundColor: bg }]}
       >
         <View style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: 'flex-end', gap: 4 }}>
-          <Text variant="labelLarge" prominent style={{ color: fg }}>{label}</Text>
+          <Text variant='labelMedium' prominent style={{ color: fg }}>{label}</Text>
           <SvgIcon name={icon as any} size={16} color={fg} />
         </View>
       </TouchableRipple>
@@ -199,7 +199,7 @@ export const OrderMenu: React.FC<PropsOrderMenu> = ({ value, onChange, anchor })
       }}
     >
       <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-        <Text variant="labelLarge" prominent style={{ color: anchorFg }}>
+        <Text variant="labelMedium" prominent style={{ color: anchorFg }}>
           {currentDef.label}
         </Text>
         <SvgIcon name={currentDef.icon as any} size={16} color={anchorFg} />

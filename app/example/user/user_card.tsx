@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { TextInput, Button, useTheme } from 'react-native-paper';
+import { TextInput, Button, useTheme, Switch } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
 import { UserCard } from '@components/user/UserCard';
 
@@ -9,13 +9,18 @@ export default function UserCardExampleScreen() {
 
   const [amount, setAmount] = useState(4);
   const [amountProcent, setAmountProcent] = useState(2.0);
+  const [dayAgo, setDayAgo] = useState(2.0);
   const [isCreator, setIsCreator] = useState(true);
   const [balance, setBalance] = useState(500);
+  const [isPupmInfo, setIsPupmInfo] = useState(false);
+  const [isWalletInfo, setIsWalletInfo] = useState(false);
+  const [isHumanityCheck, setIsHumanityCheck] = useState(false);
+  
   const [followers, setFollowers] = useState(123);
   const [createdTokens, setCreatedTokens] = useState(6);
   const [trades, setTrades] = useState(32);
   const [humanity, setHumanity] = useState<'bot' | 'likely human' | 'human'>('likely human');
-  const [userJoined, setUserJoined] = useState(Math.floor(Date.now() / 1000) - 3600);
+  const [userJoined, setUserJoined] = useState(Math.floor(Date.now() / 1000));
   const [isUserAvatar, setIsUserAvatar] = useState(false);
   const [username, setUsername] = useState("mememaster")
 
@@ -39,15 +44,15 @@ export default function UserCardExampleScreen() {
           amountProcent,
           isCreator,
         }}
-        stats={{
-          humanity,
-          balance,
-          pumpFun: {
+        stats={isHumanityCheck||isWalletInfo||isPupmInfo ? {
+          humanity: isHumanityCheck? humanity : undefined,
+          balance: isWalletInfo? balance : undefined,
+          pumpFun: isPupmInfo ?{
             followers,
             createdTokens,
             trades,
-          },
-        }}
+          }: undefined,
+        }: undefined}
       />
        </View>
       
@@ -71,6 +76,19 @@ export default function UserCardExampleScreen() {
           step={0.1}
           onValueChange={setAmountProcent}
         />
+        <Text style={styles.label}>User joined: {dayAgo} days ago</Text>
+        <Slider
+          value={dayAgo}
+          minimumValue={0}
+          maximumValue={100}
+          step={1}
+          onValueChange={(value) => {
+            setDayAgo(value)
+            setUserJoined(Date.now() - value*24*60*60*1000)
+          }
+          }
+        />
+        <Text style={styles.label}>Wallet info: <Switch value={isWalletInfo} onValueChange={setIsWalletInfo} color={colors.primary} /></Text>
 
         <Text style={styles.label}>Balance: {balance}</Text>
         <Slider
@@ -81,6 +99,10 @@ export default function UserCardExampleScreen() {
           onValueChange={setBalance}
         />
 
+          
+        
+        <Text style={styles.label}>Pumpfun info: <Switch value={isPupmInfo} onValueChange={setIsPupmInfo} color={colors.primary} /></Text>
+        
         <Text style={styles.label}>Followers: {followers}</Text>
         <Slider
           value={followers}
@@ -107,6 +129,7 @@ export default function UserCardExampleScreen() {
           step={1}
           onValueChange={setTrades}
         />
+        <Text style={styles.label}>Humanity check info: <Switch value={isHumanityCheck} onValueChange={setIsHumanityCheck} color={colors.primary} /></Text>
 
         <Text style={styles.label}>Humanity: {humanity}</Text>
         <View style={{ flexDirection: 'column', gap: 10 }}>

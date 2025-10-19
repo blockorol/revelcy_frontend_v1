@@ -45,6 +45,7 @@ function makeInitialMockToken(): TokenInfo {
     joinTimestamp: nowSec - (i + 1) * (oneDay / 2),
     amountSolLamp: new BN(1 * 1e9 * (i + 1)),
     iconURL: i===4?"https://picsum.photos/seed/forest/512":undefined,
+    username: `user_${i + 1}`,
   }));
 
   const mainInfo: TokenMainInfo = {
@@ -161,6 +162,7 @@ const MockDataModal: React.FC = () => {
         joinTimestamp: nowSec,
         amountSolLamp: new BN(0),
         iconURL: "",
+        username:`user_${idx}`,
       },
     ];
     setHolders(next);
