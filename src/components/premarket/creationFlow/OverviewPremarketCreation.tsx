@@ -44,7 +44,7 @@ export default function OverviewPremarketCreation({
   const solanaFee = 0.02;
   const errorMapper = {
     user: {
-      text: "User not login",
+      text: "Please login",
       button: <LoginButton />,
     },
     connection: {
@@ -58,9 +58,9 @@ export default function OverviewPremarketCreation({
     "wrong connection": {
       text: "Wallet and current user have different address, please reconnect or relogin",
       button: (
-        <View style={{ flexDirection: "row", padding: 8 }}>
+        <View style={{ flexDirection: "row", padding: 8, gap: 10 }}>
           <Button onPress={disconnect} variant="primary" size="normal">
-            Disconned
+            Disconnect
           </Button>
           <Button
             onPress={logout}
