@@ -86,7 +86,7 @@ export function ChipDisplay({
 
   // Состояние disabled — приглушим цвета
   const textColor = disabled ? theme.colors.onSurfaceDisabled : baseColor;
-  const outlineColor = disabled ? theme.colors.outline : baseColor; // обводка тем же цветом
+  const outlineColor = disabled ? theme.colors.outline : baseColor;
   const backgroundColor = disabled ? theme.colors.surfaceDisabled : bgSoft;
 
   return (

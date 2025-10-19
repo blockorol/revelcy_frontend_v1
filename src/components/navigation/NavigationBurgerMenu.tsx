@@ -7,6 +7,7 @@ import { router, usePathname } from "expo-router";
 import { navigationItems } from "@components/navigation/NavigationItems";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import { openMailto, openTelegram, openX } from "@utils/openLinks";
+import { useNetwork } from "@providers/NetworkContext";
 
 export default function NavigationBurgerMenu() {
   const { open, close } = useOverlay();
@@ -26,13 +27,10 @@ interface NavProps {
 function NavigationBurgerMenuItemsList({ onClose }: NavProps) {
   const { colors } = useTheme();
   const pathname = usePathname();
+  const {network} = useNetwork();
   return (
-    <TouchableRipple
-      onPress={onClose}
-      style={{ backgroundColor: undefined, width: "100%", height: "100%" }}
-    >
-      <View style={{ backgroundColor: colors.background }}>
-        
+    <View style={{ flexDirection:'column', width: '100%', height: '100%', justifyContent: 'flex-start', alignContent: 'flex-start', alignItems:'flex-start'}} >
+      <View style={{ backgroundColor: colors.background, width: '100%',}}>
         <View
           id="main-menu-item"
           style={[
@@ -41,28 +39,32 @@ function NavigationBurgerMenuItemsList({ onClose }: NavProps) {
             { borderColor: colors.outlineVariant },
           ]}
         >
-          <Image
-            source={require("@assets/revelcy_logo_long.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <View style={{flexDirection:'row', alignItems: 'center'}}>
+            <Image
+              source={require("@assets/revelcy_logo_long.png")}
+              style={{width: 96, height:24}}
+              resizeMode="contain"
+            />
+            {network === 'devnet'&&<Text variant='labelSmall' prominent style={{marginBottom: 20, marginLeft: 5, paddingHorizontal: 5, color:colors.onSecondary, backgroundColor: colors.secondary, borderRadius: 5}}>DEV</Text>}
+          </View>
+          <View style={{justifyContent: 'center', }}>
           <SvgIconButton
             color={colors.onSurface}
             onPress={onClose}
             name="x-base"
             size={30}
           />
+          </View>
         </View>
-        <NavigationBurgerMenuItemLine
+        {/* <NavigationBurgerMenuItemLine
           label="Home"
           icon="revelcy-r"
           action={() => {
             router.push("/");
             onClose();
           }}
-        />
+        /> */}
         {navigationItems.map((navigationItem) => {
-          const isCreatePremarketDisabled = navigationItem.label === "Create Premarket" && pathname === "/token/create";
           return (
             <NavigationBurgerMenuItemLine
               key={`nav-${navigationItem.label}`}
@@ -72,7 +74,7 @@ function NavigationBurgerMenuItemsList({ onClose }: NavProps) {
                 router.push(navigationItem.route);
                 onClose();
               }}
-              disabled={isCreatePremarketDisabled}
+              disabled={pathname === navigationItem.route}
             />
           );
         })}
@@ -85,7 +87,7 @@ function NavigationBurgerMenuItemsList({ onClose }: NavProps) {
           <View style={{ flexDirection: "row" }}>
             <TouchableRipple
               onPress={() => {openX()}}
-              style={{ padding: 16, paddingRight: 40 }}
+              style={{ padding: 16, paddingHorizontal: 40 }}
             >
               <SvgIcon name="x-logo" size={24} color={colors.onSurface} />
             </TouchableRipple>
@@ -113,14 +115,20 @@ function NavigationBurgerMenuItemsList({ onClose }: NavProps) {
             />
             <TouchableRipple
               onPress={() => {openMailto()}}
-              style={{ padding: 16, paddingLeft: 40 }}
+              style={{ padding: 16, paddingHorizontal: 40 }}
             >
               <SvgIcon name="mail" size={24} color={colors.onSurface} />
             </TouchableRipple>
           </View>
         </View>
       </View>
+    <TouchableRipple
+      onPress={onClose}
+      style={{backgroundColor: undefined, width: "100%", height: "100%" }}
+    >
+      <View></View>
     </TouchableRipple>
+    </View>
   );
 }
 
@@ -171,10 +179,11 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   lineMainMenu: {
-    padding: 16,
+    height: 57,
+    paddingHorizontal: 16,
     justifyContent: "space-between",
     borderBottomWidth: 1,
-    marginBottom: 8,
+    // marginBottom: 8,
   },
   lineContact: {
     justifyContent: "center",
