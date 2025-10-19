@@ -10,18 +10,18 @@ interface NavigationItemBaseProps {
 
 export const navigationItems: NavigationItemBaseProps[] = [
     {
+        iconActive:'revelcy-r',
+        iconNotActive:'revelcy-r',
+        label: "About",
+        labelShort:"About",
+        route:"/"
+    },
+    {
         iconActive:'binoculars',
         iconNotActive:'binoculars-outlined',
         label: "Explore",
         labelShort:"Explore",
         route:"/discover"
-    },
-    {
-        iconActive:'books',
-        iconNotActive:'books',
-        label: "Resources",
-        labelShort:"Resources",
-        route:"/resources"
     },
     {
         iconActive:"plus",

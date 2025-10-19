@@ -27,18 +27,16 @@ export function NavigationItem({
   const router = useRouter();
   const isActive = pathname === route;
   
-  // Check if Create Premarket button should be disabled
-  const isCreatePremarketDisabled = label === "Create Premarket" && pathname === "/token/create";
 
   return (
     <TouchableRipple
       onPress={() => {
-        if (!isCreatePremarketDisabled) {
+        if (!isActive) {
           router.push(route);
         }
       }}
       borderless
-      disabled={isCreatePremarketDisabled}
+      disabled={isActive}
       style={[
         isMobile ? styles.containerMobile : styles.containerDesktop,
         horizontal && styles.horizontalContainer,
@@ -50,7 +48,7 @@ export function NavigationItem({
           horizontal ? styles.horizontalItem : styles.verticalItem,
           {
             backgroundColor: theme.colors.background,
-            opacity: (!isActive && isMobile) || isCreatePremarketDisabled ? 0.5 : 1,
+            opacity: (!isActive && isMobile) || isActive ? 0.5 : 1,
           },
         ]}
       >
@@ -60,7 +58,7 @@ export function NavigationItem({
           color={theme.colors.onSurface}
         />
         <Text
-          variant='labelLarge'
+          variant='labelMedium'
           style={{ color: theme.colors.onSurface }}
           numberOfLines={1}
         >
