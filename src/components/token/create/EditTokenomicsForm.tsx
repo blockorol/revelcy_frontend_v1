@@ -1,5 +1,5 @@
 import { DonutWithLegend } from "@components/base/DonutWithLegend";
-import TextInput from "@components/base/form/TextInput";
+import TextInput from "@components/ui/TextInput";
 import ContinueButtonWithProgressBar from "@components/ContinueButtonWithProgressBar";
 import { TokenomicsData } from "@components/token/create/interface";
 import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeader";

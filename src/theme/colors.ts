@@ -53,7 +53,7 @@ export const darkColors: ExtendedMD3Colors = {
   surfaceContainerHighest: colorHexAndOpacity("#353435", 1),
   
   surfaceDisabled: colorHexAndOpacity('#E6E0E9', 0.12),
-  onSurfaceDisabled: colorHexAndOpacity('#FFFFFF', 1), 
+  onSurfaceDisabled: colorHexAndOpacity('#FFFFFF', 0.38), 
   
   onPrimaryFixedVariant: colorHexAndOpacity(COROL_UNSETTED, 1),
   onSecondaryFixedVariant: colorHexAndOpacity(COROL_UNSETTED, 0.5),

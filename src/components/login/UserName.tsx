@@ -1,9 +1,9 @@
 // components/LoginPopup.tsx
 import React, { useState } from "react";
 import { View, StyleSheet, DimensionValue } from "react-native";
-import { HelperText, Text, TextInput, useTheme } from "react-native-paper";
+import { Text, useTheme } from "react-native-paper";
+import TextInput from "@components/ui/TextInput";
 import GreenButton from "@components/login/buttons/GreenButton";
-import { SvgIcon, SvgIconButton } from "@components/base/SvgIcon";
 interface WalletConnectionCheckerProps {
   height: DimensionValue;
   width: number;
@@ -22,7 +22,7 @@ export default function UserName({
   const theme = useTheme();
   const [userName, setUserName] = useState("");
   const [rawUserName, setRawUserName] = useState<string | undefined>("");
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState<string|undefined>(undefined);
 
   return (
     <View
@@ -41,81 +41,43 @@ export default function UserName({
           Choose username
         </Text>
         <View style={{ width: "100%" }}>
-          <View
+          <TextInput
+            label="Username"
+            value={rawUserName}
+            autoFocus={true}
+            mode="flat"
+            dense={true}
             style={{
-              flexDirection: "row",
-              justifyContent: "center",
-              alignItems: "center",
-              alignContent: "center",
+              flex: 1,
+              backgroundColor: "transparent",
             }}
-          >
-            <TextInput
-              label="Username"
-              value={rawUserName}
-              autoFocus={true}
-              mode="flat"
-              dense={true}
-              style={{
-                flex: 1,
-                backgroundColor: "transparent",
-              }}
-              onChangeText={(text) => {
-                const cleanText = text.replace(/[^a-zA-Z0-9-_]/g, "");
+            onChangeText={(text) => {
+              const cleanText = text.replace(/[^a-zA-Z0-9-_]/g, "");
 
-                if (cleanText.length === 0) {
-                  setError("");
-                  setUserName("");
-                  setRawUserName("");
-                  return;
-                }
-                setRawUserName(cleanText);
-                const userNameClean = cleanText.trimEnd();
-
-                if (userNameClean.length < 5) {
-                  setError("Username must be at least 5 characters long");
-                  setUserName("");
-                  return;
-                }
-                if (userNameClean.length > 20) {
-                  setError("Username can't exceed 20 characters");
-                  setUserName("");
-                  return;
-                }
-                setError("");
-                setUserName(userNameClean);
-              }}
-              error={!!error}
-              right={
-                error !== "" && (
-                  <TextInput.Icon
-                    icon={() => (
-                      <SvgIcon
-                        name="info-circle"
-                        size={24}
-                        color={theme.colors.error}
-                      />
-                    )}
-                    onPress={() => console.log("Icon pressed")}
-                  />
-                )
+              if (cleanText.length === 0) {
+                setError(undefined);
+                setUserName("");
+                setRawUserName("");
+                return;
               }
-            />
-            <View style={{alignContent: 'center', justifyContent:'center', alignSelf:'center'}}>
-              <SvgIconButton
-                onPress={() => {
-                  setRawUserName("");
-                  setError("");
-                  setUserName("");
-                }}
-                name="x-circle-outlined"
-                size={24}
-                color={theme.colors.onSurface}
-              />
-            </View>
-          </View>
-          <HelperText type="error" visible={!!error}>
-            {error}
-          </HelperText>
+              setRawUserName(cleanText);
+              const userNameClean = cleanText.trimEnd();
+
+              if (userNameClean.length < 5) {
+                setError("Username must be at least 5 characters long");
+                setUserName("");
+                return;
+              }
+              if (userNameClean.length > 20) {
+                setError("Username can't exceed 20 characters");
+                setUserName("");
+                return;
+              }
+              setError(undefined);
+              setUserName(userNameClean);
+            }}
+            errorValue={error}
+          />
         </View>
       </View>
 
