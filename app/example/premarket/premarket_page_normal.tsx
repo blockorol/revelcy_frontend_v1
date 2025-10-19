@@ -71,7 +71,7 @@ function makeInitialMockToken(): TokenInfo {
     description: "Join the Forest Friends to unlock interactive museum tours and family quests.Join the Forest Friends to unlock interactive museum tours and family quests.Join the Forest Friends to unlock interactive museum tours and family quests.Join the Forest Friends to unlock interactive museum tours and family quests.",
     tokenBannerURL: "https://picsum.photos/seed/forestbanner/1200/300",
     links: [
-      { text: "Telegram", url: "https://t.me/forestfriends", type: "tg" },
+      { text: "Telegram Join to us 01234", url: "https://t.me/forestfriends", type: "tg" },
       { text: "X / Twitter", url: "https://x.com/forestfriends", type: "x" },
       { text: "Website", url: "https://forestfriends.example", type: "other" },
     ],
