@@ -68,7 +68,7 @@ function NavigationBurgerMenuItemsList({ onClose }: NavProps) {
           return (
             <NavigationBurgerMenuItemLine
               key={`nav-${navigationItem.label}`}
-              label={navigationItem.label}
+              label={navigationItem.labelShort}
               icon={navigationItem.iconActive}
               action={() => {
                 router.push(navigationItem.route);

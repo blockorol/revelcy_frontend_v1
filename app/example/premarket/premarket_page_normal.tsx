@@ -45,6 +45,7 @@ function makeInitialMockToken(): TokenInfo {
     joinTimestamp: nowSec - (i + 1) * (oneDay / 2),
     amountSolLamp: new BN(1 * 1e9 * (i + 1)),
     iconURL: i===4?"https://picsum.photos/seed/forest/512":undefined,
+    username: `user_${i + 1}`,
   }));
 
   const mainInfo: TokenMainInfo = {
@@ -70,7 +71,7 @@ function makeInitialMockToken(): TokenInfo {
     description: "Join the Forest Friends to unlock interactive museum tours and family quests.Join the Forest Friends to unlock interactive museum tours and family quests.Join the Forest Friends to unlock interactive museum tours and family quests.Join the Forest Friends to unlock interactive museum tours and family quests.",
     tokenBannerURL: "https://picsum.photos/seed/forestbanner/1200/300",
     links: [
-      { text: "Telegram", url: "https://t.me/forestfriends", type: "tg" },
+      { text: "Telegram Join to us 01234", url: "https://t.me/forestfriends", type: "tg" },
       { text: "X / Twitter", url: "https://x.com/forestfriends", type: "x" },
       { text: "Website", url: "https://forestfriends.example", type: "other" },
     ],
@@ -161,6 +162,7 @@ const MockDataModal: React.FC = () => {
         joinTimestamp: nowSec,
         amountSolLamp: new BN(0),
         iconURL: "",
+        username:`user_${idx}`,
       },
     ];
     setHolders(next);

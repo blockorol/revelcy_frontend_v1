@@ -190,7 +190,7 @@ export function AboutCommunity({
         )}
 
         {communityInfoLocal?.links && communityInfoLocal.links.length !== 0 && (
-          <View>
+          <View style={{maxWidth: 300}}>
             <CommunityLinksGrid
               links={communityInfoLocal.links}
               isMobile={isMobile}
