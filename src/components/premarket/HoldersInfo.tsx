@@ -58,9 +58,9 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
         gap: 16,
       }}
     >
-      <View style={{flexDirection: 'row', alignContent:'center', justifyContent:'space-between'}}>
+      <View style={{flexDirection: 'row', alignItems: 'center', justifyContent:'space-between'}}>
         <View style={{flexDirection: 'row', gap: 8}}>
-          <Text variant="titleLarge" selectionColor={colors.onSurface}>People</Text>
+          <Text variant="titleLarge"  selectionColor={colors.onSurface}>People</Text>
           <Text variant="titleLarge" style={{color:colors.onSurfaceVariant}}>{holdersAmount}</Text>
         </View>
         <OrderMenu value={order} onChange={setOrder}/>
