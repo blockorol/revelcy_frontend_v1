@@ -117,7 +117,7 @@ export default function EditPremarketSettingsForm({
                   return;
                 }
                 setDataTimeError(null);
-                setDeadlineDateTime(Math.floor(newDate.getTime() / 1000));
+                setDeadlineDateTime(Math.floor(newDate.getTime() / 1000)); // todo: check /1000(?)
               }}
             />
             {dataTimeError && (

@@ -10,7 +10,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import normalizeUrl, { normalizeTelegramUrl, normalizeTwitterUrl, normalizeWebsiteUrl } from '@utils/url';
 import { SvgIcon, SvgIconButton } from '@components/base/SvgIcon';
 import TextInputMultiline from '@components/base/form/TextInputMutiline';
-import TextInput from '@components/base/form/TextInput';
+import TextInput from '@components/ui/TextInput';
 import useIsMobile, { useIsMobileWithDemention } from '@hooks/useIsMobile';
 import { MD3ElevationColors } from 'react-native-paper/lib/typescript/types';
 import { ExtendedMD3Colors } from '@theme/types';

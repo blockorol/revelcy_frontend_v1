@@ -81,42 +81,32 @@ const DesktopGrid: React.FC<{ links: Link[] }> = ({ links }) => {
   const getIconName = (t: Link["type"]) =>
     t === "x" ? "x-logo" : t === "tg" ? "tg-logo" : "world-outlined";
 
-  const rows: Link[][] = [];
-  for (let i = 0; i < links.length; i += 2) rows.push(links.slice(i, i + 2));
-
   return (
-    <View style={[styles.grid, { padding: 8 }]}>
-      {rows.map((row, ri) => (
-        <View key={ri} style={styles.row}>
-          {row.map((link, i) => (
-            <View key={i} style={styles.cell}>
-              <Button
-                mode="outlined"
-                style={{ flexShrink: 0, padding: 0 }}
-                contentStyle={{ paddingRight: 0, height: 30, borderRadius: 14 }}
-                labelStyle={{ marginRight: 20 }}
-                textColor={colors.onBackground}
-                onPress={() => Linking.openURL(link.url)}
-                icon={() => (
-                  <SvgIcon
-                    name={getIconName(link.type)}
-                    color={colors.onBackground}
-                    size={20}
-                  />
-                )}
-              >
-                <Text prominent variant="labelMedium">
-                  {link.text}
-                </Text>
-              </Button>
-            </View>
-          ))}
-          {row.length === 1 && <View style={styles.cell} />}
-        </View>
+    <View style={styles.flowWrap}>
+      {links.map((link, i) => (
+        <Button
+          key={`${link.url}-${i}`}
+          mode="outlined"
+          style={styles.flowItem}
+          contentStyle={{ paddingRight: 0, height: 30, borderRadius: 14 }}
+          labelStyle={{ marginRight: 20 }}
+          textColor={colors.onBackground}
+          onPress={() => Linking.openURL(link.url)}
+          icon={() => (
+            <SvgIcon
+              name={getIconName(link.type)}
+              color={colors.onBackground}
+              size={20}
+            />
+          )}
+        >
+          <Text prominent variant="labelMedium">{link.text}</Text>
+        </Button>
       ))}
     </View>
   );
 };
+const GAP = 12;
 
 const styles = StyleSheet.create({
   // mobile
@@ -129,17 +119,21 @@ const styles = StyleSheet.create({
   },
 
   // desktop grid
-  grid: {
+  flowWrap: {
     width: "100%",
-    gap: 12,
-    justifyContent: "center",
-  },
-  row: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 12,
+    flexWrap: "wrap",
+    justifyContent: "flex-start",
+    // если gap поддерживается — можно просто: gap: GAP,
+    marginHorizontal: -GAP / 2, // polyfill gap по горизонтали
+    marginVertical: -GAP / 2,   // polyfill gap по вертикали
   },
-  cell: {
-    flex: 1,
+  flowItem: {
+    // каждая кнопка занимает свою естественную ширину
+    alignSelf: "flex-start",
+    padding: 0,
+    // polyfill gap:
+    marginHorizontal: GAP / 2,
+    marginVertical: GAP / 2,
   },
 });

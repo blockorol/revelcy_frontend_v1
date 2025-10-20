@@ -8,7 +8,7 @@ interface ExpandableTextProps {
   text: string;
 }
 
-const TOGGLE_AREA_WIDTH = 40;
+const TOGGLE_AREA_WIDTH = 20;
 
 export const ExpandableText: React.FC<ExpandableTextProps> = ({
   text,
@@ -54,10 +54,11 @@ export const ExpandableText: React.FC<ExpandableTextProps> = ({
           width: "100%",
           flexDirection: "row",
           alignItems: "flex-start",
+          gap: 16
         }}
       >
         {/* Текст в колонке с паддингом справа под кнопку */}
-        <View style={{ flex: 1, paddingRight: TOGGLE_AREA_WIDTH }}>
+        <View style={{ flex: 1}}>
           <Text
             variant="bodyMedium"
             numberOfLines={expanded ? undefined : maxLineExpanded}
@@ -74,7 +75,9 @@ export const ExpandableText: React.FC<ExpandableTextProps> = ({
         <View
           style={{
             width: TOGGLE_AREA_WIDTH,
-            alignItems: "flex-end",
+            alignSelf: "stretch",
+            margin: 0,
+            flexDirection: 'column'
           }}
         >
           {showToggle ? (
@@ -89,10 +92,18 @@ export const ExpandableText: React.FC<ExpandableTextProps> = ({
                 />
               )}
               onPress={() => setExpanded((v) => !v)}
+              style={{
+                width: TOGGLE_AREA_WIDTH,
+                margin: 0,
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+
             />
           ) : (
             // Плейсхолдер, чтобы макет не “прыгнул”
-            <View style={{ width: 40, height: 40 }} />
+            <View style={{ width: TOGGLE_AREA_WIDTH, height: 40 }} />
           )}
         </View>
       </View>
@@ -106,6 +117,7 @@ export const ExpandableText: React.FC<ExpandableTextProps> = ({
               position: "absolute",
               left: -9999,
               width: measureWidth,
+              paddingRight: TOGGLE_AREA_WIDTH,
               opacity: 0,
             }}
             onLayout={(e) => setFullHeight(e.nativeEvent.layout.height)}
@@ -121,6 +133,7 @@ export const ExpandableText: React.FC<ExpandableTextProps> = ({
               position: "absolute",
               left: -9999,
               width: measureWidth,
+              paddingRight: TOGGLE_AREA_WIDTH,
               opacity: 0,
             }}
             onLayout={(e) => setTruncHeight(e.nativeEvent.layout.height)}

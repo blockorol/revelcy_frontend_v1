@@ -1,6 +1,7 @@
 // routes.ts
 export const exampleRoutes = {
   premarket: {
+    premarket_page_normal: "Example premarket page",
     convertors: "helping function",
     card: "Premarket Card",
     community: "community block",
@@ -12,11 +13,12 @@ export const exampleRoutes = {
     notification: "Нотификации (SnackBar)",
   },
   ui: {
-    color: "Цвета",
+    input_text: "input text",
+    color: "Colors",
     chips: "Chips",
     buttons: "Buttons",
-    fonts: "Шрифты",
-    icons: "Иконки",
+    fonts: "Fonts",
+    icons: "Icons",
     back: "",
     circle: "График-донат",
     image_overlay_small: "",
