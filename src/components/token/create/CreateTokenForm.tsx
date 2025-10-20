@@ -146,7 +146,7 @@ export default function CreateTokenForm({presetData, onNext, onClose,
                 label="Description"
                 value={description}
                 onChangeValue={setDescription}
-                placeholder="Describe your token..."
+                placeholder="Bitcoin is..."
               />
               <View style={{gap:48}}>
                 {enableTg && (
@@ -154,8 +154,8 @@ export default function CreateTokenForm({presetData, onNext, onClose,
                     <TextInput
                       label="Telegram"
                       value={telegram}
-                      onChangeText={(val) => setTelegram(normalizeTelegramUrl(val))}
-                      placeholder="t.me/username"
+                      onChangeText={(val) => setTelegram(normalizeWebsiteUrl(val))}
+                      placeholder="https://t.me/username"
                       mode="flat"
                     />
                     <TouchableOpacity style={styles.badgeClose} onPress={() => setEnableTg(false)}>
@@ -169,8 +169,8 @@ export default function CreateTokenForm({presetData, onNext, onClose,
                     <TextInput
                       label="Twitter"
                       value={twitter}
-                      onChangeText={(val) => setTwitter(normalizeTwitterUrl(val))}
-                      placeholder="x.com/username"
+                      onChangeText={(val) => setTwitter(normalizeWebsiteUrl(val))}
+                      placeholder="https://x.com/username"
                     />
                     <TouchableOpacity style={styles.badgeClose} onPress={() => setEnableTwitter(false)}>
                       <Badge style={[styles.badge, {backgroundColor:'transparent', color: colors.onBackground,}]}>✕</Badge>
@@ -185,7 +185,7 @@ export default function CreateTokenForm({presetData, onNext, onClose,
                       label="Website"
                       value={website}
                       onChangeText={(val) => setWebsite(normalizeWebsiteUrl(val))}
-                      placeholder="example.com"
+                      placeholder="https://example.com"
                     />
                     <TouchableOpacity style={styles.badgeClose} onPress={() => setEnableWebsite(false)}>
                       <Badge style={[styles.badge, {backgroundColor:'transparent', color: colors.onBackground,}]}>✕</Badge>

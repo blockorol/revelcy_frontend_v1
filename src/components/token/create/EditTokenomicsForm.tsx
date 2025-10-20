@@ -263,7 +263,9 @@ export default function EditTokenomicsForm({
               theme={{ colors: colors }}
               errorValue={errorCreatorInitialBuy}
             />
-            <TextInput
+            {
+              /*
+              <TextInput
               label="Treasury Allocation"
               value={treasuryDisplayValue}
               onChangeText={handleTreasuryAllocationChangeWithSuffix}
@@ -285,6 +287,8 @@ export default function EditTokenomicsForm({
                 1Fffmb...5paPH
               </Text>
             </View>
+              */
+            }
           </View>
           <View style={{ paddingTop: 40, paddingHorizontal: 10}}>
             <View
@@ -304,11 +308,13 @@ export default function EditTokenomicsForm({
                     label: "Creator (You)",
                     color: theme.colors.primary,
                   },
+                  /*
                   {
                     value: round(treasuryPercent, 1),
                     label: "Treasury Allocation",
                     color: theme.colors.error,
                   },
+                  */
                   {
                     value: 20,
                     label: "Pumpswap pool",
