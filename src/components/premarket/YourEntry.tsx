@@ -114,7 +114,7 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, onUpdated, isMobi
             borderRadius: 20,
             padding: 24,
             gap: 16,
-            width: "100%"
+            width: isMobile ? "92%" : "100%"
         }}>
             <View style={{ 
                 flexDirection: "row", 
