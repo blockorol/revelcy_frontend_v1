@@ -1,20 +1,23 @@
 // components/token/CreateTokenForm.tsx
-import React, { useState, useEffect } from 'react';
-import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { Badge, Text, useTheme } from 'react-native-paper';
-import ContinueAndProgress from '@components/ContinueButtonWithProgressBar';
-import TokenCreateFormHeader from '@components/token/create/TokenCreateFormHeader';
-import { TokenMainData } from '@components/token/create/interface';
-import { ScrollView } from 'react-native-gesture-handler';
-import normalizeUrl, { normalizeTelegramUrl, normalizeTwitterUrl, normalizeWebsiteUrl } from '@utils/url';
-import { SvgIcon, SvgIconButton } from '@components/base/SvgIcon';
-import TextInputMultiline from '@components/base/form/TextInputMutiline';
-import TextInput from '@components/ui/TextInput';
-import useIsMobile, { useIsMobileWithDemention } from '@hooks/useIsMobile';
-import { MD3ElevationColors } from 'react-native-paper/lib/typescript/types';
-import { ExtendedMD3Colors } from '@theme/types';
-
+import React, { useState, useEffect } from "react";
+import { View, Image, TouchableOpacity, StyleSheet } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { Badge, Text, useTheme } from "react-native-paper";
+import ContinueAndProgress from "@components/ContinueButtonWithProgressBar";
+import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeader";
+import { TokenMainData } from "@components/token/create/interface";
+import { ScrollView } from "react-native-gesture-handler";
+import normalizeUrl, {
+  normalizeTelegramUrl,
+  normalizeTwitterUrl,
+  normalizeWebsiteUrl,
+} from "@utils/url";
+import { SvgIcon, SvgIconButton } from "@components/base/SvgIcon";
+import TextInputMultiline from "@components/base/form/TextInputMutiline";
+import TextInput from "@components/ui/TextInput";
+import useIsMobile, { useIsMobileWithDemention } from "@hooks/useIsMobile";
+import { MD3ElevationColors } from "react-native-paper/lib/typescript/types";
+import { ExtendedMD3Colors } from "@theme/types";
 
 type CreateTokenFormProps = {
   onNext: (data: TokenMainData) => void;
@@ -25,23 +28,41 @@ type CreateTokenFormProps = {
   onBack?: () => void;
 };
 
-export default function CreateTokenForm({presetData, onNext, onClose, 
-  onBack, step, totalSteps}: CreateTokenFormProps) {
+export default function CreateTokenForm({
+  presetData,
+  onNext,
+  onClose,
+  onBack,
+  step,
+  totalSteps,
+}: CreateTokenFormProps) {
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
-  const {isMobile, height} = useIsMobileWithDemention();
-  
-  const [tokenName, setTokenName] = useState(presetData?.tokenName??'');
-  const [tokenTicker, setTokenTicker] = useState(presetData?.tokenTicker??'');
-  const [description, setDescription] = useState(presetData?.description??'');
-  const [avatar, setAvatar] = useState<string>(presetData?.avatar??'');
-  const [twitter, setTwitter] = useState<string | undefined>(presetData?.links.twitter);
-  const [telegram, setTelegram] = useState<string | undefined>(presetData?.links.telegram);
-  const [website, setWebsite] = useState<string | undefined>(presetData?.links.website);
-  
-  const [enableTg, setEnableTg] = useState(presetData?.links.telegram !== undefined);
-  const [enableTwitter, setEnableTwitter] = useState(presetData?.links.twitter !== undefined);
-  const [enableWebsite, setEnableWebsite] = useState(presetData?.links.website !== undefined);
+  const { isMobile, height } = useIsMobileWithDemention();
+
+  const [tokenName, setTokenName] = useState(presetData?.tokenName ?? "");
+  const [tokenTicker, setTokenTicker] = useState(presetData?.tokenTicker ?? "");
+  const [description, setDescription] = useState(presetData?.description ?? "");
+  const [avatar, setAvatar] = useState<string>(presetData?.avatar ?? "");
+  const [twitter, setTwitter] = useState<string | undefined>(
+    presetData?.links.twitter
+  );
+  const [telegram, setTelegram] = useState<string | undefined>(
+    presetData?.links.telegram
+  );
+  const [website, setWebsite] = useState<string | undefined>(
+    presetData?.links.website
+  );
+
+  const [enableTg, setEnableTg] = useState(
+    presetData?.links.telegram !== undefined
+  );
+  const [enableTwitter, setEnableTwitter] = useState(
+    presetData?.links.twitter !== undefined
+  );
+  const [enableWebsite, setEnableWebsite] = useState(
+    presetData?.links.website !== undefined
+  );
 
   const pickAvatar = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -60,18 +81,23 @@ export default function CreateTokenForm({presetData, onNext, onClose,
     onNext({
       tokenName,
       tokenTicker,
-      description:description,
+      description: description,
       avatar,
       links: {
         telegram,
         twitter,
-        website
-      }
+        website,
+      },
     });
   };
-  const isFilledAll = ():boolean => {
-    return tokenName !== "" && tokenTicker !== "" && description !== "" && avatar !== ""
-  }
+  const isFilledAll = (): boolean => {
+    return (
+      tokenName !== "" &&
+      tokenTicker !== "" &&
+      description !== "" &&
+      avatar !== ""
+    );
+  };
 
   return (
     <ScrollView
@@ -89,57 +115,91 @@ export default function CreateTokenForm({presetData, onNext, onClose,
           paddingHorizontal: isMobile ? 16 : 24,
           paddingVertical: isMobile ? 40 : 24,
           maxWidth: 500,
-          minHeight: isMobile ? height: height * 0.9,
+          minHeight: isMobile ? height : height * 0.9,
           justifyContent: "space-between",
         }}
       >
-        <View style={{gap:16}}>
-          <TokenCreateFormHeader title="Token Details" theme={theme} onClose={onClose} onBack={onBack}  />
-          <View style={{gap:64}}>  
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, width: '100%', }}> 
-              <TouchableOpacity onPress={pickAvatar} style={{ alignSelf: 'center' }}>
+        <View style={{ gap: 16 }}>
+          <TokenCreateFormHeader
+            title="Token Details"
+            theme={theme}
+            onClose={onClose}
+            onBack={onBack}
+          />
+          <View style={{ gap: 64 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 16,
+                width: "100%",
+              }}
+            >
+              <TouchableOpacity
+                onPress={pickAvatar}
+                style={{ alignSelf: "center" }}
+              >
                 <View
                   style={{
                     width: 112,
                     height: 112,
                     borderRadius: 32,
                     backgroundColor: colors.surfaceContainerHigh,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    overflow: 'hidden',
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
                   }}
                 >
                   {avatar ? (
-                    <Image source={{ uri: avatar }} style={{  width: '100%', height: '100%'  }} />
+                    <Image
+                      source={{ uri: avatar }}
+                      style={{ width: "100%", height: "100%" }}
+                    />
                   ) : (
-                    <Text variant='bodySmall' style={{ fontSize: 40, color: theme.colors.onSurface }}>+</Text>
+                    <Text
+                      variant="bodySmall"
+                      style={{ fontSize: 40, color: theme.colors.onSurface }}
+                    >
+                      +
+                    </Text>
                   )}
                 </View>
               </TouchableOpacity>
-              <View style={{flexDirection: 'column', gap: 4, justifyContent:'center', alignItems: 'baseline'}}>
+              <View
+                style={{
+                  flexDirection: "column",
+                  gap: 4,
+                  justifyContent: "center",
+                  alignItems: "baseline",
+                }}
+              >
                 <Text variant="bodyLarge">Image, video or gif</Text>
                 <View>
                   <Text variant="bodySmall">This will be shown as</Text>
                   <Text variant="bodySmall">your Token’s picture</Text>
                 </View>
-              </View> 
+              </View>
             </View>
-            <View style={{flexDirection: 'column', gap: 48}}>
+            <View style={{ flexDirection: "column", gap: 48 }}>
               <TextInput
+                alwaysLabelOnTop
+                disableRemoveBtn
                 label="Token Name"
                 value={tokenName}
                 onChangeText={setTokenName}
                 maxLength={20}
                 placeholder="eg. Bitcoin"
-                style={{ flex:1 }}
+                style={{ flex: 1 }}
               />
               <TextInput
+                alwaysLabelOnTop
+                disableRemoveBtn
                 label="Token Ticker"
                 value={tokenTicker}
                 onChangeText={setTokenTicker}
                 maxLength={5}
                 placeholder="eg. BTC"
-                style={{ flex:1 }}
+                style={{ flex: 1 }}
               />
               <TextInputMultiline
                 id="Description"
@@ -148,66 +208,89 @@ export default function CreateTokenForm({presetData, onNext, onClose,
                 onChangeValue={setDescription}
                 placeholder="Bitcoin is..."
               />
-              <View style={{gap:48}}>
+              <View style={{ gap: 48 }}>
                 {enableTg && (
-                  <View>
-                    <TextInput
-                      label="Telegram"
-                      value={telegram}
-                      onChangeText={(val) => setTelegram(normalizeWebsiteUrl(val))}
-                      placeholder="https://t.me/username"
-                      mode="flat"
-                    />
-                    <TouchableOpacity style={styles.badgeClose} onPress={() => setEnableTg(false)}>
-                      <Badge style={[styles.badge, {backgroundColor:'transparent', color: colors.onBackground,}]}>✕</Badge>
-                    </TouchableOpacity>
-                  </View>
+                  <TextInput
+                    alwaysLabelOnTop
+                    overrideRemoveBtn={() => {
+                      setEnableTg(false);
+                    }}
+                    label="Telegram"
+                    value={telegram}
+                    onChangeText={(val) =>
+                      setTelegram(normalizeWebsiteUrl(val))
+                    }
+                    placeholder="https://t.me/username"
+                    mode="flat"
+                  />
                 )}
-                
+
                 {enableTwitter && (
-                  <View>
-                    <TextInput
-                      label="Twitter"
-                      value={twitter}
-                      onChangeText={(val) => setTwitter(normalizeWebsiteUrl(val))}
-                      placeholder="https://x.com/username"
-                    />
-                    <TouchableOpacity style={styles.badgeClose} onPress={() => setEnableTwitter(false)}>
-                      <Badge style={[styles.badge, {backgroundColor:'transparent', color: colors.onBackground,}]}>✕</Badge>
-                    </TouchableOpacity>
-                  </View>
+                  <TextInput
+                    alwaysLabelOnTop
+                    overrideRemoveBtn={() => {
+                      setEnableTwitter(false);
+                    }}
+                    label="Twitter"
+                    value={twitter}
+                    onChangeText={(val) => setTwitter(normalizeWebsiteUrl(val))}
+                    placeholder="https://x.com/username"
+                  />
                 )}
 
-                
                 {enableWebsite && (
-                  <View>
-                    <TextInput
-                      label="Website"
-                      value={website}
-                      onChangeText={(val) => setWebsite(normalizeWebsiteUrl(val))}
-                      placeholder="https://example.com"
-                    />
-                    <TouchableOpacity style={styles.badgeClose} onPress={() => setEnableWebsite(false)}>
-                      <Badge style={[styles.badge, {backgroundColor:'transparent', color: colors.onBackground,}]}>✕</Badge>
-                    </TouchableOpacity>
-                  </View>
+                  <TextInput
+                    alwaysLabelOnTop
+                    overrideRemoveBtn={() => {
+                      setEnableWebsite(false);
+                    }}
+                    label="Website"
+                    value={website}
+                    onChangeText={(val) => setWebsite(normalizeWebsiteUrl(val))}
+                    placeholder="https://example.com"
+                  />
                 )}
-
 
                 {/* Social Icons Actions */}
-                { !(enableTwitter && enableTg && enableWebsite) && (
-                  <View style={{ flexDirection: 'row', justifyContent: 'flex-start', width:'100%', paddingTop: 8 }}>
-                      <View style={{flexDirection: 'row', gap:16, height:24}}>
-                        <SvgIcon name="add-circle-outlined" color={theme.colors.onSurfaceVariant} size={24} />
-                        {!enableTg && (
-                          <SvgIconButton size={24} name="tg-logo" color={theme.colors.onSurface} onPress={() => setEnableTg(true)}/>
-                        )}
-                        {!enableTwitter && (
-                          <SvgIconButton size={24} name="x-logo" color={theme.colors.onSurface} onPress={() => setEnableTwitter(true)}/>
-                        )}
-                        {!enableWebsite && (
-                          <SvgIconButton size={24} name="world-outlined" color={theme.colors.onSurface} onPress={() => setEnableWebsite(true)}/>
-                        )}
+                {!(enableTwitter && enableTg && enableWebsite) && (
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "flex-start",
+                      width: "100%",
+                      paddingTop: 8,
+                    }}
+                  >
+                    <View style={{ flexDirection: "row", gap: 16, height: 24 }}>
+                      <SvgIcon
+                        name="add-circle-outlined"
+                        color={theme.colors.onSurfaceVariant}
+                        size={24}
+                      />
+                      {!enableTg && (
+                        <SvgIconButton
+                          size={24}
+                          name="tg-logo"
+                          color={theme.colors.onSurface}
+                          onPress={() => setEnableTg(true)}
+                        />
+                      )}
+                      {!enableTwitter && (
+                        <SvgIconButton
+                          size={24}
+                          name="x-logo"
+                          color={theme.colors.onSurface}
+                          onPress={() => setEnableTwitter(true)}
+                        />
+                      )}
+                      {!enableWebsite && (
+                        <SvgIconButton
+                          size={24}
+                          name="world-outlined"
+                          color={theme.colors.onSurface}
+                          onPress={() => setEnableWebsite(true)}
+                        />
+                      )}
                     </View>
                   </View>
                 )}
@@ -215,12 +298,12 @@ export default function CreateTokenForm({presetData, onNext, onClose,
             </View>
           </View>
         </View>
-        <View style={{gap:16}}>
-          <ContinueAndProgress 
+        <View style={{ gap: 16 }}>
+          <ContinueAndProgress
             theme={theme}
             progress={{
-              before:(step-1)/totalSteps,
-              after:(step)/totalSteps,
+              before: (step - 1) / totalSteps,
+              after: step / totalSteps,
             }}
             handleSubmit={handleSubmit}
             isFilledAll={isFilledAll}
@@ -231,17 +314,16 @@ export default function CreateTokenForm({presetData, onNext, onClose,
   );
 }
 
-
 const styles = StyleSheet.create({
   inputWrapper: {
-    position: 'relative',
+    position: "relative",
     marginBottom: 16,
   },
   input: {
     paddingRight: 36,
   },
   badgeClose: {
-    position: 'absolute',
+    position: "absolute",
     top: 5,
     right: -5,
     zIndex: 1,
@@ -251,9 +333,8 @@ const styles = StyleSheet.create({
     height: 22,
     minWidth: 22,
     borderRadius: 11,
-    textAlign: 'center',
+    textAlign: "center",
     paddingHorizontal: 0,
     paddingVertical: 0,
   },
 });
-

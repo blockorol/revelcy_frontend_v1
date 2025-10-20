@@ -287,7 +287,7 @@ export default function CustomizeTokenForm({
                       backgroundColor: colors.surfaceContainerLow,
                     }}
                   >
-                    <View style={[styles.headerRow, {}]}>
+                    <View style={styles.headerRow}>
                       <View
                         style={{ gap: 12, alignItems: "flex-start", flex: 1 }}
                       >
@@ -302,17 +302,11 @@ export default function CustomizeTokenForm({
                         <TextInput
                           label="Call to Action text"
                           placeholder="e.g. Subcribe to..."
-                          maxLength={30}
+                          maxLength={25}
                           value={link.text}
                           onChangeText={(val) => updateLink(index, "text", val)}
                           mode="flat"
-                          underlineColor="transparent"
-                          theme={{ colors: { outline: "transparent" } }}
-                          style={{
-                            height: 40,
-                            backgroundColor: "transparent",
-                            width: "100%",
-                          }}
+                          backgroundColor={colors.surfaceContainerLow}
                         />
                         <TextInput
                           label={"URL"}
@@ -322,13 +316,7 @@ export default function CustomizeTokenForm({
                             updateLink(index, "url", normalizeUrl(val))
                           }
                           mode="flat"
-                          underlineColor="transparent"
-                          theme={{ colors: { outline: "transparent" } }}
-                          style={{
-                            backgroundColor: "transparent",
-                            height: 40,
-                            width: "100%",
-                          }}
+                          backgroundColor={colors.surfaceContainerLow}
                         />
                       </View>
                       <View
@@ -407,6 +395,7 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
+    gap: 16
   },
 });
 

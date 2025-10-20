@@ -10,8 +10,10 @@ import { StyleProp, TextStyle, View } from "react-native";
 import { AppTheme } from "@theme/types";
 
 type Props = Omit<TextInputProps, 'label'> & {
+  alwaysLabelOnTop?: boolean;
   style?: StyleProp<TextStyle>;
   disableRemoveBtn?: boolean;
+  overrideRemoveBtn?: ()=>void;
   errorValue?: string | null;
   backgroundColor?: string
   label?: string
@@ -19,7 +21,9 @@ type Props = Omit<TextInputProps, 'label'> & {
 
 export default function TextInput(props: Props) {
   const {
+    alwaysLabelOnTop,
     disableRemoveBtn,
+    overrideRemoveBtn,
     errorValue,
     error,
     style,
@@ -34,6 +38,7 @@ export default function TextInput(props: Props) {
     onFocus,
     onBlur,
     placeholder,
+    multiline, // just to skip the field
     ...rest
   } = props;
   const { colors, fonts } = useTheme() as AppTheme;
@@ -47,15 +52,16 @@ export default function TextInput(props: Props) {
     ? colors.onSurface
     : colors.onSurfaceVariant;
 
-  const fixedBackGroundColor = backgroundColor &&backgroundColor==='transparent'  ? backgroundColor : colors.surfaceContainerLowest
+  // backgroundColor 'transparent' breaks cursor
+  const fixedBackGroundColor = backgroundColor && backgroundColor !=='transparent' ? backgroundColor : colors.surfaceContainerLowest
 
   
-  const showLabelOnTop = isFocused || !!value
-  const showLabelOnPlaceholder = !!label && !isFocused;
+  const showLabelOnTop = !!alwaysLabelOnTop || isFocused || !!value
+  const showLabelOnPlaceholder = !showLabelOnTop;
 
 
   return (
-    <View style={{backgroundColor:fixedBackGroundColor}}>
+    <View style={{backgroundColor:fixedBackGroundColor, width:'100%'}}>
       { !!label &&  (showLabelOnTop?
         <Text
           variant="bodySmall"
@@ -111,7 +117,10 @@ export default function TextInput(props: Props) {
         placeholder={showLabelOnPlaceholder? label: placeholder}
         right={
           errorValue ? <PaperTextInput.Icon icon="alert-circle" color={colors.error} /> : 
-          !!disableRemoveBtn ? <PaperTextInput.Icon icon="close-circle-outline" color={colors.onSurface} onPress={() => rest.onChangeText&&rest.onChangeText("")} /> :
+          !disableRemoveBtn ? <PaperTextInput.Icon icon="close-circle-outline" color={colors.onSurface} onPress={() => {
+            if (overrideRemoveBtn) return overrideRemoveBtn()
+            rest.onChangeText&&rest.onChangeText("")
+          }} /> :
           undefined
         }
         label={ undefined }
