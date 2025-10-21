@@ -58,7 +58,6 @@ export default function CustomizeTokenForm({
   const addXLink = () => {
     setLinks((prev) => [...prev, { text: "", url: "", type: "x" }]);
   };
-
   const addOtherLink = () => {
     setLinks((prev) => [...prev, { text: "", url: "", type: "other" }]);
   };
@@ -205,64 +204,49 @@ export default function CustomizeTokenForm({
     },  }}
           />
 
-          {/* links */}
-          <View>
+          {/* CTA cards */}
+          <View style={{ gap: 24 }}>
             <Text variant="bodyLarge">CTA Buttons</Text>
             <Text variant="bodySmall">
               Add call-to-action buttons to help your community engage, explore,
               or take action easily
             </Text>
-            {links.map((link, index) => (
-              <View key={index} style={styles.linkBlock}>
-                <View style={styles.headerRow}>
+
+            {links.map((link, index) => {
+              const pillText = link.text?.trim() ? link.text : "Button preview";
+              const iconName =
+                link.type === "x" ? "x-logo" : link.type === "tg" ? "tg-logo" : "world-outlined";
+
+              return (
+                <View key={index} style={styles.ctaCard}>
+                  {/* delete */}
+                  <IconButton
+                    icon="close"
+                    size={18}
+                    onPress={() => removeLink(index)}
+                    style={styles.ctaDelete}
+                  />
+
+                  {/* pill preview */}
+                  <View style={styles.pill}>
+                    <SvgIcon name={iconName} size={16} color={"#FFFFFF"} />
+                    <Text style={styles.pillText}>{pillText}</Text>
+                  </View>
+
+                  {/* text input */}
                   <TextInput
-                    label={`Button ${index + 1}`}
-                    placeholder="e.g. Subscribe to..."
+                    placeholder="Call to Action text"
                     value={link.text}
                     onChangeText={(val) => updateLink(index, "text", val)}
                     mode="flat"
                     underlineColor="transparent"
                     theme={{ colors: { outline: "transparent" } }}
-                    style={{ flex: 30, backgroundColor: "transparent" }}
+                    style={styles.ctaInput}
                   />
-                  <View
-                    style={{
-                      flexDirection: "column",
-                      flex: 1,
-                      alignSelf: "flex-start",
-                      alignItems: "center",
-                    }}
-                  >
-                    <IconButton
-                      icon="close"
-                      size={20}
-                      onPress={() => removeLink(index)}
-                      style={{ flex: 1 }}
-                    />
-                    <View style={{ flex: 10 }} />
-                  </View>
-                </View>
-                <View style={{ flexDirection: "row", gap: "20" }}>
-                  <SvgIcon
-                    name={
-                      link.type === "x"
-                        ? "x-logo"
-                        : link.type === "tg"
-                        ? "tg-logo"
-                        : "world-outlined"
-                    }
-                    size={24}
-                    color={colors.onSurface}
-                  />
+
+                  {/* url input */}
                   <TextInput
-                    placeholder={
-                      link.type === "x"
-                        ? "x.com/"
-                        : link.type === "tg"
-                        ? "t.me/"
-                        : "example.com/"
-                    }
-                    label="URL"
+                    placeholder="URL"
                     value={link.url}
                     onChangeText={(val) =>
                       updateLink(index, "url", normalizeUrl(val))
@@ -270,46 +254,42 @@ export default function CustomizeTokenForm({
                     mode="flat"
                     underlineColor="transparent"
                     theme={{ colors: { outline: "transparent" } }}
-                    style={{ backgroundColor: "transparent", flex: 1 }}
+                    style={styles.ctaInput}
                   />
                 </View>
-              </View>
-            ))}
+              );
+            })}
 
             {/* Social Icons Actions */}
-            {
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "flex-start",
-                  width: "100%",
-                  paddingTop: 34,
-                }}
-              >
-                <View style={{ flexDirection: "row", gap: 16, height: 24 }}>
-                  <SvgIcon
-                    name="add-circle-outlined"
-                    color={theme.colors.onSurfaceVariant}
-                  />
-
-                  <SvgIconButton
-                    name="tg-logo"
-                    color={theme.colors.onSurface}
-                    onPress={() => addTelegramLink()}
-                  />
-                  <SvgIconButton
-                    name="x-logo"
-                    color={theme.colors.onSurface}
-                    onPress={() => addXLink()}
-                  />
-                  <SvgIconButton
-                    name="world-outlined"
-                    color={theme.colors.onSurface}
-                    onPress={() => addOtherLink()}
-                  />
-                </View>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "flex-start",
+                width: "100%",
+              }}
+            >
+              <View style={{ flexDirection: "row", gap: 16, height: 24 }}>
+                <SvgIcon
+                  name="add-circle-outlined"
+                  color={theme.colors.onSurfaceVariant}
+                />
+                <SvgIconButton
+                  name="tg-logo"
+                  color={theme.colors.onSurface}
+                  onPress={addTelegramLink}
+                />
+                <SvgIconButton
+                  name="x-logo"
+                  color={theme.colors.onSurface}
+                  onPress={addXLink}
+                />
+                <SvgIconButton
+                  name="world-outlined"
+                  color={theme.colors.onSurface}
+                  onPress={addOtherLink}
+                />
               </View>
-            }
+            </View>
           </View>
         </View>
         <ContinueAndProgress
@@ -325,6 +305,9 @@ export default function CustomizeTokenForm({
     </ScrollView>
   );
 }
+
+const CARD_BG = "#1C1B1C";
+const PILL_BG = "#000000";
 
 const styles = StyleSheet.create({
   linkBlock: {
@@ -363,5 +346,45 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     ...(Platform.OS === "web" ? { objectFit: "cover" as any } : {}),
+  },
+
+  // --- CTA Card (как в фигме) ---
+ctaCard: {
+  position: "relative",
+  backgroundColor: CARD_BG,
+  borderRadius: 20,
+  padding: 16,
+  gap: 12,
+},
+ctaDelete: {
+  position: "absolute",
+  top: 4,
+  right: 4,
+  margin: 0,
+},
+
+// pill preview
+pill: {
+  alignSelf: "flex-start",
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "#1C1B1C", // фон как в фигме
+  borderWidth: 1,
+  borderColor: "#FFFFFF", // белая обводка
+  borderRadius: 999,
+  height: 32,
+  paddingHorizontal: 14,
+  gap: 8,
+},
+pillText: {
+  color: "#FFFFFF",
+  fontSize: 12,
+  fontWeight: "500",
+},
+
+
+  // inputs
+  ctaInput: {
+    backgroundColor: "transparent",
   },
 });
