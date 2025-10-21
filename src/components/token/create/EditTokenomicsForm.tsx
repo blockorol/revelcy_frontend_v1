@@ -8,7 +8,7 @@ import { ExtendedMD3Colors } from "@theme/types";
 import { round } from "@utils/numbers";
 import { convertSolToPercentOnStart } from "@utils/premarket";
 import { convertNumberWithRaw } from "@utils/setterWithValidate";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useTheme, Text } from "react-native-paper";
 
@@ -49,7 +49,29 @@ export default function EditTokenomicsForm({
   const [errorCreatorInitialBuy, setErrorCreatorInitialBuy] = useState<
     string | null
   >(null);
-  
+
+  const fees = useMemo(() => {
+    if (!creatorInitialBuy) {
+      return {
+        pump: "0",
+        revelcy: "0",
+      };
+    }
+    let symbols = 4;
+    let pump = (0.015 * creatorInitialBuy).toFixed(symbols);
+    let revelcy = (0.01 * creatorInitialBuy).toFixed(symbols);
+    while (pump.endsWith("0") && revelcy.endsWith("0") && symbols != 0) {
+      symbols--;
+      pump = (0.015 * creatorInitialBuy).toFixed(symbols);
+      revelcy = (0.01 * creatorInitialBuy).toFixed(symbols);
+    }
+
+    return {
+      pump: pump,
+      revelcy: revelcy,
+    };
+  }, [creatorInitialBuy]);
+
   // Treasury allocation state
   const [treasuryAllocationPercent, setTreasuryAllocationPercent] = useState<
     number | undefined
@@ -78,22 +100,24 @@ export default function EditTokenomicsForm({
       : 0
   );
   const displayValue =
-    (creatorInitialBuyRawStr && 
-     (creatorInitialBuyRawStr.endsWith(SUFFIX) 
-       ? creatorInitialBuyRawStr 
-       : `${creatorInitialBuyRawStr}${SUFFIX}`)) || "";
-  
+    (creatorInitialBuyRawStr &&
+      (creatorInitialBuyRawStr.endsWith(SUFFIX)
+        ? creatorInitialBuyRawStr
+        : `${creatorInitialBuyRawStr}${SUFFIX}`)) ||
+    "";
+
   const treasuryDisplayValue =
-    (treasuryAllocationRawStr && 
-     (treasuryAllocationRawStr.endsWith(SUFFIX) 
-       ? treasuryAllocationRawStr 
-       : `${treasuryAllocationRawStr}${SUFFIX}`)) || "";
-  
+    (treasuryAllocationRawStr &&
+      (treasuryAllocationRawStr.endsWith(SUFFIX)
+        ? treasuryAllocationRawStr
+        : `${treasuryAllocationRawStr}${SUFFIX}`)) ||
+    "";
+
   const [selection, setSelection] = React.useState<{
     start: number;
     end: number;
   }>({ start: 0, end: 0 });
-  
+
   const [treasurySelection, setTreasurySelection] = React.useState<{
     start: number;
     end: number;
@@ -207,16 +231,18 @@ export default function EditTokenomicsForm({
 
   const handleSubmit = () => {
     if (creatorInitialBuy !== undefined) {
-      onNext({ 
+      onNext({
         creatorInitialBuy,
-        treasuryAllocationPercent
+        treasuryAllocationPercent,
       });
     }
   };
   const isFilledAll = (): boolean => {
-    return creatorInitialBuy !== undefined && 
-           errorCreatorInitialBuy === null &&
-           errorTreasuryAllocation === null;
+    return (
+      creatorInitialBuy !== undefined &&
+      errorCreatorInitialBuy === null &&
+      errorTreasuryAllocation === null
+    );
   };
 
   return (
@@ -245,10 +271,12 @@ export default function EditTokenomicsForm({
             theme={theme}
             onClose={onClose}
           />
-          <View style={{
-            paddingTop: 50,
-            gap: 16,
-          }}> 
+          <View
+            style={{
+              paddingTop: 50,
+              gap: 16,
+            }}
+          >
             <TextInput
               label="Creator Buy"
               value={displayValue}
@@ -263,8 +291,7 @@ export default function EditTokenomicsForm({
               theme={{ colors: colors }}
               errorValue={errorCreatorInitialBuy}
             />
-            {
-              /*
+            {/*
               <TextInput
               label="Treasury Allocation"
               value={treasuryDisplayValue}
@@ -287,10 +314,9 @@ export default function EditTokenomicsForm({
                 1Fffmb...5paPH
               </Text>
             </View>
-              */
-            }
+              */}
           </View>
-          <View style={{ paddingTop: 40, paddingHorizontal: 10}}>
+          <View style={{ paddingTop: 40, paddingHorizontal: 10 }}>
             <View
               style={{
                 paddingTop: 20,
@@ -331,14 +357,19 @@ export default function EditTokenomicsForm({
 
             <View
               style={{
-                paddingTop: 30,
+                paddingTop: 16,
                 justifyContent: "space-between",
                 flexDirection: "row",
                 alignItems: "center",
               }}
             >
-              <Text variant="bodySmall">Solana fees</Text>
-              <Text variant="bodySmall">0.25 SOL</Text>
+              <Text variant="bodySmall">
+                Pumpfun fees
+                <Text  variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                  1.5% of creator buy
+                </Text>
+              </Text>
+              <Text variant="bodySmall">{fees.pump} SOL</Text>
             </View>
 
             <View
@@ -350,11 +381,12 @@ export default function EditTokenomicsForm({
               }}
             >
               <Text variant="bodySmall">
-                Revelcy fees <Text style={{ color: colors.onSurfaceVariant }}>1% of creator buy</Text>
+                Revelcy fees
+                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                  1% of creator buy
+                </Text>
               </Text>
-              <Text variant="bodySmall">
-                {round((creatorInitialBuy ?? 0) * 0.01, 2)} SOL
-              </Text>
+              <Text variant="bodySmall">{fees.revelcy} SOL</Text>
             </View>
 
             <View
@@ -376,7 +408,7 @@ export default function EditTokenomicsForm({
             >
               <Text variant="bodySmall">Cost</Text>
               <Text variant="bodySmall">
-                {round(0.06 + (creatorInitialBuy ?? 0), 2)} SOL
+                {round((creatorInitialBuy ?? 0) * 1.025, 2)} SOL
               </Text>
             </View>
           </View>
