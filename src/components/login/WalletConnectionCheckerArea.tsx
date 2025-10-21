@@ -172,7 +172,7 @@ function WalletConnectionSuccess({
         width: '100%', opacity: 0.5}} >
       <WalletInfo colors={colors} humanity={humanity} walletConnectionDate={walletConnectionDate} balance={balance} 
         enabledFeatures={{humanity:true, dateAndBalance:true}}/>
-        </View>
+      </View>
 
       </View>
     </View>
@@ -236,6 +236,8 @@ interface WalletInfoProps {
     transactionCount?: boolean
   }
 }
+
+/*
 
 export function WalletInfo({walletConnectionDate, transactionCount, balance, humanity, colors, enabledFeatures}:WalletInfoProps ) {
   return (<View style={{flexDirection: 'row', width: "100%", justifyContent:"flex-start", alignItems: 'flex-start', gap:16 }}>
@@ -310,6 +312,26 @@ export function WalletInfo({walletConnectionDate, transactionCount, balance, hum
             }
           </View>
       </View>
+  )
+}
+
+*/
+
+export function WalletInfo({walletConnectionDate, transactionCount, balance, humanity, colors, enabledFeatures}:WalletInfoProps ) {
+  return (<View style={{flexDirection: 'row', width: "100%", justifyContent:"flex-start", alignItems: 'flex-start', gap:16 }}>
+    <SvgIcon name="wallet-outlined" color={colors.onSurface} size={26} 
+      style={{
+        paddingTop:6,
+        paddingBottom:6,
+        paddingLeft: 4,
+        paddingRight: 4,
+      }}
+    />
+    <View style={{flex: 1,gap:8}}>
+      <Text variant='titleMedium'>Wallet</Text>
+      <Loader text="Stats are in development"/>
+    </View>
+  </View>
   )
 }
 
