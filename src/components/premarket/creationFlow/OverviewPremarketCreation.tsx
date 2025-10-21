@@ -529,7 +529,7 @@ export default function OverviewPremarketCreation({
               }}
             >
               <Text variant="bodySmall">
-                Pumpfun fees
+                Pumpfun fees {" "}
                 <Text  variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
                   1.5% of creator buy
                 </Text>
@@ -546,7 +546,7 @@ export default function OverviewPremarketCreation({
               }}
             >
               <Text variant="bodySmall">
-                Revelcy fees
+                Revelcy fees {" "}
                 <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
                   1% of creator buy
                 </Text>

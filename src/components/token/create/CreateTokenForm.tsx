@@ -197,7 +197,7 @@ export default function CreateTokenForm({
                 label="Token Ticker"
                 value={tokenTicker}
                 onChangeText={setTokenTicker}
-                maxLength={5}
+                maxLength={10}
                 placeholder="eg. BTC"
                 style={{ flex: 1 }}
               />

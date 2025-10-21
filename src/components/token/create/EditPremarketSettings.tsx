@@ -98,7 +98,7 @@ export default function EditPremarketSettingsForm({
             onClose={onClose}
           />
           {/* Deadline */}
-          <View style={{ paddingTop: 20 }}>
+          <View style={{ paddingTop: 16 }}>
             <Text
               variant="bodySmall"
               style={{ color: colors.onSurfaceVariant }}
