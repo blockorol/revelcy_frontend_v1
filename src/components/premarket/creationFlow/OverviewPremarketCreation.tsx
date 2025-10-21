@@ -142,6 +142,30 @@ export default function OverviewPremarketCreation({
     ? format(new Date(prem.deadline * 1000), "dd.MM.yyyy HH:mm (XXX)")
     : undefined;
 
+    
+      const fees = useMemo(() => {
+        if (!data.tokenomicsData.creatorInitialBuy) {
+          return {
+            pump: "0",
+            revelcy: "0",
+          };
+        }
+        let symbols = 4;
+        let pump = (0.015 * data.tokenomicsData.creatorInitialBuy).toFixed(symbols);
+        let revelcy = (0.01 * data.tokenomicsData.creatorInitialBuy).toFixed(symbols);
+        while (pump.endsWith("0") && revelcy.endsWith("0") && symbols != 0) {
+          symbols--;
+          pump = (0.015 * data.tokenomicsData.creatorInitialBuy).toFixed(symbols);
+          revelcy = (0.01 * data.tokenomicsData.creatorInitialBuy).toFixed(symbols);
+        }
+    
+        return {
+          pump: pump,
+          revelcy: revelcy,
+        };
+      }, [data.tokenomicsData.creatorInitialBuy]);
+    
+
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
@@ -494,51 +518,42 @@ export default function OverviewPremarketCreation({
             />
 
             <View style={{ gap: 8 }}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Text
-                  variant="labelMedium"
-                  style={{ color: colors.onSurfaceVariant }}
-                >
-                  Solana fees
+              
+
+            <View
+              style={{
+                paddingTop: 16,
+                justifyContent: "space-between",
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <Text variant="bodySmall">
+                Pumpfun fees
+                <Text  variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                  1.5% of creator buy
                 </Text>
-                <Text
-                  variant="labelMedium"
-                  style={{ color: colors.onSurfaceVariant }}
-                >
-                  {solanaFee.toFixed(2)}
+              </Text>
+              <Text variant="bodySmall">{fees.pump} SOL</Text>
+            </View>
+
+            <View
+              style={{
+                paddingTop: 16,
+                justifyContent: "space-between",
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <Text variant="bodySmall">
+                Revelcy fees
+                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                  1% of creator buy
                 </Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Text
-                  variant="labelMedium"
-                  style={{ color: colors.onSurfaceVariant }}
-                >
-                  Revelcy fees
-                  <Text
-                    variant="labelMedium"
-                    style={{ color: colors.inverseOnSurface }}
-                  >
-                    {" "}
-                    1% of creator buy
-                  </Text>
-                </Text>
-                <Text
-                  variant="labelMedium"
-                  style={{ color: colors.onSurfaceVariant }}
-                >
-                  {(data.tokenomicsData.creatorInitialBuy / 100).toFixed(2)}
-                </Text>
-              </View>
+              </Text>
+              <Text variant="bodySmall">{fees.revelcy} SOL</Text>
+            </View>
+
             </View>
             <View style={{ gap: 8 }}>
               <Divider />
@@ -554,9 +569,7 @@ export default function OverviewPremarketCreation({
                 </Text>
                 <Text variant="titleMedium" style={{ color: colors.onSurface }}>
                   {(
-                    data.tokenomicsData.creatorInitialBuy +
-                    solanaFee +
-                    data.tokenomicsData.creatorInitialBuy / 100
+                    data.tokenomicsData.creatorInitialBuy*1.025
                   ).toFixed(2)}
                 </Text>
               </View>
