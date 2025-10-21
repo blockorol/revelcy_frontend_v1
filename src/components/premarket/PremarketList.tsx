@@ -73,7 +73,7 @@ export const PremarketList: React.FC<PremarketListProps> = ({
 
   return (
     <View style={[{ flex: 1 }, style]}>
-      {/* Top controls */}
+      {/* 
       <View style={styles.topBar}>
         <Text variant='bodyLarge' style={{ color: colors.onSurface, fontWeight: "600" }}>Page size:</Text>
         <View style={styles.sizeRow}>
@@ -99,6 +99,7 @@ export const PremarketList: React.FC<PremarketListProps> = ({
           Next
         </Button>
       </View>
+      */}
 
       {/* Content */}
       {loading ? (

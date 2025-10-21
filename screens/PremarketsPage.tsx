@@ -1,16 +1,20 @@
-import React, { useMemo, useState } from "react";
+import React from "react";
 import { View } from "react-native";
-import { Text, useTheme, TextInput as PaperInput, Button, HelperText } from "react-native-paper";
+import { Text, useTheme } from "react-native-paper";
 import { useIsMobileForTwoScreenWithDemention } from "@hooks/useIsMobile";
 import { PremarketList } from "@components/premarket/PremarketList";
 import { useRouter } from "expo-router";
 import { PublicKey } from "@solana/web3.js";
 
+
+
 export default function PremarketsPage() {
   const theme = useTheme();
   const { colors } = theme;
   const { isMobile } = useIsMobileForTwoScreenWithDemention();
-  const router = useRouter();
+
+  /*
+    const router = useRouter();
 
   const [query, setQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +48,9 @@ export default function PremarketsPage() {
     }
   };
 
+  */
+
+
   return (
     <View
       style={{
@@ -55,11 +62,11 @@ export default function PremarketsPage() {
         flex: 1,
       }}
     >
+
+      {/* 
       <Text variant="headlineLarge" style={{ color: colors.onBackground }}>
         Discovery premarkets
       </Text>
-
-      {/* Search row */}
       <View
         style={{
           flexDirection: isMobile ? "column" : "row",
@@ -92,6 +99,12 @@ export default function PremarketsPage() {
       )}
 
       <PremarketList initialLimit={30} pageSizeOptions={[30, 50, 80]} style={{ flex: 1 }} />
+
+      
+      */}
+
+
+      <PremarketList initialLimit={30} style={{ flex: 1 }} />
     </View>
   );
 }
