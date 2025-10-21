@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
+  Platform,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { TextInput, useTheme, Text, IconButton } from "react-native-paper";
@@ -126,11 +127,10 @@ export default function CustomizeTokenForm({
             onBack={onBack} 
           />
 
-          {/* Banner Upload */}
+          {/* Banner Upload — ИСПРАВЛЕНО */}
           <View
             style={{
               flexDirection: "column",
-              alignItems: "center",
               gap: 16,
               width: "100%",
             }}
@@ -139,7 +139,6 @@ export default function CustomizeTokenForm({
               style={{
                 flexDirection: "column",
                 gap: 4,
-                justifyContent: "center",
                 alignItems: "baseline",
               }}
             >
@@ -165,32 +164,27 @@ export default function CustomizeTokenForm({
 
             <TouchableOpacity
               onPress={pickBanner}
-              style={{ alignSelf: "center" }}
+              style={{ alignSelf: "stretch" }} // тянем на 100% контейнера
             >
               <View
-                style={{
-                  height: 120,
-                  width: 380,
-                  borderRadius: 24,
-                  backgroundColor: colors.surfaceContainerHighest,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  overflow: "hidden",
-                }}
+                style={styles.bannerContainer}
               >
                 {(banner || presetData?.banner?.url) ? (
                   <Image
                     source={{ uri: banner??presetData?.banner?.url}}
-                    style={{ width: "100%", height: "100%" }}
+                    style={styles.bannerImage}
+                    resizeMode="cover" // cover как в макете
                   />
                 ) : (
-                  <>
-                    <Text
-                      style={{ fontSize: 24, color: theme.colors.onSurface }}
-                    >
-                      +
+                  <View style={styles.bannerPlaceholder}>
+                    <Text style={{ fontSize: 24, color: theme.colors.onSurface }}>+</Text>
+                    <Text style={{ color: colors.onSurfaceVariant, marginTop: 6 }}>
+                      Upload image or GIF
                     </Text>
-                  </>
+                    <Text style={{ color: colors.onSurfaceVariant, opacity: 0.7 }}>
+                      Recommended 1500×500px
+                    </Text>
+                  </View>
                 )}
               </View>
             </TouchableOpacity>
@@ -207,7 +201,7 @@ export default function CustomizeTokenForm({
             style={{ borderWidth: 0, backgroundColor: "transparent" }}
             theme={{ colors: {...colors, 
       outline: 'transparent', 
-      outlineVariant: 'transparent', // RN Paper 5+
+      outlineVariant: 'transparent',
     },  }}
           />
 
@@ -263,7 +257,7 @@ export default function CustomizeTokenForm({
                   <TextInput
                     placeholder={
                       link.type === "x"
-                        ? "t.me/"
+                        ? "x.com/"
                         : link.type === "tg"
                         ? "t.me/"
                         : "example.com/"
@@ -342,5 +336,32 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 8,
+  },
+
+  // --- Только баннер ---
+  bannerContainer: {
+    width: "100%",
+    height: 150,           // как в фигме
+    borderRadius: 24,      // как в фигме
+    backgroundColor: "transparent",
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",    // обрезаем по радиусу
+  },
+  bannerPlaceholder: {
+    width: "100%",
+    height: "100%",
+    paddingTop: 38,        // паддинги для пустого состояния
+    paddingRight: 39,
+    paddingBottom: 38,
+    paddingLeft: 39,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+  bannerImage: {
+    width: "100%",
+    height: "100%",
+    ...(Platform.OS === "web" ? { objectFit: "cover" as any } : {}),
   },
 });
