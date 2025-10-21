@@ -300,6 +300,7 @@ export default function CustomizeTokenForm({
                         </Button>
 
                         <TextInput
+                          disableRemoveBtn
                           label="Call to Action text"
                           placeholder="e.g. Subcribe to..."
                           maxLength={25}
@@ -309,6 +310,7 @@ export default function CustomizeTokenForm({
                           backgroundColor={colors.surfaceContainerLow}
                         />
                         <TextInput
+                          disableRemoveBtn
                           label={"URL"}
                           placeholder="e.g. https://example.com/..."
                           value={link.url}
