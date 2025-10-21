@@ -8,6 +8,7 @@ import {
 import { Text } from "@components/ui/Text";
 import { StyleProp, TextStyle, View } from "react-native";
 import { AppTheme } from "@theme/types";
+import { SvgIcon } from "@components/base/SvgIcon";
 
 type Props = Omit<TextInputProps, 'label'> & {
   alwaysLabelOnTop?: boolean;
@@ -117,9 +118,17 @@ export default function TextInput(props: Props) {
         placeholder={showLabelOnPlaceholder? label: placeholder}
         right={
           errorValue ? <PaperTextInput.Icon icon="alert-circle" color={colors.error} /> : 
-          !disableRemoveBtn ? <PaperTextInput.Icon icon="close-circle-outline" color={colors.onSurface} onPress={() => {
+          !disableRemoveBtn ? <PaperTextInput.Icon 
+            icon={(_iconProps) => (
+              <SvgIcon
+                name='x-circle-outlined'
+                color={colors.onSurface}
+                size={24}
+              />
+            )}
+          color={colors.onSurface} onPress={() => {
             if (overrideRemoveBtn) return overrideRemoveBtn()
-            rest.onChangeText&&rest.onChangeText("")
+            rest.onChangeText?.("");
           }} /> :
           undefined
         }

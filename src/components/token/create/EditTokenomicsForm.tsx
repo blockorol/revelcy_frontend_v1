@@ -230,19 +230,13 @@ export default function EditTokenomicsForm({
   }, [treasuryAllocationRawStr]);
 
   const handleSubmit = () => {
-    if (creatorInitialBuy !== undefined) {
-      onNext({
-        creatorInitialBuy,
-        treasuryAllocationPercent,
-      });
-    }
+    onNext({
+      creatorInitialBuy: creatorInitialBuy ?? 0,
+      treasuryAllocationPercent,
+    });
   };
   const isFilledAll = (): boolean => {
-    return (
-      creatorInitialBuy !== undefined &&
-      errorCreatorInitialBuy === null &&
-      errorTreasuryAllocation === null
-    );
+    return errorCreatorInitialBuy === null && errorTreasuryAllocation === null;
   };
 
   return (
@@ -273,22 +267,22 @@ export default function EditTokenomicsForm({
           />
           <View
             style={{
-              paddingTop: 50,
+              paddingTop: 16,
               gap: 16,
             }}
           >
             <TextInput
-              label="Creator Buy"
+              disableRemoveBtn
+              alwaysLabelOnTop
+              label="Creator Allocation Up to 79.6 SOL"
               value={displayValue}
               onChangeText={handleCreatorInitialBuyChangeWithSuffix}
               onSelectionChange={handleSelectionChange}
               selection={selection}
               inputMode="decimal"
               keyboardType="decimal-pad"
-              placeholder="Up to 80% in sol"
+              placeholder="0 SOL"
               mode="flat"
-              style={{ backgroundColor: "transparent" }}
-              theme={{ colors: colors }}
               errorValue={errorCreatorInitialBuy}
             />
             {/*
@@ -364,8 +358,11 @@ export default function EditTokenomicsForm({
               }}
             >
               <Text variant="bodySmall">
-                Pumpfun fees
-                <Text  variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                Pumpfun fees {" "}
+                <Text
+                  variant="bodySmall"
+                  style={{ color: colors.onSurfaceVariant }}
+                >
                   1.5% of creator buy
                 </Text>
               </Text>
@@ -381,8 +378,11 @@ export default function EditTokenomicsForm({
               }}
             >
               <Text variant="bodySmall">
-                Revelcy fees
-                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                Revelcy fees {" "}
+                <Text
+                  variant="bodySmall"
+                  style={{ color: colors.onSurfaceVariant }}
+                >
                   1% of creator buy
                 </Text>
               </Text>
