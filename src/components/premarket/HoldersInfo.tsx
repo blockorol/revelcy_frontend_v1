@@ -69,7 +69,7 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
         {sortedHolders.map((holder, ) => {
           const amount = convertLamportToSmallCount(holder.amountSolLamp)
           const MAX_SOL = 80 // TODO: find real max sol
-          const percentOfGoal = (amount / MAX_SOL) * 100
+          const percentOfMax = (amount / MAX_SOL) * 100
           return (
             <View key={holder.walletAddress} style={{}}>
               <UserCard 
@@ -82,7 +82,7 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
                 tokenInfo={{
                   userJoined: holder.joinTimestamp,
                   amount: amount,
-                  amountProcent: Number(percentOfGoal.toFixed(2)),
+                  amountProcent: Number(percentOfMax.toFixed(2)),
                   isCreator: tokenData.mainInfo.createdByPubkey === holder?.walletAddress
                 }}
               />
