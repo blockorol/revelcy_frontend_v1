@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TextInput as PaperTextInput, HelperText, useTheme, Text } from 'react-native-paper';
 import { View, StyleProp, TextStyle } from 'react-native';
-import { ExtendedMD3Colors } from '@theme/types';
+import { ExtendedMD3Colors, AppTheme } from '@theme/types';
 
 
 type Props = {
@@ -24,10 +24,19 @@ export default function TextInputMultiline({
   errorValue,
   style,
 }: Props) {
-  const {colors} = useTheme() as {colors: ExtendedMD3Colors};
+  const {colors, fonts} = useTheme() as AppTheme;
   const [isFocused, setIsFocused] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const [inputHeight, setInputHeight] = useState(56);
+
+  const textColor = errorValue
+    ? colors.error
+    : isFocused
+    ? colors.primary
+    : isHovered
+    ? colors.onSurface
+    : colors.onSurfaceVariant;
 
   const handleContentSizeChange = (e: any) => {
     const height = e.nativeEvent.contentSize.height;
@@ -56,6 +65,7 @@ export default function TextInputMultiline({
         error={!!errorValue}
         onContentSizeChange={handleContentSizeChange}
         style={[
+          fonts.bodyLarge,
           {
             backgroundColor: 'transparent',
             textAlignVertical: 'top',
@@ -63,11 +73,23 @@ export default function TextInputMultiline({
           },
           style
         ]}
+        contentStyle={[
+          fonts.bodyLarge,
+          {
+            paddingTop: 16,
+            paddingBottom: 0,
+            paddingLeft: 8,
+            paddingRight: 12,
+          }
+        ]}
+        placeholderTextColor={colors.onSurfaceVariant}
+        placeholder={placeholder}
         right={errorValue ? <PaperTextInput.Icon icon="alert-circle" color={colors.error} /> : null}
-        label=" "
-        placeholder=""
+        label={undefined}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
+        onPointerEnter={() => setIsHovered(true)}
+        onPointerLeave={() => setIsHovered(false)}
       />
       {label && (
         <Text 
@@ -75,28 +97,14 @@ export default function TextInputMultiline({
           style={{ 
             position: 'absolute', 
             top: -8, 
-            left: 8, 
-            color: colors.onSurfaceVariant,
+            left: 4, 
+            color: textColor,
             backgroundColor: colors.surfaceContainerLowest,
             paddingHorizontal: 4,
             pointerEvents: 'none'
           }}
         >
           {label}
-        </Text>
-      )}
-      {placeholder && !value && !isFocused && (
-        <Text 
-          variant="bodyMedium" 
-          style={{ 
-            position: 'absolute', 
-            top: 16, 
-            left: 12, 
-            color: colors.onSurfaceVariant,
-            pointerEvents: 'none'
-          }}
-        >
-          {placeholder}
         </Text>
       )}
       {errorValue ? (
