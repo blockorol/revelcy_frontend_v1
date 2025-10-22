@@ -189,8 +189,10 @@ export default function OverviewPremarketCreation({
           <View
             style={{
               position: "absolute",
-              width: "100%",
-              height: "100%",
+              left: -(isMobile ? 16 : 24),
+              right: -(isMobile ? 16 : 24),
+              top: -(isMobile ? 40 : 24),
+              bottom: -(isMobile ? 40 : 24),
               zIndex: 9999,
               backgroundColor: theme.colors.shadow,
               alignItems: "center",
