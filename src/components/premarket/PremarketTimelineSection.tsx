@@ -89,7 +89,7 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
         }}
       />
 
-      <View style={{ position: 'relative', paddingLeft: 2 }}>
+      <View style={{ position: 'relative', paddingLeft: 1.5 }}>
         <View
           style={{
             position: 'absolute',

@@ -1,7 +1,6 @@
 import { TokenInfo} from "@api/token";
 import { UserCard } from "@components/user/UserCard";
 import { AppTheme } from "@theme/types";
-import shortString from "@utils/address_shorter";
 import { convertLamportToSmallCount } from "@utils/premarket";
 import { View } from "react-native";
 import {Text} from '@components/ui/Text'
@@ -69,19 +68,21 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 20, rowGap: 16 }}>
         {sortedHolders.map((holder, ) => {
           const amount = convertLamportToSmallCount(holder.amountSolLamp)
+          const MAX_SOL = 80 // TODO: find real max sol
+          const percentOfGoal = (amount / MAX_SOL) * 100
           return (
             <View key={holder.walletAddress} style={{}}>
               <UserCard 
                 baseInfo={{
                   userId: holder.id,
-                  username: shortString(holder.walletAddress),
+                  username: holder.username,
                   walletAddress: holder.walletAddress,
                   avatarUrl: holder.iconURL??null
                 }}
                 tokenInfo={{
                   userJoined: holder.joinTimestamp,
                   amount: amount,
-                  amountProcent:(100*amount/TOTAL_TOKEN_COUNT),
+                  amountProcent: Number(percentOfGoal.toFixed(2)),
                   isCreator: tokenData.mainInfo.createdByPubkey === holder?.walletAddress
                 }}
               />
