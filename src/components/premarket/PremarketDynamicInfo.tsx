@@ -124,7 +124,8 @@ export function PremarketDynamicInfo({
         </Text>
         <Text variant="displaySmall" style={{ color: theme.colors.primary }}>
           {Math.round(
-            (convertLamportToSmallCount(tokenDynamicInfo.marketCapSolLamp.div(tokenMainInfo.premarketGoalSolLamp))) *
+            (convertLamportToSmallCount(tokenDynamicInfo.marketCapSolLamp) / 
+             convertLamportToSmallCount(tokenMainInfo.premarketGoalSolLamp)) *
               100
           )}
           %
