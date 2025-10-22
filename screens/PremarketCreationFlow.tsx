@@ -66,17 +66,6 @@ export default function PremarketCreationFlow() {
   const theme = useTheme();
   const [launchState, setLaunchState] = useState<string | undefined>(undefined);
 
-  // === CHECK IF USER IS LOGGED IN ===
-  useEffect(() => {
-    if (!user.user) {
-      notify.error("You must login first", {
-        suggest: "Please login to create a premarket",
-        duration: 5000,
-      });
-      router.back();
-    }
-  }, []);
-
   // === ВОССТАНОВЛЕНИЕ ЧЕРНОВИКА ПРИ МОНТАЖЕ ===
   useEffect(() => {
     (async () => {
