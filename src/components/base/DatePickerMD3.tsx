@@ -1,6 +1,8 @@
+import { AppTheme } from "@theme/types";
 import React, { useState } from "react";
 import { View } from "react-native";
-import { Portal, Modal, Surface, Text, Button, useTheme } from "react-native-paper";
+import { Portal, Modal, Surface, Text, useTheme } from "react-native-paper";
+import {Button} from "@components/ui/Button"
 import { Calendar } from "react-native-paper-dates";
 
 type Props = {
@@ -18,13 +20,13 @@ export function DatePickerMD3FromCalendar({
   onConfirm,
   label = "Select date",
 }: Props) {
-  const { colors } = useTheme() as any;
+  const { colors } = useTheme() as AppTheme;
   const C = {
     primary: colors.primary,
     onPrimary: colors.onPrimary,
     onSurface: colors.onSurface,
     onSurfaceVariant: colors.onSurfaceVariant,
-    surfaceContainerLow: colors.surfaceContainerLow ?? colors.surface,
+    surfaceContainerLow: colors.surfaceContainerLow,
     outline: colors.outline,
   };
 
@@ -59,25 +61,29 @@ export function DatePickerMD3FromCalendar({
           />
 
           {/* Кнопки снизу */}
-          <View style={{ flexDirection: "row", marginTop: 10 }}>
-            <Button
-              mode="outlined"
-              onPress={onDismiss}
-              style={{ flex: 1, marginRight: 8, borderRadius: 999 }}
-              textColor={C.onSurface}
-            >
-              Cancel
-            </Button>
-            <Button
-              mode="contained"
-              onPress={() => selected && onConfirm(selected)}
-              style={{ flex: 1, marginLeft: 8, borderRadius: 999 }}
-              buttonColor={C.primary}
-              textColor={C.onPrimary}
-              disabled={!selected}
-            >
-              Next
-            </Button>
+          <View style={{ flexDirection: "row" , marginTop: 10}}>
+            <View style={{flex:1}}></View>
+            
+            <View style={{ flexDirection: "row", gap:8 }}>
+              <Button
+                mode="outlined"
+                onPress={onDismiss}
+                style={{ flex: 1, minWidth: 104}}
+                textColor={C.onSurface}
+              >
+                Cancel
+              </Button>
+              <Button
+                mode="contained"
+                onPress={() => selected && onConfirm(selected)}
+                style={{ flex: 1, minWidth: 104}}
+                buttonColor={C.primary}
+                textColor={C.onPrimary}
+                disabled={!selected}
+              >
+                Next
+              </Button>
+            </View>
           </View>
         </Surface>
       </Modal>

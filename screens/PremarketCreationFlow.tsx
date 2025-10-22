@@ -17,12 +17,12 @@ import {
 } from '@components/token/create/interface';
 import EditTokenomicsForm from '@components/token/create/EditTokenomicsForm';
 import { useAnchorWalletSafe, useWallet } from '@storage/wallet-adapter/useWallet.web';
-import { uploadBase64Image, uploadJsonMetadata } from '@services/files/ipfs';
+import { uploadTokenMetadataToIPFS } from '@services/files/ipfs/pumpfun';
 import { createPremarket, CreatePremarketArgs } from '@services/blockchain/premarket/createPremarket';
 import EditPremarketSettingsForm from '@components/token/create/EditPremarketSettings';
 import { convertSmallCountToLamport } from '@utils/premarket';
 import { premarketCreated, userJoinedToPremarket } from '@api/token';
-import { useAuth } from '@storage/AuthContext';
+import { useAuth } from '@providers/AuthContext';
 import { uploadImage } from '@api/files';
 import useIsMobile from '@hooks/useIsMobile';
 import { useNetwork } from '@providers/NetworkContext';
@@ -145,52 +145,6 @@ export default function PremarketCreationFlow() {
     });
   };
 
-  const uploadToIPFS = async (tokenData: TokenCreateFullData & { premarketSettingsData: PremarketSettingData; tokenomicsData: TokenomicsData; }) => {
-    console.log("uploadToIPFS in TokenCreationFLow");
-    try {
-      const fileName = `avatar_${tokenData.mainData.tokenName}.jpg`;
-      const avatarIpfsUri = await uploadBase64Image(tokenData.mainData.avatar, fileName);
-
-      if (!avatarIpfsUri) {
-        throw Error("avatar is not upload");
-      }
-      const descriptionUpdated =
-        `The presale was done with revelcy.com. More: https://revelcy.com/premarket \n${tokenData.mainData.description}`;
-
-      const metadata = {
-        name: tokenData.mainData.tokenName,
-        symbol: tokenData.mainData.tokenTicker,
-        description: descriptionUpdated,
-        image: avatarIpfsUri,
-        tags: [],
-        createdOn: "https://revelcy.com",
-        creator: {
-          name: "Revelcy",
-          site: "https://revelcy.com"
-        },
-        telegram: tokenData.mainData.links.telegram,
-        twitter: tokenData.mainData.links.twitter,
-        tokenWebsite: tokenData.mainData.links.website
-      };
-      console.log(`metadata: ${metadata}; image: ${avatarIpfsUri}`);
-
-      const metadataIpfsUri = await uploadJsonMetadata(metadata);
-
-      if (!metadataIpfsUri) {
-        throw Error("metadata is not upload");
-      }
-      console.log(`metadataIpfsUri: ${metadataIpfsUri}`);
-
-      return {
-        metadataUri: metadataIpfsUri,
-        avatarUri: avatarIpfsUri,
-      };
-    } catch (error) {
-      console.error('failed to upload to IPFS:', error);
-      return null;
-    }
-  };
-
   const handleLaunch = async () => {
     setLaunchState("Started launch process");
     // Зафиксируем, что мы на обзоре — пригодится при рефреше
@@ -239,7 +193,20 @@ export default function PremarketCreationFlow() {
     }
 
     setLaunchState("Uploading data to IPFS...");
-    const ipfsData = await uploadToIPFS(tokenData);
+    const ipfsData = await uploadTokenMetadataToIPFS({
+      avatar: tokenData.mainData.avatar,
+      tokenInfo: {
+        name: tokenData.mainData.tokenName,
+        symbol: tokenData.mainData.tokenTicker,
+        description: tokenData.mainData.description,
+        links: {
+          telegram: tokenData.mainData.links.telegram,
+          twitter: tokenData.mainData.links.twitter,
+          website: tokenData.mainData.links.website,
+        }
+      }
+    });
+
     if (!ipfsData) {
       setLaunchState(undefined);
       notify.error("failed to upload data to IPFS", {
@@ -271,7 +238,7 @@ export default function PremarketCreationFlow() {
       );
 
       setLaunchState("Transaction created...");
-      console.log(`createBondedToken done! tx: ${resp.txId}; premarket: ${resp.premarketPDA.toString()}`);
+      console.log(`createBondedToken done! tx: ${resp.txId}; premarket: ${resp.premarketPDA.toString()}; mint: ${resp.mintAddress}`);
       setPremarketPDA(resp.premarketPDA.toString());
       setTxId(resp.txId);
 
@@ -311,7 +278,9 @@ export default function PremarketCreationFlow() {
             premarketDeadline: tokenData.premarketSettingsData.deadline,
             premarketCreated: Math.floor(Date.now() / 1000),
             createdByPubkey: wallet.publicKey.toString(),
-            state: 'premarket'
+            state: 'premarket',
+            finishDate: undefined, // will be set when premarket finished
+            tokenMint:  resp.mintAddress,
           },
           communityInfo: {
             description: tokenData.customData.description ?? "",
@@ -373,13 +342,14 @@ export default function PremarketCreationFlow() {
   };
 
   const getTokenData = (): TokenCreateFullData | undefined => {
-    if (tokenMainData === undefined || customizeTokenData === undefined || tokenomicsData === undefined) {
+    if (tokenMainData === undefined || customizeTokenData === undefined || tokenomicsData === undefined || premarketSettingsData === undefined) {
       return undefined;
     }
     return {
       mainData: tokenMainData,
       customData: customizeTokenData,
-      tokenomicsData: tokenomicsData
+      tokenomicsData: tokenomicsData,
+      premarket: premarketSettingsData
     };
   };
   return (
@@ -387,16 +357,20 @@ export default function PremarketCreationFlow() {
       style={{
         flex: 1,
         backgroundColor: theme.colors.shadow,
-        justifyContent: 'center',
+        justifyContent: isMobile?'flex-start':'center',
         alignItems: 'center',
         width: '100%',
         height: '100%',
       }}
     >
-      <View style={{ maxWidth: 500, maxHeight: 1000, width: '100%', height: isMobile ? '100%' : '85%' }}>
+      <View style={{ maxWidth: 480, maxHeight: isMobile? undefined:792, width: '100%', height: isMobile?'100%': '90%'  }}>
         {step === FLOW_STEP.TOKEN_BASE_INFO && (
           <CreateTokenForm
             onNext={handleAfterSetTokenBaseInfo}
+            onClose={async () => {
+              await clearDraft(storageKey);
+              router.back();
+            }}
             step={1}
             totalSteps={4}
             presetData={tokenMainData}
@@ -407,6 +381,10 @@ export default function PremarketCreationFlow() {
           <EditTokenomicsForm
             onBack={()=>setStep(FLOW_STEP.TOKEN_BASE_INFO)}
             onNext={handleAfterTokenomics}
+            onClose={async () => {
+              await clearDraft(storageKey);
+              router.back();
+            }}
             step={2}
             totalSteps={4}
             presetData={tokenomicsData}
@@ -417,6 +395,10 @@ export default function PremarketCreationFlow() {
           <EditPremarketSettingsForm
             onBack={()=>setStep(FLOW_STEP.TOKENOMICS)}
             onNext={handleAfterPremarketSettings}
+            onClose={async () => {
+              await clearDraft(storageKey);
+              router.back();
+            }}
             step={3}
             totalSteps={4}
             presetData={premarketSettingsData}
@@ -427,6 +409,10 @@ export default function PremarketCreationFlow() {
           <CustomizeTokenForm
             onBack={()=>setStep(FLOW_STEP.PREMARKET_SETTINGS)}
             onNext={handleAfterCunstomizeToken}
+            onClose={async () => {
+              await clearDraft(storageKey);
+              router.back();
+            }}
             steps={{ current: 4, total: 4 }}
             presetData={customizeTokenData}
           />
@@ -435,6 +421,10 @@ export default function PremarketCreationFlow() {
         {step === FLOW_STEP.OVERVIEW && (
           <OverviewPremarketCreation
             onBack={()=>setStep(FLOW_STEP.CUSTOMIZE_TOKEN)}
+            onClose={async () => {
+              await clearDraft(storageKey);
+              router.back();
+            }}
             launchState={launchState}
             onLaunch={handleLaunch}
             data={getTokenData()!}

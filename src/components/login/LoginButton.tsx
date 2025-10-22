@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
-import { View, Modal } from 'react-native';
-import { Button, useTheme } from 'react-native-paper';
+import { View, Modal, ViewStyle } from 'react-native';
+import { useTheme } from 'react-native-paper';
+import { Button } from '@components/ui/Button'
 import LoginFlow from './LoginFlow';
 import OneScreenContainer from '@components/base/container/OneScreenContainer';
 
-export default function LoginButton() {
+export default function LoginButton({style}:{
+  style?: ViewStyle}) {
   const {colors} = useTheme();
   const [visible, setVisible] = useState(false);
 
   return (
-    <View>
-      <Button mode='outlined' textColor={colors.onSurface} onPress={() => setVisible(true)}>
-        Login
+    <View style={[style]}>
+      <Button size='small' mode='outlined' variant='primary' textColor={colors.onSurface} onPress={() => setVisible(true)}>
+        Log in
       </Button>
       <LoginModal visible={visible} setVisible={setVisible}/>
     </View>

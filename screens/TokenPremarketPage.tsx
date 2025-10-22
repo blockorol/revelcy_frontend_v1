@@ -1,95 +1,460 @@
-import TwoScreenContainer from "@components/base/container/TwoScreensContainer";
-import { useIsMobileForTwoScreenWithDemention } from "@hooks/useIsMobile";
-import { useAuth } from "@storage/AuthContext";
+import { MAX_WIDTH_MOBILE, useIsMobileForTwoScreenWithDemention } from "@hooks/useIsMobile";
+import { useAuth } from "@providers/AuthContext";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
-import { View, Image } from "react-native";
-import { ActivityIndicator, useTheme } from "react-native-paper";
-import { token } from "@coral-xyz/anchor/dist/cjs/utils";
+import { View, ScrollView, useWindowDimensions, StyleSheet } from "react-native";
+import { ActivityIndicator, useTheme, Text } from "react-native-paper";
 import { PremarketBaseInfo } from "@components/premarket/PremarketBaseInfo";
 import { PremarketDynamicInfo } from "@components/premarket/PremarketDynamicInfo";
 import { AboutCommunity } from "@components/premarket/AboutCommunity";
 import { PremarketInfo } from "@components/premarket/PremarketInfo";
 import { ExtendedMD3Colors } from "@theme/types";
 import { PremarketAction } from "@components/premarket/PremarketAction";
+import { YourEntry } from "@components/premarket/YourEntry";
 import { usePremarketInfo } from "@hooks/usePremarketInfo";
 import { HoldersInfo } from "@components/premarket/HoldersInfo";
+import { TokenInfo } from "@api/token";
+import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
+import React from "react";
+import { Button } from "@components/ui/Button";
+
+const SLIDER_HEIGHT = 48
 
 interface TokenPremarketPageProps {
   tokenId: string;
 }
-export default function TokenPremarketPage({ tokenId }: TokenPremarketPageProps) {
-  const { user } = useAuth();
+export default function TokenPremarketPage({
+  tokenId,
+}: TokenPremarketPageProps) {
   const theme = useTheme();
-  const colors = theme.colors as ExtendedMD3Colors;
-  const { isMobile, left } = useIsMobileForTwoScreenWithDemention();
+  const { isMobile, left, right, screen } = useIsMobileForTwoScreenWithDemention();
   const router = useRouter();
 
   const { token, loading, error, refetch } = usePremarketInfo(tokenId);
 
+
+
   useEffect(() => {
-    if (error) router.replace("/premarket");
+    if (error) router.replace("/discovery");
   }, [error]);
 
   if (loading || !token) {
     return (
-      <View style={{ flex:1, justifyContent:"center", alignItems:"center", backgroundColor: theme.colors.background }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: theme.colors.background,
+        }}
+      >
         <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
 
-  return (
-    <TwoScreenContainer
-      backgroundColor={colors.background}
-      left={
-        <View style={{
-          backgroundColor: colors.surfaceContainerLowest,
-          justifyContent: "flex-start",
-          alignItems: "center",
-          width: left.width,
-          borderRadius: 14,
-          marginTop: isMobile ? 0 : 24,
-        }}>
-          <View style={{ width: left.width, justifyContent:"flex-start", alignItems:"center", padding:24 }}>
-            {!!token.mainInfo.imageURL && (
-              <Image
-                source={{ uri: token.mainInfo.imageURL }}
-                style={{ height:352, width:352, borderRadius:20, backgroundColor: colors.background, paddingBottom:32 }}
-              />
-            )}
-            <View style={{ gap:48, paddingTop:32 }}>
-              <PremarketBaseInfo tokenMainInfo={token.mainInfo} />
-              <PremarketDynamicInfo tokenMainInfo={token.mainInfo} tokenDynamicInfo={token.dynamicInfo} />
-              <PremarketAction
-                tokenMainInfo={token.mainInfo}
-                tokenDynamicInfo={token.dynamicInfo}
-                onUpdated={refetch}
-              />
-            </View>
-          </View>
-        </View>
-      }
-      right={
-        <View style={{ gap:24, paddingBottom: isMobile ? 70 : undefined }}>
-          <AboutCommunity
-            isCreator={token.mainInfo.createdByPubkey === user?.walletAddress}
-            premarketPubkey={token.mainInfo.premarketPubkey.toString()}
-            communityInfo={token.communityInfo}
-          />
-          <PremarketInfo
-            tokenInfo={token}
-            isMobile={isMobile}
-            withJoinButton={user===null || token.dynamicInfo.holders.find(h => h.id === user.userId) === undefined}
-            onUpdated={refetch}
-          />
-          <HoldersInfo 
-            tokenData={token}
-            holdersAmount={token.dynamicInfo.holdersCount}
-            onUpdated={refetch}
-            />
-        </View>
-      }
+  return isMobile ? (
+    <TokenPremarketPageMobile
+      token={token}
+      refetchTokenInfo={refetch}
+      screenDem={screen}
+    />
+  ) : (
+    <TokenPremarketPageNormal
+      token={token}
+      refetchTokenInfo={refetch}
+      left={left}
+      rigth={right}
+      screenDem={screen}
     />
   );
 }
+
+export function TokenPremarketPageNormal({
+  token,
+  refetchTokenInfo,
+  left,
+  rigth,
+  screenDem,
+}: {
+  token: TokenInfo;
+  refetchTokenInfo: () => Promise<void>;
+  left: {
+    width: number;
+    height?: number;
+  };
+  rigth: {
+    width: number;
+    height?: number;
+  }
+  screenDem: {
+    width: number;
+    height: number;
+  };
+}) {
+  const { user } = useAuth();
+  const theme = useTheme();
+  const colors = theme.colors as ExtendedMD3Colors;
+
+  return (
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      style={{ 
+        height: screenDem.height, 
+        backgroundColor: theme.colors.background,
+      }}
+    >
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "center",
+          alignItems: "stretch",
+          backgroundColor: theme.colors.background,
+          paddingHorizontal: 16,
+          paddingTop: 12,
+          paddingBottom: 12,
+          width: "100%",
+          alignSelf: "center",
+          gap: 24,
+        }}
+      >
+        <View style={{ width: left.width, flexShrink: 0, gap: 24 }}>
+          <View
+            style={{
+              backgroundColor: colors.surfaceContainerLowest,
+              justifyContent: "flex-start",
+              alignItems: "center",
+              width: left.width,
+              borderRadius: 14,
+            }}
+          >
+            <View
+              style={{
+                width: left.width,
+                justifyContent: "flex-start",
+                alignItems: "center",
+                padding: 24,
+                paddingTop: 0,
+              }}
+            >
+              <View style={{ gap: 48}}>
+                <PremarketBaseInfo tokenMainInfo={token.mainInfo} tokenDynamicInfo={token.dynamicInfo} isMobile={false}/>
+                <PremarketDynamicInfo
+                  tokenMainInfo={token.mainInfo}
+                  tokenDynamicInfo={token.dynamicInfo}
+                  isMobile={false}
+                />
+                <PremarketAction
+                  tokenMainInfo={token.mainInfo}
+                  tokenDynamicInfo={token.dynamicInfo}
+                  onUpdated={refetchTokenInfo}
+                  isMobile={false}
+                />
+              </View>
+            </View>
+          </View>
+          {user && token.dynamicInfo.holders.find((h) => h.id === user.userId) !== undefined && (
+            <YourEntry 
+              premarketPubkey={token.mainInfo.premarketPubkey}
+              tokenDynamicInfo={token.dynamicInfo}
+              onUpdated={refetchTokenInfo}
+              isMobile={false}
+            />
+          )}
+        </View>
+        <View
+          style={{
+            flexGrow: 1,
+            minWidth: 400,
+            maxWidth: 800,
+          }}
+        >
+          <View style={{ gap: 24}}>
+            <AboutCommunity
+              isCreator={token.mainInfo.createdByPubkey === user?.walletAddress}
+              premarketPubkey={token.mainInfo.premarketPubkey.toString()}
+              communityInfo={token.communityInfo}
+              isMobile={false}
+              width={rigth.width}
+            />
+            <PremarketInfo
+              currentUserId={user?.userId}
+              width={rigth.width}
+              tokenInfo={token}
+              isMobile={false}
+              withJoinButton={
+                (user === null ||
+                token.dynamicInfo.holders.find((h) => h.id === user.userId) ===
+                  undefined) && token.mainInfo.premarketDeadline > Math.floor(Date.now() / 1000)
+              }
+              onUpdated={refetchTokenInfo}
+            />
+            <HoldersInfo
+              tokenData={token}
+              holdersAmount={token.dynamicInfo.holdersCount}              
+              isMobile={false}
+              limited={false}
+            />
+          </View>
+        </View>
+      </View>
+    </ScrollView>
+  );
+}
+
+export function TokenPremarketPageMobile({
+  token,
+  refetchTokenInfo,
+  screenDem,
+}: {
+  token: TokenInfo;
+  refetchTokenInfo: () => Promise<void>;
+  screenDem: {
+    width: number;
+    height: number;
+  };
+}) {
+  const theme = useTheme()
+  const colors = theme.colors as ExtendedMD3Colors
+  
+  const [index, setIndex] = React.useState(0);
+  const toPeopleSection = ()=>{setIndex(1)}
+  const renderScene = SceneMap({
+    first: ()=>BriefMobile({token, refetchTokenInfo, screenDem, toPeopleSection}),
+    second:()=> PeopleMobile({token, refetchTokenInfo, screenDem}),
+  });
+  const layout = useWindowDimensions();
+
+  const routes = [
+    { key: 'first', title: 'Brief' },
+    { key: 'second', title: 'People' },
+  ];
+  const renderTabBar = (props: any) => (
+    <View style={{width: "100%", backgroundColor: theme.colors.background, justifyContent: 'center', alignItems:'center'}}>
+      <TabBar
+        {...props}
+        style={[
+          styles.tabbar,
+          {
+            backgroundColor: theme.colors.background,
+            borderBottomColor: colors.outlineVariant,
+          },
+        ]}
+        contentContainerStyle={styles.tabbarContent}
+        tabStyle={styles.tabStyle}
+        pressColor="transparent"
+        indicatorStyle={[styles.indicatorStyle, {
+          backgroundColor: colors.onSurface,
+          borderBottomColor: colors.outlineVariant}]}
+        indicatorContainerStyle={styles.indicatorContainerStyle}
+      />
+    </View>
+  );
+
+
+  return (
+    <TabView
+      navigationState={{ index, routes }}
+      renderScene={renderScene}
+      onIndexChange={setIndex}
+      initialLayout={{ width: layout.width }}
+      renderTabBar={renderTabBar}
+    />
+  );
+}
+
+function BriefMobile({
+  token,
+  refetchTokenInfo,
+  screenDem,
+  toPeopleSection
+}: {
+  token: TokenInfo;
+  refetchTokenInfo: () => Promise<void>;
+  screenDem: {
+    width: number;
+    height: number;
+  };
+  toPeopleSection: ()=>void
+}) {
+  const { user } = useAuth();
+  const theme = useTheme();
+
+  return (
+    
+    <View>
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      style={{
+        height: screenDem.height - SLIDER_HEIGHT,
+        maxHeight: screenDem.height - SLIDER_HEIGHT,
+        width: "100%", 
+        backgroundColor: theme.colors.background,}}
+    >
+      <View
+        style={{
+          maxWidth: MAX_WIDTH_MOBILE,
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: 'center',
+          backgroundColor: theme.colors.background,
+          paddingTop: 12,
+          paddingBottom: 12,
+          width: "100%",
+          alignSelf: "center",
+          gap: 24,
+          // marginBottom: 70
+        }}
+      >
+        <PremarketBaseInfo tokenMainInfo={token.mainInfo} tokenDynamicInfo={token.dynamicInfo} isMobile={true} />
+        <PremarketDynamicInfo
+          tokenMainInfo={token.mainInfo}
+          tokenDynamicInfo={token.dynamicInfo}
+          isMobile={true}
+        />
+        {user && token.dynamicInfo.holders.find((h) => h.id === user.userId) !== undefined && (
+          <YourEntry 
+            premarketPubkey={token.mainInfo.premarketPubkey}
+            tokenDynamicInfo={token.dynamicInfo}
+            onUpdated={refetchTokenInfo}
+            isMobile={true}
+          />
+        )}
+        <AboutCommunity
+          isCreator={token.mainInfo.createdByPubkey === user?.walletAddress}
+          premarketPubkey={token.mainInfo.premarketPubkey.toString()}
+          communityInfo={token.communityInfo}
+          isMobile={true}
+          width={screenDem.width}
+        />
+        <PremarketInfo
+          currentUserId={user?.userId}
+          width={screenDem.width}
+          tokenInfo={token}
+          isMobile={true}
+          withJoinButton={
+            (user === null ||
+            token.dynamicInfo.holders.find((h) => h.id === user.userId) ===
+              undefined) && token.mainInfo.premarketDeadline > Math.floor(Date.now() / 1000)
+          }
+          onUpdated={refetchTokenInfo}
+        />
+        <HoldersInfo
+          tokenData={token}
+          holdersAmount={token.dynamicInfo.holdersCount}
+          isMobile={true}
+          limited={true}
+        />
+        <Button variant='primary' mode='text' onPress={toPeopleSection} style={{width:'100%', marginTop:-10}}>View all</Button>
+      </View>
+      <View  // hack to spase for PremarketAction
+        style={{
+          paddingBottom: 0,
+          alignItems: "center",
+          zIndex: -999, 
+          opacity: 0, 
+        }}>
+        <PremarketAction
+          tokenMainInfo={token.mainInfo}
+          tokenDynamicInfo={token.dynamicInfo}
+          onUpdated={refetchTokenInfo}
+          isMobile={true}
+        />
+
+      </View>
+    </ScrollView>
+    
+      <View
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          alignItems: "center",
+          zIndex: 999,
+        }}
+      >
+        <PremarketAction
+          tokenMainInfo={token.mainInfo}
+          tokenDynamicInfo={token.dynamicInfo}
+          onUpdated={refetchTokenInfo}
+          isMobile={true}
+        />
+        </View>
+        </View>
+  );
+}
+
+
+function PeopleMobile({
+  token,
+  refetchTokenInfo,
+  screenDem,
+}: {
+  token: TokenInfo;
+  refetchTokenInfo: () => Promise<void>;
+  screenDem: {
+    width: number;
+    height: number;
+  };
+}) {
+  const theme = useTheme();
+
+  return (
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      style={{ height: screenDem.height, width: "100%",  backgroundColor: theme.colors.background,}}
+    >
+      <View
+        style={{
+          maxWidth: MAX_WIDTH_MOBILE,
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: 'center',
+          backgroundColor: theme.colors.background,
+          paddingTop: 12,
+          paddingBottom: 12,
+          width: "100%",
+          alignSelf: "center",
+          gap: 24,
+        }}
+      >
+        <HoldersInfo
+          tokenData={token}
+          holdersAmount={token.dynamicInfo.holdersCount}
+          isMobile={true}
+          limited={false}       
+        />
+      </View>
+    </ScrollView>
+  );
+}
+
+
+const styles = StyleSheet.create({
+  tabbar: {
+    elevation: 0,
+    shadowOpacity: 0,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    width: "50%"
+  },
+  tabbarContent: {
+    justifyContent: "center",
+  },
+  tabStyle: {
+    textAlign: 'center',
+    marginHorizontal: 20,
+    paddingHorizontal: 0,
+  },
+  indicatorStyle: { 
+    justifyContent: "center", height: 3, 
+    width: "14%",
+    alignSelf:'center',
+    marginLeft: "18%"
+  },
+  indicatorContainerStyle: {
+    justifyContent: "center",
+    alignItems: 'center'
+  },
+}
+);

@@ -1,37 +1,32 @@
 // storage/NetworkContext.tsx
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useContext } from 'react';
 import { NETWORK } from 'env';
 
-export type SolanaNetwork = "devnet" | "testnet" | "mainnet-beta";
-const STORAGE_KEY = 'solana-network';
+export type SolanaNetwork = 'devnet' | 'testnet' | 'mainnet-beta';
+
+const isValidNetwork = (v: any): v is SolanaNetwork =>
+  v === 'devnet' || v === 'mainnet-beta';
+
+const DEFAULT_NETWORK: SolanaNetwork = isValidNetwork(NETWORK) ? NETWORK : 'mainnet-beta';
+
 export function GetOtherSolanaNetwork(current: SolanaNetwork): SolanaNetwork {
-    return current == 'devnet' ? 'mainnet-beta' : 'devnet'
+  return current === 'devnet' ? 'mainnet-beta' : 'devnet';
 }
 
 const NetworkContext = createContext<{
   network: SolanaNetwork;
   setNetwork: (net: SolanaNetwork) => void;
 }>({
-  network: NETWORK??'mainnet-beta',
+  network: DEFAULT_NETWORK,
   setNetwork: () => {},
 });
 
 export const NetworkProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [network, setNetworkState] = useState<SolanaNetwork>('mainnet-beta');
+  // just provide setting from env
+  const network = DEFAULT_NETWORK;
 
-  useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then((val) => {
-      if (val === 'devnet' || val === 'testnet' || val === 'mainnet-beta') {
-        setNetworkState(val);
-      }
-    });
-  }, []);
-
-  const setNetwork = (net: SolanaNetwork) => {
-    if (NETWORK !== undefined) return
-    setNetworkState(net);
-    AsyncStorage.setItem(STORAGE_KEY, net);
+  // disable setnetwork feature
+  const setNetwork = (_net: SolanaNetwork) => {
   };
 
   return (

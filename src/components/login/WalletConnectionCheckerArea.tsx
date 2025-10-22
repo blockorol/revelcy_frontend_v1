@@ -10,7 +10,8 @@ import { MD3Colors } from 'react-native-paper/lib/typescript/types';
 import { SvgIcon } from '@components/base/SvgIcon';
 import Loader from '@components/base/Loader';
 import HumanityLevel from '@components/login/HumanityLevel';
-import { convertJwtToUser, useAuth } from '@storage/AuthContext';
+import { convertJwtToUser, useAuth } from '@providers/AuthContext';
+import { ExtendedMD3Colors } from '@theme/types';
 interface WalletConnectionCheckerProps {
   height: DimensionValue
   width: number
@@ -36,7 +37,7 @@ export default function WalletConnectionChecker({
   const user = jwt ? convertJwtToUser(jwt) : useAuth().user;
   const { connected } = useWallet();
 
-  const data = (connected && user !== null) ? WalletConnectionSuccess({
+  const data = (true) ? WalletConnectionSuccess({
       onClickNext: toNext, 
       colors: theme.colors,
       walletConnectionDate, balance, humanity}) :
@@ -45,7 +46,7 @@ export default function WalletConnectionChecker({
 
   return (
     <View style={{
-        backgroundColor: theme.colors.background, // todo: change to surfaceContainerLow
+        backgroundColor: 'transparent', 
         flex: 1,
         justifyContent: 'space-between',
         height:height,
@@ -145,12 +146,64 @@ function WalletConnectionSuccess({
           Wallet connected
         </Text>
       </View>
+      <View style={{
+        width: '100%'}} >
+            <View style={{
+        width: '100%',
+        height: "100%",
+        justifyContent: 'center',
+        alignContent: 'center',
+        alignItems: 'center',
+        paddingLeft: 24,
+        position: 'absolute',
+        opacity: 1,
+        backgroundColor: colors.onSecondary,
+        borderRadius: 24,
+        flexDirection: 'row',
+        gap: 8,
+        borderWidth: 2, 
+        borderColor: colors.secondary
+      }}> 
+        <SvgIcon name='star-outlined' color={colors.secondary}  />
+        <Text variant='titleMedium' style={{color:colors.secondary}}>Soon</Text>
+      </View>
+      
+      <View style={{
+        width: '100%', opacity: 0.5}} >
       <WalletInfo colors={colors} humanity={humanity} walletConnectionDate={walletConnectionDate} balance={balance} 
         enabledFeatures={{humanity:true, dateAndBalance:true}}/>
+      </View>
+
+      </View>
     </View>
     ),
     bottom: (        
       <View style={styles.centerSection}>
+        
+      <View style={{
+        width: '100%'}} >
+            <View style={{
+        width: '100%',
+        height: "100%",
+        justifyContent: 'center',
+        alignContent: 'center',
+        alignItems: 'center',
+        paddingLeft: 24,
+        position: 'absolute',
+        opacity: 1,
+        backgroundColor: colors.onSecondary,
+        borderRadius: 24,
+        flexDirection: 'row',
+        gap: 8,
+        borderWidth: 2, 
+        borderColor: colors.secondary
+      }}> 
+        <SvgIcon name='star-outlined' color={colors.secondary}  />
+        <Text variant='titleMedium' style={{color:colors.secondary}}>Soon</Text>
+      </View>
+      
+      <View style={{
+        width: '100%', opacity: 0.5}} >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap:16}}>
           <SvgIcon name = "info-circle" color={(humanity??1) < 0.3 ? colors.error :  colors.primary} size={24}/>
           <Text variant='bodyMedium' style={{color:colors.onSurfaceVariant}}>
@@ -161,6 +214,7 @@ function WalletConnectionSuccess({
             }
           </Text>
         </View>
+        </View></View>
         {/* <TwitterButton /> */}
         <TransparentButton 
           buttonText='Skip'
@@ -183,6 +237,8 @@ interface WalletInfoProps {
   }
 }
 
+/*
+
 export function WalletInfo({walletConnectionDate, transactionCount, balance, humanity, colors, enabledFeatures}:WalletInfoProps ) {
   return (<View style={{flexDirection: 'row', width: "100%", justifyContent:"flex-start", alignItems: 'flex-start', gap:16 }}>
           <SvgIcon name="wallet-outlined" color={colors.onSurface} size={26} 
@@ -194,7 +250,7 @@ export function WalletInfo({walletConnectionDate, transactionCount, balance, hum
             }}
           />
           <View style={{flex: 1,gap:8}}>
-            <Text>Wallet</Text>
+            <Text variant='titleMedium'>Wallet</Text>
             {
               (enabledFeatures.dateAndBalance === true) && (
                 (walletConnectionDate===undefined) ? (
@@ -256,6 +312,26 @@ export function WalletInfo({walletConnectionDate, transactionCount, balance, hum
             }
           </View>
       </View>
+  )
+}
+
+*/
+
+export function WalletInfo({walletConnectionDate, transactionCount, balance, humanity, colors, enabledFeatures}:WalletInfoProps ) {
+  return (<View style={{flexDirection: 'row', width: "100%", justifyContent:"flex-start", alignItems: 'flex-start', gap:16 }}>
+    <SvgIcon name="wallet-outlined" color={colors.onSurface} size={26} 
+      style={{
+        paddingTop:6,
+        paddingBottom:6,
+        paddingLeft: 4,
+        paddingRight: 4,
+      }}
+    />
+    <View style={{flex: 1,gap:8}}>
+      <Text variant='titleMedium'>Wallet</Text>
+      <Loader text="Stats are in development"/>
+    </View>
+  </View>
   )
 }
 

@@ -1,15 +1,27 @@
 // components/NavigationTop.tsx
-import React, { useMemo } from 'react';
-import { View, StyleSheet, Image, TouchableOpacity, useWindowDimensions } from 'react-native';
-import { NavigationProfileWidget } from './NavigationProfileWidget';
-import { NavigationList } from './NavigationList';
-import { useIsMobileForTwoScreenWithDemention } from '@hooks/useIsMobile';
-import { router } from 'expo-router';
+import React, { useMemo } from "react";
+import {
+  View,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  useWindowDimensions,
+} from "react-native";
+import { NavigationProfileWidget } from "./NavigationProfileWidget";
+import { NavigationList } from "./NavigationList";
+import { useIsMobileForTwoScreenWithDemention } from "@hooks/useIsMobile";
+import { router } from "expo-router";
+import { useNetwork } from "@providers/NetworkContext";
+import NavigationBurgerMenu from "@components/navigation/NavigationBurgerMenu";
+import { useTheme } from "react-native-paper";
+import { Text } from "@components/ui/Text";
 
 const H_PADDING = 16;
 const GAP = 24;
 
 export function NavigationTop() {
+  const { colors } = useTheme();
+  const { network } = useNetwork();
   const dem = useIsMobileForTwoScreenWithDemention();
   const { width: vw } = useWindowDimensions();
 
@@ -20,22 +32,39 @@ export function NavigationTop() {
 
   const innerWidth = H_PADDING * 2 + dem.left.width + GAP + rightWidth;
 
-  const goHome = () => router.push('/');
+  const goHome = () => router.push("/");
 
   if (dem.isMobile) {
     return (
-      <View style={styles.topOuter}>
-        <View style={[styles.topInnerMobile, { paddingHorizontal: H_PADDING }]}>
-          <TouchableOpacity onPress={goHome}>
+      <View style={[styles.topInnerMobile, { paddingHorizontal: H_PADDING }]}>
+        <TouchableOpacity onPress={goHome}>
+          <View style={{ flexDirection: "row", alignItems: 'center' }}>
             <Image
-              source={require('@assets/revelcy_logo_long.png')}
-              style={styles.logo}
+              source={require("@assets/revelcy_logo_long.png")}
+              style={{width: 96, height:24}}
               resizeMode="contain"
             />
-          </TouchableOpacity>
-          <View style={styles.profile}>
-            <NavigationProfileWidget />
+            {network === "devnet" && (
+              <Text
+                variant="labelSmall"
+                prominent
+                style={{
+                  marginBottom: 20,
+                  marginLeft: 5,
+                  paddingHorizontal: 5,
+                  color: colors.onSecondary,
+                  backgroundColor: colors.secondary,
+                  borderRadius: 5,
+                }}
+              >
+                DEV
+              </Text>
+            )}
           </View>
+        </TouchableOpacity>
+        <View style={styles.profile}>
+          <NavigationProfileWidget isMobile />
+          <NavigationBurgerMenu />
         </View>
       </View>
     );
@@ -43,17 +72,38 @@ export function NavigationTop() {
 
   return (
     <View style={styles.topOuter}>
-      <View style={[styles.topInner, { width: innerWidth, paddingHorizontal: H_PADDING }]}>
+      <View
+        style={[
+          styles.topInner,
+          { width: innerWidth, paddingHorizontal: H_PADDING },
+        ]}
+      >
         <View style={{ width: dem.left.width, flexShrink: 0 }}>
           <View style={styles.leftRow}>
             <TouchableOpacity onPress={goHome}>
               <Image
-                source={require('@assets/revelcy_logo_long.png')}
+                source={require("@assets/revelcy_logo_long.png")}
                 style={styles.logo}
                 resizeMode="contain"
               />
             </TouchableOpacity>
-            <View style={{ marginLeft: 16 }}>
+            {network === "devnet" && (
+              <Text
+                variant="labelSmall"
+                prominent
+                style={{
+                  marginBottom: 20,
+                  marginLeft: 5,
+                  paddingHorizontal: 5,
+                  color: colors.onSecondary,
+                  backgroundColor: colors.secondary,
+                  borderRadius: 5,
+                }}
+              >
+                DEV
+              </Text>
+            )}
+            <View style={{ marginLeft: 64 }}>
               <NavigationList isMobile={dem.isMobile} />
             </View>
           </View>
@@ -62,7 +112,7 @@ export function NavigationTop() {
         <View style={{ flex: 1 }} />
 
         <View style={styles.profile}>
-          <NavigationProfileWidget />
+          <NavigationProfileWidget isMobile={false} />
         </View>
       </View>
     </View>
@@ -71,32 +121,38 @@ export function NavigationTop() {
 
 const styles = StyleSheet.create({
   topOuter: {
-    width: '100%',
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
   },
   // desktop
   topInner: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 0,
   },
   leftRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   // mobile
   topInnerMobile: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    height: 56,
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: 0,
   },
   logo: {
-    width: 110,
-    height: 30,
+    paddingVertical: 16,
+    width: 96,
+    height: 24,
   },
   profile: {
-    flexShrink: 0,
+    paddingVertical: 13,
+    flexDirection: "row",
+    gap: 16,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

@@ -26,11 +26,17 @@ export function NavigationItem({
   const pathname = usePathname();
   const router = useRouter();
   const isActive = pathname === route;
+  
 
   return (
     <TouchableRipple
-      onPress={() => router.push(route)}
+      onPress={() => {
+        if (!isActive) {
+          router.push(route);
+        }
+      }}
       borderless
+      disabled={isActive}
       style={[
         isMobile ? styles.containerMobile : styles.containerDesktop,
         horizontal && styles.horizontalContainer,
@@ -42,7 +48,7 @@ export function NavigationItem({
           horizontal ? styles.horizontalItem : styles.verticalItem,
           {
             backgroundColor: theme.colors.background,
-            opacity: !isActive && isMobile ? 0.5 : 1,
+            opacity: (!isActive && isMobile) || isActive ? 0.5 : 1,
           },
         ]}
       >
@@ -52,7 +58,7 @@ export function NavigationItem({
           color={theme.colors.onSurface}
         />
         <Text
-          variant='labelLarge'
+          variant='labelMedium'
           style={{ color: theme.colors.onSurface }}
           numberOfLines={1}
         >
@@ -70,8 +76,9 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   containerMobile: {
-    flexGrow: 1,
-    flexShrink: 1,
+    flex: 1,
+    // flexGrow: 1,
+    // flexShrink: 1,
     alignSelf: 'stretch',
   },
   horizontalContainer: {

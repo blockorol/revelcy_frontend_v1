@@ -2,6 +2,7 @@
 import type { ExtendedMD3Colors } from "@theme/types";
 
 const COROL_UNSETTED = "#5e2204"
+const COROL_UNSETTED_2 = "#ddfe04"
 
 
 const sharedOverrides = {
@@ -52,33 +53,33 @@ export const darkColors: ExtendedMD3Colors = {
   surfaceContainerHighest: colorHexAndOpacity("#353435", 1),
   
   surfaceDisabled: colorHexAndOpacity('#E6E0E9', 0.12),
-  onSurfaceDisabled: colorHexAndOpacity('#FFFFFF', 1), 
+  onSurfaceDisabled: colorHexAndOpacity('#FFFFFF', 0.38), 
   
   onPrimaryFixedVariant: colorHexAndOpacity(COROL_UNSETTED, 1),
-  onSecondaryFixedVariant: colorHexAndOpacity(COROL_UNSETTED, 1),
-  onTertiaryFixedVariant: colorHexAndOpacity(COROL_UNSETTED, 1),
+  onSecondaryFixedVariant: colorHexAndOpacity(COROL_UNSETTED, 0.5),
+  onTertiaryFixedVariant: colorHexAndOpacity(COROL_UNSETTED, 0.5),
 
   primaryFixed: colorHexAndOpacity(COROL_UNSETTED, 1),
-  onPrimaryFixed: colorHexAndOpacity(COROL_UNSETTED, 1),
+  onPrimaryFixed: colorHexAndOpacity(COROL_UNSETTED, 0.5),
   primaryFixedDim: colorHexAndOpacity(COROL_UNSETTED, 1),
 
   secondaryFixed: colorHexAndOpacity(COROL_UNSETTED, 1),
-  onSecondaryFixed: colorHexAndOpacity(COROL_UNSETTED, 1),
+  onSecondaryFixed: colorHexAndOpacity(COROL_UNSETTED, 0.5),
   secondaryFixedDim: colorHexAndOpacity(COROL_UNSETTED, 1),
 
   tertiaryFixed: colorHexAndOpacity(COROL_UNSETTED, 1),
-  onTertiaryFixed: colorHexAndOpacity(COROL_UNSETTED, 1),
+  onTertiaryFixed: colorHexAndOpacity(COROL_UNSETTED, 0.5),
   tertiaryFixedDim: colorHexAndOpacity(COROL_UNSETTED, 1),
   primaryContainer: colorHexAndOpacity(COROL_UNSETTED, 1),
   secondaryContainer: colorHexAndOpacity(COROL_UNSETTED, 1),
   tertiary: colorHexAndOpacity(COROL_UNSETTED, 1),
   tertiaryContainer: colorHexAndOpacity(COROL_UNSETTED, 1),
   errorContainer: colorHexAndOpacity(COROL_UNSETTED, 1),
-  onPrimaryContainer: colorHexAndOpacity(COROL_UNSETTED, 1),
-  onSecondaryContainer: colorHexAndOpacity(COROL_UNSETTED, 1),
-  onTertiary: colorHexAndOpacity(COROL_UNSETTED, 1),
-  onTertiaryContainer: colorHexAndOpacity(COROL_UNSETTED, 1),
-  onErrorContainer: colorHexAndOpacity(COROL_UNSETTED, 1),
+  onPrimaryContainer: colorHexAndOpacity(COROL_UNSETTED, 0.5),
+  onSecondaryContainer: colorHexAndOpacity(COROL_UNSETTED_2, 1),
+  onTertiary: colorHexAndOpacity(COROL_UNSETTED, 0.5),
+  onTertiaryContainer: colorHexAndOpacity(COROL_UNSETTED, 0.5),
+  onErrorContainer: colorHexAndOpacity(COROL_UNSETTED, 0.5),
   inversePrimary: colorHexAndOpacity(COROL_UNSETTED, 1),
 };
 

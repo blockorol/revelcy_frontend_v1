@@ -1,8 +1,9 @@
 import { TokenCommunityInfo, updateAboutCommunity } from "@api/token";
 import { CommunityLinksGrid } from "@components/premarket/CommunityLinksGrid";
-import { View, Image } from "react-native";
-import { useTheme, Text, Button } from "react-native-paper";
-import { ExpandableText } from '@components/base/ExpandableText';
+import { View, Image, ScrollView } from "react-native";
+import { useTheme, Button } from "react-native-paper";
+import { Text } from "@components/ui/Text";
+import { ExpandableText } from "@components/base/ExpandableText";
 import { useState } from "react";
 import CustomizeTokenForm from "@components/token/create/CustomizeTokenForm";
 import { CustomizeTokenData } from "@components/token/create/interface";
@@ -14,10 +15,18 @@ import { useOverlay } from "@storage/UniversalOverlayProvider";
 interface AboutCommunityProps {
   premarketPubkey: string;
   communityInfo?: TokenCommunityInfo;
+  width: number;
+  isMobile: boolean;
   isCreator?: boolean;
 }
 
-export function AboutCommunity({ premarketPubkey, communityInfo, isCreator }: AboutCommunityProps) {
+export function AboutCommunity({
+  premarketPubkey,
+  communityInfo,
+  isCreator,
+  width,
+  isMobile,
+}: AboutCommunityProps) {
   const [communityInfoLocal, setCommunityInfo] = useState(communityInfo);
   const { open, close } = useOverlay();
   const colors = useTheme().colors as ExtendedMD3Colors;
@@ -25,12 +34,14 @@ export function AboutCommunity({ premarketPubkey, communityInfo, isCreator }: Ab
   if (
     !isCreator &&
     (!communityInfoLocal ||
-    (communityInfoLocal.description === "" &&
-      (!communityInfoLocal.links || communityInfoLocal.links.length === 0) &&
-      !communityInfoLocal.tokenBannerURL))
+      (communityInfoLocal.description === "" &&
+        (!communityInfoLocal.links || communityInfoLocal.links.length === 0) &&
+        !communityInfoLocal.tokenBannerURL))
   ) {
-    return <View />;
+    return null;
   }
+
+  const bannerUri = communityInfoLocal?.tokenBannerURL;
 
   const openEdit = () => {
     open(
@@ -48,7 +59,9 @@ export function AboutCommunity({ premarketPubkey, communityInfo, isCreator }: Ab
               const response = await fetch(data.banner.data);
               const blob = await response.blob();
               const fileName = `${premarketPubkey}_banner`;
-              const file = new File([blob], `${fileName}.png`, { type: blob.type });
+              const file = new File([blob], `${fileName}.png`, {
+                type: blob.type,
+              });
               const url = await uploadImage(file, fileName);
               next.tokenBannerURL = url;
             } else if (data.banner?.url) {
@@ -76,52 +89,113 @@ export function AboutCommunity({ premarketPubkey, communityInfo, isCreator }: Ab
   return (
     <View
       style={{
-        backgroundColor: colors.surfaceContainerLowest,
-        borderRadius: 20,
-        padding: 24,
-        gap: 32,
+        backgroundColor: isMobile
+          ? "transperent"
+          : colors.surfaceContainerLowest,
+        borderRadius: isMobile ? undefined : 20,
+        padding: isMobile ? 16 : 24,
+        gap: isMobile ? 24 : 32,
+        width: "100%",
       }}
     >
-      {!!communityInfoLocal?.tokenBannerURL && (
-        <Image
-          source={{ uri: communityInfoLocal.tokenBannerURL }}
-          resizeMode="contain"
+      {!!bannerUri && (
+        <View
           style={{
-            height: 272,
+            width: "100%",
+            aspectRatio: 3,
             borderRadius: 20,
+            overflow: "hidden",
             backgroundColor: colors.surfaceContainerLowest,
-            padding: 24,
-            paddingBottom: 32,
           }}
-        />
+        >
+          <Image
+            source={{ uri: bannerUri }}
+            style={{
+              width: "100%",
+              height: "100%",
+              // @ts-ignore
+              objectFit: "cover",
+              // @ts-ignore
+              objectPosition: "center",
+            }}
+            resizeMode="cover"
+          />
+        </View>
       )}
-
       <View
         style={{
-          flexDirection: "row",
+          flexDirection: isMobile ? "column" : "row",
           alignItems: "flex-start",
-          justifyContent: "space-between",
+          gap: 16,
+          justifyContent: isMobile ? "center" : "space-between",
         }}
       >
         {!!communityInfoLocal?.description ? (
-          <View style={{ gap: 24, flex: 1 }}>
-            <Text variant="titleLarge">
-              About Community{" "}
+          <View
+            style={{
+              flex: 1,
+              gap: isMobile ? 16 : 24,
+              alignContent: "flex-start",
+              justifyContent: "flex-start",
+            }}
+          >
+            <View
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                gap: isMobile ? 8 : 16,
+                alignItems: "center",
+              }}
+            >
+              <Text variant="titleLarge">About Community</Text>
               {isCreator && (
-                <Button mode='outlined' onPress={openEdit}>Edit</Button>
+                <Button
+                  mode="outlined"
+                  onPress={openEdit}
+                  style={{ borderRadius: 8, paddingHorizontal: 0, margin: 0 }}
+                  contentStyle={{
+                    height: 30,
+                    paddingHorizontal: 16,
+                    margin: 0,
+                  }}
+                  labelStyle={{ margin: 0 }}
+                >
+                  <Text prominent variant="labelMedium">
+                    Edit
+                  </Text>
+                </Button>
               )}
-            </Text>
-
-            <ExpandableText text={communityInfoLocal.description} maxLineExpanded={2} />
+            </View>
+            <View>
+              <ExpandableText
+                text={communityInfoLocal.description}
+                maxLineExpanded={2}
+              />
+            </View>
           </View>
-        ) : isCreator && (
-            <Button onPress={openEdit}>Add comunity info</Button>
+        ) : (
+          isCreator && (
+            <Button
+              mode="outlined"
+              onPress={openEdit}
+              style={{ borderRadius: 8, paddingHorizontal: 0, margin: 0 }}
+              contentStyle={{ height: 30, paddingHorizontal: 16, margin: 0 }}
+              labelStyle={{ margin: 0 }}
+            >
+              <Text prominent variant="labelMedium">
+                Add comunity info
+              </Text>
+            </Button>
           )
-        }
+        )}
 
         {communityInfoLocal?.links && communityInfoLocal.links.length !== 0 && (
-          <View style={{ flex: 1 }}>
-            <CommunityLinksGrid links={communityInfoLocal.links} />
+          <View style={{maxWidth: 300}}>
+            <CommunityLinksGrid
+              links={communityInfoLocal.links}
+              isMobile={isMobile}
+              width={width}
+            />
           </View>
         )}
       </View>

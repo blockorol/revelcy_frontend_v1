@@ -1,67 +1,118 @@
-import { TokenMainInfo } from "@api/token";
+import { TokenMainInfo, TokenDynamicInfo } from "@api/token";
 import { RoundIconLink } from "@components/premarket/RoundIcons";
 import { useIsMobileForTwoScreenWithDemention } from "@hooks/useIsMobile";
 import { getTimeLeftLabel } from "@utils/premarket";
-import { View } from "react-native";
-import { Button, Text, useTheme } from "react-native-paper";
+import shortString from "@utils/address_shorter";
+import { View, Image } from "react-native";
+import { Text, useTheme } from "react-native-paper";
 import { ExpandableText } from '@components/base/ExpandableText';
+import { SvgIcon } from '@components/base/SvgIcon';
+import { ChipDisplay } from '@components/ui/Chip';  
 
 interface PremarketBaseInfoProps {
   tokenMainInfo: TokenMainInfo;
+  tokenDynamicInfo: TokenDynamicInfo;
+  isMobile: boolean
 }
 
-export function PremarketBaseInfo({ tokenMainInfo }: PremarketBaseInfoProps) {
+export function PremarketBaseInfo({ tokenMainInfo, tokenDynamicInfo, isMobile}: PremarketBaseInfoProps) {
   const theme = useTheme();
   const { left } = useIsMobileForTwoScreenWithDemention();
 
+  // Determine the effective state based on conditions
+  const getEffectiveState = () => {
+    const now = Math.floor(Date.now() / 1000);
+    const isPremarket = tokenMainInfo.state === 'premarket';
+    const isDeadlinePassed = tokenMainInfo.premarketDeadline < now;
+    const isGoalNotReached = tokenDynamicInfo.reservedSolLamp.lt(tokenMainInfo.premarketGoalSolLamp);
+    
+    // If it's premarket and deadline passed and goal reached, show "times_up"
+    if (isPremarket && isDeadlinePassed && !isGoalNotReached) {
+      return 'times_up';
+    }
+    if (isPremarket && isDeadlinePassed && isGoalNotReached) {
+      return 'expired';
+    }
+    
+    return tokenMainInfo.state;
+  };
 
-  const button = (state: "premarket" | "canceled" | "finished") => {
+  const button = (state: "premarket" | "canceled" | "finished" | "times_up" | "expired") => {
     return state === 'premarket' ? 
-    (<Button
-      textColor={theme.colors.secondary}
-      buttonColor={theme.colors.onSecondary}
-      focusable={false}
-    >Premarket</Button>
+    (<ChipDisplay
+      variant="secondary"
+      size="normal"
+      mode="flat"
+    >Premarket</ChipDisplay>
     ) : state === 'finished' ? (
-    <Button
-      textColor={theme.colors.onPrimary}
-      buttonColor={theme.colors.primary}
-      focusable={false}
-    >Launched</Button>
+    <ChipDisplay
+      variant="primary"
+      size="normal"
+      mode="flat"
+    >Launched</ChipDisplay>
   ) : state === 'canceled' ? (
-    <Button
-      textColor={theme.colors.onError}
-      buttonColor={theme.colors.error}
-      focusable={false}
-    >Refunded</Button>
+    <ChipDisplay
+      variant="error"
+      size="normal"
+      mode="flat"
+    >Refunded</ChipDisplay>
+  ) : state === 'times_up' ? (
+    <ChipDisplay
+      variant="primary"
+      size="normal"
+      mode="flat"
+    >Times Up</ChipDisplay>
+  ) : state === 'expired' ? (
+    <ChipDisplay
+      variant="error"
+      size="normal"
+      mode="flat"
+    >Expired</ChipDisplay>
   ) : (
-    <Button
-      textColor={theme.colors.onPrimary}
-      buttonColor={theme.colors.primary}
-      focusable={false}
-    >{state}</Button>
+    <ChipDisplay
+      variant="primary"
+      size="normal"
+      mode="flat"
+    >{state}</ChipDisplay>
   ) 
   }
   let deadlineText = ""
 
   if (tokenMainInfo.state === "premarket") {
     const deadline = getTimeLeftLabel(tokenMainInfo.premarketDeadline)
-    deadlineText = deadline === 'Expired' ? "reached deadline":  deadline+" left"
+    deadlineText = deadline === 'Expired' ?"Deadline reached" :  deadline+" left"
   }
 
   return (
-    <View style={{ gap: 24 }}>
+    <View style={{ 
+      gap: 16, 
+      paddingHorizontal: isMobile?16:24, 
+      paddingTop: isMobile?0:24,
+      width: '100%',
+      }}>
+      {!!tokenMainInfo.imageURL && (
+        <View style={{paddingHorizontal: isMobile?24:0, paddingBottom: 8, paddingTop: 0}}>
+          <Image
+            source={{ uri: tokenMainInfo.imageURL }}
+            style={{
+              width: '100%',
+              aspectRatio: 1,
+              borderRadius: 20,
+              backgroundColor:  'transparent',
+            }}
+          />
+        </View>
+      )}
       <View
         style={{
-          width: left.width - 48,
           justifyContent: "space-between",
           alignItems: "center",
           flexDirection: "row",
         }}
       >
-        <View style={{ gap: 8 }}>
-          <Text variant="headlineSmall"> {tokenMainInfo?.name}</Text>
-          <Text variant="labelLarge"> {tokenMainInfo?.symbol}</Text>
+        <View style={{ gap: 4}}>
+          <Text variant="headlineSmall" style={{color:theme.colors.onSurface}}>{tokenMainInfo?.name}</Text>
+          <Text variant="labelLarge" style={{color:theme.colors.onSurfaceVariant}}>{tokenMainInfo?.symbol}</Text>
         </View>
         <View
           style={{
@@ -76,6 +127,7 @@ export function PremarketBaseInfo({ tokenMainInfo }: PremarketBaseInfoProps) {
               name="x-logo"
               colors={theme.colors}
               link={tokenMainInfo.links.twitter}
+              withoutBackgroud={true}
             />
           )}
           {tokenMainInfo?.links.webSite !== undefined && (
@@ -83,6 +135,7 @@ export function PremarketBaseInfo({ tokenMainInfo }: PremarketBaseInfoProps) {
               name="world-outlined"
               colors={theme.colors}
               link={tokenMainInfo.links.webSite}
+              withoutBackgroud={true}
             />
           )}
           {tokenMainInfo?.links.telegram !== undefined && (
@@ -90,6 +143,7 @@ export function PremarketBaseInfo({ tokenMainInfo }: PremarketBaseInfoProps) {
               name="tg-logo"
               colors={theme.colors}
               link={tokenMainInfo.links.telegram}
+              withoutBackgroud={true}
             />
           )}
         </View>
@@ -101,13 +155,32 @@ export function PremarketBaseInfo({ tokenMainInfo }: PremarketBaseInfoProps) {
           justifyContent: "flex-start",
           alignItems: "center",
           flexDirection: "row",
-          gap: 16,
+          gap: 10,
         }}
       >
-        {button(tokenMainInfo.state)}
-        <Text variant="labelLarge" style={{ color: theme.colors.secondary }}>
+        {button(getEffectiveState())}
+        {tokenMainInfo.state === 'finished' && (
+            <Text variant="labelLarge">
+            {tokenMainInfo.tokenMint ? shortString(tokenMainInfo.tokenMint) : "No token address available!"} 
+          </Text>
+        )}
+        {tokenMainInfo.state === 'finished' && (
+          <SvgIcon 
+            name="copy-icon" 
+            size={14} 
+            color={theme.colors.onSurfaceVariant} 
+          />
+        )}
+        <Text variant="labelLarge" style={{color: deadlineText === "Deadline reached" ? theme.colors.error : theme.colors.secondary}}>
           {deadlineText}
         </Text>
+        {(tokenMainInfo.state === 'premarket' || tokenMainInfo.state === 'canceled') && (
+          <SvgIcon 
+          name="question-mark-circle" 
+          size={24} 
+          color="#938F9566" 
+        />
+        )}
       </View>
     </View>
   );

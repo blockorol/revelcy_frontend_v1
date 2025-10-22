@@ -1,6 +1,6 @@
 import { updateAvatar as updateAvatarAPI } from '@api/auth';
 import { UserModal } from '@components/user/UserModal';
-import { useAuth } from '@storage/AuthContext';
+import { useAuth } from '@providers/AuthContext';
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface User {

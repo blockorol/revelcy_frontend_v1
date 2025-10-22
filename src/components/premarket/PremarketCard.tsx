@@ -77,7 +77,7 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, rai
         }}
       >
         {/* Header */}
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>          
           <Avatar.Image
             size={48}
             source={

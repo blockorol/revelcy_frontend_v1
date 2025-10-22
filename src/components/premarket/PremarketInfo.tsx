@@ -8,12 +8,14 @@ import { View } from "react-native";
 import { useTheme, Text} from "react-native-paper";
 
 interface PremarketInfoProps {
+  currentUserId?: string;
   tokenInfo: TokenInfo;
   isMobile: boolean;
   withJoinButton: boolean;
   onUpdated: () => Promise<void>;
+  width: number
 }
-export function PremarketInfo({ tokenInfo, isMobile, withJoinButton, onUpdated}: PremarketInfoProps) {
+export function PremarketInfo({currentUserId, tokenInfo, isMobile, withJoinButton, onUpdated, width}: PremarketInfoProps) {
   const { colors } = useTheme() as AppTheme;
   const joiners = tokenInfo.dynamicInfo.holders
     .slice()
@@ -34,38 +36,34 @@ export function PremarketInfo({ tokenInfo, isMobile, withJoinButton, onUpdated}:
   return (
     <View
       style={{
-        backgroundColor: colors.surfaceContainerLowest,
+        backgroundColor: isMobile?'transparent':colors.surfaceContainerLowest,
         borderRadius: 20,
-        padding: 24,
-        gap: 32,
+        padding: isMobile?16:24,
+        gap: 16,
       }}
     >
-      <Text variant="titleLarge"> Premarket</Text>
+      <Text variant="titleLarge">Premarket</Text>
       <View
         style={{
           flexDirection: isMobile ? "column" : "row",
           alignContent: "center",
-          justifyContent: "center",
-          gap: 40,
+          justifyContent: isMobile ? 'flex-start' : 'center',
+          alignItems: isMobile ? 'stretch' : 'center',
+          gap: 32,
         }}
       >
         <PremarketBondingCurve
+          currentUserId={currentUserId}
+          width={isMobile?width-16*2:448}
+          height={252}
           state={tokenInfo.mainInfo.state}
-          onUpdated={onUpdated}
-          premaketPubkey={tokenInfo.mainInfo.premarketPubkey}
-          withJoinButton={withJoinButton}
           goalPercent={tokenInfo.mainInfo.premarketGoalPers}
           nowPercent={
             (100 * convertDecimalToToken(tokenInfo.dynamicInfo.marketCapTokenDec)) / DEFAULT_TOKEN_COUNT
           }
-          currentPrice={(() => {
-            const price = tokenInfo.dynamicInfo.currentPriceLamp;
-            console.log('PremarketInfo - currentPriceLamp:', price);
-            return price;
-          })()}
+          currentPrice={tokenInfo.dynamicInfo.currentPriceLamp}
           joiners={joiners}
-          background={colors.elevation.level1}
-          widthAround={isMobile ? "100%" : undefined}
+          background={colors.surfaceContainerLow}
         />
         <PremarketTimelineSection 
           withJoinButton={withJoinButton} 

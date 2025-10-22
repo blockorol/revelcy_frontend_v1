@@ -1,13 +1,22 @@
 import React, { useState } from "react";
-import { View, Linking, Image, TouchableOpacity } from "react-native";
-import { Avatar, Button, IconButton, Text, useTheme } from "react-native-paper";
+import {
+  View,
+  Linking,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
+import { Text, useTheme } from "react-native-paper";
+import {Avatar} from "@components/ui/Avatar"
+import { Button } from "@components/ui/Button";
 import { SvgIconButton, SvgIcon, IconName } from "@components/base/SvgIcon";
 import { LinearGradient } from "expo-linear-gradient";
 import { WalletInfo } from "@components/login/WalletConnectionCheckerArea";
 import { useIsMobileForOneScreenWithDemention } from "@hooks/useIsMobile";
 import { MD3Colors } from "react-native-paper/lib/typescript/types";
 import shortString from "@utils/address_shorter";
-import * as ImagePicker from 'expo-image-picker';
+import * as ImagePicker from "expo-image-picker";
+import { AppTheme } from "@theme/types";
+import { MobileBottomSheet } from "@components/ui/MobileBottomSheet";
 
 interface UserModalProps {
   user: {
@@ -17,34 +26,28 @@ interface UserModalProps {
     avatarUrl: string | null;
   };
   isPersonal: boolean;
-  updateAvatar: (avatarUri:string) => Promise<void>;
+  updateAvatar: (avatarUri: string) => Promise<void>;
   logout: () => void;
   onClose: () => void;
 }
 
-export const UserModal: React.FC<UserModalProps> = ({updateAvatar, logout, isPersonal, user, onClose }) => {
-  const { colors } = useTheme();
+export const UserModal: React.FC<UserModalProps> = ({
+  updateAvatar,
+  logout,
+  isPersonal,
+  user,
+  onClose,
+}) => {
   const { isMobile, width } = useIsMobileForOneScreenWithDemention();
-  const [avatarFailed, setAvatarFailed] = useState(false);
-      const pickAvatar = async () => {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        aspect: [1, 1],
-        allowsEditing: true,
-        quality: 0.5,
-      });
+  const {colors} = useTheme();
+  if (isMobile) {
+      return <MobileBottomSheet visible onDismiss={onClose}>
+          <UserModalInternal updateAvatar={updateAvatar} logout={logout} isPersonal={isPersonal} user={user} onClose={onClose} />
+      </MobileBottomSheet>
+  }
   
-      if (!result.canceled) {
-        user.avatarUrl=result.assets[0].uri
-        updateAvatar(result.assets[0].uri)
-      }
-    };
-  
-
-  const containerWidth = isMobile ? width : 480;
-
   return (
-    <View
+    <TouchableOpacity
       style={{
         position: "absolute",
         top: 0,
@@ -53,14 +56,49 @@ export const UserModal: React.FC<UserModalProps> = ({updateAvatar, logout, isPer
         right: 0,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: colors.backdrop + "CC", // semi-transparent
+        backgroundColor: colors.backdrop,
         zIndex: 999,
       }}
+      onPress={onClose}
     >
+        <UserModalInternal updateAvatar={updateAvatar} logout={logout} isPersonal={isPersonal} user={user} onClose={onClose} />
+    </TouchableOpacity>
+
+  )
+
+}
+export const UserModalInternal: React.FC<UserModalProps> = ({
+  updateAvatar,
+  logout,
+  isPersonal,
+  user,
+  onClose,
+}) => {
+    const { colors } = useTheme() as AppTheme;
+  const { isMobile, width } = useIsMobileForOneScreenWithDemention();
+  const [avatarFailed, setAvatarFailed] = useState(false);
+  const pickAvatar = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: "images",
+      aspect: [1, 1],
+      allowsEditing: true,
+      quality: 0.5,
+    });
+
+    if (!result.canceled) {
+      user.avatarUrl = result.assets[0].uri;
+      updateAvatar(result.assets[0].uri);
+    }
+  };
+
+  const containerWidth = isMobile ? width : 480;
+
+  return (
       <View
         style={{
           width: containerWidth,
-          borderRadius: 20,
+          borderRadius: 28,
+          paddingBottom: 24,
           overflow: "hidden",
           backgroundColor: colors.background,
         }}
@@ -73,81 +111,78 @@ export const UserModal: React.FC<UserModalProps> = ({updateAvatar, logout, isPer
             width: containerWidth,
           }}
         >
-            <View style={{width: '100%', justifyContent: 'space-between',flexDirection: 'row', alignItems: 'center',}}>
-                <View/>
-                {<IconButton icon="close" size={24} iconColor={colors.onSurface} onPress={onClose} />}
-            </View>
-            <View style={{
-                paddingBottom: 64,
-                paddingHorizontal: 24,
-                gap: 16,
-                alignItems: "center",
-                position: "relative",
-            }}>
-
+          <View style={styles.topCloseLine}>
+            <SvgIconButton
+              name="x-base"
+              size={24}
+              color={colors.onPrimary}
+              onPress={onClose}
+            />
+          </View>
+          <View style={styles.userInfoContainer}>
             {/* Avatar or fallback */}
-            <View style={{width:112, height:112, padding:0, margin:0}}>
-              {!avatarFailed ? (
-                  <Avatar.Image
-                  source={{ uri: user.avatarUrl??"" }}
-                  onError={() => setAvatarFailed(true)}
-                  style={{
-                      width: 112,
-                      height: 112,
-                      borderRadius: 56,
-                      borderWidth: 2,
-                      borderColor: colors.primary,
-                      backgroundColor: colors.background,
-                  }}
-                  />
-              ) : (
-                  <SvgIcon name="smile-outlined" size={112} color={colors.primary} />
-              )}
-              {/* Кружок с иконкой снизу слева */}
+            <View style={{ width: 112, height: 112, padding: 0, margin: 0 }}>
+              <Avatar size={112} source={user.avatarUrl} walletAddress={user.walletAddress} />
               {isPersonal && (
                 <TouchableOpacity
                   onPress={pickAvatar}
                   style={{
-                    position: 'absolute',
+                    height: 32,
+                    width: 32,
+                    position: "absolute",
                     bottom: 0,
                     right: 0,
-                    backgroundColor: colors.surfaceVariant,
+                    backgroundColor: colors.surfaceContainerHighest,
                     borderRadius: 9999,
                     padding: 4,
+                    justifyContent: "center",
+                    alignContent: "center",
                   }}
                 >
-                  <SvgIcon name='arrows-clockwise' size={16} color={colors.onBackground} />
+                    <SvgIcon
+                      name="arrows-clockwise"
+                      size={20}
+                      color={colors.onSurface}
+                    />
                 </TouchableOpacity>
               )}
             </View>
 
-
-            <Text variant="titleLarge">{user.username ?? shortString(user.walletAddress, 3)}</Text>
-
             <View
-                style={{
-                flexDirection: "row",
-                gap: 8,
+              style={{
+                gap: 16,
                 alignItems: "center",
-                justifyContent: "center",
-                }}
+              }}
             >
+              <Text variant="titleLarge">
+                {user.username ?? shortString(user.walletAddress, 3)}
+              </Text>
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  gap: 8,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 <RoundIconLink
-                name="search"
-                colors={colors}
-                link={getSolanaUserProfileLink(user.walletAddress)}
+                  name="search"
+                  colors={colors}
+                  link={getSolanaUserProfileLink(user.walletAddress)}
                 />
                 <RoundIconLink
-                name="pumpfun"
-                colors={colors}
-                link={getPumpFunUserProfileLink(user.walletAddress)}
+                  name="pumpfun"
+                  colors={colors}
+                  link={getPumpFunUserProfileLink(user.walletAddress)}
                 />
+              </View>
             </View>
-          
           </View>
         </LinearGradient>
-        
-        <View style={{ padding: 24 }}>
+
+        {/* user statistic */}
+        <View style={{ marginTop: 16, paddingHorizontal: 24}}>
           <WalletInfo
             colors={colors}
             enabledFeatures={{
@@ -156,12 +191,36 @@ export const UserModal: React.FC<UserModalProps> = ({updateAvatar, logout, isPer
               humanity: true,
             }}
           />
-          <Button style={{width:144}} mode='outlined' onPress={logout}>Log out</Button>
+        </View>
+        
+        {isPersonal && (
+          <View style={{paddingTop: 56, paddingHorizontal: '30%', justifyContent: "center"}}>
+            <Button size="small" mode="outlined" onPress={()=>{logout();onClose()}}>
+              Log out
+            </Button>
+          </View>
+        )}
       </View>
-    </View>
-    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  topCloseLine: {
+    paddingTop: 20,
+    paddingRight: 24,
+    width: "100%",
+    justifyContent: "flex-end",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  userInfoContainer: {
+    paddingTop: 16,
+    paddingBottom: 32,
+    paddingHorizontal: 24,
+    gap: 12,
+    alignItems: "center",
+  },
+});
 
 function getSolanaUserProfileLink(userAddress: string) {
   return `https://solscan.io/account/${userAddress}`;
@@ -197,7 +256,7 @@ function RoundIconLink({
         alignItems: "center",
         width: size,
         height: size,
-        borderWidth: 2,
+        borderWidth: 1,
         borderColor: colors.onSurfaceVariant,
         backgroundColor: colors.surfaceVariant,
         opacity: 0.4,

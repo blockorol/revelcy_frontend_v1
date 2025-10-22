@@ -1,26 +1,27 @@
 // hooks/useIsMobile.ts
+import { useContentArea } from "@hooks/useContentArea";
 import { useWindowDimensions } from "react-native"
 
 export const MAX_WIDTH_SIZE = 800;
 export const MAX_WIDTH_TWO_CONTAINER_SIZE = 872;
 export const MAX_WIDTH_ONE_CONTAINER_SIZE = 480;
 
-const MAX_WIDTH_MOBILE = 680
+export const MAX_WIDTH_MOBILE = 680
 const MAX_WIDTH_DESKTOP = 680
 
 export default function useIsMobile(): boolean {
-    const { width, scale} = useWindowDimensions();
-    // console.log(`useIsMobile: width= ${width}, scale= ${scale}`)
+    const { width} = useWindowDimensions();
     return width < MAX_WIDTH_ONE_CONTAINER_SIZE;
 }
 
 export function useIsMobileForOneScreenWithDemention(): IsMobileWithDemetionsResp {
-    const { width, height} = useWindowDimensions();
+    const { width} = useWindowDimensions();
+    const {contentHeight} = useContentArea(); 
 
     return {
         isMobile: width < MAX_WIDTH_ONE_CONTAINER_SIZE,
         width:width,
-        height: height
+        height: contentHeight
     };
 }
 
@@ -30,17 +31,22 @@ export function useIsMobileForTwoScreen(): boolean {
 }
 
 export function useIsMobileForTwoScreenWithDemention(): IsMobileWithDemetionsTwoScreenResp {
-    const { width, height } = useWindowDimensions();
-    const isMobile = width < MAX_WIDTH_TWO_CONTAINER_SIZE
+    const { width } = useWindowDimensions();
+    const {contentHeight} = useContentArea(); 
+    const isMobile = width < MAX_WIDTH_TWO_CONTAINER_SIZE;
     return {
         maxWidth: isMobile ? MAX_WIDTH_MOBILE : MAX_WIDTH_DESKTOP,
+        screen: {
+            width: width,
+            height:  contentHeight,
+        },
         left: {
             width: isMobile?width:400,
-            height: isMobile?undefined:height
+            height: isMobile?undefined:contentHeight
         },
         right:  {
             width: isMobile?width:width-400,
-            height: isMobile?undefined:height
+            height: isMobile?undefined:contentHeight
         },
         isMobile: isMobile
     }
@@ -49,6 +55,10 @@ export function useIsMobileForTwoScreenWithDemention(): IsMobileWithDemetionsTwo
 interface IsMobileWithDemetionsTwoScreenResp {
     isMobile: boolean;
     maxWidth: number;
+    screen: {
+        width: number;
+        height: number;
+    };
     left: {
         width: number;
         height?: number;
@@ -66,10 +76,11 @@ interface IsMobileWithDemetionsResp {
 }
 
 export function useIsMobileWithDemention(): IsMobileWithDemetionsResp {
-    const { width, height} = useWindowDimensions();
+    const { width} = useWindowDimensions();
+    const {contentHeight} = useContentArea(); 
     return {
         isMobile: width < MAX_WIDTH_SIZE,
         width:width,
-        height: height
+        height: contentHeight
     };
 }

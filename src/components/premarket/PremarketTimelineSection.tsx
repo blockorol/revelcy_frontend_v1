@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Image, ImageSourcePropType } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, StyleSheet, Animated } from 'react-native';
 import { Text, useTheme, Button } from 'react-native-paper';
 import { IconName, SvgIcon } from '@components/base/SvgIcon';
+import { AvatarGroup } from '@components/base/AvatarGroup';
 import { TokenInfo } from '@api/token';
 import {
   convertDecimalToToken,
@@ -13,7 +14,6 @@ import {
 import { AppTheme } from '@theme/types';
 import { useJoinFlow } from '@hooks/useJoinFlow';
 import { TextProminent } from '@components/ui/Text';
-const avatarPlaceholder = require("@assets/avatar-placeholder.png");
 
 const DEFAULT_BUY_AMOUNT = 0.5;
 const DEFAULT_BUY_AMOUNT_LAMP = convertSmallCountToLamport(DEFAULT_BUY_AMOUNT);
@@ -24,44 +24,53 @@ interface Props {
   onUpdated: ()=>void
 }
 
-const AvatarWithFallback: React.FC<{ uri?: string }> = ({ uri }) => {
-  const [src, setSrc] = useState<ImageSourcePropType>(uri ? { uri } : avatarPlaceholder);
-
-  useEffect(() => {
-    setSrc(uri ? { uri } : avatarPlaceholder);
-  }, [uri]);
-
-  return (
-    <Image
-      source={src}
-      style={styles.avatarImage}
-      onError={() => setSrc(avatarPlaceholder)}
-      accessibilityLabel="holder avatar"
-    />
-  );
-};
+// AvatarWithFallback component removed - now using AvatarGroup component
 
 export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, tokenInfo, onUpdated }) => {
   const { colors } = useTheme() as AppTheme;
-  const [timeLeft, setTimeLeft] = useState(getTimeLeft(tokenInfo.mainInfo.premarketDeadline));
+  const [timeLeft, setTimeLeft] = useState(getTimeLeft(tokenInfo.mainInfo.premarketDeadline, colors));
   const { joinPremarketBySol } = useJoinFlow(onUpdated);
+  const pingScale = useRef(new Animated.Value(1)).current;
+  const pingOpacity = useRef(new Animated.Value(1)).current;
 
   const state = tokenInfo.mainInfo.state
 
+  // Ping animation (expanding ring effect)
+  useEffect(() => {
+    if (state === 'premarket') {
+      const ping = Animated.loop(
+        Animated.parallel([
+          Animated.timing(pingScale, {
+            toValue: 2,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pingOpacity, {
+            toValue: 0,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      ping.start();
+      return () => {
+        ping.stop();
+        pingScale.setValue(1);
+        pingOpacity.setValue(1);
+      };
+    }
+  }, [state]);
 
   useEffect(() => {
     if (state === 'premarket'){
       const interval = setInterval(() => {
-        setTimeLeft(getTimeLeft(tokenInfo.mainInfo.premarketDeadline));
+        setTimeLeft(getTimeLeft(tokenInfo.mainInfo.premarketDeadline, colors));
       }, 1000);
       return () => clearInterval(interval); 
     }
   }, [tokenInfo.mainInfo.premarketDeadline]);
 
-  const avatars = tokenInfo.dynamicInfo.holders.length < 3 ? tokenInfo.dynamicInfo.holders:
-  tokenInfo.dynamicInfo.holders
-    .filter(h => h.iconURL)
-    .slice(0, 3);
+  // Avatar data is now handled by AvatarGroup component
 
 
   return (
@@ -78,88 +87,109 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
           text: 'Created',
           color: colors.onSurfaceVariant
         }}
-        />
+      />
 
-      <View style={{ position: 'relative', paddingLeft: 2 }}>
+      <View style={{ position: 'relative', paddingLeft: 1.5 }}>
         <View
           style={{
             position: 'absolute',
-            top: 0,
-            bottom: 0,
+            top: 8,
+            bottom: 8,
             left: 6,
             width: 1,
             backgroundColor: colors.onSurfaceVariant,
           }}
         />
         {/* People joined */}
-        <View style={[styles.row, { paddingVertical: 32 }]}>
+        <View style={[styles.row, { paddingVertical: 32 }, { gap: 22 }]}>
           <View style={[styles.timelineLine, { backgroundColor: colors.onSurfaceVariant }]} />
-          <Text variant="labelMedium" style={{ color: colors.onSurfaceVariant }}>
-            {tokenInfo.dynamicInfo.holdersCount} people joined
-          </Text>
-          <View style={styles.avatarGroup}>
-            {avatars.map((holder, i) => (
-              <View
-                key={holder.id}
-                style={[
-                  styles.avatarCircle,
-                  {
-                    backgroundColor: colors.onSurfaceVariant,
-                    marginLeft: i === 0 ? 0 : -10,
-                    borderColor: colors.background,
-                  },
-                ]}
-              >
-                <AvatarWithFallback uri={holder.iconURL || undefined} />
-              </View>
-            ))}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Text variant="labelMedium" style={{ color: colors.onSurfaceVariant }}>
+              {tokenInfo.dynamicInfo.holdersCount} people joined
+            </Text>
+            <AvatarGroup 
+              holders={tokenInfo.dynamicInfo.holders}
+              maxAvatars={3}
+              size={24}
+            />
           </View>
         </View>
 
         {/* Now */}
         {state === 'premarket' && 
-          <View style={styles.row}>
-            <View style={[styles.timelineLine, { backgroundColor: colors.primary }]} />
+          <View style={[styles.row, { gap: 22 }]}>
+            <View style={[styles.timelineLine, { backgroundColor: colors.primary + '33', justifyContent: 'center', alignItems: 'center' }]}>
+              <Animated.View 
+                style={[
+                  styles.pingRing,
+                  { 
+                    backgroundColor: colors.primary,
+                    transform: [{ scale: pingScale }],
+                    opacity: pingOpacity,
+                  }
+                ]} 
+              />
+              <View style={[styles.pingDot, { backgroundColor: colors.primary }]} />
+            </View>
             <TextProminent variant="labelMedium" style={{ color: colors.onSurface }}>
               Now <Text style={{ color: colors.onSurfaceVariant }}>Time left</Text>
             </TextProminent>
           </View>
         }
         {state === 'canceled' && 
-          <View style={styles.row}>
+          <View style={[styles.row, { gap: 22 }]}>
             <View style={[styles.timelineLine, { backgroundColor: colors.error }]} />
             <TextProminent variant="labelMedium" style={{ color: colors.onSurface }}>
               Now <Text style={{ color: colors.error }}>Refunded</Text>
             </TextProminent>
           </View>
         }
-
-
-        {state === 'premarket' ?
-        <View style={{ position: 'relative', paddingLeft: 20, paddingVertical: 24, gap: 12, width: 180}}>
-          <Text style={[styles.countdownText, { color: colors.onSurface }]}>{timeLeft}</Text>
+        {state === 'premarket'  ?
+        <View style={{ position: 'relative', paddingLeft: 30, paddingVertical: 24, gap: 12, width: 280}}>
+          <View style={styles.countdownText}>{timeLeft}</View>
           {withJoinButton && <Button 
-          onPress={() => joinPremarketBySol(tokenInfo.mainInfo.premarketPubkey, DEFAULT_BUY_AMOUNT)}
-          mode="outlined" style={{ marginTop: 4 }} textColor={colors.onSurface}>
-            + Buy{' '}
-            {formatNumberCompact(
-              convertDecimalToToken(
-                convertSolanaToTokenBuy({
-                  sol_amount: DEFAULT_BUY_AMOUNT_LAMP,
-                  reserves_sol: tokenInfo.dynamicInfo.reservedSolLamp,
-                  reserves_token: tokenInfo.dynamicInfo.reservedTokenLamp,
-                })
-              )
-            )}{' '}
-            for {DEFAULT_BUY_AMOUNT} SOL
+            style={{ 
+              width: 'auto',
+              height: 30,
+              alignSelf: 'flex-start',
+              borderRadius: 10,
+            }}
+            mode="outlined"
+            onPress={() => joinPremarketBySol(tokenInfo.mainInfo.premarketPubkey, DEFAULT_BUY_AMOUNT)} 
+            textColor={colors.onSurface}
+            contentStyle={{
+              height: 28,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <Text variant="labelMedium" style={{color:colors.onSurface}}>
+                + Buy{' '}
+                {formatNumberCompact(
+                    convertDecimalToToken(
+                      convertSolanaToTokenBuy({
+                        sol_amount: DEFAULT_BUY_AMOUNT_LAMP,
+                        reserves_sol: tokenInfo.dynamicInfo.reservedSolLamp,
+                        reserves_token: tokenInfo.dynamicInfo.reservedTokenLamp,
+                      })
+                    )
+                  )}{' '}
+                for{' '}
+                {DEFAULT_BUY_AMOUNT} SOL
+              </Text>
           </Button>}
         </View>
-        : <View style={{ position: 'relative', paddingLeft: 20, paddingVertical: 24, gap: 12 }}/>}
+        : <View style={{ 
+            position: 'relative', 
+            paddingLeft: 20, 
+            paddingVertical: state === 'finished' ? 0 : 24, 
+            gap: 12 
+          }}/>
+        }
       </View>
 
       {/* Launch */}
       <Row 
-        icon="smile" 
+        icon="rocket" 
         iconColor={tokenInfo.mainInfo.state === 'finished' ? colors.primary :colors.onSurface}
         text={{
           text:convertTimeStampToDataMonth(tokenInfo.mainInfo.premarketDeadline),
@@ -169,7 +199,7 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
           text: tokenInfo.mainInfo.state === 'finished' ? 'Launched' : 'Launching',
           color: tokenInfo.mainInfo.state === 'finished' ? colors.primary :colors.onSurfaceVariant
         }}
-        isStripe={tokenInfo.mainInfo.state === 'finished'}
+        isStripe={tokenInfo.mainInfo.state === 'canceled'}
          />
     </View>
   );
@@ -192,16 +222,16 @@ const Row = ({ icon, iconColor, text, subText, isStripe }: {
   <View style={styles.row}>
     <SvgIcon name={icon} size={16} color={iconColor} />
     
-    {text&&<TextProminent variant="labelMedium" style={{ textDecorationLine: isStripe ? 'line-through':undefined,paddingLeft: 8, color: text.color }}>
+    {text&&<TextProminent variant="labelMedium" style={{ textDecorationLine: isStripe ? 'line-through':undefined,paddingLeft: 10, color: text.color }}>
       {text.text} 
     </TextProminent>}
-    {subText && <Text variant="labelMedium" style={{textDecorationLine: isStripe ? 'line-through':undefined, paddingLeft: 8, color: subText.color }}>
+    {subText && <Text variant="labelMedium" style={{textDecorationLine: isStripe ? 'line-through':undefined, paddingLeft: 0, color: subText.color }}>
       {subText.text}
     </Text>}
   </View>
 );
 
-const getTimeLeft = (deadlineTs: number): string => {
+const getTimeLeft = (deadlineTs: number, colors: any) => {
   const now = new Date();
   const deadline = new Date(deadlineTs * 1000);
   const diff = Math.max(0, deadline.getTime() - now.getTime());
@@ -212,15 +242,48 @@ const getTimeLeft = (deadlineTs: number): string => {
   const m = Math.floor((seconds % 3600) / 60);
   const s = seconds % 60;
 
-  if (d > 0) return `${d}d ${h}h ${m}m ${s}s`;
-  if (h > 0) return `${h}h ${m}m ${s}s`;
-  if (m > 0) return `${m}m ${s}s`;
-  return `${s}s`;
+  if (d > 0) {
+    return (
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <Text style={{ color: colors.onSurface, fontSize: 30, fontWeight: '700', fontFamily: 'Inter_700Bold' }}>{d}d</Text>
+        <Text style={{ color: colors.onSurface, fontSize: 30, fontWeight: '700', fontFamily: 'Inter_700Bold' }}> {h}h</Text>
+        <Text style={{ color: colors.onSurface, fontSize: 30, fontWeight: '800', fontFamily: 'Inter_100Thin' }}> {m}m {s}s</Text>
+      </View>
+    );
+  }
+  if (h > 0) {
+    return (
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <Text style={{ color: colors.onSurface, fontSize: 30, fontWeight: '700', fontFamily: 'Inter_700Bold' }}>{h}h</Text>
+        <Text style={{ color: colors.onSurface, fontSize: 25, fontWeight: '800', fontFamily: 'Inter_100Thin'}}> {m}m {s}s</Text>
+      </View>
+    );
+  }
+  if (m > 0) {
+    return (
+      <Text style={{ color: colors.onSurface, fontSize: 25, fontWeight: '800', fontFamily: 'Inter_100Thin'}}>
+        {m}m {s}s
+      </Text>
+    );
+  }
+  if (s > 0) {
+    return (
+      <Text style={{ color: colors.onSurface, fontSize: 25, fontWeight: '800', fontFamily: 'Inter_100Thin'}}>
+        {s}s
+      </Text>
+    );
+  }
+  return (
+    <Text style={{ color: colors.onSurface, fontSize: 25, fontWeight: '800', fontFamily: 'Inter_100Thin'}}>
+      Deadline reached
+    </Text>
+  );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 5,
+    //paddingVertical: 16,
+    //paddingHorizontal: 5,
     gap: 8,
   },
   row: {
@@ -229,30 +292,26 @@ const styles = StyleSheet.create({
     gap: 8,
     flexWrap: 'wrap',
   },
-  avatarGroup: {
-    flexDirection: 'row',
-    marginLeft: 8,
-  },
-  avatarCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    overflow: 'hidden',
-    borderWidth: 1,
-  },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
-  },
+  // Avatar styles moved to AvatarGroup component
   timelineLine: {
     width: 10,
     height: 10,
     borderRadius: 10,
   },
+  pingRing: {
+    position: 'absolute',
+    width: 10,
+    height: 10,
+    borderRadius: 10,
+  },
+  pingDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 10,
+  },
   countdownText: {
-    minHeight: 150,
-    fontSize: 20,
-    fontWeight: 'bold',
+    minHeight: 30,
+    minWidth: 180,
     marginTop: 4,
   },
 });

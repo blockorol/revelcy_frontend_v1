@@ -46,7 +46,12 @@ export function convertLamportToSmallCount(lamportAmount: BN): number {
 }
 
 export function convertSmallCountToLamport(n: number): BN {
-    return LAMPORT_MULTIPLIER_BIG_INT.muln(n);
+  const parts = n.toFixed(9).split('.'); // e.g., "123.456000000" -> ["123", "456000000"]
+  const whole = parts[0];
+  const decimal = parts[1].padEnd(9, '0'); // should be 9 digits
+
+  const combined = `${whole}${decimal}`; // "123456000000"
+  return new BN(combined);
 }
 
 export function convertCountToLamport(n: number): BN {
@@ -144,7 +149,7 @@ export function formatNumberCompact(value: number | bigint | BN): string {
   } else if (num >= 1_000_000) {
     return `${Math.round(num / 1_000_000)} M`;
   } else if (num >= 1_000) {
-    return `${Math.round(num / 1_000)} K`;
+    return `${Math.round(num / 1_000)}k`;
   } else {
     return `${Math.round(num)}`;
   }
@@ -185,4 +190,4 @@ export function convertTimeStampToDataMonth(timestamp: number): string {
   return `${day} ${monthShort}`;
 }
 
-export type PremarketState = 'premarket' | 'canceled' | 'finished';
+export type PremarketState = 'premarket' | 'canceled' | 'finished' | 'times_up' | 'expired';

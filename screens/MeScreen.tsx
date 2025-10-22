@@ -1,11 +1,12 @@
 import OneScreenContainer from "@components/base/container/OneScreenContainer";
 import { IconName, SvgIcon, SvgIconButton } from "@components/base/SvgIcon";
 import { WalletInfo } from "@components/login/WalletConnectionCheckerArea";
+import { Avatar } from "@components/ui/Avatar";
 import { useIsMobileForOneScreenWithDemention } from "@hooks/useIsMobile";
-import { useAuth } from "@storage/AuthContext";
+import { useAuth } from "@providers/AuthContext";
 import { LinearGradient } from "expo-linear-gradient";
 import { Linking, View } from "react-native";
-import { Avatar, Text, useTheme } from "react-native-paper";
+import { Text, useTheme } from "react-native-paper";
 import { MD3Colors } from "react-native-paper/lib/typescript/types";
 
 
@@ -48,16 +49,7 @@ export default function MeScreen() {
                     alignItems: "center"
                 }}
             >
-                {
-                user.avatarUrl !== null ?
-                    <Avatar.Image size={112} source={{ uri: user.avatarUrl }} style={{
-                    // borderRadius: 8,
-                    borderWidth: 2,
-                    borderColor: colors.primary,
-                    backgroundColor: colors.background
-                    }} /> :
-                    <SvgIcon name="smile-outlined" size={112} color={colors.primary} />
-                }
+                <Avatar size={112} source={user.avatarUrl} walletAddress={user.walletAddress} borderWidth={2}/>  
                 <Text variant='titleLarge'>{user.username}</Text>
                 <View style={{
                     justifyContent: "center",

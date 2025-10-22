@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { useTheme, Text} from 'react-native-paper';
+import React, { useState } from "react";
+import { View, StyleSheet } from "react-native";
+import { useTheme, Text } from "react-native-paper";
 
-import Slider from '@react-native-assets/slider';
-import { MarkerProps } from '@react-native-community/slider';
-import { convertLamportToSmallCount, convertTokenToSolanaBuy, DEFAULT_TOKEN_COUNT_DECIMAL, getPersentOfPremartet } from '@utils/premarket';
-import BN from 'bn.js';
-import { TextProminent } from '@components/ui/Text';
+import Slider from "@react-native-assets/slider";
+import { MarkerProps } from "@react-native-community/slider";
+import {
+  convertLamportToSmallCount,
+  convertTokenToSolanaBuy,
+  DEFAULT_TOKEN_COUNT_DECIMAL,
+  getPersentOfPremartet,
+} from "@utils/premarket";
+import BN from "bn.js";
+import { TextProminent } from "@components/ui/Text";
 
 interface CustomSliderProps {
   min?: number;
@@ -14,6 +19,7 @@ interface CustomSliderProps {
   onValueChange: (value: number) => void;
   labels?: number[]; // e.g., [20, 40, 60, 79.3]
   points?: number[]; // e.g., [20, 40, 60, 79.3]
+  isMobile: boolean;
 }
 
 export const CustomSlider: React.FC<CustomSliderProps> = ({
@@ -21,7 +27,8 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
   max = 80,
   onValueChange,
   labels = [20, 40, 60, 79],
-  points = [20, 30, 40, 50, 60, 70, 79]
+  points = [20, 30, 40, 50, 60, 70, 79],
+  isMobile,
 }) => {
   const theme = useTheme();
   const [sliderWidth, setSliderWidth] = useState(0);
@@ -29,48 +36,59 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
 
   return (
     <View style={{ marginVertical: 32 }}>
-  <View
-    onLayout={(e) => setSliderWidth(e.nativeEvent.layout.width)}
-    style={styles.sliderContainer}
-  >
-    <Slider
-      style={{ width: '100%', height: 40 }}
-      minimumValue={min}
-      maximumValue={max}
-      step={1}
-      value={sliderValue}
-      onValueChange={(val: number) => {
-        setSliderValue(val);
-        onValueChange(val);
-      }}
-      minimumTrackTintColor={theme.colors.primary}
-      maximumTrackTintColor={theme.colors.onSurfaceVariant}
-      thumbTintColor={theme.colors.onBackground}
-      StepMarker={(props: MarkerProps) => {
+      <View
+        onLayout={(e) => setSliderWidth(e.nativeEvent.layout.width)}
+        style={styles.sliderContainer}
+      >
+        <Slider
+          style={{ width: "100%", height: 40 }}
+          minimumValue={min}
+          maximumValue={max}
+          step={1}
+          value={sliderValue}
+          onValueChange={(val: number) => {
+            setSliderValue(val);
+            onValueChange(val);
+          }}
+          minimumTrackTintColor={theme.colors.primary}
+          maximumTrackTintColor={theme.colors.onSurfaceVariant}
+          thumbTintColor={theme.colors.onBackground}
+          StepMarker={(props: MarkerProps) => {
             const value = props.currentValue ?? 0;
-            let offsetX = value < 50 ? 120/(value-10) : 120 /(value-85)
+            let offsetX = value < 50 ? 120 / (value-11.6) : 120 / (value - 83.4);
 
             return (
-              <View style={{ height: 32, justifyContent: 'flex-start', alignItems: 'center' }}>
+              <View
+                style={{
+                  height: 32,
+                  justifyContent: "flex-start",
+                  alignItems: "center",
+                }}
+              >
                 {/* ====== Bubble ====== */}
                 {props.stepMarked && (
                   <View>
                     <View
                       style={{
-                        position: 'absolute',
+                        position: "absolute",
                         top: -30,
-                        alignSelf: 'center',
+                        alignSelf: "center",
                         backgroundColor: theme.colors.primary,
                         width: 95,
                         height: 25,
                         paddingHorizontal: 2,
                         borderRadius: 8,
-                        justifyContent: 'center',
-                        alignItems: 'center',
+                        justifyContent: "center",
+                        alignItems: "center",
                         transform: [{ translateX: offsetX }],
                       }}
                     >
-                      <TextProminent ellipsizeMode='tail' numberOfLines={1} variant="labelMedium" style={{ color: theme.colors.onPrimary }}>
+                      <TextProminent
+                        ellipsizeMode="tail"
+                        numberOfLines={1}
+                        variant="labelMedium"
+                        style={{ color: theme.colors.onPrimary }}
+                      >
                         {value}% {solByPers(value)} SOL
                       </TextProminent>
                     </View>
@@ -83,8 +101,8 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
                         borderLeftWidth: 8,
                         borderRightWidth: 8,
                         borderTopWidth: 10,
-                        borderLeftColor: 'transparent',
-                        borderRightColor: 'transparent',
+                        borderLeftColor: "transparent",
+                        borderRightColor: "transparent",
                         borderTopColor: theme.colors.primary,
                         marginTop: -6,
                       }}
@@ -94,60 +112,62 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
               </View>
             );
           }}
-    />
-    
-    {/* Vertical lines */}
-    {points.map((point) => {
-      const left = ((point - min) / (max - min)) * sliderWidth;
-      return (
-        <View
-          key={`tick-${point}`}
-          style={{
-            position: 'absolute',
-            zIndex:-1,
-            left,
-            top: 25,
-            width: 1,
-            height: 6,
-            backgroundColor: theme.colors.onSurfaceVariant,
-          }}
         />
-      );
-    })}
 
-    {/* Labels */}
-    {labels.map((label) => {
-      const left = ((label - min) / (max - min)) * sliderWidth;
-      return (
-        <View
-          key={`label-${label}`}
-          style={{
-            position: 'absolute',
-            top: 33,
-            left,
-            transform: [{ translateX: -10 }],
-            alignItems: 'center',
-          }}
-        >
-          <Text style={{ fontSize: 10, color: theme.colors.onSurfaceVariant }}>{label}%</Text>
-        </View>
-      );
-    })}
+        {/* Vertical lines */}
+        {points.map((point) => {
+          const left = ((point - min) / (max - min)) * sliderWidth;
+          return (
+            <View
+              key={`tick-${point}`}
+              style={{
+                position: "absolute",
+                zIndex: -1,
+                left,
+                top: 25,
+                width: 1,
+                height: 6,
+                backgroundColor: theme.colors.onSurfaceVariant,
+              }}
+            />
+          );
+        })}
 
-  </View>
-</View>
-
+        {/* Labels */}
+        {labels.map((label) => {
+          const left = ((label - min) / (max - min)) * sliderWidth;
+          return (
+            <View
+              key={`label-${label}`}
+              style={{
+                position: "absolute",
+                top: 33,
+                left,
+                transform: [{ translateX: -10 }],
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{ fontSize: 10, color: theme.colors.onSurfaceVariant }}
+              >
+                {label}%
+              </Text>
+            </View>
+          );
+        })}
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   sliderContainer: {
-    position: 'relative',
-    width: '100%',
-    alignSelf: 'center',
+    position: "relative",
+    width: "100%",
+    alignSelf: "center",
   },
   bubble: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 36,
     paddingVertical: 4,
     paddingHorizontal: 8,
@@ -155,19 +175,19 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   bubbleText: {
-    color: 'black',
-    fontWeight: 'bold',
+    color: "black",
+    fontWeight: "bold",
     fontSize: 12,
   },
   labelsRow: {
-    position: 'absolute',
+    position: "absolute",
     top: 32,
     left: 0,
     right: 0,
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   labelContainer: {
-    position: 'absolute',
+    position: "absolute",
   },
   labelText: {
     paddingTop: 4,
@@ -175,45 +195,43 @@ const styles = StyleSheet.create({
   },
   vLine: {
     height: 4,
-    width: 1
+    width: 1,
   },
   thumbCircle: {
-  position: 'absolute',
-  bottom: 10,
-  width: 36,
-  height: 36,
-  borderRadius: 18,
-  backgroundColor: '#fff',
-  alignItems: 'center',
-  justifyContent: 'center',
-  zIndex: 10,
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 1 },
-  shadowOpacity: 0.2,
-  shadowRadius: 1.41,
-  elevation: 2,
-},
-thumbText: {
-  fontSize: 10,
-  fontWeight: 'bold',
-  color: '#000',
-  lineHeight: 12,
-},
-thumbSubText: {
-  fontSize: 8,
-  color: '#000',
-},
-
+    position: "absolute",
+    bottom: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+    elevation: 2,
+  },
+  thumbText: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#000",
+    lineHeight: 12,
+  },
+  thumbSubText: {
+    fontSize: 8,
+    color: "#000",
+  },
 });
 
 const solByPers = (val: number): string => {
-  
-  const tokenDec = getPersentOfPremartet(val)
-  const zero = new BN(0)
+  const tokenDec = getPersentOfPremartet(val);
+  const zero = new BN(0);
   const sol = convertTokenToSolanaBuy({
-      token_amount: tokenDec,
-      reserves_sol: zero,
-      reserves_token: DEFAULT_TOKEN_COUNT_DECIMAL,
-  })
-  return (-convertLamportToSmallCount(sol)).toFixed(1)
+    token_amount: tokenDec,
+    reserves_sol: zero,
+    reserves_token: DEFAULT_TOKEN_COUNT_DECIMAL,
+  });
+  return (-convertLamportToSmallCount(sol)).toFixed(1);
 };

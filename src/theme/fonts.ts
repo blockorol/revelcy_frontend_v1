@@ -36,7 +36,7 @@ export const fontConfig: MD3Typescale = {
   headlineSmall:  { fontFamily: INTER_700, fontWeight: "700", fontSize: 24, lineHeight: 32, letterSpacing: 0 },
 
   // Title (700)
-  titleLarge:  { fontFamily: INTER_700, fontWeight: "700", fontSize: 22, lineHeight: 28, letterSpacing: 0 },
+  titleLarge:  { fontFamily: INTER_700, fontWeight: "700", fontSize: 20, lineHeight: 28, letterSpacing: 0 },
   titleMedium: { fontFamily: INTER_700, fontWeight: "700", fontSize: 16, lineHeight: 24, letterSpacing: 0.15 },
   titleSmall:  { fontFamily: INTER_700, fontWeight: "700", fontSize: 14, lineHeight: 20, letterSpacing: 0.1 },
 

@@ -26,6 +26,7 @@ PINATA_API_KEY=<Your Pinata API Key>
 PINATA_SECRET_KEY=<Your Pinata Secret Key>
 PINATA_JWT=<Your Pinata JWT Token>
 HELIUS_KEY=<Your Helius api key>
+NETWORK=<devnet | main-beta>
 ```
 
 > **Note:**  

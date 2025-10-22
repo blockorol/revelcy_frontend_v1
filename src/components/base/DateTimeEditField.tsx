@@ -69,7 +69,7 @@ const handleDateConfirm = ( date:Date) => {
   };
 
   return (
-    <View style={{ marginBottom: 16 }}>
+    <View style={{}}>
       <TextInput
         label={label}
         value={formattedValue()}

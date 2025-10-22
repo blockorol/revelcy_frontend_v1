@@ -1,6 +1,8 @@
+// storage/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
+import { setAuthToken } from '@api/http';
 
 const STORAGE_KEY = 'auth-token';
 
@@ -33,30 +35,43 @@ const AuthContext = createContext<{
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserInfo | null>(null);
 
+  // init AsyncStorage
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then((jwt) => {
-      if (jwt) {
-        try {
-          const userInfo = convertJwtToUser(jwt)
-          setUser(userInfo);
-        } catch (e) {
-          AsyncStorage.removeItem(STORAGE_KEY);
-        }
+      if (!jwt) {
+        setAuthToken(undefined);
+        return;
+      }
+      try {
+        const userInfo = convertJwtToUser(jwt);
+        setUser(userInfo);
+        setAuthToken(jwt);       // update http client during startup
+      } catch {
+        AsyncStorage.removeItem(STORAGE_KEY);
+        setAuthToken(undefined);
       }
     });
   }, []);
 
+  useEffect(() => {
+    setAuthToken(user?.jwt); // update http client
+  }, [user?.jwt]);
+
   const login = (jwt: string) => {
     try {
-      const userInfo = convertJwtToUser(jwt)
+      const userInfo = convertJwtToUser(jwt);
       setUser(userInfo);
       AsyncStorage.setItem(STORAGE_KEY, jwt);
-    } catch {}
+      setAuthToken(jwt);         // update http client
+    } catch {
+      // todo: add error
+    }
   };
 
   const logout = () => {
     setUser(null);
     AsyncStorage.removeItem(STORAGE_KEY);
+    setAuthToken(undefined);     // ⟵ очистим токен в http-клиенте
   };
 
   return (
@@ -67,14 +82,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 };
 
 export function convertJwtToUser(jwt: string): UserInfo {
-      const decoded = jwtDecode<JwtPayload>(jwt);
-      return {
-        jwt,
-        userId: decoded.sub,
-        walletAddress: decoded.current_wallet ?? '',
-        username: decoded.username ?? '',
-        avatarUrl: decoded.avatar_url ?? null,
-      }
+  const decoded = jwtDecode<JwtPayload>(jwt);
+  return {
+    jwt,
+    userId: decoded.sub,
+    walletAddress: decoded.current_wallet ?? '',
+    username: decoded.username ?? '',
+    avatarUrl: decoded.avatar_url ?? null,
+  };
 }
 
 export const useAuth = () => useContext(AuthContext);
