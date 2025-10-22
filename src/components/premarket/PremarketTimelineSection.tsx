@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, StyleSheet, Animated } from 'react-native';
 import { Text, useTheme, Button } from 'react-native-paper';
 import { IconName, SvgIcon } from '@components/base/SvgIcon';
 import { AvatarGroup } from '@components/base/AvatarGroup';
@@ -30,9 +30,36 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
   const { colors } = useTheme() as AppTheme;
   const [timeLeft, setTimeLeft] = useState(getTimeLeft(tokenInfo.mainInfo.premarketDeadline, colors));
   const { joinPremarketBySol } = useJoinFlow(onUpdated);
+  const pingScale = useRef(new Animated.Value(1)).current;
+  const pingOpacity = useRef(new Animated.Value(1)).current;
 
   const state = tokenInfo.mainInfo.state
 
+  // Ping animation (expanding ring effect)
+  useEffect(() => {
+    if (state === 'premarket') {
+      const ping = Animated.loop(
+        Animated.parallel([
+          Animated.timing(pingScale, {
+            toValue: 2,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pingOpacity, {
+            toValue: 0,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      ping.start();
+      return () => {
+        ping.stop();
+        pingScale.setValue(1);
+        pingOpacity.setValue(1);
+      };
+    }
+  }, [state]);
 
   useEffect(() => {
     if (state === 'premarket'){
@@ -60,9 +87,9 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
           text: 'Created',
           color: colors.onSurfaceVariant
         }}
-        />
+      />
 
-      <View style={{ position: 'relative', paddingLeft: 2 }}>
+      <View style={{ position: 'relative', paddingLeft: 1.5 }}>
         <View
           style={{
             position: 'absolute',
@@ -74,29 +101,43 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
           }}
         />
         {/* People joined */}
-        <View style={[styles.row, { paddingVertical: 32 }]}>
+        <View style={[styles.row, { paddingVertical: 32 }, { gap: 22 }]}>
           <View style={[styles.timelineLine, { backgroundColor: colors.onSurfaceVariant }]} />
-          <Text variant="labelMedium" style={{ color: colors.onSurfaceVariant }}>
-            {tokenInfo.dynamicInfo.holdersCount} people joined
-          </Text>
-          <AvatarGroup 
-            holders={tokenInfo.dynamicInfo.holders}
-            maxAvatars={3}
-            size={24}
-          />
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Text variant="labelMedium" style={{ color: colors.onSurfaceVariant }}>
+              {tokenInfo.dynamicInfo.holdersCount} people joined
+            </Text>
+            <AvatarGroup 
+              holders={tokenInfo.dynamicInfo.holders}
+              maxAvatars={3}
+              size={24}
+            />
+          </View>
         </View>
 
         {/* Now */}
         {state === 'premarket' && 
-          <View style={styles.row}>
-            <View style={[styles.timelineLine, { backgroundColor: colors.primary }]} />
+          <View style={[styles.row, { gap: 22 }]}>
+            <View style={[styles.timelineLine, { backgroundColor: colors.primary + '33', justifyContent: 'center', alignItems: 'center' }]}>
+              <Animated.View 
+                style={[
+                  styles.pingRing,
+                  { 
+                    backgroundColor: colors.primary,
+                    transform: [{ scale: pingScale }],
+                    opacity: pingOpacity,
+                  }
+                ]} 
+              />
+              <View style={[styles.pingDot, { backgroundColor: colors.primary }]} />
+            </View>
             <TextProminent variant="labelMedium" style={{ color: colors.onSurface }}>
               Now <Text style={{ color: colors.onSurfaceVariant }}>Time left</Text>
             </TextProminent>
           </View>
         }
         {state === 'canceled' && 
-          <View style={styles.row}>
+          <View style={[styles.row, { gap: 22 }]}>
             <View style={[styles.timelineLine, { backgroundColor: colors.error }]} />
             <TextProminent variant="labelMedium" style={{ color: colors.onSurface }}>
               Now <Text style={{ color: colors.error }}>Refunded</Text>
@@ -104,7 +145,7 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
           </View>
         }
         {state === 'premarket'  ?
-        <View style={{ position: 'relative', paddingLeft: 20, paddingVertical: 24, gap: 12, width: 280}}>
+        <View style={{ position: 'relative', paddingLeft: 30, paddingVertical: 24, gap: 12, width: 280}}>
           <View style={styles.countdownText}>{timeLeft}</View>
           {withJoinButton && <Button 
             style={{ 
@@ -204,8 +245,8 @@ const getTimeLeft = (deadlineTs: number, colors: any) => {
   if (d > 0) {
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <Text style={{ color: colors.onSurface, fontSize: 30, fontWeight: '800', fontFamily: 'Arial' }}>{d}d</Text>
-        <Text style={{ color: colors.onSurface, fontSize: 30, fontWeight: '800', fontFamily: 'Arial' }}> {h}h</Text>
+        <Text style={{ color: colors.onSurface, fontSize: 30, fontWeight: '700', fontFamily: 'Inter_700Bold' }}>{d}d</Text>
+        <Text style={{ color: colors.onSurface, fontSize: 30, fontWeight: '700', fontFamily: 'Inter_700Bold' }}> {h}h</Text>
         <Text style={{ color: colors.onSurface, fontSize: 30, fontWeight: '800', fontFamily: 'Inter_100Thin' }}> {m}m {s}s</Text>
       </View>
     );
@@ -213,7 +254,7 @@ const getTimeLeft = (deadlineTs: number, colors: any) => {
   if (h > 0) {
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <Text style={{ color: colors.onSurface, fontSize: 30, fontWeight: '800', fontFamily: 'Arial' }}>{h}h</Text>
+        <Text style={{ color: colors.onSurface, fontSize: 30, fontWeight: '700', fontFamily: 'Inter_700Bold' }}>{h}h</Text>
         <Text style={{ color: colors.onSurface, fontSize: 25, fontWeight: '800', fontFamily: 'Inter_100Thin'}}> {m}m {s}s</Text>
       </View>
     );
@@ -257,9 +298,20 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 10,
   },
+  pingRing: {
+    position: 'absolute',
+    width: 10,
+    height: 10,
+    borderRadius: 10,
+  },
+  pingDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 10,
+  },
   countdownText: {
     minHeight: 30,
-    minWidth: 100,
+    minWidth: 180,
     marginTop: 4,
   },
 });

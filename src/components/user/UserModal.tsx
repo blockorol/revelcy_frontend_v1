@@ -182,37 +182,15 @@ export const UserModalInternal: React.FC<UserModalProps> = ({
         </LinearGradient>
 
         {/* user statistic */}
-        <View style={{ marginTop: 16}}>
-          <View style={{
-              width: containerWidth,
-              height: "100%",
-              justifyContent: 'center',
-              alignContent: 'center',
-              alignItems: 'center',
-              paddingLeft: 24,
-              position: 'absolute',
-              opacity: 1,
-              backgroundColor: colors.onSecondary,
-              borderRadius: 24,
-              flexDirection: 'row',
-              gap: 8,
-              borderWidth: 2, 
-              borderColor: colors.secondary
-            }}> 
-              <SvgIcon name='star-outlined' color={colors.secondary}  />
-              <Text variant='titleMedium' style={{color:colors.secondary}}>Soon</Text>
-            </View>
-
-          <View style={{paddingLeft: 24, opacity: 0.5, backgroundColor: colors.onSecondary, borderRadius: 24}}>
-            <WalletInfo
-              colors={colors}
-              enabledFeatures={{
-                dateAndBalance: true,
-                transactionCount: true,
-                humanity: true,
-              }}
-            />
-          </View>
+        <View style={{ marginTop: 16, paddingHorizontal: 24}}>
+          <WalletInfo
+            colors={colors}
+            enabledFeatures={{
+              dateAndBalance: true,
+              transactionCount: true,
+              humanity: true,
+            }}
+          />
         </View>
         
         {isPersonal && (

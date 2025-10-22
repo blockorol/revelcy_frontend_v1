@@ -91,7 +91,7 @@ export const UserCard: React.FC<UserCardProps> = ({
             variant="labelMedium"
             style={{ color: colors.onSurfaceVariant, fontWeight: 700 }}
           >
-            {tokenInfo.amountProcent.toFixed(1)}%
+            {tokenInfo.amountProcent.toFixed(2)}%
           </Text>
         </View>
       </View>

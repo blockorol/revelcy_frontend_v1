@@ -1,7 +1,7 @@
 // components/base/Avatar.tsx
 import React, { useState } from "react";
 import { View, Image as RNImage } from "react-native";
-import { Avatar as PaperAvatar, useTheme } from "react-native-paper";
+import { useTheme } from "react-native-paper";
 import type { AppTheme } from "@theme/types";
 const WALLET_BUCKET_COUNT = 7;
 
@@ -67,16 +67,18 @@ export function Avatar({
   }
 
   return (
-    <PaperAvatar.Image
-      size={size}
-      source={{ uri: source }}
-      onError={() => setAvatarFailed(true)}
-      style={{
-        backgroundColor: colors.surfaceVariant,
-        borderColor: colors.primary,
-        borderWidth,
-      }}
-    />
+    <View style={containerStyle}>
+      <RNImage
+        source={{ uri: source }}
+        style={{
+          width: size - borderWidth * 2,
+          height: size - borderWidth * 2,
+          borderRadius: (size - borderWidth * 2) / 2,
+        }}
+        resizeMode="cover"
+        onError={() => setAvatarFailed(true)}
+      />
+    </View>
   );
 }
 
