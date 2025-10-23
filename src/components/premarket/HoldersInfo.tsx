@@ -68,7 +68,7 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 20, rowGap: 16 }}>
         {sortedHolders.map((holder, ) => {
           const amount = convertLamportToSmallCount(holder.amountSolLamp)
-          const MAX_SOL = 80 // TODO: find real max sol
+          const MAX_SOL = 85 // TODO: find real max sol
           const percentOfMax = (amount / MAX_SOL) * 100
           return (
             <View key={holder.walletAddress} style={{}}>
