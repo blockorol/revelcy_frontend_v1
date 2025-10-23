@@ -53,17 +53,8 @@ export function useJoinFlow(onUpdated:()=>void) {
         return "invalid-amount";
       }
       if (!user) {
-        notify.error("Please log in to continue", 
-          {
-            action: {
-              label: "connect",
-              onAction() {
-                open(renderLogin())
-              },
-            }
-          }
-        );
-
+        // For unauthenticated users, show login flow directly
+        open(renderLogin());
         return "need-login";
       }
       if (!wallet || !connected) {

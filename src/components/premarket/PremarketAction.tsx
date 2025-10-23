@@ -66,9 +66,15 @@ export function PremarketActionPremarket({
 
   if (!user) {
     return (
-      <View style={{flexDirection: "row", padding: isMobile ? 16 : 24, width: "100%", gap: 16}}>
-        <Button style={{flex: 3}} onPress={() => open(renderLogin())}>Login</Button>
-        <ShareTextButton style={{flex: 1}} shareMessage={`Join to premarket on: ${currentURL}`}/>
+      <View style={{ gap: 48, alignItems: "center", width: '100%',backgroundColor: isMobile?colors.shadow:undefined}}>
+        <PremarketJoin
+          tokenMainInfo={tokenMainInfo}
+          tokenDynamicInfo={tokenDynamicInfo}
+          onUpdated={onUpdated}
+          user={null}
+          currentURL={currentURL}
+          isMobile={isMobile}
+        />
       </View>
     );
   }
