@@ -81,6 +81,10 @@ export default function LoginFlow({loginFlowStateOverride, onCloseButton}:LoginF
         }}
         overrideSaveJwt={ (jwt: string, isNewUser: boolean) => {
           jwtCurrentRef.current = jwt
+          if (!isNewUser && onCloseButton) {
+            onCloseButton()
+            return
+          }
         }}
         onClose={onCloseButton}
        />)
