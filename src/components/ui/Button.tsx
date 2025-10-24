@@ -48,7 +48,7 @@ const sizeStyles: Record<
     paddingWithIconLeft: 20,
     paddingWithIconRight: 20,
     iconSize: 24,
-    iconGap: 8,
+    iconGap: 0,
   },
   small: {
     height: 30,
