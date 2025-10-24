@@ -138,8 +138,8 @@ export default function OverviewPremarketCreation({
   // premaket data
   const prem = data.premarket;
 
-  const deadlineText = prem?.deadline
-    ? format(new Date(prem.deadline * 1000), "dd.MM.yyyy HH:mm (XXX)")
+  const deadlineText = prem?.deadline_sec
+    ? format(new Date(prem.deadline_sec * 1000), "dd.MM.yyyy HH:mm (XXX)")
     : undefined;
 
     
