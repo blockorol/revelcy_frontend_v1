@@ -495,6 +495,10 @@ export default function PremarketCreationFlow() {
         {step === FLOW_STEP.OVERVIEW && (
           <OverviewPremarketCreation
             onBack={()=>setStep(FLOW_STEP.CUSTOMIZE_TOKEN)}
+            removeAll={async () => {
+              await clearDraft(storageKey);
+              setStep(FLOW_STEP.TOKEN_BASE_INFO)
+            }}
             onClose={async () => {
               await clearDraft(storageKey);
               router.back();

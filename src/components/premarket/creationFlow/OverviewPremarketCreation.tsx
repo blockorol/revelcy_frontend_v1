@@ -26,6 +26,7 @@ type Props = {
   data: TokenCreateFullData;
   onLaunch: () => void;
   launchState: string | undefined;
+  removeAll: () => void;
   onClose?: () => void;
   onBack?: () => void;
 };
@@ -33,6 +34,7 @@ export default function OverviewPremarketCreation({
   data,
   onLaunch,
   launchState,
+  removeAll,
   onClose,
   onBack,
 }: Props) {
@@ -41,7 +43,6 @@ export default function OverviewPremarketCreation({
   const { isMobile, width,height } = useIsMobileWithDemention();
   const { publicKey, connected, connect, disconnect } = useWallet();
   const { user, logout } = useAuth();
-  const solanaFee = 0.02;
   const errorMapper = {
     user: {
       text: "Please login",
@@ -113,6 +114,7 @@ export default function OverviewPremarketCreation({
         style={{ padding: 24, alignItems: "center", justifyContent: "center" }}
       >
         <Text variant="bodyLarge">Loading...</Text>
+        <Button variant='primary' mode='outlined' onPress={removeAll}>Remove all info</Button>
       </View>
     );
   }
