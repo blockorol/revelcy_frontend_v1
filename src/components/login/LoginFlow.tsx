@@ -13,7 +13,8 @@ import UserName from '@components/login/UserName';
 import { ExtendedMD3Colors } from '@theme/types';
 
 interface LoginFlowProps {
-  loginFlowStateOverride?: LoginState
+  loginFlowStateOverride?: LoginState;
+  onCloseButton?: () => void;
 }
 
 export enum LoginState {
@@ -36,7 +37,7 @@ const DEF_PADDINGS: Paddings = {
   bottom: 48,
 }
 
-export default function LoginFlow({loginFlowStateOverride}:LoginFlowProps) {
+export default function LoginFlow({loginFlowStateOverride, onCloseButton}:LoginFlowProps) {
   const colors  = useTheme().colors as ExtendedMD3Colors;
   const {isMobile, width, height} = useIsMobileWithDemention();
   const { login } = useAuth();
@@ -81,6 +82,7 @@ export default function LoginFlow({loginFlowStateOverride}:LoginFlowProps) {
         overrideSaveJwt={ (jwt: string, isNewUser: boolean) => {
           jwtCurrentRef.current = jwt
         }}
+        onClose={onCloseButton}
        />)
        break;
    /* case LoginState.WALLET_CONNECTING:
