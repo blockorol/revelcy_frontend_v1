@@ -21,7 +21,7 @@ import { uploadTokenMetadataToIPFS } from '@services/files/ipfs/pumpfun';
 import { createPremarket, CreatePremarketArgs } from '@services/blockchain/premarket/createPremarket';
 import EditPremarketSettingsForm from '@components/token/create/EditPremarketSettings';
 import { convertSmallCountToLamport } from '@utils/premarket';
-import { premarketCreated, userJoinedToPremarket } from '@api/token';
+import { premarketCreated, updateAboutCommunity, userJoinedToPremarket } from '@api/token';
 import { useAuth } from '@providers/AuthContext';
 import { uploadImage } from '@api/files';
 import useIsMobile from '@hooks/useIsMobile';
@@ -30,6 +30,7 @@ import { getSolanaConnection } from '@services/blockchain/solana';
 import { useNotification } from '@storage/NotificationContext';
 
 import { draftKey, loadDraft, saveDraft, clearDraft } from '@storage/PremarketDraft';
+import { PublicKey } from '@solana/web3.js';
 
 enum FLOW_STEP {
   TOKEN_BASE_INFO = 1,
@@ -159,6 +160,22 @@ export default function PremarketCreationFlow() {
       });
       return;
     }
+    const nowSec = Math.floor(Date.now() / 1000);
+    const SEC_IN_H = 60*60
+    const SEC_IN_DAY = 24*SEC_IN_H
+
+    if (premarketSettingsData.deadline_sec < nowSec + SEC_IN_H) {
+      notify.error("Min deadline - 1 h", {
+        suggest: "Change deadline",
+      });
+      return
+    }
+    if (premarketSettingsData.deadline_sec > nowSec + SEC_IN_DAY*31) {
+      notify.error("Max deadline - 31 days", {
+        suggest: "Change deadline",
+      });
+      return
+    }
 
     const tokenData = {
       mainData: tokenMainData,
@@ -206,7 +223,6 @@ export default function PremarketCreationFlow() {
         }
       }
     });
-
     if (!ipfsData) {
       setLaunchState(undefined);
       notify.error("failed to upload data to IPFS", {
@@ -216,45 +232,65 @@ export default function PremarketCreationFlow() {
     }
 
     setLaunchState("Creating premarket in blockchain...");
-    try {
-      console.info("after uploadToIPFS", tokenData.premarketSettingsData.goal_sol_lamp.toString());
-      const createPremarketArgs: CreatePremarketArgs = {
-        name: tokenData.mainData.tokenName,
-        symbol: tokenData.mainData.tokenTicker,
-        uri: ipfsData.metadataUri,
-        deadline: tokenData.premarketSettingsData.deadline,
-        goal_sol_lamp: tokenData.premarketSettingsData.goal_sol_lamp,
-        max_sol_lamp: tokenData.premarketSettingsData.goal_sol_lamp,
-        creator_allocate_lamp: convertSmallCountToLamport(tokenData.tokenomicsData.creatorInitialBuy)
-      };
-      setLaunchState("try to create TX...");
+    const createPremarketArgs: CreatePremarketArgs = {
+      name: tokenData.mainData.tokenName,
+      symbol: tokenData.mainData.tokenTicker,
+      uri: ipfsData.metadataUri,
+      deadline: tokenData.premarketSettingsData.deadline_sec,
+      goal_sol_lamp: tokenData.premarketSettingsData.goal_sol_lamp,
+      max_sol_lamp: tokenData.premarketSettingsData.goal_sol_lamp,
+      creator_allocate_lamp: convertSmallCountToLamport(tokenData.tokenomicsData.creatorInitialBuy)
+    };
+    setLaunchState("try to create TX...");
+    let resp: undefined | {
+      txId: string;
+      premarketPDA: PublicKey;
+      report: string;
+      mintAddress: string;
+    };
 
-      const resp = await createPremarket(
+    try {
+      resp = await createPremarket(
         network,
         wallet,
         currentConnection,
         createPremarketArgs,
         (text) => { setLaunchState(text); }
       );
-
       setLaunchState("Transaction created...");
-      console.log(`createBondedToken done! tx: ${resp.txId}; premarket: ${resp.premarketPDA.toString()}; mint: ${resp.mintAddress}`);
       setPremarketPDA(resp.premarketPDA.toString());
       setTxId(resp.txId);
+    } catch {
+          notify.error("failed to create premarket", {
+          suggest: "Please, try again",
+          duration: 60000,
+          action: {
+            label: 'Ok',
+            onAction: () => { }
+          }
+        });      
+        return
 
+    }
+    if (resp === undefined) {
+      notify.error("failed to create premarket: no txId linked", {
+        suggest: "Please, try again and contact admin",
+        duration: 60000,
+        action: {
+          label: 'Ok',
+          onAction: () => { }
+        }
+      });    
+      return
+    }
+
+
+    try {
       // Сразу пишем в черновик PROCESSING (на случай перезагрузки)
       await saveDraft(storageKey, { step: FLOW_STEP.PROCESSING });
 
       setLaunchState("Adding to white list to Revelcy...");
       try {
-        if (tokenData.customData.banner?.data) {
-          const response = await fetch(tokenData.customData.banner?.data);
-          const blob = await response.blob();
-          const fileName = `${resp.premarketPDA.toString()}_banner`;
-          const file = new File([blob], `${fileName}.png`, { type: blob.type });
-          tokenData.customData.banner.url = await uploadImage(file, fileName);
-        }
-
         await premarketCreated({
           tx: resp.txId,
           premarketPubKey: resp.premarketPDA.toString(),
@@ -275,7 +311,7 @@ export default function PremarketCreationFlow() {
             },
             premarketGoalPers: tokenData.premarketSettingsData.goal_percent,
             premarketGoalSolLamp: tokenData.premarketSettingsData.goal_sol_lamp,
-            premarketDeadline: tokenData.premarketSettingsData.deadline,
+            premarketDeadline: tokenData.premarketSettingsData.deadline_sec,
             premarketCreated: Math.floor(Date.now() / 1000),
             createdByPubkey: wallet.publicKey.toString(),
             state: 'premarket',
@@ -283,9 +319,7 @@ export default function PremarketCreationFlow() {
             tokenMint:  resp.mintAddress,
           },
           communityInfo: {
-            description: tokenData.customData.description ?? "",
-            tokenBannerURL: tokenData.customData.banner?.url,
-            links: tokenData.customData.links
+            description: "",
           },
         });
 
@@ -300,7 +334,7 @@ export default function PremarketCreationFlow() {
           });
         }
       } catch (error) {
-        notify.error("failed to add premarket to whitelist", {
+        notify.error("Premarket created, but didn't added to whitelist in the website", {
           suggest: "Please, contact administrator with premarket address:" + resp.premarketPDA.toString(),
           duration: 60000,
           action: {
@@ -308,6 +342,46 @@ export default function PremarketCreationFlow() {
             onAction: () => { }
           }
         });
+        return
+      }
+
+      setLaunchState("Adding community info");
+      try {
+        try {
+          if (tokenData.customData.banner?.data) {
+            const response = await fetch(tokenData.customData.banner?.data);
+            const blob = await response.blob();
+            const fileName = `${resp.premarketPDA.toString()}_banner`;
+            const file = new File([blob], `${fileName}.png`, { type: blob.type });
+            tokenData.customData.banner.url = await uploadImage(file, fileName);
+          }
+        } catch {
+          notify.error("Failed to upload community banner", {
+            suggest: "Please, add it again from premarket page",
+            duration: 60000,
+            action: {
+              label: 'Ok',
+              onAction: () => { }
+            }
+          });
+          tokenData.customData.banner = undefined
+        }
+
+        await updateAboutCommunity(resp.premarketPDA.toString(), {
+            description: tokenData.customData.description ?? "",
+            tokenBannerURL: tokenData.customData.banner?.url,
+            links: tokenData.customData.links
+          })
+      } catch {
+          notify.error("failed to add community info", {
+          suggest: "Please, add it again from premarket page",
+          duration: 60000,
+          action: {
+            label: 'Ok',
+            onAction: () => { }
+          }
+        });
+        // no return just notify
       }
 
       setStep(FLOW_STEP.PROCESSING);
@@ -421,6 +495,10 @@ export default function PremarketCreationFlow() {
         {step === FLOW_STEP.OVERVIEW && (
           <OverviewPremarketCreation
             onBack={()=>setStep(FLOW_STEP.CUSTOMIZE_TOKEN)}
+            removeAll={async () => {
+              await clearDraft(storageKey);
+              setStep(FLOW_STEP.TOKEN_BASE_INFO)
+            }}
             onClose={async () => {
               await clearDraft(storageKey);
               router.back();
