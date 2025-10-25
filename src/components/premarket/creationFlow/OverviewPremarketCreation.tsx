@@ -371,7 +371,7 @@ export default function OverviewPremarketCreation({
             )}
             <PremarketBondingCurve
               currentUserId={user?.userId ?? "dummy_id"}
-              width={isMobile ? width - 16 * 2 : 448}
+              width={isMobile ? width - 16 * 2 : 432}
               height={292}
               state="premarket"
               goalPercent={prem?.goal_percent ?? 0}
