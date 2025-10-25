@@ -90,7 +90,7 @@ export function PremarketDynamicInfo({
                 </Svg>
               </View>
             )}
-            {parseFloat(tokenDynamicInfo.change24h.toFixed(2))}%{" "}
+            {tokenDynamicInfo.change24h.toFixed(2)}%{" "}
             <Text
               variant="labelMedium"
               style={{ color: theme.colors.onSurfaceVariant }}
