@@ -1,7 +1,7 @@
 // components/token/TokenOverviewCreation.tsx
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { View, Image, ScrollView } from "react-native";
-import { useTheme, ActivityIndicator, Divider } from "react-native-paper";
+import { useTheme, Divider } from "react-native-paper";
 import { Button } from "@components/ui/Button";
 import { Text } from "@components/ui/Text";
 import { format } from "date-fns";
@@ -21,6 +21,8 @@ import {
 import LoginButton from "@components/login/LoginButton";
 import { DonutWithLegend } from "@components/base/DonutWithLegend";
 import { round } from "@utils/numbers";
+import { useOverlay } from "@storage/UniversalOverlayProvider";
+import TransactionLoadingModal from "@components/modals/TransactionLoadingModal";
 
 type Props = {
   data: TokenCreateFullData;
@@ -41,6 +43,16 @@ export default function OverviewPremarketCreation({
   const { isMobile, width,height } = useIsMobileWithDemention();
   const { publicKey, connected, connect, disconnect } = useWallet();
   const { user, logout } = useAuth();
+  const { open, close: closeOverlay } = useOverlay();
+
+  // Handle modal display when launchState changes
+  useEffect(() => {
+    if (launchState) {
+      open(<TransactionLoadingModal launchState={launchState} />);
+    } else {
+      closeOverlay();
+    }
+  }, [launchState, open, closeOverlay]);
   const solanaFee = 0.02;
   const errorMapper = {
     user: {
@@ -185,37 +197,6 @@ export default function OverviewPremarketCreation({
           minHeight: isMobile ? height: height * 0.9,
         }}
       >
-        {launchState && (
-          <View
-            style={{
-              position: "absolute",
-              left: -(isMobile ? 16 : 24),
-              right: -(isMobile ? 16 : 24),
-              top: -(isMobile ? 40 : 24),
-              bottom: -(isMobile ? 40 : 24),
-              zIndex: 9999,
-              backgroundColor: theme.colors.shadow,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <View
-              style={{
-                backgroundColor: colors.surfaceContainerHighest,
-                gap: 20,
-                padding: 16,
-                borderRadius: 16,
-              }}
-            >
-              <Text variant="titleMedium"> {launchState}</Text>
-              <ActivityIndicator
-                animating
-                color={theme.colors.primary}
-                size="large"
-              />
-            </View>
-          </View>
-        )}
 
         <TokenCreateFormHeader
           title="Overview"
