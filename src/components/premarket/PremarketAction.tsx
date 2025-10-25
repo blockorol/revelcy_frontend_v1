@@ -54,35 +54,14 @@ export function PremarketActionPremarket({
   isMobile
 }: PremarketActionLaunchedProps) {
   let { user } = useAuth();
-  const { open, close } = useOverlay();
   const { colors } = useTheme();
   const currentURL = window.location.href;
 
-  const renderLogin = () => (
-    <OneScreenContainer>
-      <LoginFlow onCloseButton={close} />
-    </OneScreenContainer>
-  );
 
-  if (!user) {
-    return (
-      <View style={{ gap: 48, alignItems: "center", width: '100%',backgroundColor: isMobile?colors.shadow:undefined}}>
-        <PremarketJoin
-          tokenMainInfo={tokenMainInfo}
-          tokenDynamicInfo={tokenDynamicInfo}
-          onUpdated={onUpdated}
-          user={null}
-          currentURL={currentURL}
-          isMobile={isMobile}
-        />
-      </View>
-    );
-  }
-
-    const isCreator = tokenMainInfo.createdByPubkey === user.walletAddress;
-    const userJoined =
-    tokenDynamicInfo.holders.find((holder) => holder.id === user.userId) !==
-    undefined;
+  const isCreator = tokenMainInfo.createdByPubkey === user?.walletAddress;
+  const userJoined =
+  tokenDynamicInfo.holders.find((holder) => holder.id === user?.userId) !==
+  undefined;
 
   const now = Math.floor(Date.now() / 1000);
   const isDeadline = tokenMainInfo.premarketDeadline < now;
