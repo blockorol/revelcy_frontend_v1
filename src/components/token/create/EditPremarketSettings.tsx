@@ -41,8 +41,8 @@ export default function EditPremarketSettingsForm({
   const [premarketGoalSolLamp, setPremarketGoalSolLamp] = useState<
     BN | undefined
   >(presetData?.goal_sol_lamp);
-  const [deadlineDateTime, setDeadlineDateTime] = useState<number | undefined>(
-    presetData?.deadline
+  const [deadlineDateTimeSec, setDeadlineDateTimeSec] = useState<number | undefined>(
+    presetData?.deadline_sec
   );
   const [dataTimeError, setDataTimeError] = useState<string | null>(null);
   const [currentDataTime, setDataTime] = useState<Date>(new Date());
@@ -59,16 +59,16 @@ export default function EditPremarketSettingsForm({
     setPremarketGoalSolLamp(sol.muln(-1));
   };
   const handleSubmit = () => {
-    if (premarketGoalSolLamp !== undefined && deadlineDateTime !== undefined) {
+    if (premarketGoalSolLamp !== undefined && deadlineDateTimeSec !== undefined) {
       onNext({
         goal_percent: premarketGoalPers,
-        deadline: deadlineDateTime,
+        deadline_sec: deadlineDateTimeSec,
         goal_sol_lamp: premarketGoalSolLamp,
       });
     }
   };
   const isFilledAll = (): boolean => {
-    return premarketGoalSolLamp !== undefined && deadlineDateTime !== undefined;
+    return premarketGoalSolLamp !== undefined && deadlineDateTimeSec !== undefined;
   };
 
   return (
@@ -113,11 +113,11 @@ export default function EditPremarketSettingsForm({
                 const dataTimeNow = new Date();
                 if (newDate.getTime() < dataTimeNow.getTime()) {
                   setDataTimeError("time should be in the future");
-                  setDeadlineDateTime(undefined);
+                  setDeadlineDateTimeSec(undefined);
                   return;
                 }
                 setDataTimeError(null);
-                setDeadlineDateTime(Math.floor(newDate.getTime() / 1000)); // todo: check /1000(?)
+                setDeadlineDateTimeSec(Math.floor(newDate.getTime() / 1000)); // todo: check /1000(?)
               }}
             />
             {dataTimeError && (
