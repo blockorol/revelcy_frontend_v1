@@ -58,7 +58,7 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
       }}
     >
       <View style={{flexDirection: 'row', alignItems: 'center', justifyContent:'space-between'}}>
-        <View style={{flexDirection: 'row', gap: 8}}>
+        <View style={{flexDirection: 'row', gap: 8, marginTop: -25}}>
           <Text variant="titleLarge"  selectionColor={colors.onSurface}>People</Text>
           <Text variant="titleLarge" style={{color:colors.onSurfaceVariant}}>{holdersAmount}</Text>
         </View>
@@ -68,7 +68,7 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 20, rowGap: 16 }}>
         {sortedHolders.map((holder, ) => {
           const amount = convertLamportToSmallCount(holder.amountSolLamp)
-          const MAX_SOL = 80 // TODO: find real max sol
+          const MAX_SOL = 85 // TODO: find real max sol
           const percentOfMax = (amount / MAX_SOL) * 100
           return (
             <View key={holder.walletAddress} style={{}}>
@@ -175,7 +175,7 @@ export const OrderMenu: React.FC<PropsOrderMenu> = ({ value, onChange, anchor })
         onPress={() => { onChange(target); close(); }}
         style={[commonItemStyle, { backgroundColor: bg }]}
       >
-        <View style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: 'flex-end', gap: 4 }}>
+        <View style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: 'flex-start', gap: 4}}>
           <Text variant='labelMedium' prominent style={{ color: fg }}>{label}</Text>
           <SvgIcon name={icon as any} size={16} color={fg} />
         </View>

@@ -13,13 +13,13 @@ import UserName from '@components/login/UserName';
 import { ExtendedMD3Colors } from '@theme/types';
 
 interface LoginFlowProps {
-  loginFlowStateOverride?: LoginState
+  loginFlowStateOverride?: LoginState;
   onCloseButton?: () => void;
 }
 
 export enum LoginState {
   FIRST = "FIRST",
-  WALLET_CONNECTING = "WALLET_CONNECTING",
+  //WALLET_CONNECTING = "WALLET_CONNECTING",
   SET_USER_NAME = "SET_USER_NAME",
   SET_AVATAR = "SET_AVATAR",
 }
@@ -37,7 +37,7 @@ const DEF_PADDINGS: Paddings = {
   bottom: 48,
 }
 
-export default function LoginFlow({onCloseButton, loginFlowStateOverride}:LoginFlowProps) {
+export default function LoginFlow({loginFlowStateOverride, onCloseButton}:LoginFlowProps) {
   const colors  = useTheme().colors as ExtendedMD3Colors;
   const {isMobile, width, height} = useIsMobileWithDemention();
   const { login } = useAuth();
@@ -77,7 +77,7 @@ export default function LoginFlow({onCloseButton, loginFlowStateOverride}:LoginF
         width={activeProp.width - DEF_PADDINGS.left - DEF_PADDINGS.right}
         toNext={() => {
           moveBetweenStateRef.current = true
-          setLoginFlowState(LoginState.WALLET_CONNECTING)
+          setLoginFlowState(LoginState.SET_USER_NAME)
         }}
         overrideSaveJwt={ (jwt: string, isNewUser: boolean) => {
           jwtCurrentRef.current = jwt
@@ -86,9 +86,10 @@ export default function LoginFlow({onCloseButton, loginFlowStateOverride}:LoginF
             return
           }
         }}
+        onClose={onCloseButton}
        />)
        break;
-    case LoginState.WALLET_CONNECTING:
+   /* case LoginState.WALLET_CONNECTING:
       currentArea = (<WalletConnectionChecker 
         height={"100%" }
         width={activeProp.width - DEF_PADDINGS.left - DEF_PADDINGS.right}
@@ -109,6 +110,7 @@ export default function LoginFlow({onCloseButton, loginFlowStateOverride}:LoginF
         balance={undefined}
        />)
        break;
+    */
     case LoginState.SET_USER_NAME:
       currentArea = (<UserName 
         height={"100%" }
@@ -140,9 +142,7 @@ export default function LoginFlow({onCloseButton, loginFlowStateOverride}:LoginF
         height={"100%" }
         width={activeProp.width - DEF_PADDINGS.left - DEF_PADDINGS.right}
         toNext={() => {
-          if (onCloseButton) {
-            onCloseButton()
-          }
+          login(jwtCurrentRef.current);
         }}
         setUploadAvatarToServer={async (avatarUri: string) => {
           try {
@@ -173,25 +173,10 @@ export default function LoginFlow({onCloseButton, loginFlowStateOverride}:LoginF
       backgroundColor={colors.surfaceContainerLow}
       paddings={DEF_PADDINGS} 
     >
-    {(onCloseButton !== undefined) && (
-        <IconButton
-          icon="close"
-          size={24}
-          onPress={onCloseButton}
-          style={styles.closeButton}
-          iconColor={colors.onSurface}
-        />
-      )}
       {currentArea}
   </ImageBackgroundOverlay>
   );
 }
 
 const styles = StyleSheet.create({
-  closeButton: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    zIndex: 10,
-  },
 });

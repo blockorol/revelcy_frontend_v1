@@ -1,4 +1,5 @@
 import { TokenDynamicInfo, TokenMainInfo, userJoinedToPremarket } from "@api/token";
+import { getWalletInfo, WalletInfoResponseDto } from "@api/wallet";
 import { SvgIcon } from "@components/base/SvgIcon";
 import { BN } from "@coral-xyz/anchor";
 import { joinToPremarket } from "@services/blockchain/premarket/joinPremarket";
@@ -12,7 +13,7 @@ import {
   convertSolanaToTokenBuy,
   convertSmallCountToLamport,
 } from "@utils/premarket";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View } from "react-native";
 import {
   HelperText,
@@ -32,12 +33,15 @@ import { useOverlay } from "@storage/UniversalOverlayProvider"; // <-- новы�
 import { ShareTextButton } from "@components/base/ButtonShare";
 import React from "react";
 import { MobileBottomSheet } from "@components/ui/MobileBottomSheet";
+import LoginFlow from "@components/login/LoginFlow";
+import { LoginModal } from "@components/login/LoginButton";
+import OneScreenContainer from "@components/base/container/OneScreenContainer";
 
 interface PremarketJoinProps {
   tokenDynamicInfo: TokenDynamicInfo;
   tokenMainInfo: TokenMainInfo;
   onUpdated: () => void;
-  user: UserInfo,
+  user: UserInfo | null,
   currentURL: string
   isMobile: boolean
 }
@@ -90,10 +94,35 @@ function PremarketJoinBase({
   const wallet = useAnchorWalletSafe();
   const theme = useTheme();
   const { open, replace, close } = useOverlay();
+  const [loginModalVisible, setLoginModalVisible] = React.useState(false);
 
   const [rawInput, setRawInput] = useState("");
   const [amountSol, setAmountSol] = useState<number | undefined>(undefined);
   const [amountToken, setAmountToken] = useState<BN | undefined>(undefined);
+  const [walletInfo, setWalletInfo] = useState<WalletInfoResponseDto | null>(null); // todo: change to internal struct
+  const [walletInfoLoading, setWalletInfoLoading] = useState(false);
+
+  // Fetch wallet info when user is available
+  useEffect(() => {
+    const fetchWalletInfo = async () => {
+      if (user?.walletAddress) {
+        setWalletInfoLoading(true);
+        try {
+          const info = await getWalletInfo(user.walletAddress);
+          setWalletInfo(info);
+        } catch (error) {
+          console.error("Failed to fetch wallet info:", error);
+          setWalletInfo(null);
+        } finally {
+          setWalletInfoLoading(false);
+        }
+      } else {
+        setWalletInfo(null);
+      }
+    };
+
+    fetchWalletInfo();
+  }, [user?.walletAddress]);
 
   const renderLoader = (status: string) => (
     <View style={{ gap: 20 }}>
@@ -134,6 +163,13 @@ function PremarketJoinBase({
       notify.warning("Please set amount in SOL");
       return;
     }
+    
+    // If user is not authenticated, show login flow
+    if (!user) {
+      setLoginModalVisible(true);
+      return;
+    }
+    
     if (!wallet || !connected) {
       console.error("wallet is not connected");
       notify.error("wallet is not connected", {
@@ -224,7 +260,19 @@ function PremarketJoinBase({
         {user && (
           <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
             <SvgIcon name="wallet-outlined" color={theme.colors.onBackground} />
-            <Text>{shortString(user.walletAddress)}</Text>
+            {walletInfoLoading ? (
+              <Text>Loading...</Text>
+            ) : walletInfo ? (
+              <Text>{walletInfo.balance.toFixed(2)} SOL</Text>
+            ) : (
+              <Text style={{ color: theme.colors.onSurfaceVariant }}>Balance unavailable</Text>
+            )}
+          </View>
+        )}
+        {!user && (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+            <SvgIcon name="wallet-outlined" color={theme.colors.onBackground} />
+            <Text style={{ color: theme.colors.onSurfaceVariant }}>Not connected</Text>
           </View>
         )}
       </View>
@@ -278,6 +326,11 @@ function PremarketJoinBase({
         
         {!isMobile&&<ShareTextButton style={{flex: 1}} shareMessage={`Join to premarket on: ${currentURL}`}/>}
       </View>
+
+      <LoginModal 
+        visible={loginModalVisible} 
+        setVisible={setLoginModalVisible}
+      />
     </View>
   );
 }

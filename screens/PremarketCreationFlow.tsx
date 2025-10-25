@@ -28,6 +28,7 @@ import useIsMobile from '@hooks/useIsMobile';
 import { useNetwork } from '@providers/NetworkContext';
 import { getSolanaConnection } from '@services/blockchain/solana';
 import { useNotification } from '@storage/NotificationContext';
+import { BN } from '@coral-xyz/anchor';
 
 import { draftKey, loadDraft, saveDraft, clearDraft } from '@storage/PremarketDraft';
 import { PublicKey } from '@solana/web3.js';
@@ -238,7 +239,7 @@ export default function PremarketCreationFlow() {
       uri: ipfsData.metadataUri,
       deadline: tokenData.premarketSettingsData.deadline_sec,
       goal_sol_lamp: tokenData.premarketSettingsData.goal_sol_lamp,
-      max_sol_lamp: tokenData.premarketSettingsData.goal_sol_lamp,
+      max_sol_lamp: new BN(85_000_000_000), //TODO: get max lamports from backend
       creator_allocate_lamp: convertSmallCountToLamport(tokenData.tokenomicsData.creatorInitialBuy)
     };
     setLaunchState("try to create TX...");

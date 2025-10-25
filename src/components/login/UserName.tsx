@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { View, StyleSheet, DimensionValue } from "react-native";
 import { Text, useTheme } from "react-native-paper";
+import { ExtendedMD3Colors } from "@theme/types";
 import TextInput from "@components/ui/TextInput";
 import GreenButton from "@components/login/buttons/GreenButton";
 interface WalletConnectionCheckerProps {
@@ -20,6 +21,7 @@ export default function UserName({
   setUsernameToServer,
 }: WalletConnectionCheckerProps) {
   const theme = useTheme();
+  const colors = theme.colors as ExtendedMD3Colors;
   const [userName, setUserName] = useState("");
   const [rawUserName, setRawUserName] = useState<string | undefined>("");
   const [error, setError] = useState<string|undefined>(undefined);
@@ -36,21 +38,26 @@ export default function UserName({
       <View style={[styles.headerContainer, { gap: 80 }]}>
         <Text
           variant="titleMedium"
-          style={{ color: theme.colors.onBackground }}
+          style={{ color: colors.onBackground }}
         >
           Choose username
         </Text>
         <View style={{ width: "100%" }}>
           <TextInput
+            alwaysLabelOnTop
+            disableRemoveBtn
             label="Username"
             value={rawUserName}
+            placeholder="Enter your username"
             autoFocus={true}
             mode="flat"
             dense={true}
             style={{
               flex: 1,
-              backgroundColor: "transparent",
+              backgroundColor: colors.surfaceContainerLow,
             }}
+            labelBackgroundColor={colors.surfaceContainerLow}
+            errorBackgroundColor={colors.surfaceContainerLow}
             onChangeText={(text) => {
               const cleanText = text.replace(/[^a-zA-Z0-9-_]/g, "");
 

@@ -54,29 +54,14 @@ export function PremarketActionPremarket({
   isMobile
 }: PremarketActionLaunchedProps) {
   let { user } = useAuth();
-  const { open, close } = useOverlay();
   const { colors } = useTheme();
   const currentURL = window.location.href;
 
-  const renderLogin = () => (
-    <OneScreenContainer>
-      <LoginFlow onCloseButton={close} />
-    </OneScreenContainer>
-  );
 
-  if (!user) {
-    return (
-      <View style={{flexDirection: "row", padding: isMobile ? 16 : 24, width: "100%", gap: 16}}>
-        <Button style={{flex: 3}} onPress={() => open(renderLogin())}>Login</Button>
-        <ShareTextButton style={{flex: 1}} shareMessage={`Join to premarket on: ${currentURL}`}/>
-      </View>
-    );
-  }
-
-    const isCreator = tokenMainInfo.createdByPubkey === user.walletAddress;
-    const userJoined =
-    tokenDynamicInfo.holders.find((holder) => holder.id === user.userId) !==
-    undefined;
+  const isCreator = tokenMainInfo.createdByPubkey === user?.walletAddress;
+  const userJoined =
+  tokenDynamicInfo.holders.find((holder) => holder.id === user?.userId) !==
+  undefined;
 
   const now = Math.floor(Date.now() / 1000);
   const isDeadline = tokenMainInfo.premarketDeadline < now;
@@ -96,7 +81,7 @@ export function PremarketActionPremarket({
 )}
 
   return (
-    <View style={{ gap: 48, alignItems: "center", width: '100%',backgroundColor: isMobile?colors.shadow:undefined}}>
+    <View style={{ gap: 48,  paddingLeft: isMobile?16:24, paddingRight: isMobile?16:24, alignItems: "center", width: '100%',backgroundColor: isMobile?colors.shadow:undefined}}>
       {isDeadline ? (
         <Text variant="labelSmall" style={{ color: colors.onSurfaceVariant }}>
           Waiting for creator action: Finish premarket

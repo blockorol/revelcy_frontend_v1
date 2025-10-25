@@ -18,6 +18,8 @@ type Props = Omit<TextInputProps, 'label'> & {
   errorValue?: string | null;
   backgroundColor?: string
   label?: string
+  labelBackgroundColor?: string;
+  errorBackgroundColor?: string;
 };
 
 export default function TextInput(props: Props) {
@@ -34,6 +36,8 @@ export default function TextInput(props: Props) {
     theme,
     value,
     label,
+    labelBackgroundColor,
+    errorBackgroundColor,
     onPointerEnter,
     onPointerLeave,
     onFocus,
@@ -54,7 +58,12 @@ export default function TextInput(props: Props) {
     : colors.onSurfaceVariant;
 
   // backgroundColor 'transparent' breaks cursor
-  const fixedBackGroundColor = backgroundColor && backgroundColor !=='transparent' ? backgroundColor : colors.surfaceContainerLowest
+  const fixColor = (color?: string) =>{
+    return  color && color !=='transparent' ? color : colors.surfaceContainerLowest
+  }
+  const fixedBackGroundColor = fixColor(backgroundColor)
+  const fixedLabelBackgroundColor = fixColor(backgroundColor)
+  const fixedErrorBackgroundColor = fixColor(errorBackgroundColor)
 
   
   const showLabelOnTop = !!alwaysLabelOnTop || isFocused || !!value
@@ -64,24 +73,28 @@ export default function TextInput(props: Props) {
   return (
     <View style={{backgroundColor:fixedBackGroundColor, width:'100%'}}>
       { !!label &&  (showLabelOnTop?
-        <Text
-          variant="bodySmall"
-          style={{
-            pointerEvents: 'none',
-            color: textColor,
-            paddingLeft: 8,
-            paddingTop: 0
-          }}
-        >
-          {label}
-        </Text>
+        <View style={{ backgroundColor: fixedLabelBackgroundColor }}>
+          <Text
+            variant="bodySmall"
+            style={{
+              pointerEvents: 'none',
+              color: textColor,
+              paddingLeft: 8,
+              paddingTop: 0
+            }}
+          >
+            {label}
+          </Text>
+        </View>
       :
-        <Text
-          variant="bodySmall"
-          style={{ pointerEvents: 'none', paddingTop: 0}}
-        >
-          {" "}
-        </Text>
+        <View style={{ backgroundColor: fixedLabelBackgroundColor }}>
+          <Text
+            variant="bodySmall"
+            style={{ pointerEvents: 'none', paddingTop: 0}}
+          >
+            {" "}
+          </Text>
+        </View>
       )}
       
       <PaperTextInput
@@ -151,15 +164,17 @@ export default function TextInput(props: Props) {
         }}
         
       />
-      <HelperText
-        type="error"
-        style={[
-          fonts.bodySmall,
-          {paddingTop: !!errorValue?4:0, paddingBottom: 0, paddingLeft: 8,},
-        ]}
-        visible={!!errorValue}
-      >{errorValue}
-      </HelperText>
+      <View style={{ backgroundColor: fixedErrorBackgroundColor }}>
+        <HelperText
+          type="error"
+          style={[
+            fonts.bodySmall,
+            {paddingTop: !!errorValue?4:0, paddingBottom: 0, paddingLeft: 8,},
+          ]}
+          visible={!!errorValue}
+        >{errorValue}
+        </HelperText>
+      </View>
     </View>
   );
 }
