@@ -4,6 +4,8 @@ import { View } from "react-native";
 import { Portal, Modal, Surface, Text, useTheme } from "react-native-paper";
 import {Button} from "@components/ui/Button"
 import { Calendar } from "react-native-paper-dates";
+import { CustomCalendar } from "./CustomCalendar";
+
 
 type Props = {
   visible: boolean;
@@ -48,16 +50,21 @@ export function DatePickerMD3FromCalendar({
           }}
         >
           {/* Заголовок */}
-          <Text style={{ color: C.onSurfaceVariant, marginBottom: 8 }}>{label}</Text>
+          <Text style={{ color: C.onSurfaceVariant}}>{label}</Text>
 
 
           {/* Календарь из либы */}
-          <Calendar
-            mode="single"
-            date={selected}
-            onChange={({ date }) => setSelected(date ?? undefined)}
-            locale="en"
-            startWeekOnMonday={false}
+          <CustomCalendar
+            selectedDate={selected}
+            onDateSelect={setSelected}
+            colors={{
+              background: C.surfaceContainerLow,
+              text: C.onSurface,
+              selectedBackground: C.primary,
+              selectedText: C.onPrimary,
+              headerBackground: C.surfaceContainerLow,
+              headerText: C.onSurfaceVariant,
+            }}
           />
 
           {/* Кнопки снизу */}

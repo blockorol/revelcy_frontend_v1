@@ -17,7 +17,7 @@ export default function TokenCreateFormHeader(
     }: TokenCreateFormHeaderProps) {
     return(
         <View style={{width: '100%', justifyContent: 'space-between',flexDirection: 'row', alignItems: 'center',}}>
-            <View style={{ paddingRight:8, paddingLeft:8, gap: 16, flexDirection: 'row', alignItems: 'center',}}>
+            <View style={{ paddingRight:8, gap: 16, flexDirection: 'row', alignItems: 'center',}}>
                 <SvgIcon name="plant-outlined" size={24} color={theme.colors.onSurface}/>
                 <Text variant='titleLarge' style={{color: theme.colors.onSurface}}>{title}</Text>
             </View>

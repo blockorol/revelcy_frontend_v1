@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import { TextInput } from 'react-native-paper';
 
+
 interface DateTimeEditFieldProps {
   label?: string;
   value: Date;
@@ -24,36 +25,36 @@ export const DateTimeEditField: React.FC<DateTimeEditFieldProps> = ({
   const [showTimePicker, setShowTimePicker] = useState(false);
 
   
-    const formattedValue = () => {
+  const formattedValue = () => {
     const tzOffset = value.getTimezoneOffset() / -60;
     const pad = (n: number) => n.toString().padStart(2, '0');
     const local = new Date(value);
 
-    const day = pad(local.getDate());
-    const month = pad(local.getMonth() + 1);
+    const day = local.getDate();
+    const monthShort = local.toLocaleString('en-US', { month: 'short' });
     const hours = pad(local.getHours());
     const minutes = pad(local.getMinutes());
     const timezone = `GMT${tzOffset >= 0 ? '+' : ''}${tzOffset}`;
 
-    if (mode === 'date') return `${day}:${month} (${timezone})`;
+    if (mode === 'date') return `${day} ${monthShort} (${timezone})`;
     if (mode === 'time') return `${hours}:${minutes} (${timezone})`;
-    return `${day}:${month} ${hours}:${minutes} (${timezone})`;
+    return `${day} ${monthShort} ${hours}:${minutes} (${timezone})`;
   };
 
 
-const handleDateConfirm = ( date:Date) => {
-  if (!date) {
-    return
-  }
+  const handleDateConfirm = ( date:Date) => {
+    if (!date) {
+      return
+    }
     if (mode === 'datetime') {
-      onChange(date);
-      setShowDatePicker(false);
-      setShowTimePicker(true);
-      
+        onChange(date);
+        setShowDatePicker(false);
+        setShowTimePicker(true);
+        
     } else {
-      onChange(date); // временно без времени
-      setShowDatePicker(false);
-      onChange(date);
+        onChange(date); // временно без времени
+        setShowDatePicker(false);
+        onChange(date);
     }
   };
 
@@ -69,7 +70,7 @@ const handleDateConfirm = ( date:Date) => {
   };
 
   return (
-    <View style={{}}>
+    <View style={{marginLeft: -16}}>
       <TextInput
         label={label}
         value={formattedValue()}
@@ -93,6 +94,7 @@ const handleDateConfirm = ( date:Date) => {
         editable={true}
         disabled={disabled}
         underlineColor="transparent"
+        activeUnderlineColor="transparent"
         style={{backgroundColor:"transparent"}}
       />
       

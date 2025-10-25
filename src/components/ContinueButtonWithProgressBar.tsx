@@ -65,7 +65,10 @@ export default function ContinueButtonWithProgressBar({
             onPress={handleSubmit}
             disabled={!isFilledAll()}
             style={{ borderRadius: 14, width: 130 }}
-            labelStyle={{ color: theme.colors.onPrimary }}
+            labelStyle={{ 
+              color: !isFilledAll() ? theme.colors.onSurfaceVariant : theme.colors.onPrimary,
+              opacity: !isFilledAll() ? 0.3 : 1
+            }}
           >
             Continue
           </Button>
