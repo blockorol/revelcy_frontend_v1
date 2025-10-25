@@ -58,7 +58,12 @@ export default function TextInput(props: Props) {
     : colors.onSurfaceVariant;
 
   // backgroundColor 'transparent' breaks cursor
-  const fixedBackGroundColor = backgroundColor && backgroundColor !=='transparent' ? backgroundColor : colors.surfaceContainerLowest
+  const fixColor = (color?: string) =>{
+    return  color && color !=='transparent' ? color : colors.surfaceContainerLowest
+  }
+  const fixedBackGroundColor = fixColor(backgroundColor)
+  const fixedLabelBackgroundColor = fixColor(backgroundColor)
+  const fixedErrorBackgroundColor = fixColor(errorBackgroundColor)
 
   
   const showLabelOnTop = !!alwaysLabelOnTop || isFocused || !!value
@@ -68,7 +73,7 @@ export default function TextInput(props: Props) {
   return (
     <View style={{backgroundColor:fixedBackGroundColor, width:'100%'}}>
       { !!label &&  (showLabelOnTop?
-        <View style={{ backgroundColor: labelBackgroundColor || 'transparent' }}>
+        <View style={{ backgroundColor: fixedLabelBackgroundColor }}>
           <Text
             variant="bodySmall"
             style={{
@@ -82,7 +87,7 @@ export default function TextInput(props: Props) {
           </Text>
         </View>
       :
-        <View style={{ backgroundColor: labelBackgroundColor || 'transparent' }}>
+        <View style={{ backgroundColor: fixedLabelBackgroundColor }}>
           <Text
             variant="bodySmall"
             style={{ pointerEvents: 'none', paddingTop: 0}}
@@ -159,7 +164,7 @@ export default function TextInput(props: Props) {
         }}
         
       />
-      <View style={{ backgroundColor: errorBackgroundColor || 'transparent' }}>
+      <View style={{ backgroundColor: fixedErrorBackgroundColor }}>
         <HelperText
           type="error"
           style={[

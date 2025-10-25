@@ -48,7 +48,7 @@ const sizeStyles: Record<
     paddingWithIconLeft: 20,
     paddingWithIconRight: 20,
     iconSize: 24,
-    iconGap: 0,
+    iconGap: 8,
   },
   small: {
     height: 30,
@@ -219,7 +219,7 @@ export function Button({
     paddingWithIconLeft,
     paddingWithIconRight,
     iconSize,
-    iconGap,
+    iconGap
   } = sizeStyles[size];
 
   const hasIcon = !!leftIcon || !!leftSvgIconName;
@@ -289,13 +289,13 @@ export function Button({
     >
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
         {!!(leftIcon || leftSvgIconName) && (
-          <View style={{ marginRight: iconGap }}>{renderIcon()}</View>
+          <View style={{ marginRight: children ? iconGap:0 }}>{renderIcon()}</View>
         )}
         {typeof children === "string" ? (
           <Text
             variant={textVariant}
             prominent={prominentText}
-            style={{ color: textColor, textAlign: "center" }}
+            style={{ color: textColor, textAlign: 'center'}}
             numberOfLines={1}
           >
             {children}

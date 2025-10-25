@@ -54,35 +54,14 @@ export function PremarketActionPremarket({
   isMobile
 }: PremarketActionLaunchedProps) {
   let { user } = useAuth();
-  const { open, close } = useOverlay();
   const { colors } = useTheme();
   const currentURL = window.location.href;
 
-  const renderLogin = () => (
-    <OneScreenContainer>
-      <LoginFlow onCloseButton={close} />
-    </OneScreenContainer>
-  );
 
-  if (!user) {
-    return (
-      <View style={{ gap: 48, alignItems: "center", width: '100%',backgroundColor: isMobile?colors.shadow:undefined}}>
-        <PremarketJoin
-          tokenMainInfo={tokenMainInfo}
-          tokenDynamicInfo={tokenDynamicInfo}
-          onUpdated={onUpdated}
-          user={null}
-          currentURL={currentURL}
-          isMobile={isMobile}
-        />
-      </View>
-    );
-  }
-
-    const isCreator = tokenMainInfo.createdByPubkey === user.walletAddress;
-    const userJoined =
-    tokenDynamicInfo.holders.find((holder) => holder.id === user.userId) !==
-    undefined;
+  const isCreator = tokenMainInfo.createdByPubkey === user?.walletAddress;
+  const userJoined =
+  tokenDynamicInfo.holders.find((holder) => holder.id === user?.userId) !==
+  undefined;
 
   const now = Math.floor(Date.now() / 1000);
   const isDeadline = tokenMainInfo.premarketDeadline < now;
@@ -102,7 +81,7 @@ export function PremarketActionPremarket({
 )}
 
   return (
-    <View style={{ gap: 48, alignItems: "center", width: '100%',backgroundColor: isMobile?colors.shadow:undefined}}>
+    <View style={{ gap: 48,  paddingLeft: isMobile?16:24, paddingRight: isMobile?16:24, alignItems: "center", width: '100%',backgroundColor: isMobile?colors.shadow:undefined}}>
       {isDeadline ? (
         <Text variant="labelSmall" style={{ color: colors.onSurfaceVariant }}>
           Waiting for creator action: Finish premarket

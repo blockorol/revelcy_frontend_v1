@@ -99,7 +99,7 @@ function PremarketJoinBase({
   const [rawInput, setRawInput] = useState("");
   const [amountSol, setAmountSol] = useState<number | undefined>(undefined);
   const [amountToken, setAmountToken] = useState<BN | undefined>(undefined);
-  const [walletInfo, setWalletInfo] = useState<WalletInfoResponseDto | null>(null);
+  const [walletInfo, setWalletInfo] = useState<WalletInfoResponseDto | null>(null); // todo: change to internal struct
   const [walletInfoLoading, setWalletInfoLoading] = useState(false);
 
   // Fetch wallet info when user is available
