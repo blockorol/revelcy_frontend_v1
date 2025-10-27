@@ -18,8 +18,6 @@ type Props = Omit<TextInputProps, 'label'> & {
   errorValue?: string | null;
   backgroundColor?: string
   label?: string
-  labelBackgroundColor?: string;
-  errorBackgroundColor?: string;
 };
 
 export default function TextInput(props: Props) {
@@ -36,8 +34,6 @@ export default function TextInput(props: Props) {
     theme,
     value,
     label,
-    labelBackgroundColor,
-    errorBackgroundColor,
     onPointerEnter,
     onPointerLeave,
     onFocus,
@@ -62,8 +58,6 @@ export default function TextInput(props: Props) {
     return  color && color !=='transparent' ? color : colors.surfaceContainerLowest
   }
   const fixedBackGroundColor = fixColor(backgroundColor)
-  const fixedLabelBackgroundColor = fixColor(backgroundColor)
-  const fixedErrorBackgroundColor = fixColor(errorBackgroundColor)
 
   
   const showLabelOnTop = !!alwaysLabelOnTop || isFocused || !!value
@@ -73,7 +67,7 @@ export default function TextInput(props: Props) {
   return (
     <View style={{backgroundColor:fixedBackGroundColor, width:'100%'}}>
       { !!label &&  (showLabelOnTop?
-        <View style={{ backgroundColor: fixedLabelBackgroundColor }}>
+        <View style={{ backgroundColor: 'transparent' }}>
           <Text
             variant="bodySmall"
             style={{
@@ -87,7 +81,7 @@ export default function TextInput(props: Props) {
           </Text>
         </View>
       :
-        <View style={{ backgroundColor: fixedLabelBackgroundColor }}>
+        <View style={{ backgroundColor: 'transparent'}}>
           <Text
             variant="bodySmall"
             style={{ pointerEvents: 'none', paddingTop: 0}}
@@ -116,6 +110,7 @@ export default function TextInput(props: Props) {
         contentStyle={[
           fonts.bodyLarge,
           {
+            backgroundColor: fixedBackGroundColor,
             height: 40,
             paddingLeft: 8,
             paddingVertical: 0,
@@ -164,7 +159,7 @@ export default function TextInput(props: Props) {
         }}
         
       />
-      <View style={{ backgroundColor: fixedErrorBackgroundColor }}>
+      <View style={{ backgroundColor: 'transparent' }}>
         <HelperText
           type="error"
           style={[

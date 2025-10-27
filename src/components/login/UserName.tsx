@@ -56,8 +56,7 @@ export default function UserName({
               flex: 1,
               backgroundColor: colors.surfaceContainerLow,
             }}
-            labelBackgroundColor={colors.surfaceContainerLow}
-            errorBackgroundColor={colors.surfaceContainerLow}
+            backgroundColor={colors.surfaceContainerLow}
             onChangeText={(text) => {
               const cleanText = text.replace(/[^a-zA-Z0-9-_]/g, "");
 
