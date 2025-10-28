@@ -60,10 +60,10 @@ export function PremarketDynamicInfo({
             variant="labelMedium"
             style={{
               color:
-                tokenDynamicInfo.change24h > 0 ? theme.colors.primary : theme.colors.error,
+                tokenDynamicInfo.change24h >= 0 ? theme.colors.primary : theme.colors.error,
             }}
           >
-            {tokenDynamicInfo.change24h > 0 ? (
+            {tokenDynamicInfo.change24h >= 0 ? (
               <View style={{ marginRight: 2 }}>
                 <Svg
                   width="12"
@@ -76,7 +76,7 @@ export function PremarketDynamicInfo({
                   />
                 </Svg>
               </View>
-            ) : (
+            ) : tokenDynamicInfo.change24h < 0 ? (
               <View style={{ marginRight: 2 }}>
                 <Svg
                   width="12"
@@ -89,7 +89,7 @@ export function PremarketDynamicInfo({
                   />
                 </Svg>
               </View>
-            )}
+            ) : null}
             {tokenDynamicInfo.change24h.toFixed(2)}%{" "}
             <Text
               variant="labelMedium"
