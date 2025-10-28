@@ -13,7 +13,7 @@ import {
   useTheme,
   HelperText,
 } from "react-native-paper";
-import   TextInput from '@components/ui/TextInput'
+import TextInput from '@components/ui/TextInput'
 import { Text } from "@components/ui/Text";
 import ContinueAndProgress from "@components/ContinueButtonWithProgressBar";
 import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeader";
@@ -121,8 +121,8 @@ export default function CustomizeTokenForm({
     return type === "x"
       ? "x-logo"
       : type === "tg"
-      ? "tg-logo"
-      : "world-outlined";
+        ? "tg-logo"
+        : "world-outlined";
   };
 
   return (
@@ -140,7 +140,7 @@ export default function CustomizeTokenForm({
           paddingHorizontal: isMobile ? 16 : 24,
           paddingVertical: isMobile ? 40 : 24,
           maxWidth: 500,
-          minHeight: isMobile ? height: height * 0.9,
+          minHeight: isMobile ? height : height * 0.9,
           justifyContent: "space-between",
         }}
       >
@@ -208,7 +208,7 @@ export default function CustomizeTokenForm({
                   <View
                     style={{
                       height: 120,
-                      width: 380,
+                      width: 440,
                       borderRadius: 24,
                       backgroundColor: colors.surfaceContainerHighest,
                       alignItems: "center",
@@ -295,8 +295,9 @@ export default function CustomizeTokenForm({
                           mode="outlined"
                           leftSvgIconName={convertLinkIcon(link.type)}
                           size="small"
+                          style={{ borderRadius: 999, alignSelf: "flex-start" }}
                         >
-                          {link.text}
+                          {link.text || "Button preview"}
                         </Button>
 
                         <TextInput
@@ -379,9 +380,9 @@ export default function CustomizeTokenForm({
           progress={
             steps
               ? {
-                  before: (steps.current - 1) / steps.total,
-                  after: steps.current / steps.total,
-                }
+                before: (steps.current - 1) / steps.total,
+                after: steps.current / steps.total,
+              }
               : undefined
           }
           handleSubmit={handleSubmit}
