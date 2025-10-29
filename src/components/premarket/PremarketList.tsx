@@ -3,7 +3,8 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
 import { ActivityIndicator, Button, Text, useTheme } from "react-native-paper";
 import { PremarketCard } from "@components/premarket/PremarketCard";
-import { getPremarketList, TokenMainInfo } from "@api/token";
+import { getPremarketList, TokenMainInfo, fetchTokenDynamicInfo, TokenDynamicInfo } from "@api/token";
+import useIsMobile from "@hooks/useIsMobile";
 
 
 type PremarketListProps = {
@@ -20,6 +21,7 @@ export const PremarketList: React.FC<PremarketListProps> = ({
   containerWidth,
 }) => {
   const { colors } = useTheme();
+  const isMobile = useIsMobile();
 
   const [cursor, setCursor] = useState(0);
   const [limit, setLimit] = useState(initialLimit);
@@ -27,6 +29,25 @@ export const PremarketList: React.FC<PremarketListProps> = ({
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [dynamicInfoMap, setDynamicInfoMap] = useState<Record<string, TokenDynamicInfo>>({});
+  const [loadingDynamicInfo, setLoadingDynamicInfo] = useState<Record<string, boolean>>({});
+
+  const fetchDynamicInfo = useCallback(async (premarketPubkey: any) => {
+    const pubkeyStr = typeof premarketPubkey === "string" 
+      ? premarketPubkey 
+      : premarketPubkey?.toBase58?.() || String(premarketPubkey);
+    
+    setLoadingDynamicInfo(prev => ({ ...prev, [pubkeyStr]: true }));
+    
+    try {
+      const dynamicInfo = await fetchTokenDynamicInfo(pubkeyStr);
+      setDynamicInfoMap(prev => ({ ...prev, [pubkeyStr]: dynamicInfo }));
+    } catch (e) {
+      console.warn(`Failed to fetch dynamic info for ${pubkeyStr}:`, e);
+    } finally {
+      setLoadingDynamicInfo(prev => ({ ...prev, [pubkeyStr]: false }));
+    }
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -35,12 +56,19 @@ export const PremarketList: React.FC<PremarketListProps> = ({
       const { items, total } = await getPremarketList({ cursor, limit });
       setItems(items);
       setTotal(total);
+      
+      // Fetch dynamic info for each item
+      items.forEach(item => {
+        if (item.premarketPubkey) {
+          fetchDynamicInfo(item.premarketPubkey);
+        }
+      });
     } catch (e: any) {
       setErr(e?.message || "Failed to load");
     } finally {
       setLoading(false);
     }
-  }, [cursor, limit]);
+  }, [cursor, limit, fetchDynamicInfo]);
 
   useEffect(() => {
     load();
@@ -70,6 +98,40 @@ export const PremarketList: React.FC<PremarketListProps> = ({
     if (!canNext) return;
     setCursor(cursor + limit);
   };
+
+  const styles = StyleSheet.create({
+    topBar: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 12,
+    },
+    sizeRow: {
+      flexDirection: "row",
+      marginLeft: 8,
+    },
+    grid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: "space-between",
+      paddingBottom: 24,
+      gap: !isMobile ? 80 : 16,
+      maxWidth: 1300,
+      alignSelf: "center",
+    },
+    cardWrap: {
+      marginBottom: 16,
+    },
+    loader: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 32,
+    },
+    empty: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 32,
+    },
+  });
 
   return (
     <View style={[{ flex: 1 }, style]}>
@@ -131,9 +193,18 @@ export const PremarketList: React.FC<PremarketListProps> = ({
                 : typeof (it as any).premarketPubkey?.toBase58 === "function"
                 ? (it as any).premarketPubkey.toBase58()
                 : String((it as any).premarketPubkey);
+            
+            const dynamicInfo = dynamicInfoMap[key];
+            const isLoadingDynamic = loadingDynamicInfo[key];
+            
             return (
               <View key={key} style={styles.cardWrap}>
-                <PremarketCard mainInfo={it} />
+                <PremarketCard 
+                  mainInfo={it} 
+                  dynamicInfo={dynamicInfo}
+                  // Show a loading indicator or placeholder when dynamic info is loading
+                  {...(isLoadingDynamic && { compact: true })}
+                />
               </View>
             );
           })}
@@ -142,35 +213,3 @@ export const PremarketList: React.FC<PremarketListProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  topBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  sizeRow: {
-    flexDirection: "row",
-    marginLeft: 8,
-  },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 16,
-    paddingBottom: 24,
-  },
-  cardWrap: {
-    marginRight: 16,
-    marginBottom: 16,
-  },
-  loader: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 32,
-  },
-  empty: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 32,
-  },
-});

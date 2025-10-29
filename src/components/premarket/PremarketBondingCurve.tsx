@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { DimensionValue, View, Image as RNImage } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
-import { Svg, Path, Circle, Line, Image as SvgImage, Text as SvgText, Defs, ClipPath, Polygon } from 'react-native-svg';
+import { Svg, Path, Circle, Line, Text as SvgText, Polygon, ForeignObject } from 'react-native-svg';
 import { BN } from '@coral-xyz/anchor';
 import { AppTheme } from '@theme/types';
 import {
@@ -122,20 +122,30 @@ const JoinerMarker: React.FC<{
           cy={y}
           r={8}
           stroke={color}
-          strokeWidth={1}
+          strokeWidth={0.1}
           fill={color}
         />
-        <SvgImage
-          href={{ uri: url }}
-          width={16}
-          height={16}
-          x={x - 8}
-          y={y - 8}
-          clipPath={`url(#clip-${x}-${y})`}
-        />
-        <ClipPath id={`clip-${x}-${y}`}>
-          <Circle cx={x} cy={y} r={8} />
-        </ClipPath>
+        <ForeignObject x={x - 8} y={y - 8} width={16} height={16}>
+          <View style={{
+            width: 16,
+            height: 16,
+            borderRadius: 8,
+            overflow: 'hidden',
+            backgroundColor: color,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <RNImage
+              source={{ uri: url }}
+              style={{
+                width: 14,
+                height: 14,
+                borderRadius: 7,
+              }}
+              resizeMode="cover"
+            />
+          </View>
+        </ForeignObject>
       </>
     );
   }
