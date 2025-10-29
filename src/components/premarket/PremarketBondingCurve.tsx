@@ -477,17 +477,16 @@ function formatMax5Significant(n: number): string {
 
 function convertNumberWithNull(num: number): { zeros: number; val: number } {
   if (num === 0) return { zeros: 0, val: 0 };
-  const str = num.toExponential();
-  const match = str.match(/^([\d.]+)e-(\d+)$/);
-  if (match) {
-    const digits = match[1].replace('.', '');
-    const zeros = parseInt(match[2], 10) - (digits.length - 1);
-    return { zeros, val: parseInt(digits) };
-  }
+  
+  // Use decimal string approach for more accurate counting
   const decimalStr = num.toString().split('.')[1] || '';
   const leadingZeros = decimalStr.match(/^0*/)?.[0].length || 0;
   const rest = decimalStr.slice(leadingZeros);
-  return { zeros: leadingZeros, val: parseInt(rest) };
+  
+  // Limit val to maximum 2 decimal places
+  const truncatedRest = rest.substring(0, 2);
+  
+  return { zeros: leadingZeros, val: parseInt(truncatedRest) };
 }
 
 
