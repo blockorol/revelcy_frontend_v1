@@ -145,11 +145,32 @@ export function formatNumberCompact(value: number | bigint | BN): string {
   if (isNaN(num)) return 'NaN';
 
   if (num >= 1_000_000_000) {
-    return `${Math.round(num / 1_000_000_000)} B`;
+    const billions = num / 1_000_000_000;
+    if (billions >= 100) {
+      return `${Math.round(billions)} B`;
+    } else if (billions >= 10) {
+      return `${billions.toFixed(1)} B`;
+    } else {
+      return `${billions.toFixed(2)} B`;
+    }
   } else if (num >= 1_000_000) {
-    return `${Math.round(num / 1_000_000)} M`;
+    const millions = num / 1_000_000;
+    if (millions >= 100) {
+      return `${Math.round(millions)} M`;
+    } else if (millions >= 10) {
+      return `${millions.toFixed(1)} M`;
+    } else {
+      return `${millions.toFixed(2)} M`;
+    }
   } else if (num >= 1_000) {
-    return `${Math.round(num / 1_000)}k`;
+    const thousands = num / 1_000;
+    if (thousands >= 100) {
+      return `${Math.round(thousands)}k`;
+    } else if (thousands >= 10) {
+      return `${thousands.toFixed(1)}k`;
+    } else {
+      return `${thousands.toFixed(2)}k`;
+    }
   } else {
     return `${Math.round(num)}`;
   }
