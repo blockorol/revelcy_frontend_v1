@@ -367,7 +367,7 @@ function BriefMobile({
       <View
         style={{
           position: "absolute",
-          bottom: 0,
+          bottom: 20,
           left: 0,
           right: 0,
           alignItems: "center",

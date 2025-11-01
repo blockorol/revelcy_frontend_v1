@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from "react";
+import React, { memo, useMemo, useState } from "react";
 import { View, Pressable, Image } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { router } from "expo-router";
@@ -10,6 +10,7 @@ import shortString from "@utils/address_shorter";
 import { TokenMainInfo, TokenDynamicInfo } from "@api/token";
 import { AvatarGroup } from "@components/base/AvatarGroup";
 import Svg, { Path } from 'react-native-svg';
+import { QuestionMarkModal } from "@components/modals/QuestionMarkModal";
 
 type PremarketCardProps = {
   mainInfo: TokenMainInfo;
@@ -20,6 +21,7 @@ type PremarketCardProps = {
 
 export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dynamicInfo, raisedLamports, compact = true }) => {
   const { colors } = useTheme();
+  const [showQuestionModal, setShowQuestionModal] = useState(false);
 
   const goalSOL = useMemo(() => {
     const lamp = mainInfo.premarketGoalSolLamp.toString();
@@ -219,11 +221,13 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
             {deadlineText}
             </Text>
           {(mainInfo.state === 'premarket' || mainInfo.state === 'canceled') && (
-            <SvgIcon 
-              name="question-mark-circle" 
-              size={24} 
-              color="#938F9566" 
-            />
+            <Pressable onPress={() => setShowQuestionModal(true)}>
+              <SvgIcon 
+                name="question-mark-circle" 
+                size={24} 
+                color="#938F9566" 
+              />
+            </Pressable>
           )}
         </View>
 
@@ -398,6 +402,11 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
           </View>
         )}
       </View>
+      
+      <QuestionMarkModal 
+        visible={showQuestionModal} 
+        onClose={() => setShowQuestionModal(false)} 
+      />
     </Pressable>
   );
 });
