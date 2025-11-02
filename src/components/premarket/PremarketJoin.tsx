@@ -70,7 +70,6 @@ export function PremarketJoin({ isMobile, ...props }:PremarketJoinProps) {
           <MobileBottomSheet
             visible={visible}
             onDismiss={() => setVisible(false)}
-            backgroundColor="#1a1a1a"
           >
           <PremarketJoinBase {...props} isMobile={true} />
         </MobileBottomSheet>

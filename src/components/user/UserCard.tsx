@@ -50,9 +50,9 @@ export const UserCard: React.FC<UserCardProps> = ({
         styles.container,
         { 
           backgroundColor: colors.surfaceContainerLow,
-          borderWidth: 0.1,
-          borderColor: tokenInfo.isCreator ? colors.primary : `${colors.primary}40`,
           ...(tokenInfo.isCreator && {
+            borderWidth: 0.1,
+            borderColor: colors.primary,
             shadowColor: colors.primary,
             shadowOffset: {
               width: 0,
