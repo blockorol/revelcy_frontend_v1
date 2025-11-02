@@ -2,7 +2,7 @@ import React, { memo, useMemo, useState } from "react";
 import { View, Pressable, Image } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { router } from "expo-router";
-import { SvgIcon } from "@components/base/SvgIcon";
+import { SvgIcon, SvgIconButton } from "@components/base/SvgIcon";
 import { ChipDisplay } from '@components/ui/Chip';
 import { RoundIconLink } from "@components/premarket/RoundIcons";
 import { getTimeLeftLabel, convertDecimalToToken, convertLamportToSmallCount, formatNumberCompact, convertTimeStampToDataMonth } from "@utils/premarket";
@@ -11,6 +11,7 @@ import { TokenMainInfo, TokenDynamicInfo } from "@api/token";
 import { AvatarGroup } from "@components/base/AvatarGroup";
 import Svg, { Path } from 'react-native-svg';
 import { QuestionMarkModal } from "@components/modals/QuestionMarkModal";
+import { ExtendedMD3Colors } from "@theme/types";
 
 type PremarketCardProps = {
   mainInfo: TokenMainInfo;
@@ -20,7 +21,8 @@ type PremarketCardProps = {
 };
 
 export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dynamicInfo, raisedLamports, compact = true }) => {
-  const { colors } = useTheme();
+  const theme = useTheme();
+  const colors = theme.colors as ExtendedMD3Colors;
   const [showQuestionModal, setShowQuestionModal] = useState(false);
 
   const goalSOL = useMemo(() => {
@@ -221,13 +223,12 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
             {deadlineText}
             </Text>
           {(mainInfo.state === 'premarket' || mainInfo.state === 'canceled') && (
-            <Pressable onPress={() => setShowQuestionModal(true)}>
-              <SvgIcon 
-                name="question-mark-circle" 
-                size={24} 
-                color="#938F9566" 
-              />
-            </Pressable>
+            <SvgIconButton 
+              name="question-mark-circle" 
+              size={24} 
+              color={colors.outline}
+              onPress={() => setShowQuestionModal(true)}
+            />
           )}
         </View>
 

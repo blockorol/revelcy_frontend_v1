@@ -3,10 +3,10 @@ import { RoundIconLink } from "@components/premarket/RoundIcons";
 import { useIsMobileForTwoScreenWithDemention } from "@hooks/useIsMobile";
 import { getTimeLeftLabel } from "@utils/premarket";
 import shortString from "@utils/address_shorter";
-import { View, Image, Pressable } from "react-native";
+import { View, Image } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { ExpandableText } from '@components/base/ExpandableText';
-import { SvgIcon } from '@components/base/SvgIcon';
+import { SvgIcon, SvgIconButton } from '@components/base/SvgIcon';
 import { ChipDisplay } from '@components/ui/Chip';
 import { QuestionMarkModal } from "@components/modals/QuestionMarkModal";
 import { useState } from "react";  
@@ -178,13 +178,12 @@ export function PremarketBaseInfo({ tokenMainInfo, tokenDynamicInfo, isMobile}: 
           {deadlineText}
         </Text>
         {(tokenMainInfo.state === 'premarket' || tokenMainInfo.state === 'canceled') && (
-          <Pressable onPress={() => setShowQuestionModal(true)}>
-            <SvgIcon 
-              name="question-mark-circle" 
-              size={24} 
-              color="#938F9566" 
-            />
-          </Pressable>
+          <SvgIconButton 
+            name="question-mark-circle" 
+            size={24} 
+            color={theme.colors.outline}
+            onPress={() => setShowQuestionModal(true)}
+          />
         )}
       </View>
       

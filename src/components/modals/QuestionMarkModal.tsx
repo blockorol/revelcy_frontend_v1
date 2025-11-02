@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Pressable } from 'react-native';
-import { Text, useTheme, Surface, IconButton, Portal, Modal } from 'react-native-paper';
-import { SvgIcon } from '@components/base/SvgIcon';
+import { useTheme, Surface, Portal, Modal } from 'react-native-paper';
+import { SvgIconButton } from '@components/base/SvgIcon';
+import { Text } from '@components/ui/Text';
+import { ExtendedMD3Colors } from '@theme/types';
 
 interface QuestionMarkModalProps {
   visible: boolean;
@@ -12,7 +14,8 @@ export const QuestionMarkModal: React.FC<QuestionMarkModalProps> = ({
   visible,
   onClose,
 }) => {
-  const { colors } = useTheme();
+  const theme = useTheme();
+  const colors = theme.colors as ExtendedMD3Colors;
 
   return (
     <Portal>
@@ -40,7 +43,7 @@ export const QuestionMarkModal: React.FC<QuestionMarkModalProps> = ({
         <Pressable onPress={(e) => e.stopPropagation()}>
           <Surface
             style={{
-              backgroundColor: '#1A1A1A',
+              backgroundColor: colors.surfaceContainer,
               borderRadius: 16,
               padding: 24,
               margin: 20,
@@ -58,29 +61,32 @@ export const QuestionMarkModal: React.FC<QuestionMarkModalProps> = ({
           }}
         >
           {/* Close button */}
-          <IconButton
-            icon="close"
-            size={20}
-            onPress={onClose}
-            iconColor="#FFFFFF"
+          <View
             style={{
               position: 'absolute',
               top: -8,
               right: -8,
             }}
-          />
+          >
+            <SvgIconButton
+              name="x-base"
+              size={20}
+              color={colors.onSurface}
+              onPress={onClose}
+            />
+          </View>
           
           {/* Revelcy Logo */}
           <View
             style={{
-              backgroundColor: '#00FF88',
+              backgroundColor: colors.primary,
               paddingHorizontal: 16,
               paddingVertical: 6,
               borderRadius: 20,
               marginBottom: 16,
             }}
           >
-            <Text style={{ color: '#000000', fontWeight: 'bold', fontSize: 16 }}>
+            <Text variant="titleMedium" style={{ color: colors.onPrimary, fontWeight: 'bold', fontSize: 16 }}>
               Revelcy
             </Text>
           </View>
@@ -89,7 +95,7 @@ export const QuestionMarkModal: React.FC<QuestionMarkModalProps> = ({
           <Text 
             variant="headlineMedium" 
             style={{ 
-              color: '#FFFFFF', 
+              color: colors.onSurface, 
               fontWeight: 'bold',
               textAlign: 'center',
               marginBottom: 8,
@@ -102,9 +108,7 @@ export const QuestionMarkModal: React.FC<QuestionMarkModalProps> = ({
           <Text 
             variant="titleMedium" 
             style={{ 
-              color: '#00FF88', 
-              textAlign: 'center',
-              fontWeight: '600',
+              color: colors.primary, 
             }}
           >
             Buy before launch. Build strong community.
@@ -117,7 +121,7 @@ export const QuestionMarkModal: React.FC<QuestionMarkModalProps> = ({
           <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 16 }}>
             <View
               style={{
-                backgroundColor: '#00FF88',
+                backgroundColor: colors.primary,
                 width: 32,
                 height: 32,
                 borderRadius: 16,
@@ -126,7 +130,7 @@ export const QuestionMarkModal: React.FC<QuestionMarkModalProps> = ({
                 flexShrink: 0,
               }}
             >
-              <Text style={{ color: '#000000', fontWeight: 'bold', fontSize: 16 }}>
+              <Text variant="titleMedium" style={{ color: colors.onPrimary, fontWeight: 'bold', fontSize: 16 }}>
                 1
               </Text>
             </View>
@@ -134,7 +138,7 @@ export const QuestionMarkModal: React.FC<QuestionMarkModalProps> = ({
               <Text 
                 variant="titleMedium" 
                 style={{ 
-                  color: '#FFFFFF', 
+                  color: colors.onSurface, 
                   fontWeight: 'bold',
                   marginBottom: 4,
                 }}
@@ -148,7 +152,7 @@ export const QuestionMarkModal: React.FC<QuestionMarkModalProps> = ({
           <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 16 }}>
             <View
               style={{
-                backgroundColor: '#00FF88',
+                backgroundColor: colors.primary,
                 width: 32,
                 height: 32,
                 borderRadius: 16,
@@ -157,7 +161,7 @@ export const QuestionMarkModal: React.FC<QuestionMarkModalProps> = ({
                 flexShrink: 0,
               }}
             >
-              <Text style={{ color: '#000000', fontWeight: 'bold', fontSize: 16 }}>
+              <Text variant="titleMedium" style={{ color: colors.onPrimary, fontWeight: 'bold', fontSize: 16 }}>
                 2
               </Text>
             </View>
@@ -165,7 +169,7 @@ export const QuestionMarkModal: React.FC<QuestionMarkModalProps> = ({
               <Text 
                 variant="titleMedium" 
                 style={{ 
-                  color: '#FFFFFF', 
+                  color: colors.onSurface, 
                   fontWeight: 'bold',
                   marginBottom: 4,
                 }}
@@ -175,7 +179,7 @@ export const QuestionMarkModal: React.FC<QuestionMarkModalProps> = ({
               <Text 
                 variant="bodyMedium" 
                 style={{ 
-                  color: '#B0B0B0', 
+                  color: colors.onSurfaceVariant, 
                   lineHeight: 20,
                 }}
               >
@@ -188,7 +192,7 @@ export const QuestionMarkModal: React.FC<QuestionMarkModalProps> = ({
           <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 16 }}>
             <View
               style={{
-                backgroundColor: '#00FF88',
+                backgroundColor: colors.primary,
                 width: 32,
                 height: 32,
                 borderRadius: 16,
@@ -197,7 +201,7 @@ export const QuestionMarkModal: React.FC<QuestionMarkModalProps> = ({
                 flexShrink: 0,
               }}
             >
-              <Text style={{ color: '#000000', fontWeight: 'bold', fontSize: 16 }}>
+              <Text variant="titleMedium" style={{ color: colors.onPrimary, fontWeight: 'bold', fontSize: 16 }}>
                 3
               </Text>
             </View>
@@ -205,7 +209,7 @@ export const QuestionMarkModal: React.FC<QuestionMarkModalProps> = ({
               <Text 
                 variant="titleMedium" 
                 style={{ 
-                  color: '#FFFFFF', 
+                  color: colors.onSurface, 
                   fontWeight: 'bold',
                   marginBottom: 4,
                 }}
@@ -215,7 +219,7 @@ export const QuestionMarkModal: React.FC<QuestionMarkModalProps> = ({
               <Text 
                 variant="bodyMedium" 
                 style={{ 
-                  color: '#B0B0B0', 
+                  color: colors.onSurfaceVariant, 
                   lineHeight: 20,
                 }}
               >
@@ -228,7 +232,7 @@ export const QuestionMarkModal: React.FC<QuestionMarkModalProps> = ({
           <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 16 }}>
             <View
               style={{
-                backgroundColor: '#00FF88',
+                backgroundColor: colors.primary,
                 width: 32,
                 height: 32,
                 borderRadius: 16,
@@ -237,7 +241,7 @@ export const QuestionMarkModal: React.FC<QuestionMarkModalProps> = ({
                 flexShrink: 0,
               }}
             >
-              <Text style={{ color: '#000000', fontWeight: 'bold', fontSize: 16 }}>
+              <Text variant="titleMedium" style={{ color: colors.onPrimary, fontWeight: 'bold', fontSize: 16 }}>
                 4
               </Text>
             </View>
@@ -245,7 +249,7 @@ export const QuestionMarkModal: React.FC<QuestionMarkModalProps> = ({
               <Text 
                 variant="titleMedium" 
                 style={{ 
-                  color: '#FFFFFF', 
+                  color: colors.onSurface, 
                   fontWeight: 'bold',
                   marginBottom: 4,
                 }}
@@ -255,7 +259,7 @@ export const QuestionMarkModal: React.FC<QuestionMarkModalProps> = ({
               <Text 
                 variant="bodyMedium" 
                 style={{ 
-                  color: '#B0B0B0', 
+                  color: colors.onSurfaceVariant, 
                   lineHeight: 20,
                 }}
               >
