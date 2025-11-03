@@ -2,21 +2,16 @@
 import React, { useState, useEffect } from "react";
 import { View, Image, TouchableOpacity, StyleSheet } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { Badge, Text, useTheme } from "react-native-paper";
+import {  Text, useTheme } from "react-native-paper";
 import ContinueAndProgress from "@components/ContinueButtonWithProgressBar";
 import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeader";
 import { TokenMainData } from "@components/token/create/interface";
 import { ScrollView } from "react-native-gesture-handler";
-import normalizeUrl, {
-  normalizeTelegramUrl,
-  normalizeTwitterUrl,
-  normalizeWebsiteUrl,
-} from "@utils/url";
+import normalizeUrl from "@utils/url";
 import { SvgIcon, SvgIconButton } from "@components/base/SvgIcon";
 import TextInputMultiline from "@components/base/form/TextInputMutiline";
 import TextInput from "@components/ui/TextInput";
-import useIsMobile, { useIsMobileWithDemention } from "@hooks/useIsMobile";
-import { MD3ElevationColors } from "react-native-paper/lib/typescript/types";
+import { useIsMobileWithDemention } from "@hooks/useIsMobile";
 import { ExtendedMD3Colors } from "@theme/types";
 
 type CreateTokenFormProps = {
@@ -218,7 +213,7 @@ export default function CreateTokenForm({
                     label="Telegram"
                     value={telegram}
                     onChangeText={(val) =>
-                      setTelegram(normalizeWebsiteUrl(val))
+                      setTelegram(normalizeUrl(val))
                     }
                     placeholder="https://t.me/username"
                     mode="flat"
@@ -233,7 +228,7 @@ export default function CreateTokenForm({
                     }}
                     label="Twitter"
                     value={twitter}
-                    onChangeText={(val) => setTwitter(normalizeWebsiteUrl(val))}
+                    onChangeText={(val) => setTwitter(normalizeUrl(val))}
                     placeholder="https://x.com/username"
                   />
                 )}
@@ -246,7 +241,7 @@ export default function CreateTokenForm({
                     }}
                     label="Website"
                     value={website}
-                    onChangeText={(val) => setWebsite(normalizeWebsiteUrl(val))}
+                    onChangeText={(val) => setWebsite(normalizeUrl(val))}
                     placeholder="https://example.com"
                   />
                 )}
