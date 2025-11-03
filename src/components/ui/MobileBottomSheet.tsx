@@ -10,10 +10,12 @@ export function MobileBottomSheet({
   visible,
   onDismiss,
   children,
+  backgroundColor,
 }: {
   visible: boolean;
   onDismiss: () => void;
   children: React.ReactNode;
+  backgroundColor?: string;
 }) {
   const theme = useTheme();
 
@@ -79,7 +81,7 @@ export function MobileBottomSheet({
           <Surface
             elevation={4}
             style={{
-              backgroundColor: theme.colors.surface,
+              backgroundColor: backgroundColor || theme.colors.surface,
               borderTopLeftRadius: 24,
               borderTopRightRadius: 24,
               paddingBottom: 16,

@@ -55,17 +55,17 @@ export function PremarketJoin({ isMobile, ...props }:PremarketJoinProps) {
     <View style={{ flex: 1, width: '100%'}}>
       <Portal.Host>
 
-          <View style={{
+        <View style={{
           flexDirection: "row",
           justifyContent: "center",
           alignItems: "center",
           width: '100%',
           gap: 16
         }}>
-            <Button style={{flex:4}} mode="contained" onPress={() => setVisible(true)}>
-              Join Premarket
-            </Button>
-            <ShareTextButton style={{flex: 1}} shareMessage={`Join to premarket on: ${props.currentURL}`}/>
+          <Button style={{flex:4}} mode="contained" onPress={() => setVisible(true)}>
+            Join Premarket
+          </Button>
+          <ShareTextButton style={{flex: 1}} shareMessage={`Join to premarket on: ${props.currentURL}`}/>
           </View>
           <MobileBottomSheet
             visible={visible}
@@ -226,7 +226,7 @@ function PremarketJoinBase({
   };
 
   return (
-    <View style={{ alignItems: "center", justifyContent: "center", gap: 24 }}>
+    <View style={{ alignItems: "center", justifyContent: "center", gap: 24, paddingBottom: 16 }}>
       <View style={{ alignItems: "center", justifyContent: "center", gap: 16 }}>
         <TextInput
           mode="flat"

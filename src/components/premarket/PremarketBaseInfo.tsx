@@ -6,8 +6,10 @@ import shortString from "@utils/address_shorter";
 import { View, Image } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { ExpandableText } from '@components/base/ExpandableText';
-import { SvgIcon } from '@components/base/SvgIcon';
-import { ChipDisplay } from '@components/ui/Chip';  
+import { SvgIcon, SvgIconButton } from '@components/base/SvgIcon';
+import { ChipDisplay } from '@components/ui/Chip';
+import { QuestionMarkModal } from "@components/modals/QuestionMarkModal";
+import { useState } from "react";  
 
 interface PremarketBaseInfoProps {
   tokenMainInfo: TokenMainInfo;
@@ -18,6 +20,7 @@ interface PremarketBaseInfoProps {
 export function PremarketBaseInfo({ tokenMainInfo, tokenDynamicInfo, isMobile}: PremarketBaseInfoProps) {
   const theme = useTheme();
   const { left } = useIsMobileForTwoScreenWithDemention();
+  const [showQuestionModal, setShowQuestionModal] = useState(false);
 
   // Determine the effective state based on conditions
   const getEffectiveState = () => {
@@ -175,13 +178,19 @@ export function PremarketBaseInfo({ tokenMainInfo, tokenDynamicInfo, isMobile}: 
           {deadlineText}
         </Text>
         {(tokenMainInfo.state === 'premarket' || tokenMainInfo.state === 'canceled') && (
-          <SvgIcon 
-          name="question-mark-circle" 
-          size={24} 
-          color="#938F9566" 
-        />
+          <SvgIconButton 
+            name="question-mark-circle" 
+            size={24} 
+            color={theme.colors.outline}
+            onPress={() => setShowQuestionModal(true)}
+          />
         )}
       </View>
+      
+      <QuestionMarkModal 
+        visible={showQuestionModal} 
+        onClose={() => setShowQuestionModal(false)} 
+      />
     </View>
   );
 }

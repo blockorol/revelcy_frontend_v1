@@ -48,7 +48,21 @@ export const UserCard: React.FC<UserCardProps> = ({
     <View
       style={[
         styles.container,
-        { backgroundColor: colors.surfaceContainerLow },
+        { 
+          backgroundColor: colors.surfaceContainerLow,
+          ...(tokenInfo.isCreator && {
+            borderWidth: 0.1,
+            borderColor: colors.primary,
+            shadowColor: colors.primary,
+            shadowOffset: {
+              width: 0,
+              height: 0,
+            },
+            shadowOpacity: 0.2,
+            shadowRadius: 10,
+            elevation: 10,
+          }),
+        },
       ]}
     >
       {/* Header row */}
