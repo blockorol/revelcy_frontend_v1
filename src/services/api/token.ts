@@ -367,3 +367,19 @@ export interface HoldersInfo {
     username: string;
 }
 
+export interface HolderEntryPriceDTO {
+    entry_price_lamp: string | number;
+}
+
+export async function getHolderEntryPrice({
+    premarketId,
+    holderWallet,
+}: {
+    premarketId: string;
+    holderWallet: string;
+}): Promise<HolderEntryPriceDTO> {
+    const url = `${API_HOST}/premarket/get_holder_entry_price?premarket_id=${premarketId}&holder_wallet=${holderWallet}`;
+    const data = await http.get<HolderEntryPriceDTO>(url, { retry: RETRY_DEFAULT });
+    return data;
+}
+
