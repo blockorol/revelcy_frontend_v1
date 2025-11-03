@@ -182,7 +182,7 @@ export default function CreateTokenForm({
                 label="Token Name"
                 value={tokenName}
                 onChangeText={setTokenName}
-                maxLength={20}
+                maxLength={32}
                 placeholder="eg. Bitcoin"
                 style={{ flex: 1 }}
               />
@@ -200,6 +200,7 @@ export default function CreateTokenForm({
                 id="Description"
                 label="Description"
                 value={description}
+                maxLength={5000}
                 onChangeValue={setDescription}
                 placeholder="Bitcoin is..."
               />

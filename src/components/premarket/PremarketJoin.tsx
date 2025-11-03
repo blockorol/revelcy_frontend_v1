@@ -133,13 +133,18 @@ function PremarketJoinBase({
 
   const handleInputChange = (text: string) => {
     let sanitized = text.replace(",", ".");
+
     const parts = sanitized.split(".");
     if (parts.length > 2) {
-      sanitized = parts[0] + "." + parts[1];
+      sanitized = parts[0] + "." + parts.slice(1).join("").replace(/\./g, "");
     }
+
     sanitized = sanitized.replace(/[^0-9.]/g, "");
+    sanitized = sanitized.replace(/^0+(?=\d)/, "");
+    if (sanitized === "" || sanitized === ".") sanitized = "";
 
     setRawInput(sanitized);
+
 
     const val = parseFloat(sanitized);
     if (!isNaN(val)) {
@@ -229,6 +234,7 @@ function PremarketJoinBase({
     <View style={{ alignItems: "center", justifyContent: "center", gap: 24, paddingBottom: 16 }}>
       <View style={{ alignItems: "center", justifyContent: "center", gap: 16 }}>
         <TextInput
+          maxLength={10}
           mode="flat"
           placeholder="0.1 SOL"
           keyboardType="decimal-pad"
