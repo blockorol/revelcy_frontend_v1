@@ -47,6 +47,14 @@ export default function EditPremarketSettingsForm({
   const [dataTimeError, setDataTimeError] = useState<string | null>(null);
   const [currentDataTime, setDataTime] = useState<Date>(new Date());
 
+  const isMoreThanOneMonthAway = (d: Date) => {
+    const now = new Date();
+    const max = new Date(now);
+    max.setMonth(max.getMonth() + 1); 
+    return d.getTime() > max.getTime();
+  };
+
+
   const changeSliderPremarketValue = (value: number) => {
     setPremarketGoalPers(value);
     const tokenDec = getPersentOfPremartet(value);
@@ -59,6 +67,8 @@ export default function EditPremarketSettingsForm({
     setPremarketGoalSolLamp(sol.muln(-1));
   };
   const handleSubmit = () => {
+    if (!deadlineDateTimeSec) return;
+    if (dataTimeError) return;
     if (premarketGoalSolLamp !== undefined && deadlineDateTimeSec !== undefined) {
       onNext({
         goal_percent: premarketGoalPers,
@@ -113,6 +123,11 @@ export default function EditPremarketSettingsForm({
                 const dataTimeNow = new Date();
                 if (newDate.getTime() < dataTimeNow.getTime()) {
                   setDataTimeError("time should be in the future");
+                  setDeadlineDateTimeSec(undefined);
+                  return;
+                }
+                if (isMoreThanOneMonthAway(newDate)) {
+                  setDataTimeError("Deadline can't be more than 1 month");
                   setDeadlineDateTimeSec(undefined);
                   return;
                 }
