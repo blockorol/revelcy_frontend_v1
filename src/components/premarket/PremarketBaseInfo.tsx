@@ -83,7 +83,7 @@ export function PremarketBaseInfo({ tokenMainInfo, tokenDynamicInfo, isMobile}: 
 
   if (tokenMainInfo.state === "premarket") {
     const deadline = getTimeLeftLabel(tokenMainInfo.premarketDeadline)
-    deadlineText = deadline === 'Expired' ?"Deadline reached" :  deadline+" left"
+    deadlineText = deadline === 'Expired' ? "" :  deadline+" left"
   }
 
   return (
@@ -174,9 +174,11 @@ export function PremarketBaseInfo({ tokenMainInfo, tokenDynamicInfo, isMobile}: 
             color={theme.colors.onSurfaceVariant} 
           />
         )}
-        <Text variant="labelLarge" style={{color: deadlineText === "Deadline reached" ? theme.colors.error : theme.colors.secondary}}>
-          {deadlineText}
-        </Text>
+        {deadlineText && (
+          <Text variant="labelLarge" style={{color: theme.colors.secondary}}>
+            {deadlineText}
+          </Text>
+        )}
         {(tokenMainInfo.state === 'premarket' || tokenMainInfo.state === 'canceled') && (
           <SvgIconButton 
             name="question-mark-circle" 

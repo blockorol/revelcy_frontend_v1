@@ -54,7 +54,11 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
     const now = Math.floor(Date.now() / 1000);
     const isPremarket = mainInfo.state === 'premarket';
     const isDeadlinePassed = mainInfo.premarketDeadline < now;
-    const isGoalNotReached = raisedSOL == null || raisedSOL < goalSOL;
+    
+    // Use dynamicInfo.reservedSolLamp if available, otherwise fall back to raisedSOL
+    const isGoalNotReached = dynamicInfo 
+      ? dynamicInfo.reservedSolLamp.lt(mainInfo.premarketGoalSolLamp)
+      : (raisedSOL == null || raisedSOL < goalSOL);
     
     // If it's premarket and deadline passed and goal reached, show "times_up"
     if (isPremarket && isDeadlinePassed && !isGoalNotReached) {
@@ -110,7 +114,7 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
   let deadlineText = ""
   if (mainInfo.state === "premarket") {
     const deadline = getTimeLeftLabel(mainInfo.premarketDeadline)
-    deadlineText = deadline === 'Expired' ?"Deadline reached" :  deadline+" left"
+    deadlineText = deadline === 'Expired' ? "" :  deadline+" left"
   }
 
   const goToDetails = () => {
@@ -219,9 +223,11 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
               color={colors.onSurfaceVariant} 
             />
           )}
-          <Text variant="labelLarge" style={{ color: deadlineText === "Deadline reached" ? colors.error : colors.secondary }}>
-            {deadlineText}
+          {deadlineText && (
+            <Text variant="labelLarge" style={{ color: colors.secondary }}>
+              {deadlineText}
             </Text>
+          )}
           {(mainInfo.state === 'premarket' || mainInfo.state === 'canceled') && (
             <SvgIconButton 
               name="question-mark-circle" 
