@@ -26,6 +26,8 @@ import { round } from "@utils/numbers";
 import TextInputMultiline from "@components/base/form/TextInputMutiline";
 import { Button } from "@components/ui/Button";
 
+const MAX_CALL_TO_ACTION = 5
+
 type CustomizeTokenProps = {
   onNext: (data: CustomizeTokenData) => void;
   onClose?: () => void;
@@ -66,17 +68,11 @@ export default function CustomizeTokenForm({
   );
 
   const [links, setLinks] = useState<Link[]>(presetData?.links ?? []);
-
-  const addTelegramLink = () => {
-    setLinks((prev) => [...prev, { text: "", url: "", type: "tg" }]);
-  };
-  const addXLink = () => {
-    setLinks((prev) => [...prev, { text: "", url: "", type: "x" }]);
-  };
-
-  const addOtherLink = () => {
-    setLinks((prev) => [...prev, { text: "", url: "", type: "other" }]);
-  };
+  const addLink = (type: 'tg' | "x" | "other") => {
+    if (links.length >= MAX_CALL_TO_ACTION)
+      return
+    setLinks((prev) => [...prev, { text: "", url: "", type: type}]);
+  }
 
   const updateLink = (index: number, field: "text" | "url", value: string) => {
     const newLinks = [...links];
@@ -342,6 +338,7 @@ export default function CustomizeTokenForm({
               </View>
 
               {/* Add link */}
+              {links.length < MAX_CALL_TO_ACTION &&
               <View
                 style={{
                   flexDirection: "row",
@@ -358,20 +355,21 @@ export default function CustomizeTokenForm({
                   <SvgIconButton
                     name="tg-logo"
                     color={theme.colors.onSurface}
-                    onPress={() => addTelegramLink()}
+                    onPress={() => addLink('tg')}
                   />
                   <SvgIconButton
                     name="x-logo"
                     color={theme.colors.onSurface}
-                    onPress={() => addXLink()}
+                    onPress={() => addLink('x')}
                   />
                   <SvgIconButton
                     name="world-outlined"
                     color={theme.colors.onSurface}
-                    onPress={() => addOtherLink()}
+                    onPress={() => addLink('other')}
                   />
                 </View>
               </View>
+              }
             </View>
           </View>
         </View>
