@@ -281,6 +281,7 @@ export default function EditTokenomicsForm({
               disableRemoveBtn
               alwaysLabelOnTop
               label="Creator Allocation Up to 79.6 SOL"
+              maxLength={11}
               value={displayValue}
               onChangeText={handleCreatorInitialBuyChangeWithSuffix}
               onSelectionChange={handleSelectionChange}

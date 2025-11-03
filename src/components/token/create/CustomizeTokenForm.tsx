@@ -261,6 +261,7 @@ export default function CustomizeTokenForm({
               </Text>
 
               <TextInputMultiline
+                maxLength={20000}
                 value={description}
                 onChangeValue={setDescription}
                 placeholder="Describe your community..."

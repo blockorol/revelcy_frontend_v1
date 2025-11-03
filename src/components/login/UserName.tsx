@@ -44,6 +44,7 @@ export default function UserName({
         </Text>
         <View style={{ width: "100%" }}>
           <TextInput
+            maxLength={20}
             alwaysLabelOnTop
             disableRemoveBtn
             label="Username"
