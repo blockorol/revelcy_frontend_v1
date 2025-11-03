@@ -80,21 +80,18 @@ export function AnoterWalletButton({overrideSaveJwt}:{
 }) {
   const connectWallet = getConnectToWallet();
   const { login } = useAuth();
-  const { connected, publicKey, disconnect, signMessage, select } = useWallet();
+  const { connected, publicKey, disconnect, signMessage } = useWallet();
 
   const [connecting, setConnecting] = useState(false);
 
   const handleReconnect = useCallback(async () => {
     setConnecting(true);
     await disconnect();
-    if (select) {
-      await select('Phantom');
-    }
     const isConnected = await connectWallet();
     if (!isConnected) {
       setConnecting(false);
     }
-  }, [disconnect, connectWallet, select]);
+  }, [disconnect, connectWallet]);
 
   useEffect(() => {
     const doLogin = async () => {

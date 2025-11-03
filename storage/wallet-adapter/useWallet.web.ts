@@ -1,10 +1,19 @@
 import { useWallet as useSolanaWallet, AnchorWallet} from '@solana/wallet-adapter-react';
 import { SignerWalletAdapter } from '@solana/wallet-adapter-base';
+import { useEffect } from 'react';
+import { PhantomWalletName } from "@solana/wallet-adapter-phantom";
+
 
 
 export const useWallet = () => {
   const { connected, publicKey, connect, disconnect, select, wallet, signMessage} = useSolanaWallet();
-  return { connected, publicKey, connect, disconnect, select, wallet, signMessage};
+    useEffect(() => {
+    if (!wallet) {
+      select(PhantomWalletName);
+    }
+  }, [wallet, select]);
+
+  return { connected, publicKey, connect, disconnect, wallet, signMessage};
 };
 
 export const useAnchorWalletSafe = (): AnchorWallet | undefined => {
