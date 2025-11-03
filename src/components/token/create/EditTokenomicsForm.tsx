@@ -127,13 +127,19 @@ export default function EditTokenomicsForm({
     let raw = text.endsWith(SUFFIX) ? text.slice(0, -SUFFIX.length) : text;
 
     raw = raw
-      .replace(/\s+/g, "")
+      .replace(/\s+/g, "") 
       .replace(",", ".")
       .replace(/[^0-9.]/g, "");
+
+    console.log("raw", raw)
     const firstDot = raw.indexOf(".");
     if (firstDot !== -1)
       raw =
         raw.slice(0, firstDot + 1) + raw.slice(firstDot + 1).replace(/\./g, "");
+
+    raw = raw.replace(/^0+(?=\d)/, "");
+
+    if (raw === "" || raw === ".") raw = "";
 
     const value = convertNumberWithRaw(
       raw,
