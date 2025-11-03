@@ -125,7 +125,6 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
           borderRadius: 24,
           padding: 20,
           width: 368,
-          height: 590,
           overflow: "hidden",
           gap: 16,
         }}
@@ -154,7 +153,7 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
           }}
         >
           <View style={{ gap: 4 }}>
-            <Text variant="headlineSmall" style={{ color: colors.onSurface }}>
+            <Text variant="headlineSmall" style={{ color: colors.onSurface, maxWidth: 225}} >
               {mainInfo.name}
             </Text>
             <Text variant="labelLarge" style={{ color: colors.onSurfaceVariant }}>
