@@ -157,6 +157,7 @@ export function TokenPremarketPageNormal({
             <YourEntry 
               premarketPubkey={token.mainInfo.premarketPubkey}
               tokenDynamicInfo={token.dynamicInfo}
+              tokenMainInfo={token.mainInfo}
               onUpdated={refetchTokenInfo}
               isMobile={false}
             />
@@ -316,6 +317,7 @@ function BriefMobile({
           <YourEntry 
             premarketPubkey={token.mainInfo.premarketPubkey}
             tokenDynamicInfo={token.dynamicInfo}
+            tokenMainInfo={token.mainInfo}
             onUpdated={refetchTokenInfo}
             isMobile={true}
           />
