@@ -444,7 +444,7 @@ export default function PremarketCreationFlow() {
             onNext={handleAfterSetTokenBaseInfo}
             onClose={async () => {
               await clearDraft(storageKey);
-              router.back();
+              router.push("/discover");
             }}
             step={1}
             totalSteps={4}
@@ -458,7 +458,7 @@ export default function PremarketCreationFlow() {
             onNext={handleAfterTokenomics}
             onClose={async () => {
               await clearDraft(storageKey);
-              router.back();
+              router.push("/discover");
             }}
             step={2}
             totalSteps={4}
@@ -472,7 +472,7 @@ export default function PremarketCreationFlow() {
             onNext={handleAfterPremarketSettings}
             onClose={async () => {
               await clearDraft(storageKey);
-              router.back();
+              router.push("/discover");
             }}
             step={3}
             totalSteps={4}
@@ -486,7 +486,7 @@ export default function PremarketCreationFlow() {
             onNext={handleAfterCunstomizeToken}
             onClose={async () => {
               await clearDraft(storageKey);
-              router.back();
+              router.push("/discover");
             }}
             steps={{ current: 4, total: 4 }}
             presetData={customizeTokenData}
@@ -502,7 +502,7 @@ export default function PremarketCreationFlow() {
             }}
             onClose={async () => {
               await clearDraft(storageKey);
-              router.back();
+              router.push("/discover");
             }}
             launchState={launchState}
             onLaunch={handleLaunch}
