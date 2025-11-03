@@ -16,6 +16,7 @@ import { convertLamportToSmallCount, formatNumberCompact, convertSolanaToTokenBu
 import BN from "bn.js";
 import { useEffect, useState, useMemo } from "react";
 import { MD3Colors, MD3Typescale } from "react-native-paper/lib/typescript/types";
+import { SvgIcon } from "@components/base/SvgIcon";
 
 interface YourEntryProps {
   premarketPubkey: PublicKey;
@@ -153,6 +154,48 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, on
     const MAX_SOL = 85; // TODO: find real max sol
     const supplyPercent = (solValue / MAX_SOL) * 100;
 
+    // Determine if premarket is expired and user is not creator
+    const isExpiredAndNotCreator = useMemo(() => {
+        const now = Math.floor(Date.now() / 1000);
+        const isPremarket = tokenMainInfo.state === 'premarket';
+        const isDeadlinePassed = tokenMainInfo.premarketDeadline < now;
+        const isGoalNotReached = tokenDynamicInfo.reservedSolLamp.lt(tokenMainInfo.premarketGoalSolLamp);
+        
+        // Check if effective state is expired
+        const isExpired = tokenMainInfo.state === 'expired' || 
+            (isPremarket && isDeadlinePassed && isGoalNotReached);
+        
+        // Check if user is not the creator
+        // Use user?.walletAddress to be consistent with other components, fallback to userEntry.walletAddress
+        const userWallet = (user?.walletAddress || userEntry.walletAddress)?.toLowerCase() || '';
+        const creatorWallet = tokenMainInfo.createdByPubkey?.toLowerCase() || '';
+        const isNotCreator = userWallet !== creatorWallet && userWallet !== '';
+        
+        // Debug logging
+        if (isExpired) {
+            console.log('[YourEntry] Expired check:', {
+                state: tokenMainInfo.state,
+                isPremarket,
+                isDeadlinePassed,
+                isGoalNotReached,
+                isExpired,
+                userWalletFromAuth: user?.walletAddress?.toLowerCase(),
+                userWalletFromEntry: userEntry.walletAddress?.toLowerCase(),
+                userWallet,
+                creatorWallet,
+                isNotCreator,
+                result: isExpired && isNotCreator
+            });
+        }
+        
+        return isExpired && isNotCreator;
+    }, [tokenMainInfo.state, tokenMainInfo.premarketDeadline, tokenMainInfo.createdByPubkey, tokenDynamicInfo.reservedSolLamp, user?.walletAddress, userEntry.walletAddress]);
+
+    // Check if premarket is canceled (refunded)
+    const isRefunded = useMemo(() => {
+        return tokenMainInfo.state === 'canceled';
+    }, [tokenMainInfo.state]);
+
     const renderLoader = (status: string) => (
         <View style={{ gap: 20 }}>
             <Text variant="titleMedium">{status}</Text>
@@ -232,31 +275,33 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, on
                         </Text>
                     )}
                 </View>
-                <Button 
-                    mode="outlined" 
-                    compact
-                    onPress={handleOut}
-                    style={{ 
-                        borderColor: theme.colors.outline,
-                        borderRadius: 8,
-                        //width: 68,
-                        //height: 28,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        paddingVertical: 0,
-                        paddingHorizontal: 0
-                    }}
-                    labelStyle={{ 
-                        fontSize: 12,
-                        width: 50,
-                        height: 10,
-                        color: theme.colors.onSurfaceVariant,
-                        textAlign: 'center',
-                        lineHeight: 10
-                    }}
-                >
-                    <Text>Leave</Text>
-                </Button>
+                {!isRefunded && (
+                    <Button 
+                        mode="outlined" 
+                        compact
+                        onPress={handleOut}
+                        style={{ 
+                            borderColor: theme.colors.outline,
+                            borderRadius: 8,
+                            //width: 68,
+                            //height: 28,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            paddingVertical: 0,
+                            paddingHorizontal: 0
+                        }}
+                        labelStyle={{ 
+                            fontSize: 12,
+                            width: 50,
+                            height: 10,
+                            color: theme.colors.onSurfaceVariant,
+                            textAlign: 'center',
+                            lineHeight: 10
+                        }}
+                    >
+                        <Text>Leave</Text>
+                    </Button>
+                )}
             </View>
             
             <View style={{ gap: 12 }}>
@@ -329,6 +374,46 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, on
                     </Text>
                 </View>
             </View>
+
+            {isExpiredAndNotCreator && (
+                <View style={{
+                    flexDirection: 'row',
+                    gap: 16,
+                    alignContent: 'center',
+                    justifyContent: 'flex-start',
+                    marginTop: 8,
+                }}>
+                    <SvgIcon name='info-circle' size={24} color={theme.colors.primary} />
+                    <View style={{ flex: 1, gap: 4 }}>
+                        <Text variant='bodyMedium' style={{ color: theme.colors.onSurfaceVariant }}>
+                            Premarket didn't reach it's goal. Creator has
+                        </Text>
+                        <Text variant='bodyMedium' style={{ color: theme.colors.onSurfaceVariant }}>
+                            4 hours to extend the deadline, or you will be
+                        </Text>
+                        <Text variant='bodyMedium' style={{ color: theme.colors.onSurfaceVariant }}>
+                            refunded
+                        </Text>
+                    </View>
+                </View>
+            )}
+
+            {isRefunded && (
+                <View style={{
+                    flexDirection: 'row',
+                    gap: 16,
+                    alignContent: 'center',
+                    justifyContent: 'flex-start',
+                    marginTop: 8,
+                }}>
+                    <SvgIcon name='info-circle' size={24} color={theme.colors.primary} />
+                    <View style={{ flex: 1 }}>
+                        <Text variant='bodyMedium' style={{ color: theme.colors.onSurfaceVariant }}>
+                            Your entry has been refunded
+                        </Text>
+                    </View>
+                </View>
+            )}
         </View>
     )
 }
