@@ -58,6 +58,7 @@ export default function EditPremarketSettingsForm({
     });
     setPremarketGoalSolLamp(sol.muln(-1));
   };
+
   const handleSubmit = () => {
     if (premarketGoalSolLamp !== undefined && deadlineDateTimeSec !== undefined) {
       onNext({
