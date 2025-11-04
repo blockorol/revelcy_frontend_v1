@@ -3,7 +3,7 @@ import { View, Pressable, Image } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { router } from "expo-router";
 import { SvgIcon, SvgIconButton } from "@components/base/SvgIcon";
-import { ChipDisplay } from '@components/ui/Chip';
+import { ChipDisplay, CHIP_NORMAL_HEIGHT, CHIP_NORMAL_PADDING_VERTICAL, CHIP_NORMAL_PADDING_HORIZONTAL, CHIP_NORMAL_BORDER_RADIUS, CHIP_NORMAL_TEXT_FONT_SIZE, CHIP_NORMAL_TEXT_LINE_HEIGHT } from '@components/ui/Chip';
 import { RoundIconLink } from "@components/premarket/RoundIcons";
 import { getTimeLeftLabel, convertDecimalToToken, convertLamportToSmallCount, formatNumberCompact, convertTimeStampToDataMonth } from "@utils/premarket";
 import shortString from "@utils/address_shorter";
@@ -18,12 +18,31 @@ type PremarketCardProps = {
   dynamicInfo?: TokenDynamicInfo;
   raisedLamports?: string | number; 
   compact?: boolean; // for future
+  width?: number; // card width, defaults to 368
 };
 
-export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dynamicInfo, raisedLamports, compact = true }) => {
+export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dynamicInfo, raisedLamports, compact = true, width = 368 }) => {
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
   const [showQuestionModal, setShowQuestionModal] = useState(false);
+  
+  // Constrain width to maximum of 368px
+  const constrainedWidth = useMemo(() => {
+    return Math.min(368, width);
+  }, [width]);
+  
+  // Calculate height proportionally (original ratio: 368:590)
+  // Maximum height is 590 to prevent cards from getting too tall
+  const height = useMemo(() => {
+    const calculatedHeight = constrainedWidth * (590 / 368);
+    return Math.min(590, calculatedHeight);
+  }, [constrainedWidth]);
+
+  // Calculate scale factor based on original width (368)
+  // This will be used to scale all child elements proportionally
+  const scaleFactor = useMemo(() => {
+    return constrainedWidth / 368;
+  }, [constrainedWidth]);
 
   const goalSOL = useMemo(() => {
     const lamp = mainInfo.premarketGoalSolLamp.toString();
@@ -72,41 +91,68 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
   };
 
   const button = (state: "premarket" | "canceled" | "finished" | "times_up" | "expired") => {
+    // Scale chip styles using imported constants from Chip.tsx
+    const chipStyle = {
+      height: CHIP_NORMAL_HEIGHT * scaleFactor,
+      paddingVertical: CHIP_NORMAL_PADDING_VERTICAL * scaleFactor,
+      paddingHorizontal: CHIP_NORMAL_PADDING_HORIZONTAL * scaleFactor,
+      borderRadius: CHIP_NORMAL_BORDER_RADIUS * scaleFactor,
+    };
+    
+    // Scaled text style for chip labels using imported constants from Chip.tsx
+    // This will be merged with ChipDisplay's default text styling
+    const chipTextStyle = {
+      fontSize: CHIP_NORMAL_TEXT_FONT_SIZE * scaleFactor,
+      lineHeight: CHIP_NORMAL_TEXT_LINE_HEIGHT * scaleFactor,
+    };
+    
     return state === 'premarket' ? 
     (<ChipDisplay
       variant="secondary"
       size="normal"
       mode="flat"
+      style={chipStyle}
+      textStyle={chipTextStyle}
     >Premarket</ChipDisplay>
     ) : state === 'finished' ? (
     <ChipDisplay
       variant="primary"
       size="normal"
       mode="flat"
+      style={chipStyle}
+      textStyle={chipTextStyle}
     >Launched</ChipDisplay>
   ) : state === 'canceled' ? (
     <ChipDisplay
       variant="error"
       size="normal"
       mode="flat"
+      style={chipStyle}
+      textStyle={chipTextStyle}
     >Refunded</ChipDisplay>
   ) : state === 'times_up' ? (
     <ChipDisplay
       variant="primary"
       size="normal"
       mode="flat"
+      style={chipStyle}
+      textStyle={chipTextStyle}
     >Times Up</ChipDisplay>
   ) : state === 'expired' ? (
     <ChipDisplay
       variant="error"
       size="normal"
       mode="flat"
+      style={chipStyle}
+      textStyle={chipTextStyle}
     >Expired</ChipDisplay>
   ) : (
     <ChipDisplay
       variant="primary"
       size="normal"
       mode="flat"
+      style={chipStyle}
+      textStyle={chipTextStyle}
     >{state}</ChipDisplay>
   ) 
   }
@@ -122,27 +168,27 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
   };
 
   return (
-    <Pressable onPress={goToDetails} style={{ width: 368 }}>
+    <Pressable onPress={goToDetails} style={{ width: constrainedWidth }}>
       <View
         style={{
           backgroundColor: colors.surfaceContainerLowest,
-          borderRadius: 24,
-          padding: 20,
-          width: 368,
-          height: 590,
+          borderRadius: 24 * scaleFactor,
+          padding: 20 * scaleFactor,
+          width: constrainedWidth,
+          height,
           overflow: "hidden",
-          gap: 16,
+          gap: 16 * scaleFactor,
         }}
       >
         {/* Image Section */}
         {!!mainInfo.imageURL && (
-          <View style={{ paddingBottom: 8, paddingTop: 0 }}>
+          <View style={{ paddingBottom: 8 * scaleFactor, paddingTop: 0 }}>
             <Image
               source={{ uri: mainInfo.imageURL }}
               style={{
                 width: '100%',
                 aspectRatio: 1,
-                borderRadius: 20,
+                borderRadius: 20 * scaleFactor,
                 backgroundColor: 'transparent',
               }}
             />
@@ -157,11 +203,11 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
             flexDirection: "row",
           }}
         >
-          <View style={{ gap: 4 }}>
-            <Text variant="headlineSmall" style={{ color: colors.onSurface }}>
+          <View style={{ gap: 4 * scaleFactor }}>
+            <Text variant="headlineSmall" style={{ color: colors.onSurface, fontSize: 24 * scaleFactor, lineHeight: 32 * scaleFactor }}>
               {mainInfo.name}
             </Text>
-            <Text variant="labelLarge" style={{ color: colors.onSurfaceVariant }}>
+            <Text variant="labelLarge" style={{ color: colors.onSurfaceVariant, fontSize: 14 * scaleFactor, lineHeight: 20 * scaleFactor }}>
                 {mainInfo.symbol}
               </Text>
           </View>
@@ -170,7 +216,7 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
               justifyContent: "center",
               alignItems: "flex-start",
               flexDirection: "row",
-              gap: 8,
+              gap: 8 * scaleFactor,
             }}
           >
             {mainInfo?.links?.twitter !== undefined && (
@@ -179,6 +225,8 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
                 colors={colors}
                 link={mainInfo.links.twitter}
                 withoutBackgroud={true}
+                size={32 * scaleFactor}
+                iconSize={16 * scaleFactor}
               />
             )}
             {mainInfo?.links?.webSite !== undefined && (
@@ -187,6 +235,8 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
                 colors={colors}
                 link={mainInfo.links.webSite}
                 withoutBackgroud={true}
+                size={32 * scaleFactor}
+                iconSize={16 * scaleFactor}
               />
             )}
             {mainInfo?.links?.telegram !== undefined && (
@@ -195,6 +245,8 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
                 colors={colors}
                 link={mainInfo.links.telegram}
                 withoutBackgroud={true}
+                size={32 * scaleFactor}
+                iconSize={16 * scaleFactor}
               />
             )}
           </View>
@@ -207,34 +259,41 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
             justifyContent: "flex-start",
             alignItems: "center",
             flexDirection: "row",
-            gap: 10,
+            gap: 10 * scaleFactor,
+            flexWrap: "nowrap",
           }}
         >
           {button(getEffectiveState())}
           {mainInfo.state === 'finished' && (
-            <Text variant="labelLarge">
+            <Text variant="labelLarge" style={{ fontSize: 14 * scaleFactor, lineHeight: 20 * scaleFactor }}>
               {mainInfo.tokenMint ? shortString(mainInfo.tokenMint) : "No token address available!"} 
             </Text>
           )}
           {mainInfo.state === 'finished' && (
             <SvgIcon 
               name="copy-icon" 
-              size={14} 
+              size={14 * scaleFactor} 
               color={colors.onSurfaceVariant} 
             />
           )}
           {deadlineText && (
-            <Text variant="labelLarge" style={{ color: colors.secondary }}>
+            <Text variant="labelLarge" style={{ color: colors.secondary, fontSize: 16 * scaleFactor, lineHeight: 20 * scaleFactor }}>
               {deadlineText}
             </Text>
           )}
           {(mainInfo.state === 'premarket' || mainInfo.state === 'canceled') && (
-            <SvgIconButton 
-              name="question-mark-circle" 
-              size={24} 
-              color={colors.outline}
-              onPress={() => setShowQuestionModal(true)}
-            />
+            <View style={{ 
+              justifyContent: "center", 
+              alignItems: "center",
+              height: CHIP_NORMAL_HEIGHT * scaleFactor, // Match chip height for proper vertical alignment
+            }}>
+              <SvgIconButton 
+                name="question-mark-circle" 
+                size={24 * scaleFactor} 
+                color={colors.outline}
+                onPress={() => setShowQuestionModal(true)}
+              />
+            </View>
           )}
         </View>
 
@@ -246,41 +305,43 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
               justifyContent: "space-between",
               alignItems: "flex-start",
               flexDirection: "row",
-              gap: 40,
+              gap: 40 * scaleFactor,
               width: "100%",
             }}
           >
             {mainInfo.state === "finished" ? (
               <View style={{ alignItems: "flex-start" }}>
-                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant, fontSize: 12 * scaleFactor, lineHeight: 16 * scaleFactor }}>
                   Current Mcap
                 </Text>
-                <Text variant="displaySmall" style={{ color: colors.onSurface }}>
+                <Text variant="displaySmall" style={{ color: colors.onSurface, fontSize: 36 * scaleFactor, lineHeight: 44 * scaleFactor }}>
                   {formatNumberCompact(convertDecimalToToken(dynamicInfo.marketCapTokenDec))}
                 </Text>
-                <Text variant="labelMedium" style={{ color: colors.primary }}>
+                <Text variant="labelMedium" style={{ color: colors.primary, fontSize: 12 * scaleFactor, lineHeight: 16 * scaleFactor }}>
                   {mainInfo?.finishDate ? `${convertTimeStampToDataMonth(mainInfo.finishDate)} launched` : "No launch date available!"}
                 </Text>
               </View>
             ) : (
               <View style={{ alignItems: "flex-start" }}>
-                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant, fontSize: 12 * scaleFactor, lineHeight: 16 * scaleFactor }}>
                   Current Mcap
                 </Text>
-                <Text variant="displaySmall" style={{ color: colors.onSurface }}>
+                <Text variant="displaySmall" style={{ color: colors.onSurface, fontSize: 36 * scaleFactor, lineHeight: 44 * scaleFactor }}>
                   {formatNumberCompact(convertDecimalToToken(dynamicInfo.marketCapTokenDec))}
                 </Text>
                 <Text
                   variant="labelMedium"
                   style={{
                     color: dynamicInfo.change24h >= 0 ? colors.primary : colors.error,
+                    fontSize: 12 * scaleFactor,
+                    lineHeight: 16 * scaleFactor,
                   }}
                 >
                   {dynamicInfo.change24h >= 0 ? (
-                    <View style={{ marginRight: 2 }}>
+                    <View style={{ marginRight: 2 * scaleFactor }}>
                       <Svg
-                        width="12"
-                        height="12"
+                        width={12 * scaleFactor}
+                        height={12 * scaleFactor}
                         viewBox="0 0 16 16"
                       >
                         <Path 
@@ -290,10 +351,10 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
                       </Svg>
                     </View>
                   ) : dynamicInfo.change24h < 0 ? (
-                    <View style={{ marginRight: 2 }}>
+                    <View style={{ marginRight: 2 * scaleFactor }}>
                       <Svg
-                        width="12"
-                        height="12"
+                        width={12 * scaleFactor}
+                        height={12 * scaleFactor}
                         viewBox="0 0 16 16"
                       >
                         <Path 
@@ -306,7 +367,7 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
                   {dynamicInfo.change24h.toFixed(2)}%{" "}
                   <Text
                     variant="labelMedium"
-                    style={{ color: colors.onSurfaceVariant }}
+                    style={{ color: colors.onSurfaceVariant, fontSize: 12 * scaleFactor, lineHeight: 16 * scaleFactor }}
                   > 24h</Text>
                 </Text>
               </View>
@@ -317,14 +378,14 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
                 alignItems: "flex-start",
               }}
             >
-              <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+              <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant, fontSize: 12 * scaleFactor, lineHeight: 16 * scaleFactor }}>
                 People
               </Text>
-              <Text variant="displaySmall">{dynamicInfo.holdersCount}</Text>
+              <Text variant="displaySmall" style={{ fontSize: 36 * scaleFactor, lineHeight: 44 * scaleFactor }}>{dynamicInfo.holdersCount}</Text>
               <AvatarGroup 
                 holders={dynamicInfo.holders}
                 maxAvatars={3}
-                size={20}
+                size={20 * scaleFactor}
               />
             </View>
 
@@ -332,10 +393,10 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
               alignItems: "flex-start",
             }}
             >
-              <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+              <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant, fontSize: 12 * scaleFactor, lineHeight: 16 * scaleFactor }}>
                 Achieved
               </Text>
-              <Text variant="displaySmall" style={{ color: colors.primary }}>
+              <Text variant="displaySmall" style={{ color: colors.primary, fontSize: 36 * scaleFactor, lineHeight: 44 * scaleFactor }}>
                 {Math.round(
                   (convertLamportToSmallCount(dynamicInfo.marketCapSolLamp) / 
                    convertLamportToSmallCount(mainInfo.premarketGoalSolLamp)) *
@@ -343,7 +404,7 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
                 )}
                 %
               </Text>
-              <Text variant="labelMedium" style={{ color: colors.onSurfaceVariant }}>
+              <Text variant="labelMedium" style={{ color: colors.onSurfaceVariant, fontSize: 12 * scaleFactor, lineHeight: 16 * scaleFactor }}>
                 {convertLamportToSmallCount(dynamicInfo.marketCapSolLamp).toFixed(2)} SOL Raised
               </Text>
             </View>
@@ -355,23 +416,23 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
                 justifyContent: "space-between",
                 alignItems: "flex-start",
                 flexDirection: "row",
-                gap: 40,
+                gap: 40 * scaleFactor,
                 width: "100%",
-                paddingVertical: 20,
+                paddingVertical: 20 * scaleFactor,
               }}
             >
               <View style={{ alignItems: "flex-start" }}>
-                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant, fontSize: 12 * scaleFactor, lineHeight: 16 * scaleFactor }}>
                   Loading...
                 </Text>
               </View>
               <View style={{ alignItems: "flex-start" }}>
-                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant, fontSize: 12 * scaleFactor, lineHeight: 16 * scaleFactor }}>
                   Loading...
                 </Text>
               </View>
               <View style={{ alignItems: "flex-start" }}>
-                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant, fontSize: 12 * scaleFactor, lineHeight: 16 * scaleFactor }}>
                   Loading...
                 </Text>
               </View>
@@ -381,11 +442,11 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
 
         {/* Progress bar (if raised exist) */}
         {progressPct != null && (
-          <View style={{ marginTop: 12 }}>
+          <View style={{ marginTop: 12 * scaleFactor }}>
             <View
               style={{
-                height: 8,
-                borderRadius: 999,
+                height: 8 * scaleFactor,
+                borderRadius: 999 * scaleFactor,
                 backgroundColor: colors.surfaceVariant,
                 overflow: "hidden",
               }}
@@ -398,11 +459,11 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
                 }}
               />
             </View>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 6 }}>
-              <Text variant="labelSmall" style={{ color: colors.onSurfaceVariant }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 6 * scaleFactor }}>
+              <Text variant="labelSmall" style={{ color: colors.onSurfaceVariant, fontSize: 11 * scaleFactor, lineHeight: 16 * scaleFactor }}>
                 {raisedSOL?.toFixed(2)} / {goalSOL.toFixed(2)} SOL
               </Text>
-              <Text variant="labelSmall" style={{ color: colors.onSurfaceVariant }}>
+              <Text variant="labelSmall" style={{ color: colors.onSurfaceVariant, fontSize: 11 * scaleFactor, lineHeight: 16 * scaleFactor }}>
                 {progressPct.toFixed(0)}%
               </Text>
             </View>

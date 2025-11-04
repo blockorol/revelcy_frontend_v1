@@ -1,6 +1,6 @@
 // @components/premarket/PremarketList.tsx
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { View, ScrollView, StyleSheet } from "react-native";
+import { View, ScrollView, StyleSheet, useWindowDimensions, LayoutChangeEvent } from "react-native";
 import { ActivityIndicator, Button, Text, useTheme } from "react-native-paper";
 import { PremarketCard } from "@components/premarket/PremarketCard";
 import { getPremarketList, TokenMainInfo, fetchTokenDynamicInfo, TokenDynamicInfo } from "@api/token";
@@ -22,6 +22,7 @@ export const PremarketList: React.FC<PremarketListProps> = ({
 }) => {
   const { colors } = useTheme();
   const isMobile = useIsMobile();
+  const { width: windowWidth } = useWindowDimensions();
 
   const [cursor, setCursor] = useState(0);
   const [limit, setLimit] = useState(initialLimit);
@@ -31,6 +32,7 @@ export const PremarketList: React.FC<PremarketListProps> = ({
   const [err, setErr] = useState<string | null>(null);
   const [dynamicInfoMap, setDynamicInfoMap] = useState<Record<string, TokenDynamicInfo>>({});
   const [loadingDynamicInfo, setLoadingDynamicInfo] = useState<Record<string, boolean>>({});
+  const [gridContainerWidth, setGridContainerWidth] = useState<number | null>(null);
 
   const fetchDynamicInfo = useCallback(async (premarketPubkey: any) => {
     const pubkeyStr = typeof premarketPubkey === "string" 
@@ -99,6 +101,74 @@ export const PremarketList: React.FC<PremarketListProps> = ({
     setCursor(cursor + limit);
   };
 
+  // Calculate responsive gap based on screen width
+  // Gap will be 2% of screen width, with min 16 and max 40
+  const responsiveGap = useMemo(() => {
+    const calculatedGap = windowWidth * 0.02;
+    return Math.max(16, Math.min(40, calculatedGap));
+  }, [windowWidth]);
+
+  // Measure the actual grid container width
+  const onGridLayout = useCallback((e: LayoutChangeEvent) => {
+    const width = e.nativeEvent.layout.width;
+    setGridContainerWidth(width);
+  }, []);
+
+  // Calculate card width based on screen size
+  // Screen width <= 800px: 1 card per row
+  // Screen width > 800px: 3 cards per row
+  // Ensures card never exceeds container boundaries
+  const cardWidth = useMemo(() => {
+    // Determine cards per row based on screen width
+    const cardsPerRow = windowWidth <= 600 ? 1 : 3;
+    
+    // Calculate the effective container width
+    let effectiveContainerWidth: number;
+    if (gridContainerWidth) {
+      // gridContainerWidth is the measured width of the View with padding
+      // The View has padding: responsiveGap, so the content area is smaller
+      // Content width = measured width - 2*padding (left + right)
+      effectiveContainerWidth = gridContainerWidth - (2 * responsiveGap);
+    } else {
+      // Fallback: use window width or containerWidth, accounting for maxWidth constraint
+      const maxAvailableWidth = Math.min(windowWidth, containerWidth || 1300);
+      // Account for the grid container's padding
+      effectiveContainerWidth = maxAvailableWidth - (2 * responsiveGap);
+    }
+    
+    // Calculate spacing needed for gaps between cards (not padding, which is already accounted for)
+    // For 1 card: no gaps needed
+    // For 3 cards: 2 gaps between the 3 cards
+    const gapSpacing = cardsPerRow > 1 ? ((cardsPerRow - 1) * responsiveGap) : 0;
+    
+    // Available width for cards = container content width - gaps between cards
+    const availableWidth = effectiveContainerWidth - gapSpacing;
+    
+    // Ensure availableWidth is never negative
+    const safeAvailableWidth = Math.max(0, availableWidth);
+    const calculatedWidth = safeAvailableWidth / cardsPerRow;
+    
+    // Add a small safety margin (1px) to prevent any rounding/overflow issues
+    const finalWidth = Math.max(0, calculatedWidth - 1);
+    
+    // Ensure the card width never exceeds the safe available width per card
+    const maxAllowedWidth = Math.max(0, (effectiveContainerWidth - gapSpacing) / cardsPerRow - 1);
+    
+    return Math.min(finalWidth, maxAllowedWidth);
+  }, [gridContainerWidth, windowWidth, responsiveGap, containerWidth]);
+
+  // Create dynamic grid style with responsive gap
+  // flexWrap: "wrap" allows wrapping after the calculated number of cards per row
+  const gridStyle = useMemo(() => ({
+    flexDirection: "row" as const,
+    flexWrap: "wrap" as const,
+    justifyContent: "flex-start" as const,
+    gap: responsiveGap,
+    padding: responsiveGap,
+    maxWidth: 1300,
+    alignSelf: "center" as const,
+  }), [responsiveGap]);
+
   const styles = StyleSheet.create({
     topBar: {
       flexDirection: "row",
@@ -109,17 +179,10 @@ export const PremarketList: React.FC<PremarketListProps> = ({
       flexDirection: "row",
       marginLeft: 8,
     },
-    grid: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      justifyContent: "space-between",
-      paddingBottom: 24,
-      gap: !isMobile ? 80 : 16,
-      maxWidth: 1300,
-      alignSelf: "center",
-    },
     cardWrap: {
-      marginBottom: 16,
+      // Remove marginBottom since gap handles spacing
+      flexShrink: 0,
+      flexGrow: 0,
     },
     loader: {
       alignItems: "center",
@@ -181,11 +244,9 @@ export const PremarketList: React.FC<PremarketListProps> = ({
         <ScrollView
         showsVerticalScrollIndicator={false}
           style={{ flex: 1 }}
-          contentContainerStyle={[
-            styles.grid,
-            containerWidth ? { width: containerWidth } : null,
-          ]}
+          contentContainerStyle={containerWidth ? { width: containerWidth } : undefined}
         >
+          <View onLayout={onGridLayout} style={gridStyle}>
           {items.map((it) => {
             const key =
               typeof it.premarketPubkey === "string"
@@ -198,16 +259,18 @@ export const PremarketList: React.FC<PremarketListProps> = ({
             const isLoadingDynamic = loadingDynamicInfo[key];
             
             return (
-              <View key={key} style={styles.cardWrap}>
+              <View key={key} style={[styles.cardWrap, { width: cardWidth }]}>
                 <PremarketCard 
                   mainInfo={it} 
                   dynamicInfo={dynamicInfo}
+                  width={cardWidth}
                   // Show a loading indicator or placeholder when dynamic info is loading
                   {...(isLoadingDynamic && { compact: true })}
                 />
               </View>
             );
           })}
+          </View>
         </ScrollView>
       )}
     </View>

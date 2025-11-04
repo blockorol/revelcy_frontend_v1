@@ -22,6 +22,10 @@ type Props = Omit<BaseChipProps, "children"> & {
    * text or node inside
    */
   children?: React.ReactNode;
+  /**
+   * textStyle to apply to the text inside the chip
+   */
+  textStyle?: any;
 };
 
 function hexToRgba(hex: string, alpha = 1): string {
@@ -38,7 +42,7 @@ function hexToRgba(hex: string, alpha = 1): string {
   return `rgba(${rr}, ${gg}, ${bb}, ${alpha})`;
 }
 
-const sizeStyles: Record<
+export const CHIP_SIZE_STYLES: Record<
   ChipSize,
   { container: ViewStyle; textVariant: "labelLarge" | "labelMedium" }
 > = {
@@ -62,6 +66,18 @@ const sizeStyles: Record<
   },
 };
 
+// Export individual size constants for convenience
+export const CHIP_NORMAL_HEIGHT: number = CHIP_SIZE_STYLES.normal.container.height as number;
+export const CHIP_NORMAL_PADDING_VERTICAL: number = CHIP_SIZE_STYLES.normal.container.paddingVertical as number;
+export const CHIP_NORMAL_PADDING_HORIZONTAL: number = CHIP_SIZE_STYLES.normal.container.paddingHorizontal as number;
+export const CHIP_NORMAL_BORDER_RADIUS: number = CHIP_SIZE_STYLES.normal.container.borderRadius as number;
+
+// Export text size constants (labelLarge variant: fontSize 16, lineHeight 20)
+export const CHIP_NORMAL_TEXT_FONT_SIZE: number = 16;
+export const CHIP_NORMAL_TEXT_LINE_HEIGHT: number = 20;
+
+const sizeStyles = CHIP_SIZE_STYLES;
+
 export function ChipDisplay({
   variant = "primary",
   size = "normal",
@@ -69,6 +85,7 @@ export function ChipDisplay({
   style,
   children,
   disabled,
+  textStyle,
   ...rest
 }: Props) {
   const theme = useTheme();
@@ -111,7 +128,7 @@ export function ChipDisplay({
       {typeof children === "string" ? (
         <Text
           variant={textVariant}
-          style={{ color: textColor, textAlign: "center" }}
+          style={[{ color: textColor, textAlign: "center" }, textStyle]}
         >
           {children}
         </Text>
