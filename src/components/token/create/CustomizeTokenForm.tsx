@@ -263,7 +263,7 @@ export default function CustomizeTokenForm({
               <TextInputMultiline
                 maxLength={20000}
                 value={description}
-                onChangeValue={setDescription}
+                onChangeValue={(val) => setDescription(val.trimStart())}
                 placeholder="Describe your community..."
               />
             </View>
@@ -303,7 +303,7 @@ export default function CustomizeTokenForm({
                           placeholder="e.g. Subcribe to..."
                           maxLength={25}
                           value={link.text}
-                          onChangeText={(val) => updateLink(index, "text", val)}
+                          onChangeText={(val) => updateLink(index, "text", val.trimStart())}
                           mode="flat"
                           backgroundColor={colors.surfaceContainerLow}
                         />
@@ -312,8 +312,8 @@ export default function CustomizeTokenForm({
                           label={"URL"}
                           placeholder="e.g. https://example.com/..."
                           value={link.url}
-                          onChangeText={(val) =>
-                            updateLink(index, "url", normalizeUrl(val))
+                          onChangeText={(val) => 
+                            updateLink(index, "url", normalizeUrl(val.trimStart()))
                           }
                           mode="flat"
                           backgroundColor={colors.surfaceContainerLow}
