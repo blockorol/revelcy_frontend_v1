@@ -128,6 +128,7 @@ export default function CustomizeTokenForm({
         backgroundColor: colors.surfaceContainerLowest,
         borderRadius: isMobile ? 0 : 16,
       }}
+      contentContainerStyle={{ flexGrow: 1 }}
     >
       <View
         style={{
@@ -136,8 +137,7 @@ export default function CustomizeTokenForm({
           paddingHorizontal: isMobile ? 16 : 24,
           paddingVertical: isMobile ? 40 : 24,
           maxWidth: 500,
-          minHeight: isMobile ? height : height * 0.9,
-          justifyContent: "space-between",
+          flex: 1,
         }}
       >
         <View style={{ gap: 24, flex: 1 }}>
@@ -146,9 +146,9 @@ export default function CustomizeTokenForm({
             theme={theme}
             onClose={onClose}
           />
-          <View style={{ flexDirection: "row", gap: 16 }}>
+          <View style={{ flexDirection: "row", gap: 16, alignItems: "flex-start" }}>
             <SvgIcon name="info-circle" color={colors.primary} size={24} />
-            <View style={{ gap: 8, maxWidth: 392 }}>
+            <View style={{ gap: 8, flex: 1, minWidth: 0 }}>
               <Text
                 variant="bodyMedium"
                 style={{ color: colors.onSurfaceVariant }}
@@ -374,6 +374,7 @@ export default function CustomizeTokenForm({
             </View>
           </View>
         </View>
+        <View style={{ marginTop: 24 }}>
         <ContinueAndProgress
           theme={theme}
           progress={
@@ -388,6 +389,7 @@ export default function CustomizeTokenForm({
           isFilledAll={isFilledAll}
           onBack={onBack}
         />
+        </View>
       </View>
     </ScrollView>
   );
