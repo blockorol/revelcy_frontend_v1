@@ -66,15 +66,14 @@ export default function RevelcySegmentedButtons(props: RevelcySegmentedButtonsPr
       flexGrow: 0,
       flexShrink: 0,
       flexBasis: 'auto',
-      alignSelf: 'flex-start',
       backgroundColor: bg,
     };
 
     return {
       ...btn,
       uncheckedColor: 'transparent',
-      style: [segmentStyle, btn.style],
-      labelStyle: [theme.fontsProminent.labelMedium, {color:textColor}, btn.labelStyle],
+      style: [ segmentStyle],
+      labelStyle: [theme.fontsProminent.labelMedium, {color:textColor, paddingBottom: 5}],
       showSelectedCheck: false,
     };
   });
@@ -85,6 +84,7 @@ export default function RevelcySegmentedButtons(props: RevelcySegmentedButtonsPr
     overflow: 'hidden',
     backgroundColor: baseBackgroundColor,
     alignSelf: 'flex-start',
+    alignContent: 'center',
     width: 'auto',
   };
 
