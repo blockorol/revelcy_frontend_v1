@@ -101,73 +101,74 @@ export const PremarketList: React.FC<PremarketListProps> = ({
     setCursor(cursor + limit);
   };
 
-  // Calculate responsive gap based on screen width
-  // Gap will be 2% of screen width, with min 16 and max 40
-  const responsiveGap = useMemo(() => {
-    const calculatedGap = windowWidth * 0.02;
-    return Math.max(16, Math.min(40, calculatedGap));
-  }, [windowWidth]);
-
   // Measure the actual grid container width
   const onGridLayout = useCallback((e: LayoutChangeEvent) => {
     const width = e.nativeEvent.layout.width;
     setGridContainerWidth(width);
   }, []);
 
-  // Calculate card width based on screen size
-  // Screen width <= 800px: 1 card per row
-  // Screen width > 800px: 3 cards per row
-  // Ensures card never exceeds container boundaries
-  const cardWidth = useMemo(() => {
-    // Determine cards per row based on screen width
-    const cardsPerRow = windowWidth <= 600 ? 1 : 3;
-    
+  // Determine cards per row based on screen width
+  const cardsPerRow = useMemo(() => {
+    return windowWidth <= 600 ? 1 : 3;
+  }, [windowWidth]);
+
+  // Calculate card width and spacing
+  // Cards will be positioned: left at left edge, middle at center, right at right edge
+  // Spacing between cards (horizontal and vertical) will be uniform
+  const { cardWidth, gapSize } = useMemo(() => {
     // Calculate the effective container width
     let effectiveContainerWidth: number;
     if (gridContainerWidth) {
-      // gridContainerWidth is the measured width of the View with padding
-      // The View has padding: responsiveGap, so the content area is smaller
-      // Content width = measured width - 2*padding (left + right)
-      effectiveContainerWidth = gridContainerWidth - (2 * responsiveGap);
+      effectiveContainerWidth = gridContainerWidth;
     } else {
-      // Fallback: use window width or containerWidth, accounting for maxWidth constraint
-      const maxAvailableWidth = Math.min(windowWidth, containerWidth || 1300);
-      // Account for the grid container's padding
-      effectiveContainerWidth = maxAvailableWidth - (2 * responsiveGap);
+      // Fallback: use containerWidth or window width
+      effectiveContainerWidth = containerWidth || windowWidth;
     }
     
-    // Calculate spacing needed for gaps between cards (not padding, which is already accounted for)
-    // For 1 card: no gaps needed
-    // For 3 cards: 2 gaps between the 3 cards
-    const gapSpacing = cardsPerRow > 1 ? ((cardsPerRow - 1) * responsiveGap) : 0;
-    
-    // Available width for cards = container content width - gaps between cards
-    const availableWidth = effectiveContainerWidth - gapSpacing;
-    
-    // Ensure availableWidth is never negative
-    const safeAvailableWidth = Math.max(0, availableWidth);
-    const calculatedWidth = safeAvailableWidth / cardsPerRow;
-    
-    // Add a small safety margin (1px) to prevent any rounding/overflow issues
-    const finalWidth = Math.max(0, calculatedWidth - 1);
-    
-    // Ensure the card width never exceeds the safe available width per card
-    const maxAllowedWidth = Math.max(0, (effectiveContainerWidth - gapSpacing) / cardsPerRow - 1);
-    
-    return Math.min(finalWidth, maxAllowedWidth);
-  }, [gridContainerWidth, windowWidth, responsiveGap, containerWidth]);
+    if (cardsPerRow === 1) {
+      // Single card: center it with max width constraint
+      const maxCardWidth = 368; // PremarketCard's internal max width
+      const percentageBasedWidth = effectiveContainerWidth * 0.9;
+      const calculatedWidth = Math.min(maxCardWidth, percentageBasedWidth);
+      // For single card, use a default gap for vertical spacing
+      return { cardWidth: calculatedWidth, gapSize: 16 };
+    } else {
+      // Three cards: calculate width and spacing to fill container
+      // With space-between: left at left edge, right at right edge, middle centered
+      // Calculate spacing: (containerWidth - 3 * cardWidth) / 2
+      const preferredCardWidth = 368; // Fixed preferred width
+      const maxCardWidth = Math.min(preferredCardWidth, effectiveContainerWidth / 3);
+      
+      // Calculate the gap that space-between will create
+      const totalCardWidth = 3 * maxCardWidth;
+      const totalGapSpace = effectiveContainerWidth - totalCardWidth;
+      const calculatedGap = totalGapSpace / 2; // Two gaps between three cards
+      
+      // Ensure minimum gap
+      const MIN_GAP = 16;
+      const finalGap = Math.max(MIN_GAP, calculatedGap);
+      
+      // If gap is too large, recalculate card width to ensure reasonable spacing
+      if (calculatedGap < MIN_GAP) {
+        // Recalculate with minimum gap
+        const availableForCards = effectiveContainerWidth - (2 * MIN_GAP);
+        const scaledCardWidth = Math.max(0, (availableForCards / 3) - 1); // Small safety margin
+        return { cardWidth: scaledCardWidth, gapSize: MIN_GAP };
+      }
+      
+      return { cardWidth: maxCardWidth, gapSize: finalGap };
+    }
+  }, [gridContainerWidth, windowWidth, containerWidth, cardsPerRow]);
 
-  // Create dynamic grid style with responsive gap
-  // flexWrap: "wrap" allows wrapping after the calculated number of cards per row
+  // Create grid style with left alignment for 3 cards, center for 1 card
+  // Apply the calculated gap for vertical spacing to match horizontal spacing
   const gridStyle = useMemo(() => ({
     flexDirection: "row" as const,
     flexWrap: "wrap" as const,
-    justifyContent: "flex-start" as const,
-    gap: responsiveGap,
-    padding: responsiveGap,
-    maxWidth: 1300,
-    alignSelf: "center" as const,
-  }), [responsiveGap]);
+    justifyContent: cardsPerRow === 1 ? "center" as const : "flex-start" as const,
+    width: "100%" as const,
+    gap: gapSize, // This ensures vertical gaps match horizontal gaps
+  }), [cardsPerRow, gapSize]);
 
   const styles = StyleSheet.create({
     topBar: {
@@ -180,7 +181,6 @@ export const PremarketList: React.FC<PremarketListProps> = ({
       marginLeft: 8,
     },
     cardWrap: {
-      // Remove marginBottom since gap handles spacing
       flexShrink: 0,
       flexGrow: 0,
     },
@@ -198,33 +198,7 @@ export const PremarketList: React.FC<PremarketListProps> = ({
 
   return (
     <View style={[{ flex: 1 }, style]}>
-      {/* 
-      <View style={styles.topBar}>
-        <Text variant='bodyLarge' style={{ color: colors.onSurface, fontWeight: "600" }}>Page size:</Text>
-        <View style={styles.sizeRow}>
-          {pageSizeOptions.map((opt) => (
-            <Button
-              key={opt}
-              mode={opt === limit ? "contained" : "outlined"}
-              onPress={() => onChangeLimit(opt)}
-              style={{ marginRight: 8 }}
-            >
-              {opt}
-            </Button>
-          ))}
-        </View>
 
-        <View style={{ flex: 1 }} />
-
-        <Text variant='bodyLarge' style={{ color: colors.onSurfaceVariant, marginRight: 12 }}>{rangeText}</Text>
-        <Button mode="outlined" disabled={!canPrev} onPress={goPrev} style={{ marginRight: 8 }}>
-          Prev
-        </Button>
-        <Button mode="outlined" disabled={!canNext} onPress={goNext}>
-          Next
-        </Button>
-      </View>
-      */}
 
       {/* Content */}
       {loading ? (
