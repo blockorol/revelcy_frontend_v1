@@ -53,6 +53,8 @@ export default function EditPremarketSettingsForm({
     max.setMonth(max.getMonth() + 1); 
     return d.getTime() > max.getTime();
   };
+  const ONE_HOUR_MS = 60 * 60 * 1000;
+  const isLessThanOneHourAhead = (d: Date) => d.getTime() <= Date.now() + ONE_HOUR_MS;
 
 
   const changeSliderPremarketValue = (value: number) => {
@@ -119,7 +121,11 @@ export default function EditPremarketSettingsForm({
               value={currentDataTime}
               onChange={(newDate: Date) => {
                 setDataTime(newDate);
-
+                if (isLessThanOneHourAhead(newDate)) {
+                  setDataTimeError("Deadline must be at least 1 hour from now");
+                  setDeadlineDateTimeSec(undefined);
+                  return;
+                }
                 const dataTimeNow = new Date();
                 if (newDate.getTime() < dataTimeNow.getTime()) {
                   setDataTimeError("time should be in the future");
