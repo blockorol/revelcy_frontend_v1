@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Image, TouchableOpacity, StyleSheet } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import {  Text, useTheme } from "react-native-paper";
+import { Text, useTheme } from "react-native-paper";
 import ContinueAndProgress from "@components/ContinueButtonWithProgressBar";
 import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeader";
 import { TokenMainData } from "@components/token/create/interface";
@@ -100,8 +100,8 @@ export default function CreateTokenForm({
       style={{
         backgroundColor: colors.surfaceContainerLowest,
         borderRadius: isMobile ? 0 : 16,
-        height: height,
       }}
+      contentContainerStyle={{ flexGrow: 1 }}
     >
       <View
         style={{
@@ -110,8 +110,7 @@ export default function CreateTokenForm({
           paddingHorizontal: isMobile ? 16 : 24,
           paddingVertical: isMobile ? 40 : 24,
           maxWidth: 500,
-          minHeight: isMobile ? height : height * 0.9,
-          justifyContent: "space-between",
+          flex: 1,
         }}
       >
         <View style={{ gap: 16 }}>
@@ -294,7 +293,7 @@ export default function CreateTokenForm({
             </View>
           </View>
         </View>
-        <View style={{ gap: 16 }}>
+        <View style={{ gap: 16, paddingBottom: isMobile ? 8 : 16 }}>
           <ContinueAndProgress
             theme={theme}
             progress={{
@@ -303,6 +302,7 @@ export default function CreateTokenForm({
             }}
             handleSubmit={handleSubmit}
             isFilledAll={isFilledAll}
+            onBack={onBack}
           />
         </View>
       </View>

@@ -71,7 +71,7 @@ export default function CustomizeTokenForm({
   const addLink = (type: 'tg' | "x" | "other") => {
     if (links.length >= MAX_CALL_TO_ACTION)
       return
-    setLinks((prev) => [...prev, { text: "", url: "", type: type}]);
+    setLinks((prev) => [...prev, { text: "", url: "", type: type }]);
   }
 
   const updateLink = (index: number, field: "text" | "url", value: string) => {
@@ -199,13 +199,15 @@ export default function CustomizeTokenForm({
               >
                 <TouchableOpacity
                   onPress={pickBanner}
-                  style={{ alignSelf: "center" }}
+                  style={{ alignSelf: "center", width: "100%" }}
                 >
                   <View
                     style={{
-                      height: 120,
-                      width: 440,
+                      width: "100%",
+                      aspectRatio: 3,           
                       borderRadius: 24,
+                      borderWidth: 1,          
+                      borderColor: colors.outlineVariant,
                       backgroundColor: colors.surfaceContainerHighest,
                       alignItems: "center",
                       justifyContent: "center",
@@ -216,6 +218,7 @@ export default function CustomizeTokenForm({
                       <Image
                         source={{ uri: banner ?? presetData?.banner?.url }}
                         style={{ width: "100%", height: "100%" }}
+                        resizeMode="cover"
                       />
                     ) : (
                       <>
@@ -340,55 +343,55 @@ export default function CustomizeTokenForm({
 
               {/* Add link */}
               {links.length < MAX_CALL_TO_ACTION &&
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "flex-start",
-                  width: "100%",
-                }}
-              >
-                <View style={{ flexDirection: "row", gap: 16, height: 24 }}>
-                  <SvgIcon
-                    name="add-circle-outlined"
-                    color={theme.colors.onSurfaceVariant}
-                  />
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "flex-start",
+                    width: "100%",
+                  }}
+                >
+                  <View style={{ flexDirection: "row", gap: 16, height: 24 }}>
+                    <SvgIcon
+                      name="add-circle-outlined"
+                      color={theme.colors.onSurfaceVariant}
+                    />
 
-                  <SvgIconButton
-                    name="tg-logo"
-                    color={theme.colors.onSurface}
-                    onPress={() => addLink('tg')}
-                  />
-                  <SvgIconButton
-                    name="x-logo"
-                    color={theme.colors.onSurface}
-                    onPress={() => addLink('x')}
-                  />
-                  <SvgIconButton
-                    name="world-outlined"
-                    color={theme.colors.onSurface}
-                    onPress={() => addLink('other')}
-                  />
+                    <SvgIconButton
+                      name="tg-logo"
+                      color={theme.colors.onSurface}
+                      onPress={() => addLink('tg')}
+                    />
+                    <SvgIconButton
+                      name="x-logo"
+                      color={theme.colors.onSurface}
+                      onPress={() => addLink('x')}
+                    />
+                    <SvgIconButton
+                      name="world-outlined"
+                      color={theme.colors.onSurface}
+                      onPress={() => addLink('other')}
+                    />
+                  </View>
                 </View>
-              </View>
               }
             </View>
           </View>
         </View>
         <View style={{ marginTop: 24 }}>
-        <ContinueAndProgress
-          theme={theme}
-          progress={
-            steps
-              ? {
-                before: (steps.current - 1) / steps.total,
-                after: steps.current / steps.total,
-              }
-              : undefined
-          }
-          handleSubmit={handleSubmit}
-          isFilledAll={isFilledAll}
-          onBack={onBack}
-        />
+          <ContinueAndProgress
+            theme={theme}
+            progress={
+              steps
+                ? {
+                  before: (steps.current - 1) / steps.total,
+                  after: steps.current / steps.total,
+                }
+                : undefined
+            }
+            handleSubmit={handleSubmit}
+            isFilledAll={isFilledAll}
+            onBack={onBack}
+          />
         </View>
       </View>
     </ScrollView>

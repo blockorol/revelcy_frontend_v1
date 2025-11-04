@@ -41,9 +41,9 @@ export default function EditTokenomicsForm({
   >(
     presetData?.creatorInitialBuy
       ? (() => {
-          const valueStr = presetData.creatorInitialBuy.toString();
-          return valueStr.endsWith(SUFFIX) ? valueStr : valueStr + SUFFIX;
-        })()
+        const valueStr = presetData.creatorInitialBuy.toString();
+        return valueStr.endsWith(SUFFIX) ? valueStr : valueStr + SUFFIX;
+      })()
       : undefined
   );
   const [errorCreatorInitialBuy, setErrorCreatorInitialBuy] = useState<
@@ -81,9 +81,9 @@ export default function EditTokenomicsForm({
   >(
     presetData?.treasuryAllocationPercent
       ? (() => {
-          const valueStr = presetData.treasuryAllocationPercent.toString();
-          return valueStr.endsWith(SUFFIX) ? valueStr : valueStr + SUFFIX;
-        })()
+        const valueStr = presetData.treasuryAllocationPercent.toString();
+        return valueStr.endsWith(SUFFIX) ? valueStr : valueStr + SUFFIX;
+      })()
       : undefined
   );
   const [errorTreasuryAllocation, setErrorTreasuryAllocation] = useState<
@@ -127,7 +127,7 @@ export default function EditTokenomicsForm({
     let raw = text.endsWith(SUFFIX) ? text.slice(0, -SUFFIX.length) : text;
 
     raw = raw
-      .replace(/\s+/g, "") 
+      .replace(/\s+/g, "")
       .replace(",", ".")
       .replace(/[^0-9.]/g, "");
 
@@ -251,8 +251,8 @@ export default function EditTokenomicsForm({
       style={{
         backgroundColor: colors.surfaceContainerLowest,
         borderRadius: isMobile ? 0 : 16,
-        height: height,
       }}
+      contentContainerStyle={{ flexGrow: 1 }}
     >
       <View
         style={{
@@ -261,8 +261,7 @@ export default function EditTokenomicsForm({
           paddingHorizontal: isMobile ? 8 : 16,
           paddingVertical: isMobile ? 40 : 24,
           //maxWidth: 500,
-          minHeight: isMobile ? height : height * 0.9,
-          justifyContent: "space-between",
+          flex: 1,
         }}
       >
         <View style={{ flex: 1 }}>
@@ -420,17 +419,18 @@ export default function EditTokenomicsForm({
             </View>
           </View>
         </View>
-
-        <ContinueButtonWithProgressBar
-          theme={theme}
-          progress={{
-            before: (step - 1) / totalSteps,
-            after: step / totalSteps,
-          }}
-          handleSubmit={handleSubmit}
-          isFilledAll={isFilledAll}
-          onBack={onBack}
-        />
+        <View style={{ marginTop: 16, paddingBottom: isMobile ? 8 : 16 }}>
+          <ContinueButtonWithProgressBar
+            theme={theme}
+            progress={{
+              before: (step - 1) / totalSteps,
+              after: step / totalSteps,
+            }}
+            handleSubmit={handleSubmit}
+            isFilledAll={isFilledAll}
+            onBack={onBack}
+          />
+        </View>
       </View>
     </ScrollView>
   );
