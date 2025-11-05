@@ -3,6 +3,7 @@ import * as React from "react";
 import { StyleSheet, ViewStyle } from "react-native";
 import { Text } from "@components/ui/Text";
 import { Chip as PaperChip, useTheme } from "react-native-paper";
+import { makeTransparent } from "@utils/colors";
 
 type BaseChipProps = React.ComponentProps<typeof PaperChip>;
 
@@ -23,20 +24,6 @@ type Props = Omit<BaseChipProps, "children"> & {
    */
   children?: React.ReactNode;
 };
-
-function hexToRgba(hex: string, alpha = 1): string {
-  const h = hex.replace("#", "");
-  if (h.length === 8) {
-    const rr = parseInt(h.slice(2, 4), 16);
-    const gg = parseInt(h.slice(4, 6), 16);
-    const bb = parseInt(h.slice(6, 8), 16);
-    return `rgba(${rr}, ${gg}, ${bb}, ${alpha})`;
-  }
-  const rr = parseInt(h.slice(0, 2), 16);
-  const gg = parseInt(h.slice(2, 4), 16);
-  const bb = parseInt(h.slice(4, 6), 16);
-  return `rgba(${rr}, ${gg}, ${bb}, ${alpha})`;
-}
 
 const sizeStyles: Record<
   ChipSize,
@@ -80,11 +67,10 @@ export function ChipDisplay({
       ? theme.colors.error
       : theme.colors.primary;
 
-  const bgSoft = hexToRgba(baseColor, 0.15);
+  const bgSoft = makeTransparent(baseColor, 0.85);
 
   const { container, textVariant } = sizeStyles[size];
 
-  // Состояние disabled — приглушим цвета
   const textColor = disabled ? theme.colors.onSurfaceDisabled : baseColor;
   const outlineColor = disabled ? theme.colors.outline : baseColor;
   const backgroundColor = disabled ? theme.colors.surfaceDisabled : bgSoft;
@@ -106,12 +92,15 @@ export function ChipDisplay({
         },
         style,
       ]}
+      
+      pointerEvents={"none"}
       {...rest}
     >
       {typeof children === "string" ? (
         <Text
           variant={textVariant}
-          style={{ color: textColor, textAlign: "center" }}
+          style={{ color: textColor, textAlign: "center",
+          cursor: undefined,}}
         >
           {children}
         </Text>

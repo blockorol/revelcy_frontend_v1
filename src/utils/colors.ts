@@ -16,3 +16,18 @@ export function makeTransparent(hex: string, alphaFactor: number): string {
   const newA = Math.min(1, Math.max(0, a * (1 - alphaFactor)));
   return `rgba(${r}, ${g}, ${b}, ${newA.toFixed(3)})`;
 }
+
+export function hexToRgba(hex: string, alpha = 1): string {
+  const h = hex.replace("#", "");
+  if (h.length === 8) {
+    const rr = parseInt(h.slice(2, 4), 16);
+    const gg = parseInt(h.slice(4, 6), 16);
+    const bb = parseInt(h.slice(6, 8), 16);
+    return `rgba(${rr}, ${gg}, ${bb}, ${alpha})`;
+  }
+  const rr = parseInt(h.slice(0, 2), 16);
+  const gg = parseInt(h.slice(2, 4), 16);
+  const bb = parseInt(h.slice(4, 6), 16);
+  return `rgba(${rr}, ${gg}, ${bb}, ${alpha})`;
+}
+
