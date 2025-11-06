@@ -11,6 +11,7 @@ import {
   convertTimeStampToDataMonth,
   formatNumberCompact
 } from '@utils/premarket';
+import { makeTransparent } from '@utils/colors';
 import { AppTheme } from '@theme/types';
 import { useJoinFlow } from '@hooks/useJoinFlow';
 import { TextProminent } from '@components/ui/Text';
@@ -158,7 +159,7 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
         }
         {effectiveState === 'expired' && 
           <View style={[styles.row, { gap: 22 }]}>
-            <View style={[styles.timelineLine, { backgroundColor: colors.error + '33', justifyContent: 'center', alignItems: 'center' }]}>
+            <View style={[styles.timelineLine, { backgroundColor: makeTransparent(colors.error, 0.8), justifyContent: 'center', alignItems: 'center' }]}>
               <Animated.View 
                 style={[
                   styles.pingRing,
@@ -179,7 +180,7 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
         }
         {state === 'canceled' && 
           <View style={[styles.row, { gap: 22 }]}>
-            <View style={[styles.timelineLine, { backgroundColor: colors.error + '33', justifyContent: 'center', alignItems: 'center' }]}>
+            <View style={[styles.timelineLine, { backgroundColor: makeTransparent(colors.error, 0.8), justifyContent: 'center', alignItems: 'center' }]}>
               <Animated.View 
                 style={[
                   styles.pingRing,
