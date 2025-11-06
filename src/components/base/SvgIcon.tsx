@@ -11,6 +11,7 @@ import ArrowsClockwise from "@assets/basic_icon/arrows-clockwise.svg";
 import BinocularsOutlined from "@assets/basic_icon/binoculars-outlined.svg";
 import Binoculars from "@assets/basic_icon/binoculars.svg";
 import Books from "@assets/basic_icon/books.svg";
+import Buy from "@assets/basic_icon/buy.svg";
 import CaretDown from "@assets/basic_icon/caret-down.svg";
 import CaretLeft from '@assets/basic_icon/caret-left.svg';
 import Check from "@assets/basic_icon/check.svg";
@@ -67,6 +68,7 @@ export const icons = {
   "binoculars-outlined": BinocularsOutlined,
   binoculars: Binoculars,
   books: Books,
+  buy: Buy,
   "caret-down": CaretDown,
   'caret-left':CaretLeft,
   check: Check,

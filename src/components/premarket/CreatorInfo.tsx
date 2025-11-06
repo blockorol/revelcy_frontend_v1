@@ -185,10 +185,10 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
     <View style={{gap: 48}}>
       <View style={{flexDirection:'row', gap:16, width:'100%'}}>
         <Button style={{flex:1}} variant="error" 
-          mode="elevated"
+          mode="contained"
           onPress={handleRefund}>Refund all</Button>
         <Button style={{flex:1}} variant='primary' 
-          mode="elevated"
+          mode="contained"
           onPress={handleExtended}>Extend</Button>
       </View>
       <View style={{flexDirection:'row', gap:16, alignContent:'center', justifyContent:'flex-start' }}>

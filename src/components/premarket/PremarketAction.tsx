@@ -10,6 +10,7 @@ import OneScreenContainer from "@components/base/container/OneScreenContainer";
 import LoginFlow from "@components/login/LoginFlow";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import { ShareTextButton } from "@components/base/ButtonShare";
+import { openInBrowser } from "@utils/openLinks";
 
 interface PremarketActionProps {
   tokenMainInfo: TokenMainInfo;
@@ -36,7 +37,7 @@ export function PremarketAction({
     case "canceled":
       return <PremarketActionCanceled />;
     case "finished":
-      return <PremarketActionLaunched />;
+      return <PremarketActionLaunched tokenMainInfo={tokenMainInfo} />;
   }
 }
 
@@ -106,18 +107,37 @@ export function PremarketActionCanceled() {
   return null;
 }
 
-export function PremarketActionLaunched() {
+interface PremarketActionLaunchedComponentProps {
+  tokenMainInfo: TokenMainInfo;
+}
+
+export function PremarketActionLaunched({ tokenMainInfo }: PremarketActionLaunchedComponentProps) {
   const { colors } = useTheme();
+
+  const handleBuyPress = () => {
+    if (tokenMainInfo.tokenMint) {
+      openInBrowser(`https://pump.fun/coin/${tokenMainInfo.tokenMint}`);
+    }
+  };
+
   return (
-    <View style={{ flexDirection: "row", gap: 16 }}>
-      {/* <Button mode='contained' disabled  style={{width:270}}>Buy</Button>  */}
+    <View style={{ flexDirection: "row", gap: 16, alignSelf: "center" }}>
+      <Button
+        mode="contained"
+        leftSvgIconName="buy"
+        textColor={colors.onPrimary}
+        style={{ width: 168, height: 40 }}
+        onPress={handleBuyPress}
+      >
+        Buy
+      </Button>
       <Button
         mode="contained"
         leftSvgIconName="pumpfun"
         textColor={colors.onPrimary}
-        style={{ width: "100%" }}
+        style={{ width: 168, height: 40 }}
+        onPress={handleBuyPress}
       >
-        {" "}
         View
       </Button>
     </View>
