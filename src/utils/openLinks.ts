@@ -2,7 +2,7 @@
 import { Platform } from "react-native";
 import * as Linking from "expo-linking";
 
-async function openInBrowser(url: string) {
+export async function openInBrowser(url: string) {
   if (Platform.OS === "web") {
     window.open(url, "_blank", "noopener,noreferrer");
   } else {
