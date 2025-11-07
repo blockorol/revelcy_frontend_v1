@@ -6,7 +6,7 @@ import { useWallet } from "@storage/wallet-adapter";
 import { useAnchorWalletSafe } from "@storage/wallet-adapter/useWallet.web";
 import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
-import { useNotification } from "@storage/NotificationContext";
+import { useNotification } from "@providers/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 
 import { Linking, View } from "react-native";
