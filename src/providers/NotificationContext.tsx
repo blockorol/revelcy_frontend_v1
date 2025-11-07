@@ -1,5 +1,6 @@
 // storage/NotificationContext.tsx
 import { SvgIcon } from "@components/base/SvgIcon";
+import useIsMobile from "@hooks/useIsMobile";
 import { ExtendedMD3Colors } from "@theme/types";
 import React, {
   createContext,
@@ -61,6 +62,7 @@ export const NotificationProvider: React.FC<React.PropsWithChildren> = ({
   const [current, setCurrent] = useState<QueueItem | null>(null);
   const queueRef = useRef<QueueItem[]>([]);
   const idRef = useRef(0);
+  const isMobile = useIsMobile();
 
   const dequeue = useCallback(() => {
     const next = queueRef.current.shift() ?? null;
@@ -134,19 +136,28 @@ export const NotificationProvider: React.FC<React.PropsWithChildren> = ({
     }
   };
 
-  const containerStyle: ViewStyle = Platform.select({
-    web: {
-      position: "absolute",
-      left: 16,
-      bottom: 16,
-      borderRadius: 16,
-      paddingHorizontal: 16,
-      paddingVertical: 14,
-      maxWidth: MAX_WIDTH,
-      alignSelf: "flex-start",
-    } as ViewStyle,
-    default: { margin: 16 } as ViewStyle,
-  })!;
+  const containerStyle: ViewStyle =
+    Platform.OS === "web" && !isMobile
+      ? {
+          position: "absolute",
+          left: 16,
+          bottom: 16,
+          borderRadius: 16,
+          paddingHorizontal: 16,
+          paddingVertical: 14,
+          maxWidth: MAX_WIDTH,
+          alignSelf: "flex-start",
+        }
+      : {
+          position: "absolute",
+          bottom: 16,
+          left: 16,
+          right: 16,
+          borderRadius: 16,
+          paddingHorizontal: 16,
+          paddingVertical: 14,
+          alignSelf: "center",
+        };
 
   return (
     <NotificationContext.Provider value={value}>
