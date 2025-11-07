@@ -31,7 +31,7 @@ import process from "process";
 import { AuthProvider } from "@providers/AuthContext";
 import { ContentAreaProvider, useContentArea } from "@hooks/useContentArea";
 import { UserModalProvider } from "@storage/UserModalContext";
-import { NotificationProvider } from "@storage/NotificationContext";
+import { NotificationProvider } from "@providers/NotificationContext";
 import { UniversalOverlayProvider } from "@storage/UniversalOverlayProvider";
 
 if (typeof globalThis.Buffer === "undefined") {

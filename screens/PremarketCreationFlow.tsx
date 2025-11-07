@@ -27,7 +27,7 @@ import { uploadImage } from '@api/files';
 import useIsMobile from '@hooks/useIsMobile';
 import { useNetwork } from '@providers/NetworkContext';
 import { getSolanaConnection } from '@services/blockchain/solana';
-import { useNotification } from '@storage/NotificationContext';
+import { useNotification } from '@providers/NotificationContext';
 import { BN } from '@coral-xyz/anchor';
 
 import { draftKey, loadDraft, saveDraft, clearDraft } from '@storage/PremarketDraft';

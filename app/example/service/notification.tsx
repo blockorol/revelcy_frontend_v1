@@ -3,8 +3,7 @@ import React, { useMemo, useRef, useState } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
 import { Text, TextInput, Button, useTheme, Switch, HelperText, Divider } from "react-native-paper";
 import Slider from "@react-native-community/slider";
-import { useNotification } from "@storage/NotificationContext";
-import { Colors } from "react-native/Libraries/NewAppScreen";
+import { useNotification } from "@providers/NotificationContext";
 
 type NoticeType = "info" | "success" | "warning" | "error";
 const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));

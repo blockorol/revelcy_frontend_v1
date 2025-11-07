@@ -28,7 +28,7 @@ import {Button} from "@components/ui/Button"
 import { useWallet } from "@storage/wallet-adapter";
 import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
-import { useNotification } from "@storage/NotificationContext";
+import { useNotification } from "@providers/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider"; // <-- новый импорт
 import { ShareTextButton } from "@components/base/ButtonShare";
 import React from "react";
