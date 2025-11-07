@@ -89,8 +89,8 @@ export default function EditPremarketSettingsForm({
       style={{
         backgroundColor: colors.surfaceContainerLowest,
         borderRadius: isMobile ? 0 : 16,
-        height: height,
       }}
+      contentContainerStyle={{ flexGrow: 1 }}
     >
       <View
         style={{
@@ -99,11 +99,10 @@ export default function EditPremarketSettingsForm({
           paddingHorizontal: isMobile ? 16 : 24,
           paddingVertical: isMobile ? 40 : 24,
           maxWidth: 500,
-          minHeight: isMobile ? height: height * 0.9,
-          justifyContent: "space-between",
+          flex: 1,
         }}
       >
-        <View style={{ flex: 1, gap: 0}}>
+        <View style={{ flex: 1, gap: 0 }}>
           <TokenCreateFormHeader
             title={"Premarket"}
             theme={theme}
@@ -164,17 +163,18 @@ export default function EditPremarketSettingsForm({
             />
           </View>
         </View>
-
-        <ContinueButtonWithProgressBar
-          theme={theme}
-          progress={{
-            before: (step - 1) / totalSteps,
-            after: step / totalSteps,
-          }}
-          handleSubmit={handleSubmit}
-          isFilledAll={isFilledAll}
-          onBack={onBack}
-        />
+        <View style={{ marginTop: 16, paddingBottom: isMobile ? 8 : 16 }}>
+          <ContinueButtonWithProgressBar
+            theme={theme}
+            progress={{
+              before: (step - 1) / totalSteps,
+              after: step / totalSteps,
+            }}
+            handleSubmit={handleSubmit}
+            isFilledAll={isFilledAll}
+            onBack={onBack}
+          />
+        </View>
       </View>
     </ScrollView>
   );
