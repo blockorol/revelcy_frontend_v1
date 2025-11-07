@@ -4,10 +4,7 @@ import { useWallet } from "@storage/wallet-adapter";
 import { startSession, confirmLogin } from "@api/auth";
 import { useAuth } from "@providers/AuthContext";
 
-type RunOptions = {
-  /** Принудительно разорвать текущее подключение перед попыткой (для "Try Another Wallet") */
-  forceReconnect?: boolean;
-};
+type RunOptions = { forceReconnect?: boolean };
 
 function isUserReject(e: unknown) {
   const any = e as any;
@@ -22,13 +19,12 @@ export function useWalletLoginFlow(
   opts?: {
     onSuccess?: () => void;
     overrideSaveJwt?: (jwt: string, isNewUser: boolean) => void;
-    disconnect?: () => void | Promise<void>; // <-- исправлено тут
+    disconnect?: () => void | Promise<void>;
   }
 ) {
   const { login } = useAuth();
   const { connected, publicKey, signMessage } = useWallet();
 
-  // Refs, чтобы избежать гонок и лишних перезапусков
   const connectedRef = React.useRef(connected);
   const publicKeyRef = React.useRef(publicKey);
   const signMessageRef = React.useRef(signMessage);
@@ -42,7 +38,11 @@ export function useWalletLoginFlow(
   const sessionRef = React.useRef<{ nonce: string; jwtSession: string } | null>(null);
   const signatureRef = React.useRef<Uint8Array<ArrayBufferLike> | null>(null);
   const finishingRef = React.useRef(false);
-  const inflightRef = React.useRef<Promise<void> | null>(null);
+
+  // 🔧 вот это – источник правды для UI
+  const [busy, setBusy] = React.useState(false);
+  // 🔒 замок от повторного запуска
+  const inflightRef = React.useRef(false);
 
   const resetFlow = React.useCallback(() => {
     sessionRef.current = null;
@@ -50,15 +50,11 @@ export function useWalletLoginFlow(
     finishingRef.current = false;
   }, []);
 
-  const busy = inflightRef.current !== null;
-
   const run = React.useCallback(
     async ({ forceReconnect }: RunOptions = {}) => {
       if (inflightRef.current) return;
-
-      let release!: () => void;
-      inflightRef.current = new Promise<void>((res) => (release = res));
-
+      inflightRef.current = true;
+      setBusy(true);
       try {
         if (finishingRef.current) return;
 
@@ -68,7 +64,6 @@ export function useWalletLoginFlow(
           } catch {}
         }
 
-        // 1) Connect (без автоповторов, корректная обработка Cancel)
         if (!connectedRef.current) {
           const ok = await connectWallet().catch((e) => {
             if (isUserReject(e)) {
@@ -77,10 +72,9 @@ export function useWalletLoginFlow(
             }
             throw e;
           });
-          if (!ok) return; // пользователь нажал "Отмена" или коннект не удался
+          if (!ok) return;
         }
 
-        // 2) Проверки адаптера
         if (!publicKeyRef.current || !signMessageRef.current) return;
 
         // 3) Session
@@ -89,23 +83,18 @@ export function useWalletLoginFlow(
           sessionRef.current = { nonce, jwtSession };
         }
 
-        // 4) Подпись (кешируем в рамках потока)
         if (!signatureRef.current) {
           const enc = new TextEncoder();
           const message = enc.encode(sessionRef.current.nonce);
           signatureRef.current = await signMessageRef.current(message, "utf8");
         }
 
-        // 5) Подтверждение на бэке
         const confirmLoginResp = await confirmLogin({
           walletAddress: publicKeyRef.current.toString(),
           signature: signatureRef.current,
           jwt: sessionRef.current.jwtSession,
         });
-        if (!confirmLoginResp) {
-          // например, юзер сменил кошелёк в процессе
-          return;
-        }
+        if (!confirmLoginResp) return;
 
         const { jwt, isNewUser } = confirmLoginResp;
         if (!finishingRef.current) {
@@ -115,12 +104,11 @@ export function useWalletLoginFlow(
           opts?.onSuccess?.();
         }
       } catch (e) {
-        // Любая ошибка — аккуратно завершаем поток
         console.error("Wallet login flow error:", e);
         resetFlow();
       } finally {
-        release();
-        inflightRef.current = null;
+        inflightRef.current = false;
+        setBusy(false);
       }
     },
     [connectWallet, login, opts, resetFlow]

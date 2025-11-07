@@ -1,5 +1,5 @@
 // WalletButton.tsx (обновлённое подключение к общему хуку, поведение прежнее)
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button, useTheme } from "react-native-paper";
 import { SvgIcon } from "@components/base/SvgIcon";
 import { getConnectToWallet } from "@hooks/connectWallet";
@@ -12,6 +12,23 @@ interface WalletButtonProps {
   overrideSaveJwt?: (jwt: string, isNewUser: boolean) => void;
 }
 
+const FRAMES = ["⠋","⠙","⠹","⠸","⠼","⠴","⠦","⠧","⠇","⠏"]; // или ["⠁","⠃","⠇","⠧","⠷","⠿","⠟","⠯","⠷","⠧","⠇","⠃"]
+
+function useSpinner(active: boolean, interval = 120) {
+  const [frame, setFrame] = React.useState(FRAMES[0]);
+  React.useEffect(() => {
+    if (!active) { setFrame(FRAMES[0]); return; }
+    let i = 0;
+    const id = setInterval(() => {
+      i = (i + 1) % FRAMES.length;
+      setFrame(FRAMES[i]);
+    }, interval);
+    return () => clearInterval(id);
+  }, [active, interval]);
+  return frame;
+}
+
+
 export default function WalletButton({
   afterClick,
   overrideSaveJwt,
@@ -22,13 +39,14 @@ export default function WalletButton({
     onSuccess: afterClick,
     overrideSaveJwt,
   });
+  const frame = useSpinner(busy);
 
   return (
     <Button
       mode="outlined"
       onPress={() => run()}
       disabled={busy}
-      labelStyle={{ ...theme.fonts.labelLarge }}
+      labelStyle={{ ...theme.fonts.labelLarge}}
       style={{
         width: "100%",
         borderColor: theme.colors.outline,
@@ -43,7 +61,7 @@ export default function WalletButton({
         />
       )}
     >
-      {busy ? "Connecting" : "Connect with Wallet"}
+      {busy ? `Connecting${frame}` : "Connect with Wallet"}
     </Button>
   );
 }
@@ -60,6 +78,7 @@ export function AnoterWalletButton({
     overrideSaveJwt,
     disconnect,
   });
+  const frame = useSpinner(busy);
 
   const handleReconnect = React.useCallback(() => {
     // одна попытка по клику, с предварительным disconnect
@@ -69,7 +88,7 @@ export function AnoterWalletButton({
   return (
     <GreenButton
       onClick={handleReconnect}
-      buttonText={busy ? "Connecting" : "Try Another Wallet"}
+      buttonText={busy ? `Connecting${frame}` : "Try Another Wallet"}
       icon="wallet-outlined"
       disabled={busy}
     />
