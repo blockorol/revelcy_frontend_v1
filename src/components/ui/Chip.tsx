@@ -56,6 +56,7 @@ export function ChipDisplay({
   style,
   children,
   disabled,
+  onPress, 
   ...rest
 }: Props) {
   const theme = useTheme();
@@ -74,13 +75,15 @@ export function ChipDisplay({
   const textColor = disabled ? theme.colors.onSurfaceDisabled : baseColor;
   const outlineColor = disabled ? theme.colors.outline : baseColor;
   const backgroundColor = disabled ? theme.colors.surfaceDisabled : bgSoft;
+  const noPress = onPress === undefined
+  const cursor = noPress?"auto":undefined
 
   return (
     <PaperChip
       mode={mode}
       selected={false}
       disabled={disabled}
-      textStyle={{ margin: 0, padding: 0 }}
+      textStyle={{ margin: 0, padding: 0, cursor: cursor,}}
       style={[
         container,
         {
@@ -89,18 +92,17 @@ export function ChipDisplay({
           borderWidth: mode === "outlined" ? StyleSheet.hairlineWidth : 0,
           alignItems: "center",
           justifyContent: "center",
+          cursor: cursor,
         },
         style,
       ]}
-      
-      pointerEvents={"none"}
+      onPress={onPress}
       {...rest}
     >
       {typeof children === "string" ? (
         <Text
           variant={textVariant}
-          style={{ color: textColor, textAlign: "center",
-          cursor: undefined,}}
+          style={{ color: textColor, textAlign: "center", cursor: cursor,}}
         >
           {children}
         </Text>
