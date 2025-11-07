@@ -20,11 +20,12 @@ const AllChipsScreen: React.FC = () => {
   const [size, setSize] = useState<Size>("normal");
   const [mode, setMode] = useState<Mode>("outlined");
   const [disabled, setDisabled] = useState(false);
+  const [withOnPress, setWithOnPress] = useState(false);
   const [icon, setIcon] = useState<string>(""); // передаётся как prop `icon` внутрь PaperChip
 
   const chipProps = useMemo(
-    () => ({ variant, size, mode, disabled, icon: icon || undefined }),
-    [variant, size, mode, disabled, icon]
+    () => ({ variant, size, mode, disabled, icon: icon || undefined, onPress:withOnPress?()=>{console.log("click")}:undefined}),
+    [variant, size, mode, disabled, icon, withOnPress]
   );
 
   return (
@@ -84,6 +85,13 @@ const AllChipsScreen: React.FC = () => {
           <Text style={styles.switchLabel}>Disabled</Text>
           <Switch value={disabled} onValueChange={setDisabled} color={colors.primary} />
         </View>
+
+        <View style={[styles.row, { justifyContent: "space-between" }]}>
+          <Text style={styles.switchLabel}>With on press</Text>
+          <Switch value={withOnPress} onValueChange={setWithOnPress} color={colors.primary} />
+        </View>
+
+        
       </View>
 
       <Divider style={{ marginVertical: 16, backgroundColor: "#555" }} />
