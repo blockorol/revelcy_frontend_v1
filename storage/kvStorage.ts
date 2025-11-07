@@ -11,15 +11,23 @@ export interface KVStorage {
 const webStorage: KVStorage = {
   async getItem(key) {
     if (typeof window === "undefined") return null;
-    try { return window.localStorage.getItem(key); } catch { return null; }
+    try {
+      return window.localStorage.getItem(key);
+    } catch {
+      return null;
+    }
   },
   async setItem(key, value) {
     if (typeof window === "undefined") return;
-    try { window.localStorage.setItem(key, value); } catch {}
+    try {
+      window.localStorage.setItem(key, value);
+    } catch {}
   },
   async removeItem(key) {
     if (typeof window === "undefined") return;
-    try { window.localStorage.removeItem(key); } catch {}
+    try {
+      window.localStorage.removeItem(key);
+    } catch {}
   },
 };
 
@@ -29,4 +37,5 @@ const nativeStorage: KVStorage = {
   removeItem: (k) => AsyncStorage.removeItem(k),
 };
 
-export const kvStorage: KVStorage = Platform.OS === "web" ? webStorage : nativeStorage;
+export const kvStorage: KVStorage =
+  Platform.OS === "web" ? webStorage : nativeStorage;
