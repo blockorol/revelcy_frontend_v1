@@ -114,7 +114,7 @@ export const PremarketList: React.FC<PremarketListProps> = ({
       flexWrap: "wrap",
       justifyContent: "space-between",
       paddingBottom: 24,
-      gap: !isMobile ? 80 : 16,
+      gap: !isMobile ? 24 : 16,
       maxWidth: 1300,
       alignSelf: "center",
     },

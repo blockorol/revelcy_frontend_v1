@@ -11,6 +11,7 @@ import ArrowsClockwise from "@assets/basic_icon/arrows-clockwise.svg";
 import BinocularsOutlined from "@assets/basic_icon/binoculars-outlined.svg";
 import Binoculars from "@assets/basic_icon/binoculars.svg";
 import Books from "@assets/basic_icon/books.svg";
+import Buy from "@assets/basic_icon/buy.svg";
 import CaretDown from "@assets/basic_icon/caret-down.svg";
 import CaretLeft from '@assets/basic_icon/caret-left.svg';
 import Check from "@assets/basic_icon/check.svg";
@@ -35,6 +36,7 @@ import RevelcyLogo from "@assets/basic_icon/revelcy-logo.svg";
 import RevelcyR from "@assets/basic_icon/revelcy-r.svg";
 import RobotOutlined from "@assets/basic_icon/robot-outlined.svg";
 import Rocket from "@assets/basic_icon/Rocket.svg";
+import RingingClock from "@assets/basic_icon/ringig_clock.svg";
 import Send from "@assets/basic_icon/send.svg";
 import Search from "@assets/basic_icon/search.svg";
 import SmileOutlined from "@assets/basic_icon/smile-outlined.svg";
@@ -67,6 +69,7 @@ export const icons = {
   "binoculars-outlined": BinocularsOutlined,
   binoculars: Binoculars,
   books: Books,
+  buy: Buy,
   "caret-down": CaretDown,
   'caret-left':CaretLeft,
   check: Check,
@@ -89,6 +92,7 @@ export const icons = {
   "revelcy-r": RevelcyR,
   "robot-outlined": RobotOutlined,
   rocket: Rocket,
+  "ringing-clock": RingingClock,
   send: Send,
   "question-mark-circle": QuestionMarkCircle,
   "question-mark": QuestionMark,
