@@ -1,37 +1,47 @@
 // screens/TokenCreationFlow.tsx
-import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator } from 'react-native';
-import { useTheme } from 'react-native-paper';
-import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from "react";
+import { View, ActivityIndicator } from "react-native";
+import { useTheme } from "react-native-paper";
+import { useRouter } from "expo-router";
 
-import CreateTokenForm from '@components/token/create/CreateTokenForm';
-import CustomizeTokenForm from '@components/token/create/CustomizeTokenForm';
-import OverviewPremarketCreation from '@components/premarket/creationFlow/OverviewPremarketCreation';
-import TokenCreationProcess from '@components/token/create/TokenCreationProcess';
+import CreateTokenForm from "@components/token/create/CreateTokenForm";
+import CustomizeTokenForm from "@components/token/create/CustomizeTokenForm";
+import OverviewPremarketCreation from "@components/premarket/creationFlow/OverviewPremarketCreation";
+import TokenCreationProcess from "@components/token/create/TokenCreationProcess";
 import {
   TokenMainData,
   TokenomicsData,
   CustomizeTokenData,
   TokenCreateFullData,
-  PremarketSettingData
-} from '@components/token/create/interface';
-import EditTokenomicsForm from '@components/token/create/EditTokenomicsForm';
-import { useAnchorWalletSafe, useWallet } from '@storage/wallet-adapter/useWallet.web';
-import { uploadTokenMetadataToIPFS } from '@services/files/ipfs/pumpfun';
-import { createPremarket, CreatePremarketArgs } from '@services/blockchain/premarket/createPremarket';
-import EditPremarketSettingsForm from '@components/token/create/EditPremarketSettings';
-import { convertSmallCountToLamport } from '@utils/premarket';
-import { premarketCreated, updateAboutCommunity, userJoinedToPremarket } from '@api/token';
-import { useAuth } from '@providers/AuthContext';
-import { uploadImage } from '@api/files';
-import useIsMobile from '@hooks/useIsMobile';
-import { useNetwork } from '@providers/NetworkContext';
-import { getSolanaConnection } from '@services/blockchain/solana';
-import { useNotification } from '@providers/NotificationContext';
-import { BN } from '@coral-xyz/anchor';
+  PremarketSettingData,
+} from "@components/token/create/interface";
+import EditTokenomicsForm from "@components/token/create/EditTokenomicsForm";
+import {
+  useAnchorWalletSafe,
+  useWallet,
+} from "@storage/wallet-adapter/useWallet.web";
+import { uploadTokenMetadataToIPFS } from "@services/files/ipfs/pumpfun";
+import {
+  createPremarket,
+  CreatePremarketArgs,
+} from "@services/blockchain/premarket/createPremarket";
+import EditPremarketSettingsForm from "@components/token/create/EditPremarketSettings";
+import { convertSmallCountToLamport } from "@utils/premarket";
+import {
+  premarketCreated,
+  updateAboutCommunity,
+  userJoinedToPremarket,
+} from "@api/token";
+import { useAuth } from "@providers/AuthContext";
+import { uploadImage } from "@api/files";
+import useIsMobile from "@hooks/useIsMobile";
+import { useNetwork } from "@providers/NetworkContext";
+import { getSolanaConnection } from "@services/blockchain/solana";
+import { useNotification } from "@providers/NotificationContext";
+import { BN } from "@coral-xyz/anchor";
 
-import { usePremarketDraft } from '@hooks/usePremarketDraft'; // 👈 новый хук
-import { PublicKey } from '@solana/web3.js';
+import { usePremarketDraft } from "@hooks/usePremarketDraft"; // 👈 новый хук
+import { PublicKey } from "@solana/web3.js";
 
 enum FLOW_STEP {
   TOKEN_BASE_INFO = 1,
@@ -54,54 +64,71 @@ export default function PremarketCreationFlow() {
   const currentConnection = getSolanaConnection(network);
 
   const [step, setStep] = useState<FLOW_STEP>(FLOW_STEP.TOKEN_BASE_INFO);
-  const [tokenMainData, setTokenMainData] = useState<TokenMainData | undefined>(undefined);
-  const [tokenomicsData, setTokenomicsData] = useState<TokenomicsData | undefined>(undefined);
-  const [customizeTokenData, setCustomizeTokenData] = useState<CustomizeTokenData | undefined>(undefined);
-  const [premarketSettingsData, setPremarketSettingsData] = useState<PremarketSettingData | undefined>(undefined);
+  const [tokenMainData, setTokenMainData] = useState<TokenMainData | undefined>(
+    undefined
+  );
+  const [tokenomicsData, setTokenomicsData] = useState<
+    TokenomicsData | undefined
+  >(undefined);
+  const [customizeTokenData, setCustomizeTokenData] = useState<
+    CustomizeTokenData | undefined
+  >(undefined);
+  const [premarketSettingsData, setPremarketSettingsData] = useState<
+    PremarketSettingData | undefined
+  >(undefined);
 
-  const [premarketPDA, setPremarketPDA] = useState<string | undefined>(undefined);
+  const [premarketPDA, setPremarketPDA] = useState<string | undefined>(
+    undefined
+  );
   const [txId, setTxId] = useState<string | undefined>(undefined);
 
   const theme = useTheme();
   const [launchState, setLaunchState] = useState<string | undefined>(undefined);
 
   // === Хук черновика: авто-восстановление, таймаут, patch/clear ===
-const onRestore = React.useCallback((d: any) => {
-  if (d.tokenMainData) setTokenMainData(d.tokenMainData);
-  if (d.tokenomicsData) setTokenomicsData(d.tokenomicsData);
-  if (d.premarketSettingsData) setPremarketSettingsData(d.premarketSettingsData);
-  if (d.customizeTokenData) setCustomizeTokenData(d.customizeTokenData);
-  setStep((d.step as FLOW_STEP) ?? FLOW_STEP.TOKEN_BASE_INFO);
-}, []);
+  const onRestore = React.useCallback((d: any) => {
+    if (d.tokenMainData) setTokenMainData(d.tokenMainData);
+    if (d.tokenomicsData) setTokenomicsData(d.tokenomicsData);
+    if (d.premarketSettingsData)
+      setPremarketSettingsData(d.premarketSettingsData);
+    if (d.customizeTokenData) setCustomizeTokenData(d.customizeTokenData);
+    setStep((d.step as FLOW_STEP) ?? FLOW_STEP.TOKEN_BASE_INFO);
+  }, []);
 
-const normalizeStep = React.useCallback(
-  (s: number) => (s === FLOW_STEP.PROCESSING ? FLOW_STEP.OVERVIEW : s) as FLOW_STEP,
-  []
-);
-
-const { ready, loading, error, patch, clear } = usePremarketDraft<
-  TokenMainData,
-  TokenomicsData,
-  PremarketSettingData,
-  CustomizeTokenData
->({
-  loadTimeoutMs: 1500,
-  retry: 1,
-  clearOnTimeout: false,
-  normalizeStep,
-  onRestore,
-  initialDraft: { step: FLOW_STEP.TOKEN_BASE_INFO },
-});
-
-// Показываем спиннер только один раз, пока идёт первая загрузка:
-if (loading) {
-  return (
-    <View style={{ flex:1, alignItems:'center', justifyContent:'center', backgroundColor: theme.colors.shadow }}>
-      <ActivityIndicator />
-    </View>
+  const normalizeStep = React.useCallback(
+    (s: number) =>
+      (s === FLOW_STEP.PROCESSING ? FLOW_STEP.OVERVIEW : s) as FLOW_STEP,
+    []
   );
-}
 
+  const { loading, patch, clear } = usePremarketDraft<
+    TokenMainData,
+    TokenomicsData,
+    PremarketSettingData,
+    CustomizeTokenData
+  >({
+    loadTimeoutMs: 1500,
+    retry: 1,
+    clearOnTimeout: false,
+    normalizeStep,
+    onRestore,
+    initialDraft: { step: FLOW_STEP.TOKEN_BASE_INFO },
+  });
+
+  if (loading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: theme.colors.shadow,
+        }}
+      >
+        <ActivityIndicator />
+      </View>
+    );
+  }
 
   const handleAfterSetTokenBaseInfo = async (data: TokenMainData) => {
     setTokenMainData(data);
@@ -166,10 +193,14 @@ if (loading) {
 
   const handleLaunch = async () => {
     setLaunchState("Started launch process");
-    // Зафиксируем, что мы на обзоре — пригодится при рефреше
     await patch({ step: FLOW_STEP.OVERVIEW });
 
-    if (!tokenMainData || !customizeTokenData || !tokenomicsData || !premarketSettingsData) {
+    if (
+      !tokenMainData ||
+      !customizeTokenData ||
+      !tokenomicsData ||
+      !premarketSettingsData
+    ) {
       setLaunchState(undefined);
       console.error("no tokenData");
       notify.error("no tokenData", {
@@ -220,7 +251,7 @@ if (loading) {
       });
       return;
     }
-    if (network === 'testnet') {
+    if (network === "testnet") {
       console.error("wallet is not connected");
       notify.error("testnet network is not supported");
       return;
@@ -256,7 +287,9 @@ if (loading) {
       deadline: tokenData.premarketSettingsData.deadline_sec,
       goal_sol_lamp: tokenData.premarketSettingsData.goal_sol_lamp,
       max_sol_lamp: new BN(85_000_000_000), //TODO: get max lamports from backend
-      creator_allocate_lamp: convertSmallCountToLamport(tokenData.tokenomicsData.creatorInitialBuy),
+      creator_allocate_lamp: convertSmallCountToLamport(
+        tokenData.tokenomicsData.creatorInitialBuy
+      ),
     };
     setLaunchState("try to create TX...");
     let resp:
@@ -286,7 +319,7 @@ if (loading) {
         suggest: "Please, try again",
         duration: 60000,
         action: {
-          label: 'Ok',
+          label: "Ok",
           onAction: () => {},
         },
       });
@@ -297,7 +330,7 @@ if (loading) {
         suggest: "Please, try again and contact admin",
         duration: 60000,
         action: {
-          label: 'Ok',
+          label: "Ok",
           onAction: () => {},
         },
       });
@@ -333,8 +366,8 @@ if (loading) {
             premarketDeadline: tokenData.premarketSettingsData.deadline_sec,
             premarketCreated: Math.floor(Date.now() / 1000),
             createdByPubkey: wallet.publicKey.toString(),
-            state: 'premarket',
-            finishDate: undefined, // will be set when premarket finished    
+            state: "premarket",
+            finishDate: undefined, // will be set when premarket finished
             tokenMint: resp.mintAddress,
           },
           communityInfo: {
@@ -345,7 +378,9 @@ if (loading) {
         setLaunchState("Adding to white list to Revelcy step2...");
         if (tokenData.tokenomicsData.creatorInitialBuy > 0) {
           await userJoinedToPremarket({
-            joinAmountInSolLamport: convertSmallCountToLamport(tokenData.tokenomicsData.creatorInitialBuy),
+            joinAmountInSolLamport: convertSmallCountToLamport(
+              tokenData.tokenomicsData.creatorInitialBuy
+            ),
             premarketPubKey: resp.premarketPDA.toString(),
             tx: resp.txId,
             userWallet: wallet.publicKey.toString(),
@@ -353,14 +388,19 @@ if (loading) {
           });
         }
       } catch (error) {
-        notify.error("Premarket created, but didn't added to whitelist in the website", {
-          suggest: "Please, contact administrator with premarket address:" + resp.premarketPDA.toString(),
-          duration: 60000,
-          action: {
-            label: 'Ok',
-            onAction: () => {},
-          },
-        });
+        notify.error(
+          "Premarket created, but didn't added to whitelist in the website",
+          {
+            suggest:
+              "Please, contact administrator with premarket address:" +
+              resp.premarketPDA.toString(),
+            duration: 60000,
+            action: {
+              label: "Ok",
+              onAction: () => {},
+            },
+          }
+        );
         return;
       }
 
@@ -371,7 +411,9 @@ if (loading) {
             const response = await fetch(tokenData.customData.banner?.data);
             const blob = await response.blob();
             const fileName = `${resp.premarketPDA.toString()}_banner`;
-            const file = new File([blob], `${fileName}.png`, { type: blob.type });
+            const file = new File([blob], `${fileName}.png`, {
+              type: blob.type,
+            });
             tokenData.customData.banner.url = await uploadImage(file, fileName);
           }
         } catch {
@@ -379,7 +421,7 @@ if (loading) {
             suggest: "Please, add it again from premarket page",
             duration: 60000,
             action: {
-              label: 'Ok',
+              label: "Ok",
               onAction: () => {},
             },
           });
@@ -396,7 +438,7 @@ if (loading) {
           suggest: "Please, add it again from premarket page",
           duration: 60000,
           action: {
-            label: 'Ok',
+            label: "Ok",
             onAction: () => {},
           },
         });
@@ -424,13 +466,17 @@ if (loading) {
     if (resp.value.err === null) {
       return true;
     }
-    console.error(`tx ${txId} is not finished: ${resp.value.err?.toString?.() ?? JSON.stringify(resp.value.err)}`);
+    console.error(
+      `tx ${txId} is not finished: ${
+        resp.value.err?.toString?.() ?? JSON.stringify(resp.value.err)
+      }`
+    );
     return false;
   };
 
   const handleOnDone = async () => {
     console.log("handleOnDone move to page:", `/premarket/${premarketPDA}`);
-    await clear(); // 👈 очистить черновик после успеха
+    await clear();
     router.push(`/token/${premarketPDA}`);
   };
 
@@ -456,13 +502,20 @@ if (loading) {
       style={{
         flex: 1,
         backgroundColor: theme.colors.shadow,
-        justifyContent: isMobile ? 'flex-start' : 'center',
-        alignItems: 'center',
-        width: '100%',
-        height: '100%',
+        justifyContent: isMobile ? "flex-start" : "center",
+        alignItems: "center",
+        width: "100%",
+        height: "100%",
       }}
     >
-      <View style={{ maxWidth: 480, maxHeight: isMobile ? undefined : 792, width: '100%', height: isMobile ? '100%' : '90%' }}>
+      <View
+        style={{
+          maxWidth: 480,
+          maxHeight: isMobile ? undefined : 792,
+          width: "100%",
+          height: isMobile ? "100%" : "90%",
+        }}
+      >
         {step === FLOW_STEP.TOKEN_BASE_INFO && (
           <CreateTokenForm
             onNext={handleAfterSetTokenBaseInfo}

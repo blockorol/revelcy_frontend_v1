@@ -25,11 +25,20 @@ export function draftKey() {
 
 /* ---------- helpers ---------- */
 
-function withTimeout<T>(p: Promise<T>, ms: number, label = "timeout"): Promise<T> {
+function withTimeout<T>(
+  p: Promise<T>,
+  ms: number,
+  label = "timeout"
+): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const id = setTimeout(() => reject(new Error(label)), ms);
-    p.then((v) => { clearTimeout(id); resolve(v); })
-     .catch((e) => { clearTimeout(id); reject(e); });
+    p.then((v) => {
+      clearTimeout(id);
+      resolve(v);
+    }).catch((e) => {
+      clearTimeout(id);
+      reject(e);
+    });
   });
 }
 
@@ -65,16 +74,20 @@ async function saveDraft<TMain, TTok, TPrem, TCustom>(
 }
 
 async function clearDraft(key: string) {
-  try { await kvStorage.removeItem(key); } catch { /* no-op */ }
+  try {
+    await kvStorage.removeItem(key);
+  } catch {
+    /* no-op */
+  }
 }
 
 /* ---------- hook ---------- */
 
 type UsePremarketDraftOptions<TMain, TTok, TPrem, TCustom> = {
   key?: string;
-  loadTimeoutMs?: number;           // default 1500
-  retry?: number;                   // default 0
-  clearOnTimeout?: boolean;         // default false
+  loadTimeoutMs?: number; // default 1500
+  retry?: number; // default 0
+  clearOnTimeout?: boolean; // default false
   normalizeStep?: (s: FlowStep) => FlowStep;
   onRestore?: (d: PremarketDraft<TMain, TTok, TPrem, TCustom>) => void;
   initialDraft?: Partial<PremarketDraft<TMain, TTok, TPrem, TCustom>>;
@@ -97,17 +110,33 @@ export function usePremarketDraft<TMain, TTok, TPrem, TCustom>(
   const onRestoreRef = useRef(onRestore);
   const normalizeStepRef = useRef(normalizeStep);
   const initialDraftRef = useRef(initialDraft);
-  useEffect(() => { onRestoreRef.current = onRestore; }, [onRestore]);
-  useEffect(() => { normalizeStepRef.current = normalizeStep; }, [normalizeStep]);
-  useEffect(() => { initialDraftRef.current = initialDraft; }, [initialDraft]);
+  useEffect(() => {
+    onRestoreRef.current = onRestore;
+  }, [onRestore]);
+  useEffect(() => {
+    normalizeStepRef.current = normalizeStep;
+  }, [normalizeStep]);
+  useEffect(() => {
+    initialDraftRef.current = initialDraft;
+  }, [initialDraft]);
 
-  const [draft, setDraft] = useState<PremarketDraft<TMain, TTok, TPrem, TCustom> | null>(null);
-  const [loading, setLoading] = useState(true);   // только на ПЕРВОЙ загрузке
-  const [ready, setReady] = useState(false);      // данные готовы
+  const [draft, setDraft] = useState<PremarketDraft<
+    TMain,
+    TTok,
+    TPrem,
+    TCustom
+  > | null>(null);
+  const [loading, setLoading] = useState(true); // только на ПЕРВОЙ загрузке
+  const [ready, setReady] = useState(false); // данные готовы
   const [error, setError] = useState<Error | null>(null);
 
   const mountedRef = useRef(true);
-  useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false; }; }, []);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const initializingRef = useRef(true); // true только до конца первой попытки (с ретраями)
 
@@ -166,7 +195,9 @@ export function usePremarketDraft<TMain, TTok, TPrem, TCustom>(
         if (cancelled) return;
 
         if (loaded) {
-          const stepNorm = (normalizeStepRef.current?.(loaded.step as FlowStep) ?? loaded.step) as FlowStep;
+          const stepNorm = (normalizeStepRef.current?.(
+            loaded.step as FlowStep
+          ) ?? loaded.step) as FlowStep;
           const normalized = { ...loaded, step: stepNorm };
           if (mountedRef.current) setDraft(normalized);
           onRestoreRef.current?.(normalized);
@@ -176,7 +207,8 @@ export function usePremarketDraft<TMain, TTok, TPrem, TCustom>(
               step: ((initialDraftRef.current.step ?? 1) as FlowStep) ?? 1,
               tokenMainData: initialDraftRef.current.tokenMainData,
               tokenomicsData: initialDraftRef.current.tokenomicsData,
-              premarketSettingsData: initialDraftRef.current.premarketSettingsData,
+              premarketSettingsData:
+                initialDraftRef.current.premarketSettingsData,
               customizeTokenData: initialDraftRef.current.customizeTokenData,
               updatedAt: Date.now(),
               __v: VERSION,
@@ -212,7 +244,9 @@ export function usePremarketDraft<TMain, TTok, TPrem, TCustom>(
     };
 
     attempt();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
     // ВАЖНО: завися только от стабильных значений
   }, [key, loadTimeoutMs, retry, clearOnTimeout]);
 
@@ -221,7 +255,7 @@ export function usePremarketDraft<TMain, TTok, TPrem, TCustom>(
       key,
       draft,
       loading, // только на первой инициализации
-      ready,   // дальше отрисовывай контент
+      ready, // дальше отрисовывай контент
       error,
       patch,
       saveNow,
