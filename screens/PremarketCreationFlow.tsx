@@ -101,7 +101,7 @@ export default function PremarketCreationFlow() {
     []
   );
 
-  const { ready, loading, error, patch, clear } = usePremarketDraft<
+  const { loading, patch, clear } = usePremarketDraft<
     TokenMainData,
     TokenomicsData,
     PremarketSettingData,
@@ -115,7 +115,6 @@ export default function PremarketCreationFlow() {
     initialDraft: { step: FLOW_STEP.TOKEN_BASE_INFO },
   });
 
-  // Показываем спиннер только один раз, пока идёт первая загрузка:
   if (loading) {
     return (
       <View
@@ -194,7 +193,6 @@ export default function PremarketCreationFlow() {
 
   const handleLaunch = async () => {
     setLaunchState("Started launch process");
-    // Зафиксируем, что мы на обзоре — пригодится при рефреше
     await patch({ step: FLOW_STEP.OVERVIEW });
 
     if (
@@ -478,7 +476,7 @@ export default function PremarketCreationFlow() {
 
   const handleOnDone = async () => {
     console.log("handleOnDone move to page:", `/premarket/${premarketPDA}`);
-    await clear(); // 👈 очистить черновик после успеха
+    await clear();
     router.push(`/token/${premarketPDA}`);
   };
 
