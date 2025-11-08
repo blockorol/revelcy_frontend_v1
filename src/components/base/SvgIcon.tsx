@@ -55,8 +55,10 @@ import {
   GestureResponderEvent,
   ViewStyle,
   View,
+  Platform,
 } from "react-native";
-import { Text } from "react-native-paper";
+import { Text, Tooltip, useTheme } from "react-native-paper";
+import { makeTransparent } from "@utils/colors";
 
 export const icons = {
   "add-circle-outlined": AddCircleOutlined,
@@ -162,6 +164,7 @@ export const SvgIcon: React.FC<SvgIconProps> = ({
 export interface SvgIconButtonProps extends SvgIconProps {
   onPress: (event: GestureResponderEvent) => void;
   containerStyle?: ViewStyle;
+  tooltipText?: string;
 }
 
 export const SvgIconButton: React.FC<SvgIconButtonProps> = ({
@@ -173,9 +176,10 @@ export const SvgIconButton: React.FC<SvgIconButtonProps> = ({
   elementRef,
   onPress,
   containerStyle,
+  tooltipText
 }) => {
-  return (
-    <TouchableOpacity
+  const theme = useTheme();
+  const button = ( <TouchableOpacity
       onPress={onPress}
       style={{ alignSelf: "flex-start", alignItems: "center" }}
       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -216,6 +220,28 @@ export const SvgIconButton: React.FC<SvgIconButtonProps> = ({
           {textUnder}
         </Text>
       )}
-    </TouchableOpacity>
-  );
+    </TouchableOpacity>)
+    return button
+  //   if (!tooltipText) {
+  //     return button
+  //   }
+
+  // return (
+  //   <Tooltip
+  //     title={tooltipText}
+  //     leaveTouchDelay={5}
+  //     theme={{
+  //       ...theme,
+  //       roundness: 12,
+  //       colors: {
+  //         ...theme.colors,
+  //         surface: makeTransparent(theme.colors.primary, 0.4),
+  //         onSurface: makeTransparent(theme.colors.onPrimary, 0.2),
+  //       },
+  //     }}
+
+  //   >
+  //       {button}
+  //   </Tooltip>
+  // );
 };

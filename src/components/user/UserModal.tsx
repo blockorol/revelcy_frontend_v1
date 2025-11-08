@@ -1,12 +1,7 @@
 import React, { useState } from "react";
-import {
-  View,
-  Linking,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
-import { Text, useTheme } from "react-native-paper";
-import {Avatar} from "@components/ui/Avatar"
+import { View, Linking, TouchableOpacity, StyleSheet } from "react-native";
+import { Modal, Portal, Text, useTheme } from "react-native-paper";
+import { Avatar } from "@components/ui/Avatar";
 import { Button } from "@components/ui/Button";
 import { SvgIconButton, SvgIcon, IconName } from "@components/base/SvgIcon";
 import { LinearGradient } from "expo-linear-gradient";
@@ -38,35 +33,39 @@ export const UserModal: React.FC<UserModalProps> = ({
   user,
   onClose,
 }) => {
-  const { isMobile, width } = useIsMobileForOneScreenWithDemention();
-  const {colors} = useTheme();
+  const { isMobile } = useIsMobileForOneScreenWithDemention();
   if (isMobile) {
-      return <MobileBottomSheet visible onDismiss={onClose}>
-          <UserModalInternal updateAvatar={updateAvatar} logout={logout} isPersonal={isPersonal} user={user} onClose={onClose} />
+    return (
+      <MobileBottomSheet visible onDismiss={onClose}>
+        <UserModalInternal
+          updateAvatar={updateAvatar}
+          logout={logout}
+          isPersonal={isPersonal}
+          user={user}
+          onClose={onClose}
+        />
       </MobileBottomSheet>
+    );
   }
-  
+
   return (
-    <TouchableOpacity
-      style={{
-        position: "absolute",
-        top: 0,
-        bottom: 0,
-        left: 0,
-        right: 0,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: colors.backdrop,
-        zIndex: 999,
-      }}
-      onPress={onClose}
-    >
-        <UserModalInternal updateAvatar={updateAvatar} logout={logout} isPersonal={isPersonal} user={user} onClose={onClose} />
-    </TouchableOpacity>
-
-  )
-
-}
+    <Portal>
+      <Modal
+        visible
+        onDismiss={onClose}
+        style={{ alignItems: "center", justifyContent: "center" }}
+      >
+        <UserModalInternal
+          updateAvatar={updateAvatar}
+          logout={logout}
+          isPersonal={isPersonal}
+          user={user}
+          onClose={onClose}
+        />
+      </Modal>
+    </Portal>
+  );
+};
 export const UserModalInternal: React.FC<UserModalProps> = ({
   updateAvatar,
   logout,
@@ -74,9 +73,8 @@ export const UserModalInternal: React.FC<UserModalProps> = ({
   user,
   onClose,
 }) => {
-    const { colors } = useTheme() as AppTheme;
+  const { colors } = useTheme() as AppTheme;
   const { isMobile, width } = useIsMobileForOneScreenWithDemention();
-  const [avatarFailed, setAvatarFailed] = useState(false);
   const pickAvatar = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: "images",
@@ -94,113 +92,132 @@ export const UserModalInternal: React.FC<UserModalProps> = ({
   const containerWidth = isMobile ? width : 480;
 
   return (
-      <View
+    <View
+      style={{
+        width: containerWidth,
+        borderRadius: 28,
+        paddingBottom: 24,
+        overflow: "hidden",
+        backgroundColor: colors.background,
+      }}
+    >
+      <LinearGradient
+        colors={[colors.primary, colors.background]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
         style={{
           width: containerWidth,
-          borderRadius: 28,
-          paddingBottom: 24,
-          overflow: "hidden",
-          backgroundColor: colors.background,
         }}
       >
-        <LinearGradient
-          colors={[colors.primary, colors.background]}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 1 }}
-          style={{
-            width: containerWidth,
-          }}
-        >
-          <View style={styles.topCloseLine}>
-            <SvgIconButton
-              name="x-base"
-              size={24}
-              color={colors.onPrimary}
-              onPress={onClose}
+        <View style={styles.topCloseLine}>
+          <SvgIconButton
+            name="x-base"
+            size={24}
+            color={colors.onPrimary}
+            onPress={onClose}
+          />
+        </View>
+        <View style={styles.userInfoContainer}>
+          {/* Avatar or fallback */}
+          <View style={{ width: 112, height: 112, padding: 0, margin: 0 }}>
+            <Avatar
+              size={112}
+              source={user.avatarUrl}
+              walletAddress={user.walletAddress}
             />
+            {isPersonal && (
+              <TouchableOpacity
+                onPress={pickAvatar}
+                style={{
+                  height: 32,
+                  width: 32,
+                  position: "absolute",
+                  bottom: 0,
+                  right: 0,
+                  backgroundColor: colors.surfaceContainerHighest,
+                  borderRadius: 9999,
+                  padding: 4,
+                  justifyContent: "center",
+                  alignContent: "center",
+                }}
+              >
+                <SvgIcon
+                  name="arrows-clockwise"
+                  size={20}
+                  color={colors.onSurface}
+                />
+              </TouchableOpacity>
+            )}
           </View>
-          <View style={styles.userInfoContainer}>
-            {/* Avatar or fallback */}
-            <View style={{ width: 112, height: 112, padding: 0, margin: 0 }}>
-              <Avatar size={112} source={user.avatarUrl} walletAddress={user.walletAddress} />
-              {isPersonal && (
-                <TouchableOpacity
-                  onPress={pickAvatar}
-                  style={{
-                    height: 32,
-                    width: 32,
-                    position: "absolute",
-                    bottom: 0,
-                    right: 0,
-                    backgroundColor: colors.surfaceContainerHighest,
-                    borderRadius: 9999,
-                    padding: 4,
-                    justifyContent: "center",
-                    alignContent: "center",
-                  }}
-                >
-                    <SvgIcon
-                      name="arrows-clockwise"
-                      size={20}
-                      color={colors.onSurface}
-                    />
-                </TouchableOpacity>
-              )}
-            </View>
+
+          <View
+            style={{
+              gap: 16,
+              alignItems: "center",
+            }}
+          >
+            <Text variant="titleLarge">
+              {user.username ?? shortString(user.walletAddress, 3)}
+            </Text>
 
             <View
               style={{
-                gap: 16,
+                flexDirection: "row",
+                gap: 8,
                 alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              <Text variant="titleLarge">
-                {user.username ?? shortString(user.walletAddress, 3)}
-              </Text>
-
-              <View
-                style={{
-                  flexDirection: "row",
-                  gap: 8,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <RoundIconLink
-                  name="search"
-                  colors={colors}
-                  link={getSolanaUserProfileLink(user.walletAddress)}
-                />
-                <RoundIconLink
-                  name="pumpfun"
-                  colors={colors}
-                  link={getPumpFunUserProfileLink(user.walletAddress)}
-                />
-              </View>
+              <RoundIconLink
+                name="search"
+                colors={colors}
+                tooltipText={"Open Solana scan"}
+                link={getSolanaUserProfileLink(user.walletAddress)}
+              />
+              <RoundIconLink
+                name="pumpfun"
+                tooltipText={"Open Pumpfun account"}
+                colors={colors}
+                link={getPumpFunUserProfileLink(user.walletAddress)}
+              />
             </View>
           </View>
-        </LinearGradient>
-
-        {/* user statistic */}
-        <View style={{ marginTop: 16, paddingHorizontal: 24}}>
-          <WalletInfo
-            colors={colors}
-            enabledFeatures={{
-              dateAndBalance: true,
-              transactionCount: true,
-              humanity: true,
-            }}
-          />
         </View>
-        
-        {isPersonal && (
-          <View style={{paddingTop: 56, paddingHorizontal: '30%', justifyContent: "center"}}>
-            <Button size="small" mode="outlined" onPress={()=>{logout();onClose()}}>
-              Log out
-            </Button>
-          </View>
-        )}
+      </LinearGradient>
+
+      {/* user statistic */}
+      <View style={{ marginTop: 16, paddingHorizontal: 24 }}>
+        <WalletInfo
+          colors={colors}
+          enabledFeatures={{
+            dateAndBalance: true,
+            transactionCount: true,
+            humanity: true,
+          }}
+        />
       </View>
+
+      {isPersonal && (
+        <View
+          style={{
+            paddingTop: 56,
+            paddingHorizontal: "30%",
+            justifyContent: "center",
+          }}
+        >
+          <Button
+            size="small"
+            mode="outlined"
+            onPress={() => {
+              logout();
+              onClose();
+            }}
+          >
+            Log out
+          </Button>
+        </View>
+      )}
+    </View>
   );
 };
 
@@ -236,6 +253,7 @@ interface SvgIconButtonProps {
   iconSize?: number;
   colors: MD3Colors;
   link: string;
+  tooltipText?: string;
 }
 
 function RoundIconLink({
@@ -244,9 +262,11 @@ function RoundIconLink({
   iconSize = 16,
   colors,
   link,
+  tooltipText
 }: SvgIconButtonProps) {
   return (
     <SvgIconButton
+      tooltipText={tooltipText}
       onPress={() => Linking.openURL(link)}
       name={name}
       size={iconSize}

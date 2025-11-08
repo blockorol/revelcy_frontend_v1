@@ -16,9 +16,9 @@ const INTER_900 = "Inter_900Black";
 type W = 100|200|300|400|500|600|700|800|900;
 
 const familyByWeight: Record<W, string> = {
-  100: INTER_100, 200: INTER_200, 300: INTER_300,
-  400: INTER_400, 500: INTER_500, 600: INTER_600,
-  700: INTER_700, 800: INTER_800, 900: INTER_900,
+  100: INTER_700, 200: INTER_700, 300: INTER_700,
+  400: INTER_700, 500: INTER_700, 600: INTER_700,
+  700: INTER_700, 800: INTER_700, 900: INTER_700,
 };
 
 // ---------- ТВОЙ БАЗОВЫЙ КОНФИГ (как мы выровняли ранее) ----------

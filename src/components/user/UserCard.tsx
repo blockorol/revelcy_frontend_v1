@@ -1,10 +1,11 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { formatDistanceToNow } from "date-fns";
 import { SvgIcon } from "@components/base/SvgIcon";
 import { Avatar } from "@components/ui/Avatar";
 import { AppTheme } from "@theme/types";
+import { useUserModal } from "@storage/UserModalContext";
 
 export interface UserCardProps {
   baseInfo: {
@@ -40,83 +41,95 @@ export const UserCard: React.FC<UserCardProps> = ({
   stats,
 }) => {
   const { colors } = useTheme() as AppTheme;
+  const { openUserModal } = useUserModal();
   const joinedAgo = formatDistanceToNow(tokenInfo.userJoined, {
     addSuffix: false,
   });
 
   return (
-    <View
-      style={[
-        styles.container,
-        { 
-          backgroundColor: colors.surfaceContainerLow,
-          ...(tokenInfo.isCreator && {
-            borderWidth: 0.1,
-            borderColor: colors.primary,
-            shadowColor: colors.primary,
-            shadowOffset: {
-              width: 0,
-              height: 0,
-            },
-            shadowOpacity: 0.2,
-            shadowRadius: 10,
-            elevation: 10,
-          }),
-        },
-      ]}
+    <Pressable
+      onPress={() =>
+        openUserModal({
+          userId: baseInfo.userId,
+          username: baseInfo.username ?? baseInfo.walletAddress,
+          walletAddress: baseInfo.walletAddress,
+          avatarUrl: baseInfo.avatarUrl,
+        })
+      }
     >
-      {/* Header row */}
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-        <Avatar
-          size={48}
-          source={baseInfo.avatarUrl}
-          walletAddress={baseInfo.walletAddress}
-        />
-        <View style={{ flex: 1, gap: 6, flexDirection: "column" }}>
-          {baseInfo.username && (
-            <Text variant="labelLarge" style={{ color: colors.onSurface }}>
-              {baseInfo.username}
-            </Text>
-          )}
-          {tokenInfo.isCreator ? (
-            <View style={styles.creator}>
-              <Text variant="labelMedium" style={{ color: colors.primary }}>
-                Creator
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: colors.surfaceContainerLow,
+            ...(tokenInfo.isCreator && {
+              borderWidth: 0.1,
+              borderColor: colors.primary,
+              shadowColor: colors.primary,
+              shadowOffset: {
+                width: 0,
+                height: 0,
+              },
+              shadowOpacity: 0.2,
+              shadowRadius: 10,
+              elevation: 10,
+            }),
+          },
+        ]}
+      >
+        {/* Header row */}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+          <Avatar
+            size={48}
+            source={baseInfo.avatarUrl}
+            walletAddress={baseInfo.walletAddress}
+          />
+          <View style={{ flex: 1, gap: 6, flexDirection: "column" }}>
+            {baseInfo.username && (
+              <Text variant="labelLarge" style={{ color: colors.onSurface }}>
+                {baseInfo.username}
               </Text>
-            </View>
-          ) : (
+            )}
+            {tokenInfo.isCreator ? (
+              <View style={styles.creator}>
+                <Text variant="labelMedium" style={{ color: colors.primary }}>
+                  Creator
+                </Text>
+              </View>
+            ) : (
+              <Text
+                variant="labelMedium"
+                style={{ color: colors.onSurfaceVariant, opacity: 0.8 }}
+              >
+                {joinedAgo} ago
+              </Text>
+            )}
+          </View>
+
+          <View style={{ alignItems: "flex-end", gap: 4, paddingVertical: 4 }}>
+            <Text
+              variant="labelLarge"
+              style={{ color: colors.onSurface, fontWeight: 700 }}
+            >
+              {tokenInfo.amount.toFixed(1)} SOL
+            </Text>
             <Text
               variant="labelMedium"
-              style={{ color: colors.onSurfaceVariant, opacity: 0.8 }}
+              style={{ color: colors.onSurfaceVariant, fontWeight: 700 }}
             >
-              {joinedAgo} ago
+              {tokenInfo.amountProcent.toFixed(2)}%
             </Text>
-          )}
+          </View>
         </View>
 
-        <View style={{ alignItems: "flex-end", gap: 4, paddingVertical: 4 }}>
-          <Text
-            variant="labelLarge"
-            style={{ color: colors.onSurface, fontWeight: 700 }}
-          >
-            {tokenInfo.amount.toFixed(1)} SOL
-          </Text>
-          <Text
-            variant="labelMedium"
-            style={{ color: colors.onSurfaceVariant, fontWeight: 700 }}
-          >
-            {tokenInfo.amountProcent.toFixed(2)}%
-          </Text>
-        </View>
+        {stats && (
+          <View style={{ flexDirection: "column", gap: 8 }}>
+            {/* Joined and humanity */}
+            <JoinedAndHumanity {...stats} />
+          </View>
+        )}
       </View>
-
-      {stats && (
-        <View style={{ flexDirection: "column", gap: 8 }}>
-          {/* Joined and humanity */}
-          <JoinedAndHumanity {...stats} />
-        </View>
-      )}
-    </View>
+    </Pressable>
   );
 };
 

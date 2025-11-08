@@ -8,7 +8,6 @@ import React, { useMemo, useState } from "react";
 import { Menu, useTheme, TouchableRipple, Divider } from "react-native-paper";
 import { SvgIcon } from "@components/base/SvgIcon";
 
-const TOTAL_TOKEN_COUNT = 1_000_000_000
 interface Props {
   tokenData: TokenInfo;
   holdersAmount: number;
