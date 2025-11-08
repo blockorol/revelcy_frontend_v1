@@ -47,37 +47,37 @@ export const UserCard: React.FC<UserCardProps> = ({
   });
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: colors.surfaceContainerLow,
-          ...(tokenInfo.isCreator && {
-            borderWidth: 0.1,
-            borderColor: colors.primary,
-            shadowColor: colors.primary,
-            shadowOffset: {
-              width: 0,
-              height: 0,
-            },
-            shadowOpacity: 0.2,
-            shadowRadius: 10,
-            elevation: 10,
-          }),
-        },
-      ]}
+    <Pressable
+      onPress={() =>
+        openUserModal({
+          userId: baseInfo.userId,
+          username: baseInfo.username ?? baseInfo.walletAddress,
+          walletAddress: baseInfo.walletAddress,
+          avatarUrl: baseInfo.avatarUrl,
+        })
+      }
     >
-      {/* Header row */}
-      <Pressable
-        onPress={() =>
-          openUserModal({
-            userId: baseInfo.userId,
-            username: baseInfo.username ?? baseInfo.walletAddress,
-            walletAddress: baseInfo.walletAddress,
-            avatarUrl: baseInfo.avatarUrl,
-          })
-        }
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: colors.surfaceContainerLow,
+            ...(tokenInfo.isCreator && {
+              borderWidth: 0.1,
+              borderColor: colors.primary,
+              shadowColor: colors.primary,
+              shadowOffset: {
+                width: 0,
+                height: 0,
+              },
+              shadowOpacity: 0.2,
+              shadowRadius: 10,
+              elevation: 10,
+            }),
+          },
+        ]}
       >
+        {/* Header row */}
         <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
           <Avatar
             size={48}
@@ -128,8 +128,8 @@ export const UserCard: React.FC<UserCardProps> = ({
             <JoinedAndHumanity {...stats} />
           </View>
         )}
-      </Pressable>
-    </View>
+      </View>
+    </Pressable>
   );
 };
 
