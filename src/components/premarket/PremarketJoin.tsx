@@ -53,7 +53,6 @@ export function PremarketJoin({ isMobile, ...props }:PremarketJoinProps) {
 
   return (
     <View style={{ flex: 1, width: '100%'}}>
-      <Portal.Host>
 
         <View style={{
           flexDirection: "row",
@@ -71,10 +70,10 @@ export function PremarketJoin({ isMobile, ...props }:PremarketJoinProps) {
             visible={visible}
             onDismiss={() => setVisible(false)}
           >
-          <PremarketJoinBase {...props} isMobile={true} />
-        </MobileBottomSheet>
-      
-        </Portal.Host>
+            <View style={{paddingHorizontal: 16}}>
+              <PremarketJoinBase {...props} isMobile={true} />
+            </View>
+          </MobileBottomSheet>
     </View>
   );
 }
