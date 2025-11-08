@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { formatDistanceToNow } from "date-fns";
 import { SvgIcon } from "@components/base/SvgIcon";
@@ -40,6 +40,7 @@ export const UserCard: React.FC<UserCardProps> = ({
   tokenInfo,
   stats,
 }) => {
+  const {width}= useWindowDimensions();
   const { colors } = useTheme() as AppTheme;
   const { openUserModal } = useUserModal();
   const joinedAgo = formatDistanceToNow(tokenInfo.userJoined, {
@@ -61,6 +62,7 @@ export const UserCard: React.FC<UserCardProps> = ({
         style={[
           styles.container,
           {
+            width: width - 32,
             backgroundColor: colors.surfaceContainerLow,
             ...(tokenInfo.isCreator && {
               borderWidth: 0.1,
@@ -247,7 +249,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 24,
     margin: 0,
-    width: 365,
+    maxWidth: 365,
     gap: 24,
     flexDirection: "column",
   },
