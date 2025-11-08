@@ -4,7 +4,7 @@
     "slug": "revelcy-cross-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/r_icon_green_black.png",
+    "icon": "./assets/favicon.ico",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -28,7 +28,7 @@
       }
     },
     "web": {
-      "favicon": "./assets/r_icon_green_black.png"
+      "favicon": "./assets/favicon.ico"
     },
     "plugins": []
   }
