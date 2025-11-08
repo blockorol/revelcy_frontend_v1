@@ -26,7 +26,6 @@ interface CreatorInfoProps {
 
 export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReached, currentURL}: CreatorInfoProps) {
   const { colors } = useTheme();
-  const now = Math.floor(Date.now() / 1000);
 
   const notify = useNotification();
   const { network } = useNetwork();
