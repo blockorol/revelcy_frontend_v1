@@ -1,5 +1,7 @@
 import React, { useEffect } from "react";
 import { Stack } from "expo-router";
+import Head from "expo-router/head";
+
 import { PaperProvider } from "react-native-paper";
 import {
   View,
@@ -62,6 +64,10 @@ export default function Layout() {
   if (!fontsLoaded) return null;
 
   return (
+    <>
+      <Head>
+        <title>Revelcy</title>
+      </Head>
     <NetworkProvider>
       <AuthProvider>
         <WalletProvider>
@@ -71,6 +77,7 @@ export default function Layout() {
         </WalletProvider>
       </AuthProvider>
     </NetworkProvider>
+  </>
   );
 }
 
