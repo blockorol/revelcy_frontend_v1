@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "revelcy-cross-app",
-    "slug": "revelcy-cross-app",
+    "name": "Revelcy",
+    "slug": "revelcy",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./public/favicon.ico",
