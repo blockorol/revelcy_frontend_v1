@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Stack } from "expo-router";
 import Head from "expo-router/head";
 
-import { PaperProvider } from "react-native-paper";
+import { PaperProvider, Portal } from "react-native-paper";
 import {
   View,
   StyleSheet,
@@ -113,6 +113,8 @@ function InnerLayout() {
       <NotificationProvider>
         <UserModalProvider>
           <UniversalOverlayProvider>
+            <Portal.Host>
+
             <StatusBar
               barStyle={scheme === "dark" ? "light-content" : "dark-content"}
               backgroundColor={theme.colors.background}
@@ -134,6 +136,8 @@ function InnerLayout() {
                 </View> 
               */}
             </View>
+            
+            </Portal.Host>
           </UniversalOverlayProvider>
         </UserModalProvider>
       </NotificationProvider>
