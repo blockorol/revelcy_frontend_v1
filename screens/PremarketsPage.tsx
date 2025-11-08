@@ -20,9 +20,10 @@ type PropsOrderMenu = {
   value: OrderValue;
   onChange: (v: OrderValue) => void;
   anchor?: React.ReactNode;
+  isMobile?: boolean;
 };
 
-const OrderMenu: React.FC<PropsOrderMenu> = ({ value, onChange, anchor }) => {
+const OrderMenu: React.FC<PropsOrderMenu> = ({ value, onChange, anchor, isMobile = false }) => {
   const { colors } = useTheme() as AppTheme;
   const [visible, setVisible] = useState(false);
 
@@ -94,18 +95,24 @@ const OrderMenu: React.FC<PropsOrderMenu> = ({ value, onChange, anchor }) => {
       style={{
         borderRadius: 8,
         backgroundColor: anchorBg,
-        paddingRight: 0,
-        paddingLeft: 32,
+        paddingRight: isMobile ? 12 : 0,
+        paddingLeft: isMobile ? 12 : 32,
         height: 40,
         alignSelf: "flex-start",
+        justifyContent: "center",
+        alignItems: "center",
       }}
     >
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-        <Text variant="labelMedium" prominent style={{ color: anchorFg }}>
-          {currentDef.label}
-        </Text>
-        <SvgIcon name={currentDef.icon as any} size={16} color={anchorFg} />
-      </View>
+      {isMobile ? (
+        <SvgIcon name="sort-arrows" size={20} color={anchorFg} />
+      ) : (
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+          <Text variant="labelMedium" prominent style={{ color: anchorFg }}>
+            {currentDef.label}
+          </Text>
+          <SvgIcon name={currentDef.icon as any} size={16} color={anchorFg} />
+        </View>
+      )}
     </TouchableRipple>
   );
 
@@ -155,34 +162,36 @@ export default function PremarketsPage() {
         flex: 1,
       }}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: innerWidth, alignSelf: 'center', paddingHorizontal: H_PADDING }}> 
-        <RevelcySegmentedButtons
-          value={filterValue}
-          onValueChange={(value: string) => setFilterValue(value as "premarket" | "launched" | "my_tokens")}
-          buttons={[
-            {
-              value: "premarket",
-              label: "Premarket",
-              checkedColor: theme.colors.secondary,
-              uncheckedColor: theme.colors.onSurfaceVariant
-            },
-            {
-              value: "launched",
-              label: "Launched",
-              checkedColor: theme.colors.primary,
-              uncheckedColor: theme.colors.onSurfaceVariant
-            },
-            {
-              value: "my_tokens",
-              label: "My Tokens",
-              checkedColor: theme.colors.onSurface,
-              uncheckedColor: theme.colors.onSurfaceVariant
-            },
-          ]}
-          baseBackgroundColor="transparent"
-          baseTextColor={colors.onSurfaceVariant}
-        />
-        <OrderMenu value={order} onChange={setOrder} />
+      <View style={[isMobile ? styles.topInnerMobile : styles.topInner, !isMobile && { width: innerWidth, paddingHorizontal: H_PADDING  }]}> 
+        <View style={styles.segmentedButtonWrapper}>
+          <RevelcySegmentedButtons
+            value={filterValue}
+            onValueChange={(value: string) => setFilterValue(value as "premarket" | "launched" | "my_tokens")}
+            buttons={[
+              {
+                value: "premarket",
+                label: "Premarket",
+                checkedColor: theme.colors.secondary,
+                uncheckedColor: theme.colors.onSurfaceVariant
+              },
+              {
+                value: "launched",
+                label: "Launched",
+                checkedColor: theme.colors.primary,
+                uncheckedColor: theme.colors.onSurfaceVariant
+              },
+              {
+                value: "my_tokens",
+                label: "My Tokens",
+                checkedColor: theme.colors.onSurface,
+                uncheckedColor: theme.colors.onSurfaceVariant
+              },
+            ]}
+            baseBackgroundColor="transparent"
+            baseTextColor={colors.onSurfaceVariant}
+          />
+        </View>
+        <OrderMenu value={order} onChange={setOrder} isMobile={isMobile} />
       </View>
 
       <PremarketList 
@@ -196,3 +205,24 @@ export default function PremarketsPage() {
   );
 }
 
+const styles = StyleSheet.create({
+  // desktop
+  topInner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    alignSelf: "center",
+    paddingVertical: 0,
+  },
+  topInnerMobile: {
+    height: 56,
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 0,
+  },
+  segmentedButtonWrapper: {
+    alignSelf: "center",
+  },
+});

@@ -42,6 +42,7 @@ import TwoCoins from "@assets/basic_icon/two_coins.svg";
 import RingingClock from "@assets/basic_icon/ringig_clock.svg";
 import Send from "@assets/basic_icon/send.svg";
 import Search from "@assets/basic_icon/search.svg";
+import SortArrows from "@assets/basic_icon/sort_arrows.svg";
 import SmileOutlined from "@assets/basic_icon/smile-outlined.svg";
 import SmileSadOutlined from "@assets/basic_icon/smile-sad-outlined.svg";
 import Smile from "@assets/basic_icon/smile.svg";
@@ -103,6 +104,7 @@ export const icons = {
   "question-mark-circle": QuestionMarkCircle,
   "question-mark": QuestionMark,
   search: Search,
+  "sort-arrows": SortArrows,
   "smile-outlined": SmileOutlined,
   "smile-sad-outlined": SmileSadOutlined,
   smile: Smile,
