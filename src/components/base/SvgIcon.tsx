@@ -36,6 +36,9 @@ import RevelcyLogo from "@assets/basic_icon/revelcy-logo.svg";
 import RevelcyR from "@assets/basic_icon/revelcy-r.svg";
 import RobotOutlined from "@assets/basic_icon/robot-outlined.svg";
 import Rocket from "@assets/basic_icon/Rocket.svg";
+import RocketSide from "@assets/basic_icon/rocket_side.svg";
+import OneCoin from "@assets/basic_icon/one_coin.svg";
+import TwoCoins from "@assets/basic_icon/two_coins.svg";
 import RingingClock from "@assets/basic_icon/ringig_clock.svg";
 import Send from "@assets/basic_icon/send.svg";
 import Search from "@assets/basic_icon/search.svg";
@@ -92,6 +95,9 @@ export const icons = {
   "revelcy-r": RevelcyR,
   "robot-outlined": RobotOutlined,
   rocket: Rocket,
+  "rocket-side": RocketSide,
+  "one-coin": OneCoin,
+  "two-coins": TwoCoins,
   "ringing-clock": RingingClock,
   send: Send,
   "question-mark-circle": QuestionMarkCircle,

@@ -5,13 +5,19 @@ import { ActivityIndicator, Button, Text, useTheme } from "react-native-paper";
 import { PremarketCard } from "@components/premarket/PremarketCard";
 import { getPremarketList, TokenMainInfo, fetchTokenDynamicInfo, TokenDynamicInfo } from "@api/token";
 import useIsMobile from "@hooks/useIsMobile";
+import { convertLamportToSmallCount } from "@utils/premarket";
 
+
+type OrderValue = "FRESH" | "ACHIEVED" | "TOP_MCAP" | "LOW_MCAP" | "EARLY_DEADLINE" | "LATE_DEADLINE";
 
 type PremarketListProps = {
   initialLimit?: number;
   pageSizeOptions?: number[];
   style?: any;
   containerWidth?: number;
+  filter?: "premarket" | "launched" | "my_tokens";
+  userWalletAddress?: string;
+  order?: OrderValue;
 };
 
 export const PremarketList: React.FC<PremarketListProps> = ({
@@ -19,6 +25,9 @@ export const PremarketList: React.FC<PremarketListProps> = ({
   pageSizeOptions = [30, 50, 80],
   style,
   containerWidth,
+  filter,
+  userWalletAddress,
+  order = "FRESH",
 }) => {
   const { colors } = useTheme();
   const isMobile = useIsMobile();
@@ -99,6 +108,128 @@ export const PremarketList: React.FC<PremarketListProps> = ({
     setCursor(cursor + limit);
   };
 
+  const filterItem = useCallback((it: TokenMainInfo): boolean => {
+    if (!filter) return true;
+    
+    if (filter === "premarket") {
+      return it.state === "premarket";
+    }
+    
+    if (filter === "launched") {
+      return it.state === "finished";
+    }
+    
+    if (filter === "my_tokens") {
+      const key =
+        typeof it.premarketPubkey === "string"
+          ? it.premarketPubkey
+          : typeof (it as any).premarketPubkey?.toBase58 === "function"
+          ? (it as any).premarketPubkey.toBase58()
+          : String((it as any).premarketPubkey);
+      
+      const dynamicInfo = dynamicInfoMap[key];
+      if (!dynamicInfo || !userWalletAddress) return false;
+      
+      return dynamicInfo.holders.some(
+        (holder) => holder.walletAddress === userWalletAddress
+      );
+    }
+    
+    return true;
+  }, [filter, dynamicInfoMap, userWalletAddress]);
+
+  const filteredItems = useMemo(() => items.filter(filterItem), [items, filterItem]);
+
+  const getItemKey = useCallback((it: TokenMainInfo): string => {
+    return typeof it.premarketPubkey === "string"
+      ? it.premarketPubkey
+      : typeof (it as any).premarketPubkey?.toBase58 === "function"
+      ? (it as any).premarketPubkey.toBase58()
+      : String((it as any).premarketPubkey);
+  }, []);
+
+  const sortedAndFilteredItems = useMemo(() => {
+    const filtered = filteredItems;
+    
+    if (!order || order === "FRESH") {
+      // FRESH: newest premarkets first (sort by premarketCreated descending)
+      return [...filtered].sort((a, b) => b.premarketCreated - a.premarketCreated);
+    }
+    
+    if (order === "ACHIEVED") {
+      // ACHIEVED: highest achievement percentage first
+      return [...filtered].sort((a, b) => {
+        const keyA = getItemKey(a);
+        const keyB = getItemKey(b);
+        const dynamicA = dynamicInfoMap[keyA];
+        const dynamicB = dynamicInfoMap[keyB];
+        
+        // If dynamic info is not loaded, put at the end
+        if (!dynamicA && !dynamicB) return 0;
+        if (!dynamicA) return 1;
+        if (!dynamicB) return -1;
+        
+        // Calculate achievement percentage: marketCapSolLamp / premarketGoalSolLamp
+        const achievementA = convertLamportToSmallCount(dynamicA.marketCapSolLamp) / 
+                            convertLamportToSmallCount(a.premarketGoalSolLamp);
+        const achievementB = convertLamportToSmallCount(dynamicB.marketCapSolLamp) / 
+                            convertLamportToSmallCount(b.premarketGoalSolLamp);
+        
+        return achievementB - achievementA; // Descending (highest first)
+      });
+    }
+    
+    if (order === "TOP_MCAP") {
+      // TOP_MCAP: highest market cap first
+      return [...filtered].sort((a, b) => {
+        const keyA = getItemKey(a);
+        const keyB = getItemKey(b);
+        const dynamicA = dynamicInfoMap[keyA];
+        const dynamicB = dynamicInfoMap[keyB];
+        
+        // If dynamic info is not loaded, put at the end
+        if (!dynamicA && !dynamicB) return 0;
+        if (!dynamicA) return 1;
+        if (!dynamicB) return -1;
+        
+        // Compare market cap (BN comparison)
+        const cmp = dynamicB.marketCapSolLamp.cmp(dynamicA.marketCapSolLamp);
+        return cmp;
+      });
+    }
+    
+    if (order === "LOW_MCAP") {
+      // LOW_MCAP: lowest market cap first
+      return [...filtered].sort((a, b) => {
+        const keyA = getItemKey(a);
+        const keyB = getItemKey(b);
+        const dynamicA = dynamicInfoMap[keyA];
+        const dynamicB = dynamicInfoMap[keyB];
+        
+        // If dynamic info is not loaded, put at the end
+        if (!dynamicA && !dynamicB) return 0;
+        if (!dynamicA) return 1;
+        if (!dynamicB) return -1;
+        
+        // Compare market cap (BN comparison)
+        const cmp = dynamicA.marketCapSolLamp.cmp(dynamicB.marketCapSolLamp);
+        return cmp;
+      });
+    }
+    
+    if (order === "EARLY_DEADLINE") {
+      // EARLY_DEADLINE: earliest deadline first (ascending)
+      return [...filtered].sort((a, b) => a.premarketDeadline - b.premarketDeadline);
+    }
+    
+    if (order === "LATE_DEADLINE") {
+      // LATE_DEADLINE: latest deadline first (descending)
+      return [...filtered].sort((a, b) => b.premarketDeadline - a.premarketDeadline);
+    }
+    
+    return filtered;
+  }, [filteredItems, order, dynamicInfoMap, getItemKey]);
+
   const styles = StyleSheet.create({
     topBar: {
       flexDirection: "row",
@@ -173,9 +304,14 @@ export const PremarketList: React.FC<PremarketListProps> = ({
           <Text variant='bodyLarge' style={{ color: colors.error, marginBottom: 8 }}>{err}</Text>
           <Button mode="contained" onPress={load}>Retry</Button>
         </View>
-      ) : items.length === 0 ? (
+      ) : sortedAndFilteredItems.length === 0 ? (
         <View style={styles.empty}>
-          <Text variant='bodyLarge' style={{ color: colors.onSurfaceVariant }}>No premarkets yet</Text>
+          <Text variant='bodyLarge' style={{ color: colors.onSurfaceVariant }}>
+            {filter === "premarket" ? "No premarkets yet" : 
+             filter === "launched" ? "No launched tokens yet" :
+             filter === "my_tokens" ? "You haven't joined any premarkets yet" :
+             "No premarkets yet"}
+          </Text>
         </View>
       ) : (
         <ScrollView
@@ -186,7 +322,7 @@ export const PremarketList: React.FC<PremarketListProps> = ({
             containerWidth ? { width: containerWidth } : null,
           ]}
         >
-          {items.map((it) => {
+          {sortedAndFilteredItems.map((it) => {
             const key =
               typeof it.premarketPubkey === "string"
                 ? it.premarketPubkey
