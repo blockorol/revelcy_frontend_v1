@@ -8,6 +8,8 @@ import { navigationItems } from "@components/navigation/NavigationItems";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import { openMailto, openTelegram, openX } from "@utils/openLinks";
 import { useNetwork } from "@providers/NetworkContext";
+import { openEmail } from "@utils/email";
+import { useNotification } from "@providers/NotificationContext";
 
 export default function NavigationBurgerMenu() {
   const { open, close } = useOverlay();
@@ -28,6 +30,7 @@ function NavigationBurgerMenuItemsList({ onClose }: NavProps) {
   const { colors } = useTheme();
   const pathname = usePathname();
   const {network} = useNetwork();
+  const {success, warning}= useNotification();
   return (
     <View style={{ flexDirection:'column', width: '100%', height: '100%', justifyContent: 'flex-start', alignContent: 'flex-start', alignItems:'flex-start'}} >
       <View style={{ backgroundColor: colors.background, width: '100%',}}>
@@ -114,7 +117,21 @@ function NavigationBurgerMenuItemsList({ onClose }: NavProps) {
               }}
             />
             <TouchableRipple
-              onPress={() => {openMailto()}}
+              onPress={() => {
+                openEmail({
+                  to: "hello@revelcy.com",
+                  subject: "Revelcy support",
+                  body: "Hi!\n\nPlease, describe your question...",
+                })
+                  .then((res) => {
+                    if (res === "copied") success("Email copied");
+                    else if (res === "failed") warning("Please, copy the email: hello@revelcy.com");
+                  })
+                  .catch(() => warning("Please, copy the email: hello@revelcy.com"));
+
+              }}
+              accessibilityRole="link"
+              accessibilityLabel="Write to hello@revelcy.com"
               style={{ padding: 16, paddingHorizontal: 40 }}
             >
               <SvgIcon name="mail" size={24} color={colors.onSurface} />
