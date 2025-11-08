@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Stack } from "expo-router";
 import { PaperProvider } from "react-native-paper";
+import CookiesModal from "@components/modals/CookiesModal";
 import {
   View,
   StyleSheet,
@@ -126,6 +127,7 @@ function InnerLayout() {
                   <NavigationBottom />
                 </View> 
               */}
+              <CookiesModal />
             </View>
           </UniversalOverlayProvider>
         </UserModalProvider>
