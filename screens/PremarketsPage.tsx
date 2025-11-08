@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { useIsMobileForTwoScreenWithDemention } from "@hooks/useIsMobile";
 import { PremarketList } from "@components/premarket/PremarketList";
 import { useRouter } from "expo-router";
 import { PublicKey } from "@solana/web3.js";
+import RevelcySegmentedButtons from "@components/ui/SegmentedButton";
 
 
 
@@ -12,6 +13,7 @@ export default function PremarketsPage() {
   const theme = useTheme();
   const { colors } = theme;
   const { isMobile } = useIsMobileForTwoScreenWithDemention();
+  const [filterValue, setFilterValue] = useState("all");
 
   /*
     const router = useRouter();
@@ -103,6 +105,32 @@ export default function PremarketsPage() {
       
       */}
 
+      <RevelcySegmentedButtons
+        value={filterValue}
+        onValueChange={setFilterValue}
+        buttons={[
+          {
+            value: "premarket",
+            label: "Premarket",
+            checkedColor: theme.colors.secondary,
+            uncheckedColor: theme.colors.onSurfaceVariant
+          },
+          {
+            value: "launched",
+            label: "Launched",
+            checkedColor: theme.colors.primary,
+            uncheckedColor: theme.colors.onSurfaceVariant
+          },
+          {
+            value: "my_tokens",
+            label: "My Tokens",
+            checkedColor: theme.colors.onSurface,
+            uncheckedColor: theme.colors.onSurfaceVariant
+          },
+        ]}
+        baseBackgroundColor="transparent"
+        baseTextColor={colors.onSurfaceVariant}
+      />
 
       <PremarketList initialLimit={30} style={{ flex: 1 }} />
     </View>
