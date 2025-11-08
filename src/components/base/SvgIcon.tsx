@@ -222,27 +222,26 @@ export const SvgIconButton: React.FC<SvgIconButtonProps> = ({
       )}
     </TouchableOpacity>)
     return button
-    
-    if (!tooltipText) {
-      return button
-    }
+  //   if (!tooltipText) {
+  //     return button
+  //   }
 
-  return (
-    <Tooltip
-      title={tooltipText}
-      leaveTouchDelay={5}
-      theme={{
-        ...theme,
-        roundness: 12,
-        colors: {
-          ...theme.colors,
-          surface: makeTransparent(theme.colors.primary, 0.4),
-          onSurface: makeTransparent(theme.colors.onPrimary, 0.2),
-        },
-      }}
+  // return (
+  //   <Tooltip
+  //     title={tooltipText}
+  //     leaveTouchDelay={5}
+  //     theme={{
+  //       ...theme,
+  //       roundness: 12,
+  //       colors: {
+  //         ...theme.colors,
+  //         surface: makeTransparent(theme.colors.primary, 0.4),
+  //         onSurface: makeTransparent(theme.colors.onPrimary, 0.2),
+  //       },
+  //     }}
 
-    >
-        {button}
-    </Tooltip>
-  );
+  //   >
+  //       {button}
+  //   </Tooltip>
+  // );
 };

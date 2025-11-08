@@ -9,10 +9,9 @@ interface OneScreenContainerProps {
 }
 
 const OneScreenContainer: React.FC<OneScreenContainerProps> = ({ children, backgroundColor}) => {
-  const {isMobile, width} = useIsMobileForOneScreenWithDemention();
+  const {isMobile} = useIsMobileForOneScreenWithDemention();
 
   return (
-    <View style={{ flex: 1, backgroundColor, width}}>
       <ScrollView 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
@@ -27,7 +26,6 @@ const OneScreenContainer: React.FC<OneScreenContainerProps> = ({ children, backg
           </Surface>
         </View>
       </ScrollView>
-    </View>
 
   );
 };

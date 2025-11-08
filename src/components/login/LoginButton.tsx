@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, Modal, ViewStyle } from 'react-native';
-import { useTheme } from 'react-native-paper';
+import { View, ViewStyle } from 'react-native';
+import { Portal, Modal, useTheme } from 'react-native-paper';
 import { Button } from '@components/ui/Button'
 import LoginFlow from './LoginFlow';
 import OneScreenContainer from '@components/base/container/OneScreenContainer';
@@ -26,13 +26,20 @@ export function LoginModal({visible, setVisible}: {
 } ) {
   const theme = useTheme()
   return (
-      <Modal visible={visible} animationType="none" transparent>
-        <OneScreenContainer backgroundColor= {theme.colors.shadow }>
+    <Portal>
+      <Modal 
+        visible={visible}
+        onDismiss={()=>{setVisible(false);}}
+        style={{ alignItems: "center", justifyContent: "center" }}
+      >
+        <OneScreenContainer>
           <LoginFlow onCloseButton={() => {
-            setVisible(false)}
+            setVisible(false)
+          }
            } />
         </OneScreenContainer>
       </Modal>
+    </Portal>
 
   )
 }
