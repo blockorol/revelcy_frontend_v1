@@ -1,5 +1,5 @@
 import { Platform, Linking } from "react-native";
-import * as Clipboard from "expo-clipboard"; // <— если Expo (иначе можно navigator.clipboard)
+import * as Clipboard from "expo-clipboard";
 
 type EmailParams = {
   to?: string | string[];
@@ -9,18 +9,12 @@ type EmailParams = {
   body?: string;
 };
 
+type OpenEmailResult = "copied" | "opened" | "failed";
+
 const toList = (v?: string | string[]) =>
   Array.isArray(v) ? v.join(",") : (v ?? "");
 
-const enc = (s?: string) => (s ? encodeURIComponent(s) : "");
-
-export function buildMailto({
-  to,
-  cc,
-  bcc,
-  subject,
-  body,
-}: EmailParams): string {
+export function buildMailto({ to, cc, bcc, subject, body }: EmailParams): string {
   const base = `mailto:${toList(to)}`;
   const q = new URLSearchParams();
   if (cc) q.set("cc", toList(cc));
@@ -31,37 +25,70 @@ export function buildMailto({
   return qs ? `${base}?${qs}` : base;
 }
 
-export async function openEmail(params: EmailParams = { to: "hello@revelcy.com" }) {
-  const url = buildMailto(params);
-  const email = toList(params.to) || "hello@revelcy.com";
-
+async function tryCopy(text: string): Promise<boolean> {
   try {
-    if (Platform.OS === "web") {
-      window.location.href = url;
-      return;
-    }
-
-    const can = await Linking.canOpenURL(url);
-    if (!can) throw new Error("No mail app");
-    await Linking.openURL(url);
+    await Clipboard.setStringAsync(text);
+    return true;
   } catch {
+    // Web fallback
     try {
-      await Clipboard.setStringAsync(email);
-        return "copied";
-    } catch {
-      // если Clipboard API недоступен
-      if (Platform.OS === "web") {
-        // fallback через execCommand
+      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+      if (typeof document !== "undefined") {
         const tmp = document.createElement("textarea");
-        tmp.value = email;
+        tmp.value = text;
+        tmp.setAttribute("readonly", "true");
+        tmp.style.position = "fixed";
+        tmp.style.opacity = "0";
         document.body.appendChild(tmp);
         tmp.select();
         document.execCommand("copy");
         document.body.removeChild(tmp);
-        return "copy";
-      } else {
-        return "failed";
+        return true;
+      }
+    } catch {
+      // ignore
+    }
+    return false;
+  }
+}
+
+/**
+ * Открывает mailto и ВСЕГДА пытается скопировать адрес.
+ * Возвращает:
+ *  - "copied", если копирование удалось (даже если mailto сработал)
+ *  - "opened", если mailto открылся, но скопировать не получилось
+ *  - "failed", если ни mailto не открылся, ни скопировать не вышло
+ */
+export async function openEmail(
+  params: EmailParams = { to: "hello@revelcy.com" }
+): Promise<OpenEmailResult> {
+  const url = buildMailto(params);
+  const email = toList(params.to) || "hello@revelcy.com";
+
+  // 1) Сначала пробуем КОПИРОВАНИЕ
+  const copied = await tryCopy(email);
+
+  // 2) Потом пытаемся открыть mailto
+  let opened = false;
+  try {
+    if (Platform.OS === "web") {
+      // Важно: копирование уже сделано — теперь редиректим
+      window.location.href = url;
+      opened = true;
+    } else {
+      const can = await Linking.canOpenURL(url);
+      if (can) {
+        await Linking.openURL(url);
+        opened = true;
       }
     }
+  } catch {
+    opened = false;
   }
+
+  if (copied) return "copied";
+  return opened ? "opened" : "failed";
 }
