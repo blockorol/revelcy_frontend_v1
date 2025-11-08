@@ -24,7 +24,6 @@ export function LoginModal({visible, setVisible}: {
   visible:boolean
   setVisible: React.Dispatch<React.SetStateAction<boolean>>
 } ) {
-  const theme = useTheme()
   return (
     <Portal>
       <Modal 
