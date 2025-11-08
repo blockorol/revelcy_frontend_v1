@@ -88,7 +88,7 @@ export function PremarketActionPremarket({
           Waiting for creator action: Finish premarket
         </Text>
       ) : userJoined ? (
-        <ShareTextButton style={{width: "90%"}} shareMessage={`Join to premarket on: ${currentURL}`}>Share</ShareTextButton>
+        <ShareTextButton style={{width: "100%"}} shareMessage={`Join to premarket on: ${currentURL}`}>Share</ShareTextButton>
       ) : (
         <PremarketJoin
           tokenMainInfo={tokenMainInfo}
