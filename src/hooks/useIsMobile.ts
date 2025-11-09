@@ -5,6 +5,7 @@ import { useWindowDimensions } from "react-native"
 export const MAX_WIDTH_SIZE = 800;
 export const MAX_WIDTH_TWO_CONTAINER_SIZE = 872;
 export const MAX_WIDTH_ONE_CONTAINER_SIZE = 480;
+export const MAX_WIDTH_DISCOVERY_CONTAINER = 1200;
 
 export const MAX_WIDTH_MOBILE = 680
 const MAX_WIDTH_DESKTOP = 680
@@ -83,4 +84,9 @@ export function useIsMobileWithDemention(): IsMobileWithDemetionsResp {
         width:width,
         height: contentHeight
     };
+}
+
+export function useIsMobileForDiscoveryContainer(): boolean {
+    const { width } = useWindowDimensions();
+    return width < MAX_WIDTH_DISCOVERY_CONTAINER;
 }
