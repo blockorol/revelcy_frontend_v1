@@ -209,13 +209,12 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
   }
 
   return (
-      <View style={{flexDirection:'row', gap:16, alignContent:'center', justifyContent:'flex-start' , width:'100%'}}>
-          <SvgIcon name='info-circle' size={24} color={colors.primary} />
-          <View style={{flex: 1, gap:8, alignContent:'flex-start', justifyContent:'center' }}>
-            <Text variant='bodyMedium' selectionColor={colors.onSurfaceVariant} numberOfLines={2}> Finish will be able in {getTimeLeftLabel(tokenMainInfo.premarketDeadline)}</Text>
+      <View style={{gap:16, width:'100%'}}>
+          <ShareTextButton style={{width:'100%'}} shareMessage={`Join to premarket on: ${currentURL}`}>Share</ShareTextButton>
+          <View style={{flexDirection:'row', gap:16, alignItems:'center'}}>
+            <SvgIcon name='info-circle' size={24} color={colors.primary} />
+            <Text variant='bodyMedium' selectionColor={colors.onSurfaceVariant} numberOfLines={2}>You can finalize the Premarket in {getTimeLeftLabel(tokenMainInfo.premarketDeadline)}, after deadline passes.</Text>
           </View>
-          
-      <ShareTextButton shareMessage={`Join to premarket on: ${currentURL}`}/>
       </View>
   );
 }
