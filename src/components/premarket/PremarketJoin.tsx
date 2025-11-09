@@ -4,13 +4,11 @@ import { SvgIcon } from "@components/base/SvgIcon";
 import { BN } from "@coral-xyz/anchor";
 import { joinToPremarket } from "@services/blockchain/premarket/joinPremarket";
 import { UserInfo } from "@providers/AuthContext";
-import shortString from "@utils/address_shorter";
 import { useAnchorWalletSafe } from '@storage/wallet-adapter/useWallet.web';
 import { convertDecimalToToken } from "@utils/premarket";
 
 import {
   formatNumberCompact,
-  convertSolanaToTokenBuy,
   convertSmallCountToLamport,
 } from "@utils/premarket";
 import { useState, useEffect } from "react";
@@ -33,9 +31,8 @@ import { useOverlay } from "@storage/UniversalOverlayProvider"; // <-- новы�
 import { ShareTextButton } from "@components/base/ButtonShare";
 import React from "react";
 import { MobileBottomSheet } from "@components/ui/MobileBottomSheet";
-import LoginFlow from "@components/login/LoginFlow";
 import { LoginModal } from "@components/login/LoginButton";
-import OneScreenContainer from "@components/base/container/OneScreenContainer";
+import { convertSolanaToTokenBuy } from "@services/pumpfun/bonding_curve_convertor";
 
 interface PremarketJoinProps {
   tokenDynamicInfo: TokenDynamicInfo;

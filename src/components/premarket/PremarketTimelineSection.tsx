@@ -7,7 +7,6 @@ import { TokenInfo } from '@api/token';
 import {
   convertDecimalToToken,
   convertSmallCountToLamport,
-  convertSolanaToTokenBuy,
   convertTimeStampToDataMonth,
   formatNumberCompact
 } from '@utils/premarket';
@@ -15,6 +14,7 @@ import { makeTransparent } from '@utils/colors';
 import { AppTheme } from '@theme/types';
 import { useJoinFlow } from '@hooks/useJoinFlow';
 import { TextProminent } from '@components/ui/Text';
+import { convertSolanaToTokenBuy } from '@services/pumpfun/bonding_curve_convertor';
 
 const DEFAULT_BUY_AMOUNT = 0.5;
 const DEFAULT_BUY_AMOUNT_LAMP = convertSmallCountToLamport(DEFAULT_BUY_AMOUNT);

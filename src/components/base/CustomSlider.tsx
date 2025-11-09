@@ -6,12 +6,11 @@ import Slider from "@react-native-assets/slider";
 import { MarkerProps } from "@react-native-community/slider";
 import {
   convertLamportToSmallCount,
-  convertTokenToSolanaBuy,
-  DEFAULT_TOKEN_COUNT_DECIMAL,
   getPersentOfPremartet,
 } from "@utils/premarket";
 import BN from "bn.js";
 import { TextProminent } from "@components/ui/Text";
+import { convertTokenToSolanaBuy, DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/bonding_curve_convertor";
 
 interface CustomSliderProps {
   min?: number;

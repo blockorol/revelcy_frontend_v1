@@ -9,12 +9,11 @@ import { DateTimeEditField } from "@components/base/DateTimeEditField";
 import { CustomSlider } from "@components/base/CustomSlider";
 import BN from "bn.js";
 import {
-  convertTokenToSolanaBuy,
-  DEFAULT_TOKEN_COUNT_DECIMAL,
   getPersentOfPremartet,
 } from "@utils/premarket";
 import { useIsMobileWithDemention } from "@hooks/useIsMobile";
 import { ExtendedMD3Colors } from "@theme/types";
+import { convertTokenToSolanaBuy, DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/bonding_curve_convertor";
 
 export type EditPremarketSettingsFormProps = {
   onNext: (data: PremarketSettingData) => void;

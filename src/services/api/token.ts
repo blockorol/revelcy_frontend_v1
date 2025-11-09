@@ -1,10 +1,11 @@
 import { API_HOST } from "env";
 import { BN } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
-import { convertSolanaToTokenBuy, DEFAULT_TOKEN_COUNT_DECIMAL, PremarketState, convertTokenToDecimal } from "@utils/premarket";
+import { PremarketState, convertTokenToDecimal } from "@utils/premarket";
 import { toDecString } from "@api/tx_premarket";
 import { http } from "@api/http";
 import shortString from "@utils/address_shorter";
+import { convertSolanaToTokenBuy, DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/bonding_curve_convertor";
 
 const RETRY_DEFAULT = 6;
 

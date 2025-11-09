@@ -1,30 +1,23 @@
 // TokenMathPlaygroundScreen.tsx
-import React, { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
 import { Text, TextInput, Button, useTheme, Switch, HelperText, Divider, Card } from "react-native-paper";
-import Slider from "@react-native-community/slider";
 import { BN } from "@coral-xyz/anchor";
 
 // 🔁 ПОДМЕНИ путь на свой (где лежат твои функции)
 import {
-  DEFAULT_TOKEN_COUNT,
-  DEFAULT_TOKEN_COUNT_DECIMAL,
   LAMPORT_MULTIPLIER,
   convertCountToLamport,
   convertDecimalToToken,
   convertLamportToSmallCount,
   convertSmallCountToLamport,
   convertSolToPercentOnStart,
-  convertSolanaToTokenBuy,
   convertTimeStampToDataMonth,
   convertTokenToDecimal,
-  convertTokenToSolanaBuy,
-  convertTokenToSolanaSell,
   formatNumberCompact,
   getTimeLeftLabel,
-  virtualSupplyRatioLamp,
-  virtualTokenRatioDecim,
 } from "@utils/premarket";
+import { convertSolanaToTokenBuy, convertTokenToSolanaBuy, convertTokenToSolanaSell, DEFAULT_TOKEN_COUNT, DEFAULT_TOKEN_COUNT_DECIMAL, virtualSupplyRatioLamp, virtualTokenRatioDecim } from "@services/pumpfun/bonding_curve_convertor";
 
 type NumStr = string;
 
