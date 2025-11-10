@@ -76,6 +76,15 @@ export default function OverviewPremarketCreation({
         </View>
       ),
     },
+    "launch in progress": {
+      text: "Launch in progess,  keep and calm, and sign with wallet",
+      button: (
+        <Button onPress={()=>{}} disabled={true} variant="primary" size="normal">
+          Launching...
+        </Button>
+      ),
+
+    },
     "no data": {
       text: "Please fill data before launch",
       button: (
@@ -85,7 +94,7 @@ export default function OverviewPremarketCreation({
       ),
     },
   };
-  const {open: openOverlay, close} = useOverlay()
+  const {open: openOverlay, replace, isOpen, close} = useOverlay()
 
   useEffect(()=> {
     console.log("changed state", launchState)
@@ -93,10 +102,15 @@ export default function OverviewPremarketCreation({
       close();
       return
     }
-    openOverlay(
+    const stateDisplay = (
     <View>
       <TransactionLoadingModal launchState={launchState} />
     </View>)
+    if (isOpen) {
+      replace(stateDisplay)
+    } else {
+      openOverlay(stateDisplay)
+    }
   }, [launchState])
 
   const error = useMemo(() => {
@@ -112,8 +126,11 @@ export default function OverviewPremarketCreation({
     if (!data) {
       return errorMapper["no data"];
     }
+    if (launchState !== undefined) {
+      return errorMapper["launch in progress"];
+    }
     return undefined;
-  }, [connected, publicKey, user]);
+  }, [launchState, connected, publicKey, user]);
 
   const shortAddress = useMemo(() => {
     if (!connected || !publicKey) {
@@ -602,7 +619,7 @@ export default function OverviewPremarketCreation({
               />
             )}
             {!error ? (
-              <Button mode="contained" onPress={onLaunch}>
+              <Button disabled={launchState!==undefined} mode="contained" onPress={onLaunch}>
                 {`Start premarket with ${shortAddress}`}
               </Button>
             ) : (
