@@ -1,4 +1,4 @@
-import { normalizeStringDecimalInput } from "@utils/convertors";
+import { convertStringToDecimalInput, normalizeStringDecimalInput } from "@utils/convertors";
 
 export function convertNumberWithValidate (
     text: string, 
@@ -34,19 +34,19 @@ export function convertNumberWithValidate (
 
 export function convertNumberWithRaw (
     text: string, 
-    setRawValue:React.Dispatch<React.SetStateAction<string | undefined>>,
-    setNumerValue:React.Dispatch<React.SetStateAction<number | undefined>>,
+    setRawValue: (v: string | undefined) => void,
+    setNumerValue: (v: number | undefined) => void,
+    postfix?: string
 ) {
-    const numericValue = normalizeStringDecimalInput(text)
+    const {value, raw} = convertStringToDecimalInput(text, postfix)
 
-    if (numericValue === '') {
+    if (raw === undefined) {
         setRawValue(undefined)
         setNumerValue(undefined);
         return undefined;
     }
 
-    const numberValue = parseFloat(numericValue);
-    setRawValue(numericValue);
-    setNumerValue(numberValue);
-    return numberValue
+    setRawValue(raw);
+    setNumerValue(value);
+    return value
 }
