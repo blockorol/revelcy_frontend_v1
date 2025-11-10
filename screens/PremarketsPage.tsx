@@ -104,7 +104,7 @@ const OrderMenu: React.FC<PropsOrderMenu> = ({ value, onChange, anchor, isMobile
       }}
     >
       {isMobile ? (
-        <SvgIcon name="sort-arrows" size={20} color={anchorFg} />
+        <SvgIcon name="sort-arrows" size={20} color={colors.onBackground}/>
       ) : (
         <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
           <Text variant="labelMedium" prominent style={{ color: anchorFg }}>
