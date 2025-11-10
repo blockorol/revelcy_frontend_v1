@@ -124,27 +124,11 @@ export default function EditTokenomicsForm({
   }>({ start: 0, end: 0 });
 
   const handleCreatorInitialBuyChangeWithSuffix = (text: string) => {
-    let raw = text.endsWith(SUFFIX) ? text.slice(0, -SUFFIX.length) : text;
-
-    raw = raw
-      .replace(/\s+/g, "")
-      .replace(",", ".")
-      .replace(/[^0-9.]/g, "");
-
-    console.log("raw", raw)
-    const firstDot = raw.indexOf(".");
-    if (firstDot !== -1)
-      raw =
-        raw.slice(0, firstDot + 1) + raw.slice(firstDot + 1).replace(/\./g, "");
-
-    raw = raw.replace(/^0+(?=\d)/, "");
-
-    if (raw === "" || raw === ".") raw = "";
-
     const value = convertNumberWithRaw(
-      raw,
+      text,
       setCreatorInitialBuyRawStr,
-      setCreatorInitialBuy
+      setCreatorInitialBuy, 
+      SUFFIX
     );
     if (!value) {
       setErrorCreatorInitialBuy(null);
@@ -161,6 +145,7 @@ export default function EditTokenomicsForm({
     setErrorCreatorInitialBuy(null);
     setPercent(round(newPercent, 1));
   };
+
   const handleSelectionChange = (e: any) => {
     const { start, end } = e.nativeEvent.selection;
     const limit = (creatorInitialBuyRawStr ?? "").length; // позиция перед суффиксом
@@ -281,7 +266,7 @@ export default function EditTokenomicsForm({
               alwaysLabelOnTop
               label="Creator Allocation Up to 79.6 SOL"
               maxLength={11}
-              value={displayValue}
+              value={creatorInitialBuyRawStr??""}
               onChangeText={handleCreatorInitialBuyChangeWithSuffix}
               onSelectionChange={handleSelectionChange}
               selection={selection}
