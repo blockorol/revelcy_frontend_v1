@@ -1,5 +1,5 @@
 // components/token/TokenOverviewCreation.tsx
-import React, { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { View, Image, ScrollView } from "react-native";
 import { useTheme, Divider } from "react-native-paper";
 import { Button } from "@components/ui/Button";
@@ -85,6 +85,19 @@ export default function OverviewPremarketCreation({
       ),
     },
   };
+  const {open: openOverlay, close} = useOverlay()
+
+  useEffect(()=> {
+    console.log("changed state", launchState)
+    if (!launchState) {
+      close();
+      return
+    }
+    openOverlay(
+    <View>
+      <TransactionLoadingModal launchState={launchState} />
+    </View>)
+  }, [launchState])
 
   const error = useMemo(() => {
     if (!user) {
