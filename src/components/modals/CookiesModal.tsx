@@ -55,7 +55,7 @@ function savePrefs(accepted: boolean, prefs: ConsentPrefs) {
   if (Platform.OS === "web" && hasWindow()) {
     try {
       window.localStorage.setItem(LS_KEY, JSON.stringify({ accepted, prefs }));
-    } catch {}
+    } catch { }
   }
 }
 
@@ -71,8 +71,8 @@ export default function CookiesModal() {
 
   const titleFS = theme.fonts?.titleSmall?.fontSize ?? 16;
   const titleLH = theme.fonts?.titleSmall?.lineHeight ?? 22;
-  const bodyFS  = theme.fonts?.bodySmall?.fontSize ?? 12;
-  const bodyLH  = theme.fonts?.bodySmall?.lineHeight ?? 16;
+  const bodyFS = theme.fonts?.bodySmall?.fontSize ?? 12;
+  const bodyLH = theme.fonts?.bodySmall?.lineHeight ?? 16;
 
   const initialRef = React.useRef(loadPrefsOnce());
   const [visible, setVisible] = React.useState<boolean>(!initialRef.current.accepted);
@@ -120,8 +120,8 @@ export default function CookiesModal() {
                 borderColor: theme.colors.outlineVariant,
                 height: isMobile ? "auto" : BANNER_H,
                 paddingHorizontal: isMobile ? 12 : PAD_H,
-                paddingVertical: isMobile ? 12 : PAD_V, 
-                               
+                paddingVertical: isMobile ? 12 : PAD_V,
+
               },
             ]}
             pointerEvents="auto"
@@ -130,7 +130,8 @@ export default function CookiesModal() {
               style={[
                 styles.frame,
                 {
-                  width: isMobile ? "100%" : FRAME_W,
+                  width: "100%",
+                  maxWidth: FRAME_W,
                   flexDirection: isMobile ? "column" : "row",
                   alignItems: isMobile ? "flex-start" : "center",
                   justifyContent: isMobile ? "flex-start" : "space-between",
@@ -354,8 +355,7 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     zIndex: 9999,
     elevation: 40,
-    pointerEvents: "box-none",
-    overflow: "hidden",
+    pointerEvents: "box-none",    
   },
   frame: {
     alignSelf: "center",
@@ -372,14 +372,14 @@ const styles = StyleSheet.create({
     textDecorationLine: "none",
     paddingHorizontal: 0,
   },
-  
+
   actions: {
     flexDirection: "row",
     alignItems: "center",
     flexWrap: "wrap",
   },
-  btn: { borderRadius: 10 }, 
-  btnContent: { height: 24, paddingHorizontal: 0 }, 
+  btn: { borderRadius: 10 },
+  btnContent: { height: 24, paddingHorizontal: 0 },
   btnLabel: { textTransform: "none", fontSize: 12 },
 
   modal: {
