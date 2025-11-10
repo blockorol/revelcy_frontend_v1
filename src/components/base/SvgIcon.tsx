@@ -26,6 +26,7 @@ import NotificationOutlined from "@assets/basic_icon/notification-outlined.svg";
 import Mail from "@assets/basic_icon/mail.svg";
 import Menu from "@assets/basic_icon/menu.svg";
 import Percent from "@assets/basic_icon/percent.svg";
+import PriceUp from "@assets/basic_icon/price_up.svg";
 import Pumpfun from "@assets/basic_icon/pumpfun.svg";
 import Privy from "@assets/basic_icon/privy.svg";
 import PlantOutlined from "@assets/basic_icon/plant-outlined.svg";
@@ -90,6 +91,7 @@ export const icons = {
   mail: Mail,
   menu: Menu,
   percent: Percent,
+  "price-up": PriceUp,
   pumpfun: Pumpfun,
   "plant-outlined": PlantOutlined,
   plus: Plus,

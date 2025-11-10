@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "flex-start",
+    justifyContent: "flex-end",
     // если gap поддерживается — можно просто: gap: GAP,
     marginHorizontal: -GAP / 2, // polyfill gap по горизонтали
     marginVertical: -GAP / 2,   // polyfill gap по вертикали

@@ -137,7 +137,7 @@ export function TokenPremarketPageNormal({
                 paddingTop: 0,
               }}
             >
-              <View style={{ gap: 48}}>
+              <View style={{ gap: 32}}>
                 <PremarketBaseInfo tokenMainInfo={token.mainInfo} tokenDynamicInfo={token.dynamicInfo} isMobile={false}/>
                 <PremarketDynamicInfo
                   tokenMainInfo={token.mainInfo}
