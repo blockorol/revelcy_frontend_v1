@@ -93,20 +93,20 @@ export function formatNumberCompact(value: number | bigint | BN): string {
   if (num >= 1_000_000_000) {
     const billions = num / 1_000_000_000;
     if (billions >= 100) {
-      return `${Math.round(billions)} B`;
+      return `${Math.round(billions)}B`;
     } else if (billions >= 10) {
-      return `${billions.toFixed(1)} B`;
+      return `${billions.toFixed(1)}B`;
     } else {
-      return `${billions.toFixed(2)} B`;
+      return `${billions.toFixed(2)}B`;
     }
   } else if (num >= 1_000_000) {
     const millions = num / 1_000_000;
     if (millions >= 100) {
-      return `${Math.round(millions)} M`;
+      return `${Math.round(millions)}M`;
     } else if (millions >= 10) {
-      return `${millions.toFixed(1)} M`;
+      return `${millions.toFixed(1)}M`;
     } else {
-      return `${millions.toFixed(2)} M`;
+      return `${millions.toFixed(2)}M`;
     }
   } else if (num >= 1_000) {
     const thousands = num / 1_000;

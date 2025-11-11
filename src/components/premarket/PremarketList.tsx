@@ -4,7 +4,7 @@ import { View, ScrollView, StyleSheet } from "react-native";
 import { ActivityIndicator, Button, Text, useTheme } from "react-native-paper";
 import { PremarketCard } from "@components/premarket/PremarketCard";
 import { getPremarketList, TokenMainInfo, fetchTokenDynamicInfo, TokenDynamicInfo } from "@api/token";
-import useIsMobile from "@hooks/useIsMobile";
+import { useIsMobileForDiscoveryContainer } from "@hooks/useIsMobile";
 import { convertLamportToSmallCount } from "@utils/premarket";
 
 
@@ -30,7 +30,7 @@ export const PremarketList: React.FC<PremarketListProps> = ({
   order = "FRESH",
 }) => {
   const { colors } = useTheme();
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobileForDiscoveryContainer();
 
   const [cursor, setCursor] = useState(0);
   const [limit, setLimit] = useState(initialLimit);
@@ -243,14 +243,15 @@ export const PremarketList: React.FC<PremarketListProps> = ({
     grid: {
       flexDirection: "row",
       flexWrap: "wrap",
-      justifyContent: "space-between",
-      paddingBottom: 24,
-      gap: !isMobile ? 24 : 16,
-      maxWidth: 1300,
+      justifyContent: !isMobile?"flex-start":"center",
+      //paddingBottom: 24,
+      gap: 32,
       alignSelf: "center",
+      maxWidth: 1200,
+      paddingHorizontal: !isMobile?16:0,
     },
     cardWrap: {
-      marginBottom: 16,
+     //marginBottom: 16,
     },
     loader: {
       alignItems: "center",
