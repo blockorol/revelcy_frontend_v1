@@ -5,9 +5,10 @@ import { TokenomicsData } from "@components/token/create/interface";
 import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeader";
 import { useIsMobileWithDemention } from "@hooks/useIsMobile";
 import { ExtendedMD3Colors } from "@theme/types";
-import { round } from "@utils/numbers";
+import { round, formatNumberNoTrailingZeros } from "@utils/numbers";
 import { convertSolToPercentOnStart } from "@utils/premarket";
 import { convertNumberWithRaw } from "@utils/setterWithValidate";
+import { normalizeStringDecimalInput } from "@utils/convertors";
 import React, { useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useTheme, Text } from "react-native-paper";
@@ -57,14 +58,8 @@ export default function EditTokenomicsForm({
         revelcy: "0",
       };
     }
-    let symbols = 4;
-    let pump = (0.015 * creatorInitialBuy).toFixed(symbols);
-    let revelcy = (0.01 * creatorInitialBuy).toFixed(symbols);
-    while (pump.endsWith("0") && revelcy.endsWith("0") && symbols != 0) {
-      symbols--;
-      pump = (0.015 * creatorInitialBuy).toFixed(symbols);
-      revelcy = (0.01 * creatorInitialBuy).toFixed(symbols);
-    }
+    const pump = formatNumberNoTrailingZeros(0.015 * creatorInitialBuy);
+    const revelcy = formatNumberNoTrailingZeros(0.01 * creatorInitialBuy);
 
     return {
       pump: pump,
@@ -124,6 +119,48 @@ export default function EditTokenomicsForm({
   }>({ start: 0, end: 0 });
 
   const handleCreatorInitialBuyChangeWithSuffix = (text: string) => {
+    // Check if user tried to delete the suffix
+    const previousValue = creatorInitialBuyRawStr ?? "";
+    const hadSuffix = previousValue.endsWith(SUFFIX);
+    const hasSuffix = text.endsWith(SUFFIX);
+    
+    // If suffix was deleted, restore it and move cursor to before suffix
+    if (hadSuffix && !hasSuffix && text.length > 0) {
+      // Normalize the input to get what the final number part will be
+      const normalizedNumber = normalizeStringDecimalInput(text, SUFFIX);
+      const finalRawValue = normalizedNumber + SUFFIX;
+      const cursorPosition = finalRawValue.length - SUFFIX.length;
+      
+      const value = convertNumberWithRaw(
+        text + SUFFIX,
+        setCreatorInitialBuyRawStr,
+        setCreatorInitialBuy, 
+        SUFFIX
+      );
+      
+      // Set cursor position to right before the suffix
+      // Use setTimeout to ensure state is updated
+      setTimeout(() => {
+        setSelection({ start: cursorPosition, end: cursorPosition });
+      }, 0);
+      
+      if (!value) {
+        setErrorCreatorInitialBuy(null);
+        setPercent(0);
+        return;
+      }
+
+      const newPercent = convertSolToPercentOnStart(value);
+      if (newPercent > 80) {
+        setErrorCreatorInitialBuy("Max suply should be less than 80%");
+        setPercent(0);
+        return;
+      }
+      setErrorCreatorInitialBuy(null);
+      setPercent(round(newPercent, 1));
+      return;
+    }
+    
     const value = convertNumberWithRaw(
       text,
       setCreatorInitialBuyRawStr,
@@ -148,7 +185,8 @@ export default function EditTokenomicsForm({
 
   const handleSelectionChange = (e: any) => {
     const { start, end } = e.nativeEvent.selection;
-    const limit = (creatorInitialBuyRawStr ?? "").length; // позиция перед суффиксом
+    const currentValue = creatorInitialBuyRawStr ?? "";
+    const limit = currentValue.length - SUFFIX.length; // позиция перед суффиксом
     const clampedStart = Math.min(start, limit);
     const clampedEnd = Math.min(end, limit);
     if (clampedStart !== start || clampedEnd !== end) {
@@ -203,7 +241,8 @@ export default function EditTokenomicsForm({
     }
   };
   React.useEffect(() => {
-    const limit = (creatorInitialBuyRawStr ?? "").length;
+    const currentValue = creatorInitialBuyRawStr ?? "";
+    const limit = currentValue.length - SUFFIX.length;
     setSelection((s) => {
       const start = Math.min(s.start, limit);
       const end = Math.min(s.end, limit);
@@ -382,6 +421,20 @@ export default function EditTokenomicsForm({
 
             <View
               style={{
+                paddingTop: 16,
+                justifyContent: "space-between",
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <Text variant="bodySmall">
+                Sol fee
+              </Text>
+              <Text variant="bodySmall">{formatNumberNoTrailingZeros(0.059)} SOL</Text>
+            </View>
+
+            <View
+              style={{
                 marginTop: 16,
                 marginBottom: 0,
                 height: 1,
@@ -391,15 +444,15 @@ export default function EditTokenomicsForm({
 
             <View
               style={{
-                paddingTop: 16,
+                paddingTop: 8,
                 justifyContent: "space-between",
                 flexDirection: "row",
                 alignItems: "center",
               }}
             >
-              <Text variant="bodySmall">Cost</Text>
-              <Text variant="bodySmall">
-                {round((creatorInitialBuy ?? 0) * 1.025, 2)} SOL
+              <Text variant="titleMedium">Cost</Text>
+              <Text variant="titleMedium">
+                {formatNumberNoTrailingZeros((creatorInitialBuy ?? 0) * 1.025 + 0.059)} SOL
               </Text>
             </View>
           </View>
