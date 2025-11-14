@@ -18,6 +18,7 @@ interface PremarketBaseInfoProps {
 }
 
 export function PremarketBaseInfo({ tokenMainInfo, tokenDynamicInfo, isMobile}: PremarketBaseInfoProps) {
+  console.log("tokenMainInfo:", tokenMainInfo);
   const theme = useTheme();
   const { left } = useIsMobileForTwoScreenWithDemention();
   const [showQuestionModal, setShowQuestionModal] = useState(false);

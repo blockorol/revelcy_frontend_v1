@@ -1,5 +1,6 @@
 import { premarketFinished, TokenMainInfo } from "@api/token";
 import { finishPremarket, refundPremarket } from "@services/blockchain/premarket/finishPremarket";
+import { extendPremarket } from "@services/blockchain/premarket/extendPremarket";
 import { getTimeLeftLabel } from "@utils/premarket";
 import { useAuth, UserInfo } from "@providers/AuthContext";
 import { useWallet } from "@storage/wallet-adapter";
@@ -103,10 +104,61 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
   };
   
   const handleExtended = async () => {
-      notify.error("is not implemented", {
-        suggest: "ask admin to extend",
+    if (!wallet || !connected) {
+      notify.error("Wallet is not connected", {
+        suggest: "Enable Phantom (or compatible) and try again",
+        action: {
+          label: "Connect",
+          onAction: async () => {
+            try {
+              await connect();
+            } catch (e) {
+              console.log("connect error:", e);
+            }
+          },
+        },
       });
       return;
+    }
+    if (wallet.publicKey.toBase58() !== tokenMainInfo.createdByPubkey) {
+      notify.error("Only the creator can extend the premarket");
+      return;
+    }
+    if (network === 'testnet') {
+      notify.error("testnet is not supported");
+      return;
+    }
+
+    try {
+      // Calculate new deadline: 48 hours from now
+      const SECONDS_IN_HOUR = 60 * 60;
+      const EXTENSION_HOURS = 48;
+      const now = Math.floor(Date.now() / 1000);
+      const newDeadline = now + (EXTENSION_HOURS * SECONDS_IN_HOUR);
+
+      open(renderLoader("Extending premarket deadline..."));
+      const res = await extendPremarket(
+        wallet,
+        connection,
+        network,
+        tokenMainInfo.premarketPubkey,
+        newDeadline,
+        (text) => {replace(renderLoader(text))}
+      );
+
+      notify.success("Premarket deadline successfully extended!", {action: {
+        label: "check",
+        onAction: ()=> {
+          Linking.openURL(`https://solscan.io/tx/${res.txId}?cluster=devnet`)
+        }
+      }});
+      close();
+      onUpdated()
+    } catch (e) {
+      console.error("extend premarket error:", e);
+      notify.error("Failed to extend premarket deadline");
+      close();
+    }
   };
 
   const handleFinish = async () => {
