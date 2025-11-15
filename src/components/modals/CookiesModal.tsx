@@ -1,10 +1,8 @@
 import * as React from "react";
 import { Platform, StyleSheet, View } from "react-native";
 import {
-  Button,
   Modal,
   Portal,
-  Text,
   useTheme,
   Switch,
   Divider,
@@ -12,6 +10,9 @@ import {
 } from "react-native-paper";
 import type { AppTheme } from "@theme/types";
 import useIsMobile from "@hooks/useIsMobile";
+import { Button } from "@components/ui/Button";
+import { Text } from "@components/ui/Text";
+import { useNotification } from "@storage/NotificationContext";
 
 /** компактный баннер */
 const BANNER_H = 120;
@@ -37,69 +38,102 @@ function loadPrefsOnce(): { accepted: boolean; prefs: ConsentPrefs } {
         ? window.localStorage.getItem(LS_KEY)
         : null;
     if (!raw) {
+      // по умолчанию только necessary = true, остальные false
       return {
         accepted: false,
-        prefs: { necessary: true, analytics: true, personalization: true, marketing: false },
+        prefs: {
+          necessary: true,
+          analytics: false,
+          personalization: false,
+          marketing: false,
+        },
       };
     }
-    return JSON.parse(raw);
-  } catch {
+    return JSON.parse(raw) as { accepted: boolean; prefs: ConsentPrefs };
+  } catch (e) {
+    console.error("CookiesModal: failed to load prefs", e);
     return {
       accepted: false,
-      prefs: { necessary: true, analytics: true, personalization: true, marketing: false },
+      prefs: {
+        necessary: true,
+        analytics: false,
+        personalization: false,
+        marketing: false,
+      },
     };
   }
 }
 
-function savePrefs(accepted: boolean, prefs: ConsentPrefs) {
+function savePrefs(accepted: boolean, prefs: ConsentPrefs): boolean {
   if (Platform.OS === "web" && hasWindow()) {
     try {
       window.localStorage.setItem(LS_KEY, JSON.stringify({ accepted, prefs }));
-    } catch { }
+      return true;
+    } catch (e) {
+      console.error("CookiesModal: failed to save prefs", e);
+      return false;
+    }
   }
+  return true;
 }
 
 export default function CookiesModal() {
   const theme = useTheme<AppTheme>();
   const isMobile = useIsMobile();
-
-  // значения из темы с безопасными дефолтами
-  const secondary = (theme.colors as any)?.secondary ?? "#00C3FF";
-  const btnRadius = theme.roundness ?? 10;
-  const btnMinWidth = (theme as any)?.sizes?.buttonMinWidth ?? 88;
-  const btnHeight = (theme as any)?.sizes?.buttonHeightSm ?? 24;
-
-  const titleFS = theme.fonts?.titleSmall?.fontSize ?? 16;
-  const titleLH = theme.fonts?.titleSmall?.lineHeight ?? 22;
-  const bodyFS = theme.fonts?.bodySmall?.fontSize ?? 12;
-  const bodyLH = theme.fonts?.bodySmall?.lineHeight ?? 16;
+  const { error } = useNotification();
 
   const initialRef = React.useRef(loadPrefsOnce());
-  const [visible, setVisible] = React.useState<boolean>(!initialRef.current.accepted);
+  const [visible, setVisible] = React.useState<boolean>(
+    !initialRef.current.accepted
+  );
   const [prefsVisible, setPrefsVisible] = React.useState(false);
-  const [prefs, setPrefs] = React.useState<ConsentPrefs>(initialRef.current.prefs);
+  const [prefs, setPrefs] = React.useState<ConsentPrefs>(
+    initialRef.current.prefs
+  );
 
   const acceptAll = React.useCallback(() => {
-    const next = { necessary: true, analytics: true, personalization: true, marketing: true };
-    savePrefs(true, next);
+    const next: ConsentPrefs = {
+      necessary: true,
+      analytics: true,
+      personalization: true,
+      marketing: true,
+    };
+    const ok = savePrefs(true, next);
+    if (!ok) {
+      error("Failed to save cookie preferences. Please try again.");
+      return;
+    }
     setPrefs(next);
     setVisible(false);
     setPrefsVisible(false);
-  }, []);
+  }, [error]);
 
   const rejectAll = React.useCallback(() => {
-    const next = { necessary: true, analytics: false, personalization: false, marketing: false };
-    savePrefs(true, next);
+    const next: ConsentPrefs = {
+      necessary: true,
+      analytics: false,
+      personalization: false,
+      marketing: false,
+    };
+    const ok = savePrefs(true, next);
+    if (!ok) {
+      error("Failed to save cookie preferences. Please try again.");
+      return;
+    }
     setPrefs(next);
     setVisible(false);
     setPrefsVisible(false);
-  }, []);
+  }, [error]);
 
   const saveSelection = React.useCallback(() => {
-    savePrefs(true, prefs);
+    const ok = savePrefs(true, prefs);
+    if (!ok) {
+      error("Failed to save cookie preferences. Please try again.");
+      return;
+    }
     setVisible(false);
     setPrefsVisible(false);
-  }, [prefs]);
+  }, [prefs, error]);
 
   const openManage = React.useCallback(() => setPrefsVisible(true), []);
   const closeManage = React.useCallback(() => setPrefsVisible(false), []);
@@ -118,10 +152,9 @@ export default function CookiesModal() {
               {
                 backgroundColor: theme.colors.surfaceContainerHigh,
                 borderColor: theme.colors.outlineVariant,
-                height: isMobile ? "auto" : BANNER_H,
                 paddingHorizontal: isMobile ? 12 : PAD_H,
                 paddingVertical: isMobile ? 12 : PAD_V,
-
+                ...(isMobile ? {} : { minHeight: BANNER_H }),
               },
             ]}
             pointerEvents="auto"
@@ -143,14 +176,11 @@ export default function CookiesModal() {
               {/* Текст */}
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text
-                  variant="bodyLarge"
+                  variant="titleSmall"
+                  prominent
                   style={{
                     color: theme.colors.onBackground,
-                    fontSize: titleFS,
-                    lineHeight: titleLH,
-                    fontWeight: "600",
-                  }}
-                  {...(!isMobile ? { numberOfLines: 1 } : {})}
+                  }} 
                 >
                   Cookies Policy
                 </Text>
@@ -160,22 +190,24 @@ export default function CookiesModal() {
                   style={{
                     color: theme.colors.onSurfaceVariant,
                     marginTop: 4,
-                    fontSize: bodyFS,
-                    lineHeight: bodyLH,
                   }}
-                  {...(!isMobile ? { numberOfLines: 3 } : {})}
                 >
-                  We use cookies to improve your experience, analyze site traffic, and personalize content.
-                  By continuing to browse, you agree to our use of cookies.
-
+                  We use cookies to improve your experience, analyze site traffic,
+                  and personalize content. By continuing to browse, you agree to
+                  our use of cookies.
                 </Text>
 
                 <View style={styles.linksRow}>
                   <Text
                     variant="bodyMedium"
-                    style={[styles.linkText, Platform.OS === "web" ? { cursor: "pointer" } : null, { color: secondary }]}
+                    style={[
+                      styles.linkText,
+                      Platform.OS === "web" ? { cursor: "pointer" } : null,
+                      { color: theme.colors.secondary },
+                    ]}
                     onPress={() => {
-                      if (Platform.OS === "web" && hasWindow()) window.open("/terms", "_blank");
+                      if (Platform.OS === "web" && hasWindow())
+                        window.open("/terms", "_blank");
                     }}
                     accessibilityRole="link"
                   >
@@ -183,15 +215,24 @@ export default function CookiesModal() {
                   </Text>
                   <Text
                     variant="bodyMedium"
-                    style={{ color: theme.colors.onSurfaceVariant, opacity: 0.7, marginHorizontal: 4 }}
+                    style={{
+                      color: theme.colors.onSurfaceVariant,
+                      opacity: 0.7,
+                      marginHorizontal: 4,
+                    }}
                   >
                     and
                   </Text>
                   <Text
                     variant="bodyMedium"
-                    style={[styles.linkText, Platform.OS === "web" ? { cursor: "pointer" } : null, { color: secondary }]}
+                    style={[
+                      styles.linkText,
+                      Platform.OS === "web" ? { cursor: "pointer" } : null,
+                      { color: theme.colors.secondary },
+                    ]}
                     onPress={() => {
-                      if (Platform.OS === "web" && hasWindow()) window.open("/privacy", "_blank");
+                      if (Platform.OS === "web" && hasWindow())
+                        window.open("/privacy", "_blank");
                     }}
                     accessibilityRole="link"
                   >
@@ -215,27 +256,18 @@ export default function CookiesModal() {
                 ]}
               >
                 <Button
+                  variant="secondary"
                   mode="outlined"
+                  size="small"
                   onPress={openManage}
-                  style={[styles.btn, { minWidth: btnMinWidth, borderRadius: btnRadius }]}
-                  contentStyle={[
-                    styles.btnContent,
-                    { height: btnHeight, paddingHorizontal: isMobile ? 6 : 0 },
-                  ]}
-                  labelStyle={[styles.btnLabel, { color: "#fff" }]}
                 >
                   Manage
                 </Button>
                 <Button
+                  variant="secondary"
                   mode="contained"
+                  size="small"
                   onPress={acceptAll}
-                  buttonColor={secondary}
-                  style={[styles.btn, { minWidth: btnMinWidth, borderRadius: btnRadius }]}
-                  contentStyle={[
-                    styles.btnContent,
-                    { height: btnHeight, paddingHorizontal: isMobile ? 6 : 0 },
-                  ]}
-                  labelStyle={styles.btnLabel}
                 >
                   Accept All
                 </Button>
@@ -250,13 +282,20 @@ export default function CookiesModal() {
         <Modal
           visible={prefsVisible}
           onDismiss={closeManage}
-          contentContainerStyle={[styles.modal, { backgroundColor: theme.colors.surface }]}
+          contentContainerStyle={[
+            styles.modal,
+            { backgroundColor: theme.colors.surface },
+          ]}
         >
           <Text variant="titleLarge" style={{ marginBottom: 8 }}>
             Cookie Preferences
           </Text>
-          <Text variant="bodyMedium" style={{ marginBottom: 16, color: theme.colors.onSurfaceVariant }}>
-            Select which cookies you want to allow. You can change these settings at any time.
+          <Text
+            variant="bodyMedium"
+            style={{ marginBottom: 16, color: theme.colors.onSurfaceVariant }}
+          >
+            Select which cookies you want to allow. You can change these settings
+            at any time.
           </Text>
 
           <PrefRow
@@ -330,10 +369,16 @@ function PrefRow({
     >
       <View style={styles.prefRow}>
         <View style={{ flex: 1 }}>
-          <Text variant="titleMedium" style={{ color: theme.colors.onSurface, opacity: disabled ? 0.5 : 1 }}>
+          <Text
+            variant="titleMedium"
+            style={{ color: theme.colors.onSurface, opacity: disabled ? 0.5 : 1 }}
+          >
             {title}
           </Text>
-          <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+          <Text
+            variant="bodyMedium"
+            style={{ color: theme.colors.onSurfaceVariant }}
+          >
             {description}
           </Text>
         </View>
@@ -349,13 +394,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    height: BANNER_H,
     paddingHorizontal: PAD_H,
     paddingVertical: PAD_V,
     borderTopWidth: StyleSheet.hairlineWidth,
     zIndex: 9999,
     elevation: 40,
-    pointerEvents: "box-none",    
+    pointerEvents: "box-none",
   },
   frame: {
     alignSelf: "center",
@@ -372,16 +416,11 @@ const styles = StyleSheet.create({
     textDecorationLine: "none",
     paddingHorizontal: 0,
   },
-
   actions: {
     flexDirection: "row",
     alignItems: "center",
     flexWrap: "wrap",
   },
-  btn: { borderRadius: 10 },
-  btnContent: { height: 24, paddingHorizontal: 0 },
-  btnLabel: { textTransform: "none", fontSize: 12 },
-
   modal: {
     marginHorizontal: 16,
     borderRadius: 16,
