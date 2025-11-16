@@ -2,11 +2,10 @@ import React, { memo, useMemo, useState } from "react";
 import { View, Pressable, Image } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { router } from "expo-router";
-import { SvgIcon, SvgIconButton } from "@components/base/SvgIcon";
+import { SvgIconButton } from "@components/base/SvgIcon";
 import { ChipDisplay } from '@components/ui/Chip';
 import { RoundIconLink } from "@components/premarket/RoundIcons";
 import { getTimeLeftLabel, convertDecimalToToken, convertLamportToSmallCount, formatNumberCompact, convertTimeStampToDataMonth } from "@utils/premarket";
-import shortString from "@utils/address_shorter";
 import { TokenMainInfo, TokenDynamicInfo } from "@api/token";
 import { AvatarGroup } from "@components/base/AvatarGroup";
 import Svg, { Path } from 'react-native-svg';
@@ -211,18 +210,6 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
           }}
         >
           {button(getEffectiveState())}
-          {mainInfo.state === 'finished' && (
-            <Text variant="labelLarge">
-              {mainInfo.tokenMint ? shortString(mainInfo.tokenMint) : "No token address available!"} 
-            </Text>
-          )}
-          {mainInfo.state === 'finished' && (
-            <SvgIcon 
-              name="copy-icon" 
-              size={14} 
-              color={colors.onSurfaceVariant} 
-            />
-          )}
           {deadlineText && (
             <Text variant="labelLarge" style={{ color: colors.secondary }}>
               {deadlineText}
