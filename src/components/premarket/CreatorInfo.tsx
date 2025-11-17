@@ -143,6 +143,24 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
     if (!date) {
       return;
     }
+
+    // Validate date is not more than 1 week from now
+    const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    const selectedTime = date.getTime();
+
+    // Check if date is in the past
+    if (selectedTime < now) {
+      notify.error("Deadline must be in the future");
+      return;
+    }
+
+    // Check if date is more than 1 week away
+    if (selectedTime > now + ONE_WEEK_MS) {
+      notify.error("Premarket deadline is longer than one week from now");
+      return;
+    }
+
     setShowDatePicker(false);
     setSelectedDate(date);
     setShowTimePicker(true);
@@ -161,7 +179,6 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
     finalDate.setMinutes(time.minute);
     finalDate.setSeconds(0);
 
-    const SECONDS_IN_HOUR = 60 * 60;
     const ONE_HOUR_MS = 60 * 60 * 1000;
     const now = Date.now();
     const selectedTime = finalDate.getTime();
