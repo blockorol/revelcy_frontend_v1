@@ -172,27 +172,24 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
             }}
           >
             {mainInfo?.links?.twitter !== undefined && (
-              <RoundIconLink
+              <SvgIcon
                 name="x-logo"
-                colors={colors}
-                link={mainInfo.links.twitter}
-                withoutBackgroud={true}
+                size={20}
+                color={colors.onSurface}
               />
             )}
             {mainInfo?.links?.webSite !== undefined && (
-              <RoundIconLink
+              <SvgIcon
                 name="world-outlined"
-                colors={colors}
-                link={mainInfo.links.webSite}
-                withoutBackgroud={true}
+                size={20}
+                color={colors.onSurface}
               />
             )}
             {mainInfo?.links?.telegram !== undefined && (
-              <RoundIconLink
+              <SvgIcon
                 name="tg-logo"
-                colors={colors}
-                link={mainInfo.links.telegram}
-                withoutBackgroud={true}
+                size={20}
+                color={colors.onSurface}
               />
             )}
           </View>
