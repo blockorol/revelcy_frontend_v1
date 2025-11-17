@@ -4,7 +4,6 @@ import { SvgIcon } from "@components/base/SvgIcon";
 import { BN } from "@coral-xyz/anchor";
 import { joinToPremarket } from "@services/blockchain/premarket/joinPremarket";
 import { UserInfo } from "@providers/AuthContext";
-import shortString from "@utils/address_shorter";
 import { useAnchorWalletSafe } from '@storage/wallet-adapter/useWallet.web';
 import { convertDecimalToToken } from "@utils/premarket";
 
@@ -22,21 +21,20 @@ import {
   Text,
   useTheme,
   ActivityIndicator,
-  Portal,
 } from "react-native-paper";
 import {Button} from "@components/ui/Button"
 import { useWallet } from "@storage/wallet-adapter";
 import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
-import { useNotification } from "@storage/NotificationContext";
+import { useNotification } from "@providers/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider"; // <-- новый импорт
 import { ShareTextButton } from "@components/base/ButtonShare";
 import React from "react";
 import { MobileBottomSheet } from "@components/ui/MobileBottomSheet";
-import LoginFlow from "@components/login/LoginFlow";
 import { LoginModal } from "@components/login/LoginButton";
-import OneScreenContainer from "@components/base/container/OneScreenContainer";
-
+import { convertNumberWithRaw } from "@utils/setterWithValidate";
+const SUFFIX = " SOL"
+const DEFAULT_VALUE = 0.5
 interface PremarketJoinProps {
   tokenDynamicInfo: TokenDynamicInfo;
   tokenMainInfo: TokenMainInfo;
@@ -53,8 +51,6 @@ export function PremarketJoin({ isMobile, ...props }:PremarketJoinProps) {
 
   return (
     <View style={{ flex: 1, width: '100%'}}>
-      <Portal.Host>
-
         <View style={{
           flexDirection: "row",
           justifyContent: "center",
@@ -71,10 +67,10 @@ export function PremarketJoin({ isMobile, ...props }:PremarketJoinProps) {
             visible={visible}
             onDismiss={() => setVisible(false)}
           >
-          <PremarketJoinBase {...props} isMobile={true} />
-        </MobileBottomSheet>
-      
-        </Portal.Host>
+            <View style={{paddingHorizontal: 16}}>
+              <PremarketJoinBase {...props} isMobile={true} />
+            </View>
+          </MobileBottomSheet>
     </View>
   );
 }
@@ -96,9 +92,22 @@ function PremarketJoinBase({
   const { open, replace, close } = useOverlay();
   const [loginModalVisible, setLoginModalVisible] = React.useState(false);
 
-  const [rawInput, setRawInput] = useState("");
-  const [amountSol, setAmountSol] = useState<number | undefined>(undefined);
-  const [amountToken, setAmountToken] = useState<BN | undefined>(undefined);
+  const [rawInput, setRawInput] = useState<string|undefined>(undefined);
+  const [errorBalance, setErrorBalance] = useState<string|undefined>(undefined);
+  
+  const [amountSol, setAmountSol] = useState<number>(DEFAULT_VALUE);
+    const [selection, setSelection] = React.useState<{
+      start: number;
+      end: number|undefined;
+    }>({ start: 0, end: 0 });
+  
+  const defaultTokenCount = convertSolanaToTokenBuy({
+          sol_amount: convertSmallCountToLamport(DEFAULT_VALUE),
+          reserves_sol: tokenDynamicInfo.reservedSolLamp,
+          reserves_token: tokenDynamicInfo.reservedTokenLamp,
+        })
+  const [amountToken, setAmountToken] = useState<BN>(defaultTokenCount);
+
   const [walletInfo, setWalletInfo] = useState<WalletInfoResponseDto | null>(null); // todo: change to internal struct
   const [walletInfoLoading, setWalletInfoLoading] = useState(false);
 
@@ -130,24 +139,29 @@ function PremarketJoinBase({
       <ActivityIndicator animating color={theme.colors.primary} size="large" />
     </View>
   );
+  const handleSelectionChange = (e: any) => {
+    const { start, end } = e.nativeEvent.selection;
+    if (!rawInput) {
+      return {start: 0}
+    }
+    const limit = rawInput.length - SUFFIX.length;
+    const clampedStart = Math.min(start, limit);
+    const clampedEnd = Math.min(end, limit);
+    if (clampedStart !== start || clampedEnd !== end) {
+      setSelection({ start: clampedStart, end: clampedEnd });
+    } else {
+      setSelection(e.nativeEvent.selection);
+    }
+  }
 
   const handleInputChange = (text: string) => {
-    let sanitized = text.replace(",", ".");
+    const setValue = (val: number | undefined) => {
+      if (val === undefined) {
+        setAmountSol(DEFAULT_VALUE)
+        setAmountToken(defaultTokenCount)
+        return
+      }
 
-    const parts = sanitized.split(".");
-    if (parts.length > 2) {
-      sanitized = parts[0] + "." + parts.slice(1).join("").replace(/\./g, "");
-    }
-
-    sanitized = sanitized.replace(/[^0-9.]/g, "");
-    sanitized = sanitized.replace(/^0+(?=\d)/, "");
-    if (sanitized === "" || sanitized === ".") sanitized = "";
-
-    setRawInput(sanitized);
-
-
-    const val = parseFloat(sanitized);
-    if (!isNaN(val)) {
       setAmountSol(val);
       setAmountToken(
         convertSolanaToTokenBuy({
@@ -156,10 +170,13 @@ function PremarketJoinBase({
           reserves_token: tokenDynamicInfo.reservedTokenLamp,
         })
       );
-    } else {
-      setAmountSol(undefined);
-      setAmountToken(undefined);
     }
+    convertNumberWithRaw(
+      text, 
+      setRawInput,
+      setValue,
+      SUFFIX
+    )
   };
 
   const handleJoin = async () => {
@@ -230,16 +247,33 @@ function PremarketJoinBase({
     }
   };
 
+  useEffect(() => {
+    if (!walletInfo) {
+      setErrorBalance(undefined)
+      return
+    }
+    if (walletInfo.balance < amountSol) {
+      setErrorBalance("Not enough SOL in this wallet")
+      return
+    }
+    
+    setErrorBalance(undefined)
+
+  }, [walletInfo, amountSol])
+
   return (
     <View style={{ alignItems: "center", justifyContent: "center", gap: 24, paddingBottom: 16 }}>
       <View style={{ alignItems: "center", justifyContent: "center", gap: 16 }}>
         <TextInput
+          autoFocus
           maxLength={10}
           mode="flat"
-          placeholder="0.1 SOL"
+          placeholder="0.5 SOL"
           keyboardType="decimal-pad"
-          value={rawInput}
+          value={rawInput??""}
           onChangeText={handleInputChange}
+          onSelectionChange={handleSelectionChange}
+          selection={selection}
           style={{
             backgroundColor: "transparent",
             alignSelf: "center",
@@ -256,13 +290,11 @@ function PremarketJoinBase({
           underlineColor="transparent"
           activeUnderlineColor="transparent"
         />
-        <HelperText type="info">
-          ~
-          {amountToken
-            ? formatNumberCompact(convertDecimalToToken(amountToken))
-            : 0}{" "}
-          {tokenMainInfo.symbol}
-        </HelperText>
+        
+        {errorBalance !== undefined? 
+          (<HelperText type="error">{errorBalance}</HelperText>) :
+          (<HelperText type="info">~{formatNumberCompact(convertDecimalToToken(amountToken))}{" "}{tokenMainInfo.symbol}</HelperText>)
+        } 
         {user && (
           <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
             <SvgIcon name="wallet-outlined" color={theme.colors.onBackground} />

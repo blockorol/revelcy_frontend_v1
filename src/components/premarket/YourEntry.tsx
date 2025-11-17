@@ -5,7 +5,7 @@ import { useAuth } from "@providers/AuthContext";
 import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
 import { useWallet } from "@storage/wallet-adapter";
-import { useNotification } from "@storage/NotificationContext";
+import { useNotification } from "@providers/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import { useAnchorWalletSafe } from "@storage/wallet-adapter/useWallet.web";
 import { outOfPremarket } from "@services/blockchain/premarket/outOfPremarket";

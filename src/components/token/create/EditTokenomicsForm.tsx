@@ -41,9 +41,9 @@ export default function EditTokenomicsForm({
   >(
     presetData?.creatorInitialBuy
       ? (() => {
-          const valueStr = presetData.creatorInitialBuy.toString();
-          return valueStr.endsWith(SUFFIX) ? valueStr : valueStr + SUFFIX;
-        })()
+        const valueStr = presetData.creatorInitialBuy.toString();
+        return valueStr.endsWith(SUFFIX) ? valueStr : valueStr + SUFFIX;
+      })()
       : undefined
   );
   const [errorCreatorInitialBuy, setErrorCreatorInitialBuy] = useState<
@@ -81,9 +81,9 @@ export default function EditTokenomicsForm({
   >(
     presetData?.treasuryAllocationPercent
       ? (() => {
-          const valueStr = presetData.treasuryAllocationPercent.toString();
-          return valueStr.endsWith(SUFFIX) ? valueStr : valueStr + SUFFIX;
-        })()
+        const valueStr = presetData.treasuryAllocationPercent.toString();
+        return valueStr.endsWith(SUFFIX) ? valueStr : valueStr + SUFFIX;
+      })()
       : undefined
   );
   const [errorTreasuryAllocation, setErrorTreasuryAllocation] = useState<
@@ -124,27 +124,11 @@ export default function EditTokenomicsForm({
   }>({ start: 0, end: 0 });
 
   const handleCreatorInitialBuyChangeWithSuffix = (text: string) => {
-    let raw = text.endsWith(SUFFIX) ? text.slice(0, -SUFFIX.length) : text;
-
-    raw = raw
-      .replace(/\s+/g, "") 
-      .replace(",", ".")
-      .replace(/[^0-9.]/g, "");
-
-    console.log("raw", raw)
-    const firstDot = raw.indexOf(".");
-    if (firstDot !== -1)
-      raw =
-        raw.slice(0, firstDot + 1) + raw.slice(firstDot + 1).replace(/\./g, "");
-
-    raw = raw.replace(/^0+(?=\d)/, "");
-
-    if (raw === "" || raw === ".") raw = "";
-
     const value = convertNumberWithRaw(
-      raw,
+      text,
       setCreatorInitialBuyRawStr,
-      setCreatorInitialBuy
+      setCreatorInitialBuy, 
+      SUFFIX
     );
     if (!value) {
       setErrorCreatorInitialBuy(null);
@@ -161,6 +145,7 @@ export default function EditTokenomicsForm({
     setErrorCreatorInitialBuy(null);
     setPercent(round(newPercent, 1));
   };
+
   const handleSelectionChange = (e: any) => {
     const { start, end } = e.nativeEvent.selection;
     const limit = (creatorInitialBuyRawStr ?? "").length; // позиция перед суффиксом
@@ -251,8 +236,8 @@ export default function EditTokenomicsForm({
       style={{
         backgroundColor: colors.surfaceContainerLowest,
         borderRadius: isMobile ? 0 : 16,
-        height: height,
       }}
+      contentContainerStyle={{ flexGrow: 1 }}
     >
       <View
         style={{
@@ -261,8 +246,7 @@ export default function EditTokenomicsForm({
           paddingHorizontal: isMobile ? 8 : 16,
           paddingVertical: isMobile ? 40 : 24,
           //maxWidth: 500,
-          minHeight: isMobile ? height : height * 0.9,
-          justifyContent: "space-between",
+          flex: 1,
         }}
       >
         <View style={{ flex: 1 }}>
@@ -282,7 +266,7 @@ export default function EditTokenomicsForm({
               alwaysLabelOnTop
               label="Creator Allocation Up to 79.6 SOL"
               maxLength={11}
-              value={displayValue}
+              value={creatorInitialBuyRawStr??""}
               onChangeText={handleCreatorInitialBuyChangeWithSuffix}
               onSelectionChange={handleSelectionChange}
               selection={selection}
@@ -420,17 +404,18 @@ export default function EditTokenomicsForm({
             </View>
           </View>
         </View>
-
-        <ContinueButtonWithProgressBar
-          theme={theme}
-          progress={{
-            before: (step - 1) / totalSteps,
-            after: step / totalSteps,
-          }}
-          handleSubmit={handleSubmit}
-          isFilledAll={isFilledAll}
-          onBack={onBack}
-        />
+        <View style={{ marginTop: 16, paddingBottom: isMobile ? 8 : 16 }}>
+          <ContinueButtonWithProgressBar
+            theme={theme}
+            progress={{
+              before: (step - 1) / totalSteps,
+              after: step / totalSteps,
+            }}
+            handleSubmit={handleSubmit}
+            isFilledAll={isFilledAll}
+            onBack={onBack}
+          />
+        </View>
       </View>
     </ScrollView>
   );

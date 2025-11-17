@@ -153,7 +153,7 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
               <View style={[styles.pingDot, { backgroundColor: colors.primary }]} />
             </View>
             <TextProminent variant="labelMedium" style={{ color: colors.onSurface }}>
-              Now <Text style={{ color: colors.onSurfaceVariant }}>Time left</Text>
+              Now  <Text style={{ color: colors.onSurfaceVariant }}>Time left</Text>
             </TextProminent>
           </View>
         }

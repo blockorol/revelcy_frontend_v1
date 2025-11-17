@@ -1,10 +1,10 @@
 // components/LoginPopup.tsx
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet} from 'react-native';
-import { useTheme, IconButton, Text, Button } from 'react-native-paper';
+import { StyleSheet, useWindowDimensions} from 'react-native';
+import { useTheme, Text } from 'react-native-paper';
 import ImageBackgroundOverlay, { Paddings } from '@components/base/container/ImageBackgroundOverlay';
 import LoginFirstArea from '@components/login/LoginFirstArea';
-import {useIsMobileWithDemention} from '@hooks/useIsMobile';
+import useIsMobile from '@hooks/useIsMobile';
 import WalletConnectionChecker from '@components/login/WalletConnectionCheckerArea';
 import UserAvatar from '@components/login/UserAvatar';
 import { useAuth } from '@providers/AuthContext';
@@ -39,7 +39,8 @@ const DEF_PADDINGS: Paddings = {
 
 export default function LoginFlow({loginFlowStateOverride, onCloseButton}:LoginFlowProps) {
   const colors  = useTheme().colors as ExtendedMD3Colors;
-  const {isMobile, width, height} = useIsMobileWithDemention();
+  const isMobile = useIsMobile();
+  const {height, width} = useWindowDimensions();
   const { login } = useAuth();
   const jwtCurrentRef = useRef("");
   const moveBetweenStateRef = useRef(false);

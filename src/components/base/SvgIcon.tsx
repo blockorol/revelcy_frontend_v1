@@ -26,6 +26,7 @@ import NotificationOutlined from "@assets/basic_icon/notification-outlined.svg";
 import Mail from "@assets/basic_icon/mail.svg";
 import Menu from "@assets/basic_icon/menu.svg";
 import Percent from "@assets/basic_icon/percent.svg";
+import PriceUp from "@assets/basic_icon/price_up.svg";
 import Pumpfun from "@assets/basic_icon/pumpfun.svg";
 import Privy from "@assets/basic_icon/privy.svg";
 import PlantOutlined from "@assets/basic_icon/plant-outlined.svg";
@@ -36,9 +37,13 @@ import RevelcyLogo from "@assets/basic_icon/revelcy-logo.svg";
 import RevelcyR from "@assets/basic_icon/revelcy-r.svg";
 import RobotOutlined from "@assets/basic_icon/robot-outlined.svg";
 import Rocket from "@assets/basic_icon/Rocket.svg";
+import RocketSide from "@assets/basic_icon/rocket_side.svg";
+import OneCoin from "@assets/basic_icon/one_coin.svg";
+import TwoCoins from "@assets/basic_icon/two_coins.svg";
 import RingingClock from "@assets/basic_icon/ringig_clock.svg";
 import Send from "@assets/basic_icon/send.svg";
 import Search from "@assets/basic_icon/search.svg";
+import SortArrows from "@assets/basic_icon/sort_arrows.svg";
 import SmileOutlined from "@assets/basic_icon/smile-outlined.svg";
 import SmileSadOutlined from "@assets/basic_icon/smile-sad-outlined.svg";
 import Smile from "@assets/basic_icon/smile.svg";
@@ -55,8 +60,10 @@ import {
   GestureResponderEvent,
   ViewStyle,
   View,
+  Platform,
 } from "react-native";
-import { Text } from "react-native-paper";
+import { Text, Tooltip, useTheme } from "react-native-paper";
+import { makeTransparent } from "@utils/colors";
 
 export const icons = {
   "add-circle-outlined": AddCircleOutlined,
@@ -84,6 +91,7 @@ export const icons = {
   mail: Mail,
   menu: Menu,
   percent: Percent,
+  "price-up": PriceUp,
   pumpfun: Pumpfun,
   "plant-outlined": PlantOutlined,
   plus: Plus,
@@ -92,11 +100,15 @@ export const icons = {
   "revelcy-r": RevelcyR,
   "robot-outlined": RobotOutlined,
   rocket: Rocket,
+  "rocket-side": RocketSide,
+  "one-coin": OneCoin,
+  "two-coins": TwoCoins,
   "ringing-clock": RingingClock,
   send: Send,
   "question-mark-circle": QuestionMarkCircle,
   "question-mark": QuestionMark,
   search: Search,
+  "sort-arrows": SortArrows,
   "smile-outlined": SmileOutlined,
   "smile-sad-outlined": SmileSadOutlined,
   smile: Smile,
@@ -162,6 +174,7 @@ export const SvgIcon: React.FC<SvgIconProps> = ({
 export interface SvgIconButtonProps extends SvgIconProps {
   onPress: (event: GestureResponderEvent) => void;
   containerStyle?: ViewStyle;
+  tooltipText?: string;
 }
 
 export const SvgIconButton: React.FC<SvgIconButtonProps> = ({
@@ -173,9 +186,10 @@ export const SvgIconButton: React.FC<SvgIconButtonProps> = ({
   elementRef,
   onPress,
   containerStyle,
+  tooltipText
 }) => {
-  return (
-    <TouchableOpacity
+  const theme = useTheme();
+  const button = ( <TouchableOpacity
       onPress={onPress}
       style={{ alignSelf: "flex-start", alignItems: "center" }}
       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -216,6 +230,28 @@ export const SvgIconButton: React.FC<SvgIconButtonProps> = ({
           {textUnder}
         </Text>
       )}
-    </TouchableOpacity>
-  );
+    </TouchableOpacity>)
+    return button
+  //   if (!tooltipText) {
+  //     return button
+  //   }
+
+  // return (
+  //   <Tooltip
+  //     title={tooltipText}
+  //     leaveTouchDelay={5}
+  //     theme={{
+  //       ...theme,
+  //       roundness: 12,
+  //       colors: {
+  //         ...theme.colors,
+  //         surface: makeTransparent(theme.colors.primary, 0.4),
+  //         onSurface: makeTransparent(theme.colors.onPrimary, 0.2),
+  //       },
+  //     }}
+
+  //   >
+  //       {button}
+  //   </Tooltip>
+  // );
 };
