@@ -12,7 +12,7 @@ import type { AppTheme } from "@theme/types";
 import useIsMobile from "@hooks/useIsMobile";
 import { Button } from "@components/ui/Button";
 import { Text } from "@components/ui/Text";
-import { useNotification } from "@storage/NotificationContext";
+import { useNotification } from "@providers/NotificationContext";
 
 /** компактный баннер */
 const BANNER_H = 120;
