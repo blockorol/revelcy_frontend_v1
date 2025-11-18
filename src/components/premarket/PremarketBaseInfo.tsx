@@ -180,12 +180,14 @@ export function PremarketBaseInfo({ tokenMainInfo, tokenDynamicInfo, isMobile}: 
           </Text>
         )}
         {(tokenMainInfo.state === 'premarket' || tokenMainInfo.state === 'canceled') && (
-          <SvgIconButton 
-            name="question-mark-circle" 
-            size={24} 
-            color={theme.colors.outline}
-            onPress={() => setShowQuestionModal(true)}
-          />
+          <View style={{ justifyContent: "center", alignItems: "center" }}>
+            <SvgIconButton 
+              name="question-mark-circle" 
+              size={24} 
+              color={theme.colors.outline}
+              onPress={() => setShowQuestionModal(true)}
+            />
+          </View>
         )}
       </View>
       

@@ -40,7 +40,7 @@ import { getSolanaConnection } from "@services/blockchain/solana";
 import { useNotification } from "@providers/NotificationContext";
 import { BN } from "@coral-xyz/anchor";
 
-import { usePremarketDraft } from "@hooks/usePremarketDraft"; // 👈 новый хук
+import { usePremarketDraft } from "@hooks/usePremarketDraft";
 import { PublicKey } from "@solana/web3.js";
 
 enum FLOW_STEP {
@@ -192,6 +192,7 @@ export default function PremarketCreationFlow() {
   };
 
   const handleLaunch = async () => {
+    try {
     setLaunchState("Started launch process");
     await patch({ step: FLOW_STEP.OVERVIEW });
 
@@ -286,7 +287,7 @@ export default function PremarketCreationFlow() {
       uri: ipfsData.metadataUri,
       deadline: tokenData.premarketSettingsData.deadline_sec,
       goal_sol_lamp: tokenData.premarketSettingsData.goal_sol_lamp,
-      max_sol_lamp: new BN(85_000_000_000), //TODO: get max lamports from backend
+      max_sol_lamp: new BN(85_000_000_000),
       creator_allocate_lamp: convertSmallCountToLamport(
         tokenData.tokenomicsData.creatorInitialBuy
       ),
@@ -453,7 +454,9 @@ export default function PremarketCreationFlow() {
         suggest: "Please, wait and try again",
       });
     }
+  } finally {
     setLaunchState(undefined);
+  }
   };
 
   const handleIsFinished = async (): Promise<boolean> => {

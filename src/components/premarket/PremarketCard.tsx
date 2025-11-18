@@ -1,15 +1,14 @@
-import React, { memo, useMemo, useState } from "react";
+import React, { memo, useMemo } from "react";
 import { View, Pressable, Image } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { router } from "expo-router";
-import { SvgIconButton } from "@components/base/SvgIcon";
+import { SvgIcon } from "@components/base/SvgIcon";
 import { ChipDisplay } from '@components/ui/Chip';
 import { RoundIconLink } from "@components/premarket/RoundIcons";
 import { getTimeLeftLabel, convertDecimalToToken, convertLamportToSmallCount, formatNumberCompact, convertTimeStampToDataMonth } from "@utils/premarket";
 import { TokenMainInfo, TokenDynamicInfo } from "@api/token";
 import { AvatarGroup } from "@components/base/AvatarGroup";
 import Svg, { Path } from 'react-native-svg';
-import { QuestionMarkModal } from "@components/modals/QuestionMarkModal";
 import { ExtendedMD3Colors } from "@theme/types";
 
 type PremarketCardProps = {
@@ -22,7 +21,6 @@ type PremarketCardProps = {
 export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dynamicInfo, raisedLamports, compact = true }) => {
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
-  const [showQuestionModal, setShowQuestionModal] = useState(false);
 
   const goalSOL = useMemo(() => {
     const lamp = mainInfo.premarketGoalSolLamp.toString();
@@ -215,14 +213,6 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
               {deadlineText}
             </Text>
           )}
-          {(mainInfo.state === 'premarket' || mainInfo.state === 'canceled') && (
-            <SvgIconButton 
-              name="question-mark-circle" 
-              size={24} 
-              color={colors.outline}
-              onPress={() => setShowQuestionModal(true)}
-            />
-          )}
         </View>
 
         {/* Dynamic Info Section */}
@@ -264,30 +254,20 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
                   }}
                 >
                   {dynamicInfo.change24h >= 0 ? (
-                    <View style={{ marginRight: 2 }}>
-                      <Svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 16 16"
-                      >
-                        <Path 
-                          d="M14 10.44l-.413.56H2.393L2 10.46 7.627 5h.827L14 10.44z" 
-                          fill={colors.primary}
-                        />
-                      </Svg>
+                    <View style={{ marginRight: 2}}>
+                      <SvgIcon 
+                        name="price-up" 
+                        size={5} 
+                        color={theme.colors.primary}
+                      />
                     </View>
                   ) : dynamicInfo.change24h < 0 ? (
-                    <View style={{ marginRight: 2 }}>
-                      <Svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 16 16"
-                      >
-                        <Path 
-                          d="M2 5.56L2.413 5h11.194l.393.54L8.373 11h-.827L2 5.56z" 
-                          fill={colors.error}
-                        />
-                      </Svg>
+                    <View style={{ marginRight: 2, transform: [{ rotate: '180deg' }] }}>
+                      <SvgIcon 
+                        name="price-up" 
+                        size={5} 
+                        color={theme.colors.error}
+                      />
                     </View>
                   ) : null}
                   {dynamicInfo.change24h.toFixed(2)}%{" "}
@@ -397,10 +377,6 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
         )}
       </View>
       
-      <QuestionMarkModal 
-        visible={showQuestionModal} 
-        onClose={() => setShowQuestionModal(false)} 
-      />
     </Pressable>
   );
 });
