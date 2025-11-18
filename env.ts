@@ -45,9 +45,9 @@ export const PINATA_SECRET_KEY = getRequired(
   "PINATA_SECRET_KEY",
   ENV.PINATA_SECRET_KEY
 );
-export const API_HOST = getRequired("HOST_BACKEND", ENV.HOST_BACKEND);
+export const API_HOST = "https://dev-revelcybackendapi-devnet.up.railway.app"
 export const HELIUS_KEY = getRequired("HELIUS_KEY", ENV.HELIUS_KEY);
-export const NETWORK = ENV.NETWORK;
+export const NETWORK = ENV.NETWORK??'devnet';
 
 // ---- Helpers ----
 

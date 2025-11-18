@@ -1,5 +1,6 @@
 import { BN } from "@coral-xyz/anchor";
-import { convertSolanaToTokenBuy, DEFAULT_TOKEN_COUNT, DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/bonding_curve_convertor";
+import { convertSolanaToTokenBuy, DEFAULT_TOKEN_COUNT } from "@services/pumpfun/deprecated";
+import { getTotalSuply } from "@services/pumpfun/pumpGlobalCache";
 
 export const LAMPORT_MULTIPLIER=1_000_000_000;
 export const LAMPORT_MULTIPLIER_BIG_INT=new BN(LAMPORT_MULTIPLIER);
@@ -7,11 +8,12 @@ export const LAMPORT_MULTIPLIER_BIG_INT=new BN(LAMPORT_MULTIPLIER);
 
 
 export function getPersentOfPremartet(per: number): BN {
-  return DEFAULT_TOKEN_COUNT_DECIMAL.muln(per).divn(100)
+  return getTotalSuply().muln(per).divn(100)
 }
+
 export function convertTokenToDecimal(value: number | BN): BN {
   if (BN.isBN(value)) {
-    return DEFAULT_TOKEN_COUNT_DECIMAL.mul(value);
+    return getTotalSuply().mul(value);
   }
 
   const parts = value.toFixed(6).split(".");
@@ -27,7 +29,6 @@ export function convertDecimalToToken(value: BN): number {
   const fraction = decimalStr.slice(-6).padStart(6, '0');
 
   return parseFloat(`${whole}.${fraction}`);
-
 }
 
 export function convertLamportToSmallCount(lamportAmount: BN): number {
@@ -54,17 +55,6 @@ export function convertCountToLamport(n: number): BN {
 
   const combined = `${whole}${decimal}`; // "123456000000"
   return new BN(combined);
-}
-
-export function convertSolToPercentOnStart(sol: number): number {
-  const solLamp = convertCountToLamport(sol)
-  const tokenDec = convertSolanaToTokenBuy({
-    sol_amount: solLamp,
-    reserves_sol: new BN(0),
-    reserves_token: DEFAULT_TOKEN_COUNT_DECIMAL
-  })
-  return (convertDecimalToToken(tokenDec)/DEFAULT_TOKEN_COUNT)*100
-
 }
 
 

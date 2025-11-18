@@ -5,7 +5,8 @@ import { PremarketState, convertTokenToDecimal } from "@utils/premarket";
 import { toDecString } from "@api/tx_premarket";
 import { http } from "@api/http";
 import shortString from "@utils/address_shorter";
-import { convertSolanaToTokenBuy, DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/bonding_curve_convertor";
+import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
+import { getTotalSuply } from "@services/pumpfun/pumpGlobalCache";
 
 const RETRY_DEFAULT = 6;
 
@@ -258,23 +259,25 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
 
   // Debug current price values
   const currentPriceValue = raw.current_price_lamp ?? raw.current_price ?? raw.currentPriceLamp ?? raw.currentPrice ?? 0;
-  console.log("currentPriceValue from API:", currentPriceValue);
-  console.log("current_price_lamp:", raw.current_price_lamp);
-  console.log("current_price:", raw.current_price);
-  console.log("currentPriceLamp:", raw.currentPriceLamp);
-  console.log("currentPrice:", raw.currentPrice);
+  console.log("currentPriceValue from API", {
+    currentPriceValue:currentPriceValue, 
+    current_price_lamp: raw.current_price_lamp,
+    current_price: raw.current_price, 
+    currentPriceLamp: raw.currentPriceLamp,
+    currentPrice: raw.currentPrice
+  })
   
   const reservedSolLamp = new BN(raw.reserved_sol_lamp);
-  console.log("reservedSolLamp:", reservedSolLamp);
-  const tokenMarketCapFromCurve = convertSolanaToTokenBuy({
-    sol_amount: reservedSolLamp,
-    reserves_sol: new BN(0),
-    reserves_token: DEFAULT_TOKEN_COUNT_DECIMAL
+  const tokenMarketCapFromCurve = convertSolanaToTokenWithFee({
+    input_sol_lamp: reservedSolLamp,
   });
   
-  console.log("tokenMarketCapFromCurve:", tokenMarketCapFromCurve);
+  console.log("tokenMarketCapFromCurve:", {
+    reservedSolLamp: reservedSolLamp.toString(),
+    tokenMarketCapFromCurve: tokenMarketCapFromCurve.toString(),
+});
   
-  const reservedToken = DEFAULT_TOKEN_COUNT_DECIMAL.sub(tokenMarketCapFromCurve);
+  const reservedToken = getTotalSuply().sub(tokenMarketCapFromCurve);
 
   return {
     holdersCount: raw.holders_count,
@@ -285,10 +288,11 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
       const priceInSolPerToken = Number(currentPriceValue) || 0;
       const marketCapInSol = priceInSolPerToken * 1_000_000_000; // 1e9 tokens supply
       const marketCapValueDec = convertTokenToDecimal(marketCapInSol);
-      console.log("marketCapTokenDec calculation:");
-      console.log("  - priceInSolPerToken:", priceInSolPerToken);
-      console.log("  - marketCapInSol:", marketCapInSol);
-      console.log("  - marketCapValueDec:", marketCapValueDec.toString());
+      console.log("marketCapTokenDec calculation:",{
+        priceInSolPerToken: priceInSolPerToken,
+        marketCapInSol: marketCapInSol,
+        marketCapValueDec: marketCapValueDec.toString()
+      });
       return marketCapValueDec;
     })(),
     marketCapSolLamp: reservedSolLamp,

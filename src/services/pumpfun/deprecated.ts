@@ -1,5 +1,13 @@
 import BN from "bn.js"
-import {getBuySolAmountFromTokenAmount} from "@pump-fun/pump-sdk"
+
+interface Currency {
+  amount: BN;
+  zeros: number;
+  
+  getFloat(): number
+  getBN(): BN
+}
+
 
 const TOKEN_MULTIPLIER=1_000_000;
 const TOKEN_MULTIPLIER_BIG_INT=new BN(TOKEN_MULTIPLIER);
@@ -12,7 +20,7 @@ export const virtualTokenRatioDecim = new BN(1_073_000_191_000_000).sub(DEFAULT_
 
 
 // Returns count tokens (in lamport) for Sol amount
-export function convertSolanaToTokenBuy(
+export function  convertSolanaToTokenBuy(
   args: {
     sol_amount: BN,    // amount SOL (in lamport) to convert to token
     reserves_sol: BN,  // amount SOL reserved in account
@@ -21,7 +29,8 @@ export function convertSolanaToTokenBuy(
 ): BN {  
     const solToCalc = args.reserves_sol.add(virtualSupplyRatioLamp)
     const tokenToCalc = args.reserves_token.add(virtualTokenRatioDecim)
-    return tokenToCalc.mul(args.sol_amount).div(args.sol_amount.add(solToCalc))
+    const res = tokenToCalc.mul(args.sol_amount).div(args.sol_amount.add(solToCalc))
+    return res
 }
 
 export function convertTokenToSolanaBuy(

@@ -6,11 +6,9 @@ import Slider from "@react-native-assets/slider";
 import { MarkerProps } from "@react-native-community/slider";
 import {
   convertLamportToSmallCount,
-  getPersentOfPremartet,
 } from "@utils/premarket";
-import BN from "bn.js";
 import { TextProminent } from "@components/ui/Text";
-import { convertTokenToSolanaBuy, DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/bonding_curve_convertor";
+import { getPersentOfSuplyWithSol } from "@services/pumpfun/adds";
 
 interface CustomSliderProps {
   min?: number;
@@ -88,7 +86,7 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
                         variant="labelMedium"
                         style={{ color: theme.colors.onPrimary }}
                       >
-                        {value}% {solByPers(value)} SOL
+                        {value}% {convertLamportToSmallCount(getPersentOfSuplyWithSol(value).solana_lamp).toFixed(1)} SOL
                       </TextProminent>
                     </View>
 
@@ -223,14 +221,3 @@ const styles = StyleSheet.create({
     color: "#000",
   },
 });
-
-const solByPers = (val: number): string => {
-  const tokenDec = getPersentOfPremartet(val);
-  const zero = new BN(0);
-  const sol = convertTokenToSolanaBuy({
-    token_amount: tokenDec,
-    reserves_sol: zero,
-    reserves_token: DEFAULT_TOKEN_COUNT_DECIMAL,
-  });
-  return (-convertLamportToSmallCount(sol)).toFixed(1);
-};

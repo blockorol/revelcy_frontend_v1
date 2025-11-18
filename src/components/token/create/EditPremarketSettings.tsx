@@ -8,12 +8,9 @@ import { Text } from "@components/ui/Text";
 import { DateTimeEditField } from "@components/base/DateTimeEditField";
 import { CustomSlider } from "@components/base/CustomSlider";
 import BN from "bn.js";
-import {
-  getPersentOfPremartet,
-} from "@utils/premarket";
 import { useIsMobileWithDemention } from "@hooks/useIsMobile";
 import { ExtendedMD3Colors } from "@theme/types";
-import { convertTokenToSolanaBuy, DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/bonding_curve_convertor";
+import { getPersentOfSuplyWithSol } from "@services/pumpfun/adds";
 
 export type EditPremarketSettingsFormProps = {
   onNext: (data: PremarketSettingData) => void;
@@ -58,14 +55,8 @@ export default function EditPremarketSettingsForm({
 
   const changeSliderPremarketValue = (value: number) => {
     setPremarketGoalPers(value);
-    const tokenDec = getPersentOfPremartet(value);
-    const zero = new BN(0);
-    const sol = convertTokenToSolanaBuy({
-      token_amount: tokenDec,
-      reserves_sol: zero,
-      reserves_token: DEFAULT_TOKEN_COUNT_DECIMAL,
-    });
-    setPremarketGoalSolLamp(sol.muln(-1));
+    const {solana_lamp} = getPersentOfSuplyWithSol(value);
+    setPremarketGoalSolLamp(solana_lamp);
   };
   const handleSubmit = () => {
     if (!deadlineDateTimeSec) return;

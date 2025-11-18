@@ -6,11 +6,11 @@ import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeade
 import { useIsMobileWithDemention } from "@hooks/useIsMobile";
 import { ExtendedMD3Colors } from "@theme/types";
 import { round } from "@utils/numbers";
-import { convertSolToPercentOnStart } from "@utils/premarket";
 import { convertNumberWithRaw } from "@utils/setterWithValidate";
 import React, { useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useTheme, Text } from "react-native-paper";
+import { convertSolToPercentOnStart } from "@services/pumpfun/adds";
 
 export type EditTokenomicsFormProps = {
   onNext: (data: TokenomicsData) => void;

@@ -14,7 +14,7 @@ import { makeTransparent } from '@utils/colors';
 import { AppTheme } from '@theme/types';
 import { useJoinFlow } from '@hooks/useJoinFlow';
 import { TextProminent } from '@components/ui/Text';
-import { convertSolanaToTokenBuy } from '@services/pumpfun/bonding_curve_convertor';
+import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
 
 const DEFAULT_BUY_AMOUNT = 0.5;
 const DEFAULT_BUY_AMOUNT_LAMP = convertSmallCountToLamport(DEFAULT_BUY_AMOUNT);
@@ -221,10 +221,9 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
                 + Buy{' '}
                 {formatNumberCompact(
                     convertDecimalToToken(
-                      convertSolanaToTokenBuy({
-                        sol_amount: DEFAULT_BUY_AMOUNT_LAMP,
-                        reserves_sol: tokenInfo.dynamicInfo.reservedSolLamp,
-                        reserves_token: tokenInfo.dynamicInfo.reservedTokenLamp,
+                      convertSolanaToTokenWithFee({
+                        input_sol_lamp: DEFAULT_BUY_AMOUNT_LAMP,
+                        before_sol_lamp: tokenInfo.dynamicInfo.reservedSolLamp,
                       })
                     )
                   )}{' '}
