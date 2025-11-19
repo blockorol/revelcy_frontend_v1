@@ -16,13 +16,13 @@ import { useAuth } from "@providers/AuthContext";
 import {
   convertSmallCountToLamport,
   convertSolToPercentOnStart,
-  DEFAULT_TOKEN_COUNT,
 } from "@utils/premarket";
 import LoginButton from "@components/login/LoginButton";
 import { DonutWithLegend } from "@components/base/DonutWithLegend";
 import { round } from "@utils/numbers";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import TransactionLoadingModal from "@components/modals/TransactionLoadingModal";
+import BN from "bn.js";
 
 type Props = {
   data: TokenCreateFullData;
@@ -377,11 +377,8 @@ export default function OverviewPremarketCreation({
               width={isMobile ? width - 16 * 2 : 432}
               height={292}
               state="premarket"
-              goalPercent={prem?.goal_percent ?? 0}
-              nowPercent={
-                (100 * data.tokenomicsData.creatorInitialBuy) /
-                DEFAULT_TOKEN_COUNT
-              }
+              goalSol={prem?.goal_sol_lamp?? new BN(0)}
+              nowSol={convertSmallCountToLamport(data.tokenomicsData.creatorInitialBuy)}
               joiners={[
                 {
                   id: user?.userId ?? "dummy_id",

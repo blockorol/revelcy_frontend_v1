@@ -44,7 +44,7 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
           style={{ width: "100%", height: 40 }}
           minimumValue={min}
           maximumValue={max}
-          step={1}
+          step={0.1}
           value={sliderValue}
           onValueChange={(val: number) => {
             setSliderValue(val);
@@ -54,8 +54,11 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
           maximumTrackTintColor={theme.colors.onSurfaceVariant}
           thumbTintColor={theme.colors.onBackground}
           StepMarker={(props: MarkerProps) => {
+            if (!props.stepMarked) {
+              return null
+            }
             const value = props.currentValue ?? 0;
-            let offsetX = value < 50 ? 120 / (value-11.6) : 120 / (value - 83.4);
+            let offsetX = value < 20 ? 200/(value+5) : 120 / (value - 83.4);
 
             return (
               <View
@@ -89,7 +92,7 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
                         variant="labelMedium"
                         style={{ color: theme.colors.onPrimary }}
                       >
-                        {value}% {solByPers(value)} SOL
+                        {value} SOL
                       </TextProminent>
                     </View>
 
@@ -143,14 +146,12 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
                 position: "absolute",
                 top: 33,
                 left,
-                transform: [{ translateX: -10 }],
+                transform: [{ translateX: -5 }],
                 alignItems: "center",
               }}
             >
-              <Text
-                style={{ fontSize: 10, color: theme.colors.onSurfaceVariant }}
-              >
-                {label}%
+              <Text style={{ fontSize: 10, color: theme.colors.onSurfaceVariant }}>
+                {label}
               </Text>
             </View>
           );
@@ -224,14 +225,3 @@ const styles = StyleSheet.create({
     color: "#000",
   },
 });
-
-const solByPers = (val: number): string => {
-  const tokenDec = getPersentOfPremartet(val);
-  const zero = new BN(0);
-  const sol = convertTokenToSolanaBuy({
-    token_amount: tokenDec,
-    reserves_sol: zero,
-    reserves_token: DEFAULT_TOKEN_COUNT_DECIMAL,
-  });
-  return (-convertLamportToSmallCount(sol)).toFixed(1);
-};
