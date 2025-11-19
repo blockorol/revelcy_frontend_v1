@@ -32,6 +32,9 @@ type Props = {
   onClose?: () => void;
   onBack?: () => void;
 };
+const PUMP_FEE_PERCENTAGE = 0.015;
+const REVELCY_FEE_PERCENTAGE = 0.01;
+const SOL_FEE = 0.059;
 export default function OverviewPremarketCreation({
   data,
   onLaunch,
@@ -184,8 +187,8 @@ export default function OverviewPremarketCreation({
             revelcy: "0",
           };
         }
-        const pump = formatNumberNoTrailingZeros(0.015 * data.tokenomicsData.creatorInitialBuy);
-        const revelcy = formatNumberNoTrailingZeros(0.01 * data.tokenomicsData.creatorInitialBuy);
+        const pump = formatNumberNoTrailingZeros(PUMP_FEE_PERCENTAGE * data.tokenomicsData.creatorInitialBuy);
+        const revelcy = formatNumberNoTrailingZeros(REVELCY_FEE_PERCENTAGE * data.tokenomicsData.creatorInitialBuy);
     
         return {
           pump: pump,
@@ -564,7 +567,7 @@ export default function OverviewPremarketCreation({
               <Text variant="bodySmall">
                 Sol fee
               </Text>
-              <Text variant="bodySmall">{formatNumberNoTrailingZeros(0.059)} SOL</Text>
+              <Text variant="bodySmall">{formatNumberNoTrailingZeros(SOL_FEE)} SOL</Text>
             </View>
 
             </View>
@@ -581,7 +584,7 @@ export default function OverviewPremarketCreation({
                   Cost
                 </Text>
                 <Text variant="titleMedium" style={{ color: colors.onSurface }}>
-                  {formatNumberNoTrailingZeros(data.tokenomicsData.creatorInitialBuy * 1.025 + 0.059)} SOL
+                  {formatNumberNoTrailingZeros(data.tokenomicsData.creatorInitialBuy * (1 + PUMP_FEE_PERCENTAGE + REVELCY_FEE_PERCENTAGE) + SOL_FEE)} SOL
                 </Text>
               </View>
             </View>
