@@ -35,7 +35,7 @@ const  DEFAULT_GLOBAL: Global = {
 
 
 
-const connection = getSolanaConnection(NETWORK);
+const connection = getSolanaConnection('mainnet-beta');
 const onlineSdk = new OnlinePumpSdk(connection);
 
 let cachedGlobal: Global = DEFAULT_GLOBAL;
