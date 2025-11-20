@@ -173,6 +173,7 @@ export default function EditPremarketSettingsForm({
           <View style={{ marginTop: 64 }}>
             <Text variant="labelLarge" prominent>Premarket Goal</Text>
             <CustomSlider
+              initValue={presetData?.goal_sol_lamp?convertLamportToSmallCount(presetData?.goal_sol_lamp):undefined}
               min={2}
               max={80}
               labels={[10, 30, 50, 70]}

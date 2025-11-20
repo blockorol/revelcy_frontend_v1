@@ -4,16 +4,10 @@ import { useTheme, Text } from "react-native-paper";
 
 import Slider from "@react-native-assets/slider";
 import { MarkerProps } from "@react-native-community/slider";
-import {
-  convertLamportToSmallCount,
-  convertTokenToSolanaBuy,
-  DEFAULT_TOKEN_COUNT_DECIMAL,
-  getPersentOfPremartet,
-} from "@utils/premarket";
-import BN from "bn.js";
 import { TextProminent } from "@components/ui/Text";
 
 interface CustomSliderProps {
+  initValue?: number;
   min?: number;
   max?: number;
   onValueChange: (value: number) => void;
@@ -23,6 +17,7 @@ interface CustomSliderProps {
 }
 
 export const CustomSlider: React.FC<CustomSliderProps> = ({
+  initValue,
   min = 20,
   max = 80,
   onValueChange,
@@ -32,7 +27,7 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
 }) => {
   const theme = useTheme();
   const [sliderWidth, setSliderWidth] = useState(0);
-  const [sliderValue, setSliderValue] = useState(min);
+  const [sliderValue, setSliderValue] = useState(initValue??min);
 
   return (
     <View style={{ marginVertical: 32 }}>

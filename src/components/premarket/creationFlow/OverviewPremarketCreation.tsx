@@ -14,6 +14,7 @@ import { ExtendedMD3Colors } from "@theme/types";
 import { PremarketBondingCurve } from "@components/premarket/PremarketBondingCurve";
 import { useAuth } from "@providers/AuthContext";
 import {
+  convertLamportToSmallCount,
   convertSmallCountToLamport,
   convertSolToPercentOnStart,
 } from "@utils/premarket";
@@ -23,6 +24,7 @@ import { round } from "@utils/numbers";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import TransactionLoadingModal from "@components/modals/TransactionLoadingModal";
 import BN from "bn.js";
+import { makeTransparent } from "@utils/colors";
 
 type Props = {
   data: TokenCreateFullData;
@@ -97,7 +99,6 @@ export default function OverviewPremarketCreation({
   const {open: openOverlay, replace, isOpen, close} = useOverlay()
 
   useEffect(()=> {
-    console.log("changed state", launchState)
     if (!launchState) {
       close();
       return
@@ -150,9 +151,11 @@ export default function OverviewPremarketCreation({
       </View>
     );
   }
-  const percent = convertSolToPercentOnStart(
+  const percentInitialBuy = round(convertSolToPercentOnStart(
     data.tokenomicsData.creatorInitialBuy
-  );
+  ), 1);
+  const goalSol =convertLamportToSmallCount(data.premarket.goal_sol_lamp)
+  const percentGoal = convertSolToPercentOnStart(goalSol);
 
   const { tokenName, tokenTicker, description, avatar, links } =
     data.mainData || {};
@@ -169,11 +172,8 @@ export default function OverviewPremarketCreation({
   // description
   const descriptionCommunity = customData?.description;
 
-  // premaket data
-  const prem = data.premarket;
-
-  const deadlineText = prem?.deadline_sec
-    ? format(new Date(prem.deadline_sec * 1000), "dd.MM.yyyy HH:mm (XXX)")
+  const deadlineText = data.premarket?.deadline_sec
+    ? format(new Date(data.premarket.deadline_sec * 1000), "dd.MM.yyyy HH:mm (XXX)")
     : undefined;
 
     
@@ -377,7 +377,7 @@ export default function OverviewPremarketCreation({
               width={isMobile ? width - 16 * 2 : 432}
               height={292}
               state="premarket"
-              goalSol={prem?.goal_sol_lamp?? new BN(0)}
+              goalSol={data.premarket.goal_sol_lamp}
               nowSol={convertSmallCountToLamport(data.tokenomicsData.creatorInitialBuy)}
               joiners={[
                 {
@@ -395,14 +395,14 @@ export default function OverviewPremarketCreation({
             />
           </View>
 
-          <View
+          {(bannerSrc||descriptionCommunity) && (<View
             // sections community
             style={{
               backgroundColor: colors.surfaceContainerLowest,
               gap: 16,
             }}
           >
-            <Text
+            (<Text
               variant="labelLarge"
               prominent
               style={{ color: colors.onSurface }}
@@ -441,14 +441,14 @@ export default function OverviewPremarketCreation({
             )}
 
             {/* Description */}
-            {descriptionCommunity ? (
+            {descriptionCommunity &&(
               <Text
                 variant="bodyMedium"
                 style={{ color: colors.onSurfaceVariant }}
               >
                 {descriptionCommunity}
               </Text>
-            ) : null}
+            )}
 
             {/* Links detail (main + custom) */}
             {customLinks.length > 0 && (
@@ -479,7 +479,7 @@ export default function OverviewPremarketCreation({
                 </View>
               </ScrollView>
             )}
-          </View>
+          </View>)}
 
           {/* Tokenomics */}
           <View
@@ -501,10 +501,19 @@ export default function OverviewPremarketCreation({
             <DonutWithLegend
               slices={[
                 {
-                  value: round(percent, 1),
-                  additional: data.tokenomicsData.creatorInitialBuy.toFixed(2),
-                  label: "Creator (You)",
+                  value: round(percentGoal, 1),
+                  additional: percentGoal.toFixed(2),
+                  label: "Premarket",
                   color: theme.colors.primary,
+                  subSlices: {
+                    restColor: makeTransparent(theme.colors.onPrimary, 0.7),
+                    slices: [{
+                      value: percentInitialBuy,
+                      label: "Creator (you) buy",
+                      color:  makeTransparent(theme.colors.onPrimary, 0.5),
+                      additional: data.tokenomicsData.creatorInitialBuy.toFixed(2)
+                    }]
+                  }
                 },
                 {
                   value: 20,
@@ -512,7 +521,7 @@ export default function OverviewPremarketCreation({
                   color: theme.colors.secondary,
                 },
                 {
-                  value: round(80 - percent, 1),
+                  value: round(80 - percentGoal, 1),
                   label: "Bonding curve",
                   color: theme.colors.onSurface,
                 },
