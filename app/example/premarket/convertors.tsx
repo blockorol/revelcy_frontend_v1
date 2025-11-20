@@ -26,9 +26,6 @@ import {
   getTimeLeftLabel,
 } from "@utils/premarket";
 import {
-  convertSolanaToTokenBuy,
-  convertTokenToSolanaBuy,
-  convertTokenToSolanaSell,
   DEFAULT_TOKEN_COUNT,
   DEFAULT_TOKEN_COUNT_DECIMAL,
   virtualSupplyRatioLamp,

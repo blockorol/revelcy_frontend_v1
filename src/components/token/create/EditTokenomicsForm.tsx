@@ -6,7 +6,6 @@ import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeade
 import { useIsMobileWithDemention } from "@hooks/useIsMobile";
 import { ExtendedMD3Colors } from "@theme/types";
 import { round, formatNumberNoTrailingZeros } from "@utils/numbers";
-import { convertSolToPercentOnStart } from "@utils/premarket";
 import { convertNumberWithRaw } from "@utils/setterWithValidate";
 import { normalizeStringDecimalInput } from "@utils/convertors";
 import React, { useMemo, useState } from "react";

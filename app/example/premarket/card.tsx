@@ -6,7 +6,6 @@ import { PremarketCard } from "@components/premarket/PremarketCard";
 import { TokenMainInfo } from "@api/token";
 import { PublicKey } from "@solana/web3.js";
 import { convertSmallCountToLamport } from "@utils/premarket";
-import { convertSolToPercentOnStart } from "@services/pumpfun/adds";
 
 export default function PremarketCardExampleScreen() {
   const nowSec = Math.floor(Date.now() / 1000);
