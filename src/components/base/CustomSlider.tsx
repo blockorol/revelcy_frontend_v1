@@ -58,7 +58,10 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
               return null
             }
             const value = props.currentValue ?? 0;
-            let offsetX = value < 20 ? 200/(value+5) : 120 / (value - 83.4);
+            let offsetX = 
+              value < 30 ? 
+                value < 50 ? 
+                120/(value+3)  : 0 : 120/(value-85);
 
             return (
               <View
@@ -77,7 +80,7 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
                         top: -30,
                         alignSelf: "center",
                         backgroundColor: theme.colors.primary,
-                        width: 95,
+                        width: 80,
                         height: 25,
                         paddingHorizontal: 2,
                         borderRadius: 8,
@@ -92,7 +95,7 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
                         variant="labelMedium"
                         style={{ color: theme.colors.onPrimary }}
                       >
-                        {value} SOL
+                        {value.toFixed(1)} SOL
                       </TextProminent>
                     </View>
 
