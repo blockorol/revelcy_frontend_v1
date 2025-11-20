@@ -194,7 +194,7 @@ export async function getExtendPremarketTransaction(
   };
   try {
     const data = await http.post<TxOnlyResponse>(
-      `${API_HOST}/premarket/tx/extend_premarke_tx`,
+      `${API_HOST}/premarket/tx/extend_premarket`,
       { json: payload, retry: RETRY_TX_GEN }
     );
     return data;
