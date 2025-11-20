@@ -49,7 +49,6 @@ export default function PremarketCardExampleScreen() {
         twitter: twitter || undefined,
         webSite: website || undefined,
       },
-      premarketGoalPers: convertSolToPercentOnStart(goalSOL),
       premarketGoalSolLamp: convertSmallCountToLamport(goalSOL), // BN-совместимая заглушка
       premarketDeadline: nowSec + Math.max(0, Math.round(deadlineInHours * 3600)),
       premarketCreated: nowSec - Math.max(0, Math.round(createdAgoHours * 3600)),

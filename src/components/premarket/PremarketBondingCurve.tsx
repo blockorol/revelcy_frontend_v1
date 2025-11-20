@@ -171,8 +171,9 @@ interface PremarketBondingCurveProps {
   currentUserId?: string;
   state: PremarketState;
 
-  goalPercent: number;
-  nowPercent: number;
+  goalSol: BN;
+  nowSol: BN;
+  
   currentPrice?: number;
   joiners: Joiner[];
   background?: string;
@@ -189,8 +190,8 @@ interface PremarketBondingCurveProps {
 export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
   currentUserId="no_user",
   state,
-  goalPercent,
-  nowPercent,
+  goalSol,
+  nowSol,
   currentPrice,
   joiners,
   background,
@@ -248,8 +249,8 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
     ""
   );
 
-  const goalPoint = findPointByPercent(curvePoints, goalPercent);
-  const nowPoint = findPointByPercent(curvePoints, nowPercent);
+  const goalPoint = findPointBySol(curvePoints, goalSol);
+  const nowPoint = findPointBySol(curvePoints, nowSol);
 
   const goalTop = 
     state === 'premarket' && goalPoint.y === nowPoint.y  ? 
