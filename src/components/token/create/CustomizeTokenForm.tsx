@@ -25,6 +25,9 @@ import { ExtendedMD3Colors } from "@theme/types";
 import { round } from "@utils/numbers";
 import TextInputMultiline from "@components/base/form/TextInputMutiline";
 import { Button } from "@components/ui/Button";
+import { validateImageFile, BANNER_MAX_FILE_SIZE_BYTES } from "@utils/imageValidation";
+import { useContext } from "react";
+import { NotificationContext } from "@providers/NotificationContext";
 
 const MAX_CALL_TO_ACTION = 5
 
@@ -57,6 +60,7 @@ export default function CustomizeTokenForm({
 
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
+  const notificationContext = useContext(NotificationContext);
 
   const [banner, setBanner] = useState<string | undefined>(
     presetData?.banner?.data
@@ -86,12 +90,29 @@ export default function CustomizeTokenForm({
 
   const pickBanner = async () => {
     try {
-      const url = await pickImageWithLimited({ max_bytes: 5000 * 1024 });
+      const url = await pickImageWithLimited({ max_bytes: BANNER_MAX_FILE_SIZE_BYTES }); // 5 MB
       if (!!!url) return;
+      
+      // Validate image format (PNG or JPEG) with 5 MB limit for banners
+      const validationError = await validateImageFile(url, { maxSizeBytes: BANNER_MAX_FILE_SIZE_BYTES });
+      if (validationError) {
+        setBannerError(validationError.message);
+        // Also show notification if available
+        if (notificationContext) {
+          notificationContext.error(validationError.message);
+        }
+        return;
+      }
+      
       setBanner(url);
       setBannerError(undefined);
     } catch (e) {
-      setBannerError(e as string);
+      const errorMessage = e as string;
+      setBannerError(errorMessage);
+      // Also show notification if available
+      if (notificationContext) {
+        notificationContext.error(errorMessage || "Failed to pick banner image. Please try again.");
+      }
     }
   };
 
@@ -232,7 +253,7 @@ export default function CustomizeTokenForm({
                             variant="labelMedium"
                             style={{ color: colors.onSurfaceVariant }}
                           >
-                            Upload image or GIF
+                            Upload image
                           </Text>
                           <Text
                             variant="labelSmall"
@@ -244,7 +265,7 @@ export default function CustomizeTokenForm({
                             variant="labelSmall"
                             style={{ color: colors.onSurfaceVariant }}
                           >
-                            Max 5 Mb
+                            PNG or JPEG format, max 5 MB
                           </Text>
                         </View>
                       </>
