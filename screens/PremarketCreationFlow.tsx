@@ -406,6 +406,7 @@ export default function PremarketCreationFlow() {
       }
 
       setLaunchState("Adding community info");
+      setLaunchState(undefined); // Reset state even if there's an error, because it blocking right now 
       try {
         try {
           if (tokenData.customData.banner?.data) {

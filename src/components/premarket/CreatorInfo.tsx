@@ -1,4 +1,4 @@
-import { premarketFinished, TokenMainInfo } from "@api/token";
+import { premarketFinished, extendedPremarket, TokenMainInfo } from "@api/token";
 import { finishPremarket, refundPremarket } from "@services/blockchain/premarket/finishPremarket";
 import { extendPremarket } from "@services/blockchain/premarket/extendPremarket";
 import { getTimeLeftLabel } from "@utils/premarket";
@@ -37,6 +37,7 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
   const { connected, connect } = useWallet();
   const wallet = useAnchorWalletSafe();
   const { open, replace, close } = useOverlay();
+  const { user } = useAuth();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -217,6 +218,15 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
         newDeadline,
         (text) => {replace(renderLoader(text))}
       );
+      open(renderLoader("Linking data to Revelcy..."));
+      await extendedPremarket({
+        premarketPubKey: tokenMainInfo.premarketPubkey.toString(),
+        userWallet: wallet.publicKey.toString(),
+        userId: user?.userId ?? null,
+        tx: res.txId,
+        network: network as "devnet" | "mainnet-beta",
+        newDeadline: newDeadline,
+      });
 
       notify.success("Premarket deadline successfully extended!", {action: {
         label: "check",
