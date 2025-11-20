@@ -362,7 +362,6 @@ export default function PremarketCreationFlow() {
               twitter: tokenData.mainData.links.twitter,
               webSite: tokenData.mainData.links.website,
             },
-            premarketGoalPers: tokenData.premarketSettingsData.goal_percent,
             premarketGoalSolLamp: tokenData.premarketSettingsData.goal_sol_lamp,
             premarketDeadline: tokenData.premarketSettingsData.deadline_sec,
             premarketCreated: Math.floor(Date.now() / 1000),
@@ -557,6 +556,7 @@ export default function PremarketCreationFlow() {
             step={3}
             totalSteps={4}
             presetData={premarketSettingsData}
+            tokenomicsData={tokenomicsData}
           />
         )}
 

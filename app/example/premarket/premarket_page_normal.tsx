@@ -57,7 +57,6 @@ function makeInitialMockToken(): TokenInfo {
     imageURL: "https://picsum.photos/seed/forest/512",
     ipfsURI: "ipfs://bafybeigdyrzt4demoexample",
     links: { telegram: "https://t.me/forestfriends", twitter: "https://x.com/forestfriends" },
-    premarketGoalPers: 100,
     premarketGoalSolLamp: new BN(500 * 1e9),
     premarketDeadline: nowSec + 7 * oneDay,
     premarketCreated: nowSec - oneDay,
@@ -113,7 +112,6 @@ const MockDataModal: React.FC = () => {
   const [linksTelegram, setLinksTelegram] = useState(token.mainInfo.links.telegram ?? "");
   const [linksTwitter, setLinksTwitter] = useState(token.mainInfo.links.twitter ?? "");
   const [linksWebsite, setLinksWebsite] = useState(token.mainInfo.links.webSite ?? "");
-  const [goalPers, setGoalPers] = useState(String(token.mainInfo.premarketGoalPers));
   const [goalSolLamp, setGoalSolLamp] = useState(token.mainInfo.premarketGoalSolLamp.toString());
   const [deadline, setDeadline] = useState(String(token.mainInfo.premarketDeadline)); // epoch sec
   const [createdTs, setCreatedTs] = useState(String(token.mainInfo.premarketCreated)); // epoch sec
@@ -212,7 +210,6 @@ const MockDataModal: React.FC = () => {
         imageURL: imageURL || undefined,
         ipfsURI,
         links: { telegram: linksTelegram || undefined, twitter: linksTwitter || undefined, webSite: linksWebsite || undefined },
-        premarketGoalPers: Number(goalPers) || 0,
         premarketGoalSolLamp: safeBN(goalSolLamp),
         premarketDeadline: Number(deadline) || 0,
         premarketCreated: Number(createdTs) || 0,
@@ -282,7 +279,6 @@ const MockDataModal: React.FC = () => {
           <TextInput label="links.telegram" mode="outlined" value={linksTelegram} onChangeText={setLinksTelegram} style={{ marginBottom: 8 }} />
           <TextInput label="links.twitter" mode="outlined" value={linksTwitter} onChangeText={setLinksTwitter} style={{ marginBottom: 8 }} />
           <TextInput label="links.webSite" mode="outlined" value={linksWebsite} onChangeText={setLinksWebsite} style={{ marginBottom: 8 }} />
-          <TextInput label="premarketGoalPers (number)" mode="outlined" value={goalPers} onChangeText={setGoalPers} keyboardType="numeric" style={{ marginBottom: 8 }} />
           <TextInput label="premarketGoalSolLamp (BN, integer string)" mode="outlined" value={goalSolLamp} onChangeText={setGoalSolLamp} keyboardType="numeric" style={{ marginBottom: 8 }} />
           <TextInput label="premarketDeadline (epoch sec)" mode="outlined" value={deadline} onChangeText={setDeadline} keyboardType="numeric" style={{ marginBottom: 8 }} />
           <TextInput label="premarketCreated (epoch sec)" mode="outlined" value={createdTs} onChangeText={setCreatedTs} keyboardType="numeric" style={{ marginBottom: 8 }} />
