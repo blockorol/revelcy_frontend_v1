@@ -5,6 +5,8 @@ import { useTheme, Text } from "react-native-paper";
 import Slider from "@react-native-assets/slider";
 import { MarkerProps } from "@react-native-community/slider";
 import { TextProminent } from "@components/ui/Text";
+import { convertSolToPercentOnStart } from "@utils/premarket";
+import { round } from "@utils/numbers";
 
 interface CustomSliderProps {
   initValue?: number;
@@ -53,10 +55,11 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
               return null
             }
             const value = props.currentValue ?? 0;
+            const percent = round(convertSolToPercentOnStart(value), 0)
             let offsetX = 
               value < 30 ? 
                 value < 50 ? 
-                120/(value+3)  : 0 : 120/(value-85);
+                200/(value+3)  : 0 : 200/(value-85);
 
             return (
               <View
@@ -75,7 +78,7 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
                         top: -30,
                         alignSelf: "center",
                         backgroundColor: theme.colors.primary,
-                        width: 80,
+                        width: 110,
                         height: 25,
                         paddingHorizontal: 2,
                         borderRadius: 8,
@@ -90,7 +93,7 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
                         variant="labelMedium"
                         style={{ color: theme.colors.onPrimary }}
                       >
-                        {value.toFixed(1)} SOL
+                        {percent}% {value.toFixed(1)} SOL
                       </TextProminent>
                     </View>
 
@@ -149,7 +152,7 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
               }}
             >
               <Text style={{ fontSize: 10, color: theme.colors.onSurfaceVariant }}>
-                {label}
+                {label} 
               </Text>
             </View>
           );

@@ -207,7 +207,7 @@ export default function CookiesModal() {
                     ]}
                     onPress={() => {
                       if (Platform.OS === "web" && hasWindow())
-                        window.open("/terms", "_blank");
+                        window.open("/docs/terms", "_blank");
                     }}
                     accessibilityRole="link"
                   >
@@ -232,7 +232,7 @@ export default function CookiesModal() {
                     ]}
                     onPress={() => {
                       if (Platform.OS === "web" && hasWindow())
-                        window.open("/privacy", "_blank");
+                        window.open("/docs/privacy", "_blank");
                     }}
                     accessibilityRole="link"
                   >

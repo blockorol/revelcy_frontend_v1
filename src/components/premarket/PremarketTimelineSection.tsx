@@ -33,32 +33,13 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
   const pingScale = useRef(new Animated.Value(1)).current;
   const pingOpacity = useRef(new Animated.Value(1)).current;
 
-  const state = tokenInfo.mainInfo.state
+  const state = tokenInfo.mainInfo.state;
 
-  // Determine the effective state based on conditions
-  const getEffectiveState = () => {
-    const now = Math.floor(Date.now() / 1000);
-    const isPremarket = tokenInfo.mainInfo.state === 'premarket';
-    const isDeadlinePassed = tokenInfo.mainInfo.premarketDeadline < now;
-    const isGoalNotReached = tokenInfo.dynamicInfo.reservedSolLamp.lt(tokenInfo.mainInfo.premarketGoalSolLamp);
-    
-    // If it's premarket and deadline passed and goal reached, show "times_up"
-    if (isPremarket && isDeadlinePassed && !isGoalNotReached) {
-      return 'times_up';
-    }
-    if (isPremarket && isDeadlinePassed && isGoalNotReached) {
-      return 'expired';
-    }
-    
-    return tokenInfo.mainInfo.state;
-  };
-
-  const effectiveState = getEffectiveState();
-  const [timeLeft, setTimeLeft] = useState(getTimeLeft(tokenInfo.mainInfo.premarketDeadline, colors, effectiveState === 'expired'));
+  const [timeLeft, setTimeLeft] = useState(getTimeLeft(tokenInfo.mainInfo.premarketDeadline, colors, state === 'expired'));
 
   // Ping animation (expanding ring effect)
   useEffect(() => {
-    if (state === 'premarket' || effectiveState === 'expired' || state === 'canceled') {
+    if (state === 'premarket' || state === 'expired' || state === 'canceled') {
       const ping = Animated.loop(
         Animated.parallel([
           Animated.timing(pingScale, {
@@ -80,16 +61,16 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
         pingOpacity.setValue(1);
       };
     }
-  }, [state, effectiveState]);
+  }, [state]);
 
   useEffect(() => {
-    if (state === 'premarket'){
+    if (state === 'premarket' || state === 'expired'){
       const interval = setInterval(() => {
-        setTimeLeft(getTimeLeft(tokenInfo.mainInfo.premarketDeadline, colors, effectiveState === 'expired'));
+        setTimeLeft(getTimeLeft(tokenInfo.mainInfo.premarketDeadline, colors, state === 'expired'));
       }, 1000);
       return () => clearInterval(interval); 
     }
-  }, [tokenInfo.mainInfo.premarketDeadline, effectiveState]);
+  }, [tokenInfo.mainInfo.premarketDeadline, state]);
 
   // Avatar data is now handled by AvatarGroup component
 
@@ -137,7 +118,7 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
         </View>
 
         {/* Now */}
-        {state === 'premarket' && effectiveState !== 'expired' && 
+        {state === 'premarket' && 
           <View style={[styles.row, { gap: 22 }]}>
             <View style={[styles.timelineLine, { backgroundColor: colors.primary + '33', justifyContent: 'center', alignItems: 'center' }]}>
               <Animated.View 
@@ -157,7 +138,7 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
             </TextProminent>
           </View>
         }
-        {effectiveState === 'expired' && 
+        {state === 'expired' && 
           <View style={[styles.row, { gap: 22 }]}>
             <View style={[styles.timelineLine, { backgroundColor: makeTransparent(colors.error, 0.8), justifyContent: 'center', alignItems: 'center' }]}>
               <Animated.View 
@@ -199,7 +180,7 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
             </TextProminent>
           </View>
         }
-        {state === 'premarket' && effectiveState !== 'expired' ?
+        {state === 'premarket' ?
         <View style={{ position: 'relative', paddingLeft: 30, paddingVertical: 24, gap: 12, width: 280}}>
           <View style={styles.countdownText}>{timeLeft}</View>
           {withJoinButton && <Button 
@@ -243,10 +224,10 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
 
       {/* Launch */}
       <Row 
-        icon={effectiveState === 'expired' ? "ringing-clock" : tokenInfo.mainInfo.state === 'canceled' ? "ringing-clock" : "rocket"} 
+        icon={state === 'expired' ? "ringing-clock" : tokenInfo.mainInfo.state === 'canceled' ? "ringing-clock" : "rocket"} 
         iconColor={tokenInfo.mainInfo.state === 'finished' ? colors.primary :colors.onSurface}
         text={{
-          text: effectiveState === 'expired' 
+          text: state === 'expired' 
             ? 'Now' 
             : tokenInfo.mainInfo.state === 'canceled' && tokenInfo.mainInfo.finishDate
               ? convertTimeStampToDataMonth(tokenInfo.mainInfo.finishDate)
@@ -254,7 +235,7 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
           color: colors.onSurface
         }}
         subText={{
-          text: effectiveState === 'expired' 
+          text: state === 'expired' 
             ? 'Extension or refund' 
             : tokenInfo.mainInfo.state === 'canceled' 
               ? 'Refunded' 
