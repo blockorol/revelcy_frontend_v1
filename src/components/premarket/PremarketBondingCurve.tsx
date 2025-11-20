@@ -310,6 +310,18 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
         { state === 'premarket' && !labelsOverlap &&
           <Line x1={YLineWight} x2={nowPoint.x} y1={nowPoint.y} y2={nowPoint.y} stroke={colors.primary} strokeDasharray="4" />
         }
+        { state === 'premarket' && !labelsOverlap && joiners.length === 0 &&
+          <Circle
+            cx={nowPoint.x}
+            cy={nowPoint.y}
+            r={4}
+            stroke={colors.primary}
+            strokeWidth={1}
+            fill="none"
+          />
+        }
+
+
 
         {/* joiners */}
         {joiners.map((j) => {
