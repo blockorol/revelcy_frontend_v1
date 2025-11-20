@@ -8,8 +8,6 @@ interface Holder {
   iconURL?: string;
 }
 
-const DEFAULT_AVATAR = require('@assets/avatar-placeholder.png');
-
 interface AvatarGroupProps {
   holders: Holder[];
   maxAvatars?: number;
@@ -37,7 +35,6 @@ export const AvatarGroup: React.FC<AvatarGroupProps> = ({
   const allHolders = [...validHolders, ...additionalHolders];
 
   const avatarSize = size;
-  const borderWidth = 1;
 
   // Don't render anything if no holders
   if (allHolders.length === 0) {

@@ -2,7 +2,6 @@ import { TokenInfo } from "@api/token";
 import { Joiner, PremarketBondingCurve } from "@components/premarket/PremarketBondingCurve";
 import { PremarketTimelineSection } from "@components/premarket/PremarketTimelineSection";
 import { AppTheme } from "@theme/types";
-import { convertDecimalToToken, convertLamportToSmallCount, DEFAULT_TOKEN_COUNT } from "@utils/premarket";
 import BN from "bn.js";
 import { View } from "react-native";
 import { useTheme, Text} from "react-native-paper";
