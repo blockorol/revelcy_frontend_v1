@@ -203,6 +203,26 @@ export async function getPremarketInfo({
   };
   const dynamicInfo = await fetchTokenDynamicInfo(tokenPubKey);
   
+  // Determine the effective state based on conditions
+  const convertState = () => {
+    const now = Math.floor(Date.now() / 1000);
+    const isPremarket = mainInfo.state === 'premarket';
+    const isDeadlinePassed = mainInfo.premarketDeadline < now;
+    const isGoalNotReached = dynamicInfo.reservedSolLamp.lt(mainInfo.premarketGoalSolLamp);
+    
+    // If it's premarket and deadline passed and goal reached, show "times_up"
+    if (isPremarket && isDeadlinePassed && !isGoalNotReached) {
+      return 'times_up';
+    }
+    if (isPremarket && isDeadlinePassed && isGoalNotReached) {
+      return 'expired';
+    }
+    
+    return mainInfo.state;
+  };
+  mainInfo.state = convertState();
+
+  
   console.log("Premarket dynamicInfo:", dynamicInfo);
 
   return {

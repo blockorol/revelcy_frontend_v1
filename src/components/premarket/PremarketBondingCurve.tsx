@@ -173,7 +173,7 @@ interface PremarketBondingCurveProps {
 
   goalSol: BN;
   nowSol: BN;
-  
+
   currentPrice?: number;
   joiners: Joiner[];
   background?: string;
@@ -266,15 +266,15 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
   const labelsOverlap = Math.abs(goalTop - nowTop) < 30
 
   const goalColor = 
-    state === 'canceled' ? colors.error : 
+    state === 'canceled' || state === 'expired' ? colors.error : 
     state === 'finished' ? colors.primary :
     colors.secondary
   const onGoalColor = 
-    state === 'canceled' ? colors.onError : 
+    state === 'canceled' || state === 'expired' ? colors.onError : 
     state === 'finished' ? colors.onPrimary :
     colors.onSecondary
 
-  if (state === 'canceled') {
+  if (state === 'canceled' || state === 'expired') {
     currentPrice = 0
   }
   
@@ -310,6 +310,18 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
         { state === 'premarket' && !labelsOverlap &&
           <Line x1={YLineWight} x2={nowPoint.x} y1={nowPoint.y} y2={nowPoint.y} stroke={colors.primary} strokeDasharray="4" />
         }
+        { state === 'premarket' && !labelsOverlap && joiners.length === 0 &&
+          <Circle
+            cx={nowPoint.x}
+            cy={nowPoint.y}
+            r={4}
+            stroke={colors.primary}
+            strokeWidth={1}
+            fill="none"
+          />
+        }
+
+
 
         {/* joiners */}
         {joiners.map((j) => {
