@@ -44,7 +44,6 @@ export async function premarketCreated(args: premarketCreatedArgs) {
         twitter: args.mainInfo.links.twitter,
         web_site: args.mainInfo.links.webSite,
       },
-      premarket_goal_pers: args.mainInfo.premarketGoalPers,
       premarket_goal_sol_lamp: toDecString(args.mainInfo.premarketGoalSolLamp),
       premarket_deadline: args.mainInfo.premarketDeadline,
       premarket_created: args.mainInfo.premarketCreated,
@@ -186,7 +185,6 @@ export async function getPremarketInfo({
       twitter: data.blockchain_info.links.twitter || undefined,
       webSite: data.blockchain_info.links.web_site || undefined,
     },
-    premarketGoalPers: data.blockchain_info.premarket_goal_pers,
     premarketGoalSolLamp: new BN(data.blockchain_info.premarket_goal_sol_lamp),
     premarketDeadline: data.blockchain_info.premarket_deadline,
     premarketCreated: data.blockchain_info.premarket_created,
@@ -239,7 +237,6 @@ export async function getPremarketList({
       twitter:  b.links?.twitter  || undefined,
       webSite:  b.links?.web_site || undefined,
     },
-    premarketGoalPers: b.premarket_goal_pers,
     premarketGoalSolLamp: new BN(b.premarket_goal_sol_lamp), 
     premarketDeadline: b.premarket_deadline,
     premarketCreated:  b.premarket_created,
@@ -325,7 +322,6 @@ export interface TokenMainInfo {
     imageURL?: string;
     ipfsURI: string;
     links: TokenLinks;
-    premarketGoalPers: number;
     premarketGoalSolLamp: BN;
     premarketDeadline: number;
     premarketCreated: number;

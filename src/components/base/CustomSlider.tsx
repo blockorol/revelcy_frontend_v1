@@ -4,13 +4,11 @@ import { useTheme, Text } from "react-native-paper";
 
 import Slider from "@react-native-assets/slider";
 import { MarkerProps } from "@react-native-community/slider";
-import {
-  convertLamportToSmallCount,
-} from "@utils/premarket";
 import { TextProminent } from "@components/ui/Text";
 import { getPersentOfSuplyWithSol } from "@services/pumpfun/adds";
 
 interface CustomSliderProps {
+  initValue?: number;
   min?: number;
   max?: number;
   onValueChange: (value: number) => void;
@@ -20,6 +18,7 @@ interface CustomSliderProps {
 }
 
 export const CustomSlider: React.FC<CustomSliderProps> = ({
+  initValue,
   min = 20,
   max = 80,
   onValueChange,
@@ -29,7 +28,7 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
 }) => {
   const theme = useTheme();
   const [sliderWidth, setSliderWidth] = useState(0);
-  const [sliderValue, setSliderValue] = useState(min);
+  const [sliderValue, setSliderValue] = useState(initValue??min);
 
   return (
     <View style={{ marginVertical: 32 }}>
@@ -41,7 +40,7 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
           style={{ width: "100%", height: 40 }}
           minimumValue={min}
           maximumValue={max}
-          step={1}
+          step={0.1}
           value={sliderValue}
           onValueChange={(val: number) => {
             setSliderValue(val);
@@ -51,8 +50,14 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
           maximumTrackTintColor={theme.colors.onSurfaceVariant}
           thumbTintColor={theme.colors.onBackground}
           StepMarker={(props: MarkerProps) => {
+            if (!props.stepMarked) {
+              return null
+            }
             const value = props.currentValue ?? 0;
-            let offsetX = value < 50 ? 120 / (value-11.6) : 120 / (value - 83.4);
+            let offsetX = 
+              value < 30 ? 
+                value < 50 ? 
+                120/(value+3)  : 0 : 120/(value-85);
 
             return (
               <View
@@ -71,7 +76,7 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
                         top: -30,
                         alignSelf: "center",
                         backgroundColor: theme.colors.primary,
-                        width: 95,
+                        width: 80,
                         height: 25,
                         paddingHorizontal: 2,
                         borderRadius: 8,
@@ -86,7 +91,7 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
                         variant="labelMedium"
                         style={{ color: theme.colors.onPrimary }}
                       >
-                        {value}% {convertLamportToSmallCount(getPersentOfSuplyWithSol(value).solana_lamp).toFixed(1)} SOL
+                        {value.toFixed(1)} SOL
                       </TextProminent>
                     </View>
 
@@ -140,14 +145,12 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
                 position: "absolute",
                 top: 33,
                 left,
-                transform: [{ translateX: -10 }],
+                transform: [{ translateX: -5 }],
                 alignItems: "center",
               }}
             >
-              <Text
-                style={{ fontSize: 10, color: theme.colors.onSurfaceVariant }}
-              >
-                {label}%
+              <Text style={{ fontSize: 10, color: theme.colors.onSurfaceVariant }}>
+                {label}
               </Text>
             </View>
           );
