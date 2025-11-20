@@ -184,7 +184,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   legend: {
-    marginRight: 16,
+    marginRight: 0,
+    alignContent: "center",
+    flexDirection: "column",
+    gap: 18,
   },
   legendText: {
     flexDirection: "row",
@@ -194,7 +197,6 @@ const styles = StyleSheet.create({
   legendRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 18,
   },
   dot: {
     width: 10,

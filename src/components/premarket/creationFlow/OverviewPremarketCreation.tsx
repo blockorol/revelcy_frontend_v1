@@ -20,7 +20,7 @@ import {
 } from "@utils/premarket";
 import LoginButton from "@components/login/LoginButton";
 import { DonutWithLegend } from "@components/base/DonutWithLegend";
-import { round } from "@utils/numbers";
+import { round, formatNumberNoTrailingZeros } from "@utils/numbers";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import TransactionLoadingModal from "@components/modals/TransactionLoadingModal";
 import BN from "bn.js";
@@ -34,6 +34,9 @@ type Props = {
   onClose?: () => void;
   onBack?: () => void;
 };
+const PUMP_FEE_PERCENTAGE = 0.015;
+const REVELCY_FEE_PERCENTAGE = 0.01;
+const SOL_FEE = 0.059;
 export default function OverviewPremarketCreation({
   data,
   onLaunch,
@@ -184,14 +187,8 @@ export default function OverviewPremarketCreation({
             revelcy: "0",
           };
         }
-        let symbols = 4;
-        let pump = (0.015 * data.tokenomicsData.creatorInitialBuy).toFixed(symbols);
-        let revelcy = (0.01 * data.tokenomicsData.creatorInitialBuy).toFixed(symbols);
-        while (pump.endsWith("0") && revelcy.endsWith("0") && symbols != 0) {
-          symbols--;
-          pump = (0.015 * data.tokenomicsData.creatorInitialBuy).toFixed(symbols);
-          revelcy = (0.01 * data.tokenomicsData.creatorInitialBuy).toFixed(symbols);
-        }
+        const pump = formatNumberNoTrailingZeros(PUMP_FEE_PERCENTAGE * data.tokenomicsData.creatorInitialBuy);
+        const revelcy = formatNumberNoTrailingZeros(REVELCY_FEE_PERCENTAGE * data.tokenomicsData.creatorInitialBuy);
     
         return {
           pump: pump,
@@ -565,6 +562,20 @@ export default function OverviewPremarketCreation({
               <Text variant="bodySmall">{fees.revelcy} SOL</Text>
             </View>
 
+            <View
+              style={{
+                paddingTop: 16,
+                justifyContent: "space-between",
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <Text variant="bodySmall">
+                Sol fee
+              </Text>
+              <Text variant="bodySmall">{formatNumberNoTrailingZeros(SOL_FEE)} SOL</Text>
+            </View>
+
             </View>
             <View style={{ gap: 8 }}>
               <Divider />
@@ -579,9 +590,7 @@ export default function OverviewPremarketCreation({
                   Cost
                 </Text>
                 <Text variant="titleMedium" style={{ color: colors.onSurface }}>
-                  {(
-                    data.tokenomicsData.creatorInitialBuy*1.025
-                  ).toFixed(2)}
+                  {formatNumberNoTrailingZeros(data.tokenomicsData.creatorInitialBuy * (1 + PUMP_FEE_PERCENTAGE + REVELCY_FEE_PERCENTAGE) + SOL_FEE)} SOL
                 </Text>
               </View>
             </View>
