@@ -20,7 +20,6 @@ import { round } from "@utils/numbers";
 import { makeTransparent } from "@utils/colors";
 
 const DEFAULT_PREMARKET_GOAL_SOL = 5;
-const DEFAULT_PREMARKET_GOAL_LAMP = convertSmallCountToLamport(DEFAULT_PREMARKET_GOAL_SOL);
 
 export type EditPremarketSettingsFormProps = {
   onNext: (data: PremarketSettingData) => void;
@@ -92,8 +91,7 @@ export default function EditPremarketSettingsForm({
   const handleSubmit = () => {
     if (!deadlineDateTimeSec) return;
     if (dataTimeError) return;
-    if ((tokenomicsData?.creatorInitialBuy??0) < premarketGoalSol) return
-
+    if ((tokenomicsData?.creatorInitialBuy??0) >= premarketGoalSol) return
     onNext({
       deadline_sec: deadlineDateTimeSec,
       goal_sol_lamp: premarketGoalLamp,
