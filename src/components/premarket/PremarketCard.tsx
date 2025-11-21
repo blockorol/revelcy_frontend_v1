@@ -168,7 +168,7 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
               justifyContent: "center",
               alignItems: "flex-start",
               flexDirection: "row",
-              gap: 8,
+              gap: 12,
             }}
           >
             {mainInfo?.links?.twitter !== undefined && (
