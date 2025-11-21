@@ -127,7 +127,7 @@ export async function premarketFinished(args: {
 export async function extendedPremarket(args: {
   premarketPubKey: string;
   userWallet: string;
-  userId?: string | null;
+  userId: string;
   tx: string;
   network: "devnet" | "mainnet-beta";
   newDeadline: number; // unix timestamp
@@ -136,7 +136,7 @@ export async function extendedPremarket(args: {
     base: {
       premarket_pub_key: args.premarketPubKey,
       user_wallet: args.userWallet,
-      user_id: args.userId ?? null,
+      user_id: args.userId,
       tx: args.tx,
     },
     network: args.network,

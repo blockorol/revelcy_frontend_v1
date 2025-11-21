@@ -147,11 +147,12 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
 
     // Validate date is not more than 1 week from now
     const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+    const ONE_DAY_MS = 24 * 60 * 60 * 1000;
     const now = Date.now();
     const selectedTime = date.getTime();
 
     // Check if date is in the past
-    if (selectedTime < now) {
+    if (selectedTime+ONE_DAY_MS < now) {
       notify.error("Deadline must be in the future");
       return;
     }
@@ -174,6 +175,12 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
       return;
     }
 
+    if (!user?.userId) {
+      notify.error("User must be logged in to extend premarket deadline");
+      setSelectedDate(null);
+      return;
+    }
+
     // Combine selected date with selected time
     const finalDate = new Date(selectedDate);
     finalDate.setHours(time.hour);
@@ -191,12 +198,9 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
       return;
     }
 
-    if (selectedTime < now) {
-      notify.error("Deadline must be in the future");
-      setSelectedDate(null);
-      return;
-    }
 
+
+    // Convert milliseconds to seconds (Unix timestamp)
     const newDeadline = Math.floor(selectedTime / 1000);
 
     console.log("newDeadline", newDeadline);
@@ -213,18 +217,18 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
       const res = await extendPremarket(
         wallet,
         connection,
-        network as "devnet" | "mainnet-beta",
+        network,
         tokenMainInfo.premarketPubkey,
         newDeadline,
         (text) => {replace(renderLoader(text))}
       );
-      open(renderLoader("Linking data to Revelcy..."));
+      replace(renderLoader("Linking data to Revelcy..."));
       await extendedPremarket({
         premarketPubKey: tokenMainInfo.premarketPubkey.toString(),
         userWallet: wallet.publicKey.toString(),
-        userId: user?.userId ?? null,
+        userId: user.userId,
         tx: res.txId,
-        network: network as "devnet" | "mainnet-beta",
+        network: network,
         newDeadline: newDeadline,
       });
 
@@ -234,12 +238,11 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
           Linking.openURL(`https://solscan.io/tx/${res.txId}?cluster=devnet`)
         }
       }});
-      close();
-      setSelectedDate(null);
       onUpdated()
     } catch (e) {
       console.error("extend premarket error:", e);
       notify.error("Failed to extend premarket deadline");
+    } finally {
       close();
       setSelectedDate(null);
     }
