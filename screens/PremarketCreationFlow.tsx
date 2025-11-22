@@ -39,6 +39,7 @@ import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
 import { useNotification } from "@providers/NotificationContext";
 import { BN } from "@coral-xyz/anchor";
+import { validateImageFile, uriToFile, BANNER_MAX_FILE_SIZE_BYTES } from "@utils/imageValidation";
 
 import { usePremarketDraft } from "@hooks/usePremarketDraft";
 import { PublicKey } from "@solana/web3.js";
@@ -359,7 +360,6 @@ export default function PremarketCreationFlow() {
               twitter: tokenData.mainData.links.twitter,
               webSite: tokenData.mainData.links.website,
             },
-            premarketGoalPers: tokenData.premarketSettingsData.goal_percent,
             premarketGoalSolLamp: tokenData.premarketSettingsData.goal_sol_lamp,
             premarketDeadline: tokenData.premarketSettingsData.deadline_sec,
             premarketCreated: Math.floor(Date.now() / 1000),
@@ -406,12 +406,22 @@ export default function PremarketCreationFlow() {
       try {
         try {
           if (tokenData.customData.banner?.data) {
-            const response = await fetch(tokenData.customData.banner?.data);
-            const blob = await response.blob();
+            const validationError = await validateImageFile(tokenData.customData.banner.data, { maxSizeBytes: BANNER_MAX_FILE_SIZE_BYTES });
+            if (validationError) {
+              notify.error(validationError.message, {
+                suggest: "Please, select a PNG or JPEG image under 5 MB",
+                duration: 60000,
+                action: {
+                  label: "Ok",
+                  onAction: () => {},
+                },
+              });
+              tokenData.customData.banner = undefined;
+              return;
+            }
+            
             const fileName = `${resp.premarketPDA.toString()}_banner`;
-            const file = new File([blob], `${fileName}.png`, {
-              type: blob.type,
-            });
+            const file = await uriToFile(tokenData.customData.banner.data, fileName);
             tokenData.customData.banner.url = await uploadImage(file, fileName);
           }
         } catch {
@@ -553,6 +563,7 @@ export default function PremarketCreationFlow() {
             step={3}
             totalSteps={4}
             presetData={premarketSettingsData}
+            tokenomicsData={tokenomicsData}
           />
         )}
 

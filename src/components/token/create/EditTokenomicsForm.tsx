@@ -22,6 +22,9 @@ export type EditTokenomicsFormProps = {
   presetData?: TokenomicsData;
 };
 const SUFFIX = " SOL";
+const PUMP_FEE_PERCENTAGE = 0.015;
+const REVELCY_FEE_PERCENTAGE = 0.01;
+const SOL_FEE = 0.059;
 
 export default function EditTokenomicsForm({
   presetData,
@@ -58,8 +61,8 @@ export default function EditTokenomicsForm({
         revelcy: "0",
       };
     }
-    const pump = formatNumberNoTrailingZeros(0.015 * creatorInitialBuy);
-    const revelcy = formatNumberNoTrailingZeros(0.01 * creatorInitialBuy);
+    const pump = formatNumberNoTrailingZeros(PUMP_FEE_PERCENTAGE * creatorInitialBuy);
+    const revelcy = formatNumberNoTrailingZeros(REVELCY_FEE_PERCENTAGE * creatorInitialBuy);
 
     return {
       pump: pump,
@@ -430,7 +433,7 @@ export default function EditTokenomicsForm({
               <Text variant="bodySmall">
                 Sol fee
               </Text>
-              <Text variant="bodySmall">{formatNumberNoTrailingZeros(0.059)} SOL</Text>
+              <Text variant="bodySmall">~{formatNumberNoTrailingZeros(SOL_FEE)} SOL</Text>
             </View>
 
             <View
@@ -452,7 +455,7 @@ export default function EditTokenomicsForm({
             >
               <Text variant="titleMedium">Cost</Text>
               <Text variant="titleMedium">
-                {formatNumberNoTrailingZeros((creatorInitialBuy ?? 0) * 1.025 + 0.059)} SOL
+                {formatNumberNoTrailingZeros((creatorInitialBuy ?? 0) * (1 + PUMP_FEE_PERCENTAGE + REVELCY_FEE_PERCENTAGE) + SOL_FEE)} SOL
               </Text>
             </View>
           </View>

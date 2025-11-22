@@ -1,4 +1,4 @@
-// storage/NotificationContext.tsx
+// providers/NotificationContext.tsx
 import { SvgIcon } from "@components/base/SvgIcon";
 import useIsMobile from "@hooks/useIsMobile";
 import { ExtendedMD3Colors } from "@theme/types";
@@ -41,7 +41,7 @@ type NotificationContextValue = {
   error: (message: string, options?: Omit<NoticeOptions, "type">) => void;
 };
 
-const NotificationContext = createContext<NotificationContextValue | null>(
+export const NotificationContext = createContext<NotificationContextValue | null>(
   null
 );
 

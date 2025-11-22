@@ -11,6 +11,8 @@ import OneScreenContainer from "@components/base/container/OneScreenContainer";
 import { uploadImage } from "@api/files";
 import { ExtendedMD3Colors } from "@theme/types";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
+import { validateImageFile, uriToFile, BANNER_MAX_FILE_SIZE_BYTES } from "@utils/imageValidation";
+import { useNotification } from "@providers/NotificationContext";
 
 interface AboutCommunityProps {
   premarketPubkey: string;
@@ -30,6 +32,7 @@ export function AboutCommunity({
   const [communityInfoLocal, setCommunityInfo] = useState(communityInfo);
   const { open, close } = useOverlay();
   const colors = useTheme().colors as ExtendedMD3Colors;
+  const notify = useNotification();
 
   if (
     !isCreator &&
@@ -56,14 +59,21 @@ export function AboutCommunity({
             };
 
             if (data.banner?.data) {
-              const response = await fetch(data.banner.data);
-              const blob = await response.blob();
-              const fileName = `${premarketPubkey}_banner`;
-              const file = new File([blob], `${fileName}.png`, {
-                type: blob.type,
-              });
-              const url = await uploadImage(file, fileName);
-              next.tokenBannerURL = url;
+              try {
+                const validationError = await validateImageFile(data.banner.data, { maxSizeBytes: BANNER_MAX_FILE_SIZE_BYTES });
+                if (validationError) {
+                  notify.error(validationError.message);
+                  return;
+                }
+                
+                const fileName = `${premarketPubkey}_banner`;
+                const file = await uriToFile(data.banner.data, fileName);
+                const url = await uploadImage(file, fileName);
+                next.tokenBannerURL = url;
+              } catch (err) {
+                notify.error("Failed to upload banner. Please try again.");
+                return;
+              }
             } else if (data.banner?.url) {
               next.tokenBannerURL = data.banner.url;
             }

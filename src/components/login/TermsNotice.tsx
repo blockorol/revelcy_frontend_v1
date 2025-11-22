@@ -2,8 +2,8 @@ import React from 'react';
 import { Text, useTheme } from 'react-native-paper';
 import { Linking, StyleSheet, View } from 'react-native';
 
-const TermsOfServiceURL = 'https://example.com/terms'
-const PrivacyPolicyURL = 'https://example.com/privacy'
+const TermsOfServiceURL = '/docs/terms'
+const PrivacyPolicyURL = '/docs/privacy'
 
 export function TermsNotice() {
   const { colors } = useTheme();

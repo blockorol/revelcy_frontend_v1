@@ -169,31 +169,28 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
               justifyContent: "center",
               alignItems: "flex-start",
               flexDirection: "row",
-              gap: 8,
+              gap: 12,
             }}
           >
             {mainInfo?.links?.twitter !== undefined && (
-              <RoundIconLink
+              <SvgIcon
                 name="x-logo"
-                colors={colors}
-                link={mainInfo.links.twitter}
-                withoutBackgroud={true}
+                size={20}
+                color={colors.onSurface}
               />
             )}
             {mainInfo?.links?.webSite !== undefined && (
-              <RoundIconLink
+              <SvgIcon
                 name="world-outlined"
-                colors={colors}
-                link={mainInfo.links.webSite}
-                withoutBackgroud={true}
+                size={20}
+                color={colors.onSurface}
               />
             )}
             {mainInfo?.links?.telegram !== undefined && (
-              <RoundIconLink
+              <SvgIcon
                 name="tg-logo"
-                colors={colors}
-                link={mainInfo.links.telegram}
-                withoutBackgroud={true}
+                size={20}
+                color={colors.onSurface}
               />
             )}
           </View>
@@ -210,18 +207,6 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
           }}
         >
           {button(getEffectiveState())}
-          {mainInfo.state === 'finished' && (
-            <Text variant="labelLarge">
-              {mainInfo.tokenMint ? shortString(mainInfo.tokenMint) : "No token address available!"} 
-            </Text>
-          )}
-          {mainInfo.state === 'finished' && (
-            <SvgIcon 
-              name="copy-icon" 
-              size={14} 
-              color={colors.onSurfaceVariant} 
-            />
-          )}
           {deadlineText && (
             <Text variant="labelLarge" style={{ color: colors.secondary }}>
               {deadlineText}

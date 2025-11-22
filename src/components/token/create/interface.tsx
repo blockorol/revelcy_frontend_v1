@@ -41,6 +41,5 @@ export type Link ={
 
 export type PremarketSettingData = {
     deadline_sec: number,
-    goal_percent: number,
     goal_sol_lamp: BN
 }
