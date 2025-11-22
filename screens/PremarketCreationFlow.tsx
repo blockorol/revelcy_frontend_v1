@@ -193,7 +193,7 @@ export default function PremarketCreationFlow() {
   };
 
   const handleLaunch = async () => {
-    try {
+  try {
     setLaunchState("Started launch process");
     await patch({ step: FLOW_STEP.OVERVIEW });
 
@@ -203,7 +203,6 @@ export default function PremarketCreationFlow() {
       !tokenomicsData ||
       !premarketSettingsData
     ) {
-      setLaunchState(undefined);
       console.error("no tokenData");
       notify.error("no tokenData", {
         suggest: "reload page and set all token data",
@@ -236,7 +235,6 @@ export default function PremarketCreationFlow() {
 
     setLaunchState("Connecting wallet...");
     if (wallet === undefined || !connected) {
-      setLaunchState(undefined);
       console.error("wallet is not connected");
       notify.error("wallet is not connected", {
         suggest: "enable phantom extention and try again",
@@ -274,7 +272,6 @@ export default function PremarketCreationFlow() {
       },
     });
     if (!ipfsData) {
-      setLaunchState(undefined);
       notify.error("failed to upload data to IPFS", {
         suggest: "Please, try again later",
       });
@@ -458,15 +455,14 @@ export default function PremarketCreationFlow() {
 
       setStep(FLOW_STEP.PROCESSING);
     } catch (error) {
-      setLaunchState(undefined);
       console.error("Error creating premarket:", error);
       notify.error("Error creating: premarket is not created in blockchain", {
         suggest: "Please, wait and try again",
       });
     }
   } finally {
-    setLaunchState(undefined);
-  }
+      setLaunchState(undefined);
+    }
   };
 
   const handleIsFinished = async (): Promise<boolean> => {

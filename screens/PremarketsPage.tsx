@@ -157,7 +157,6 @@ export default function PremarketsPage() {
         paddingHorizontal: 16,
         paddingTop: 12,
         gap: 12,
-        paddingBottom: isMobile ? 70 : undefined,
         backgroundColor: colors.background,
         flex: 1,
       }}

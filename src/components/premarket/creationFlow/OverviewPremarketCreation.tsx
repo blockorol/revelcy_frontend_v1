@@ -82,7 +82,7 @@ export default function OverviewPremarketCreation({
       ),
     },
     "launch in progress": {
-      text: "Launch in progess,  keep and calm, and sign with wallet",
+      text: "Launch in progess,  keep calm and sign with wallet",
       button: (
         <Button onPress={()=>{}} disabled={true} variant="primary" size="normal">
           Launching...

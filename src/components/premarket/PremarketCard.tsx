@@ -6,6 +6,8 @@ import { SvgIcon } from "@components/base/SvgIcon";
 import { ChipDisplay } from '@components/ui/Chip';
 import { RoundIconLink } from "@components/premarket/RoundIcons";
 import { getTimeLeftLabel, convertDecimalToToken, convertLamportToSmallCount, formatNumberCompact, convertTimeStampToDataMonth } from "@utils/premarket";
+import { formatNumberNoTrailingZeros } from "@utils/numbers";
+import shortString from "@utils/address_shorter";
 import { TokenMainInfo, TokenDynamicInfo } from "@api/token";
 import { AvatarGroup } from "@components/base/AvatarGroup";
 import Svg, { Path } from 'react-native-svg';
@@ -308,7 +310,7 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
                 %
               </Text>
               <Text variant="labelMedium" style={{ color: colors.onSurfaceVariant }}>
-                {convertLamportToSmallCount(dynamicInfo.marketCapSolLamp).toFixed(2)} SOL Raised
+                {formatNumberNoTrailingZeros(convertLamportToSmallCount(dynamicInfo.marketCapSolLamp))} SOL Raised
               </Text>
             </View>
           </View>

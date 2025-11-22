@@ -123,6 +123,34 @@ export async function premarketFinished(args: {
   }
 }
 
+export async function extendedPremarket(args: {
+  premarketPubKey: string;
+  userWallet: string;
+  userId: string;
+  tx: string;
+  network: "devnet" | "mainnet-beta";
+  newDeadline: number; // unix timestamp
+}) {
+  const payload = {
+    base: {
+      premarket_pub_key: args.premarketPubKey,
+      user_wallet: args.userWallet,
+      user_id: args.userId,
+      tx: args.tx,
+    },
+    network: args.network,
+    new_deadline: args.newDeadline,
+  };
+  
+  try {
+    await http.post(`${API_HOST}/premarket/extended_premarket`, { json: payload, retry: RETRY_DEFAULT });
+    return;
+  } catch (e: any) {
+    console.log("failed with", payload);
+    throw new Error(`Failed to extend premarket: ${e.message ?? "Unknown error"}`);
+  }
+}
+
 export async function userJoinedToPremarket(args: userJoinedToPremarketArgs) {
   const payload = {
     premarket_pub_key: args.premarketPubKey,

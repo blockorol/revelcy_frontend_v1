@@ -2,6 +2,7 @@ import { TokenDynamicInfo, TokenMainInfo } from "@api/token";
 import {  } from "@components/token/create/interface";
 import { useIsMobileForTwoScreenWithDemention } from "@hooks/useIsMobile";
 import { convertDecimalToToken, convertLamportToSmallCount, formatNumberCompact, convertTimeStampToDataMonth } from "@utils/premarket";
+import { formatNumberNoTrailingZeros } from "@utils/numbers";
 import { View, Image, StyleSheet} from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { AvatarGroup } from "@components/base/AvatarGroup";
@@ -121,7 +122,7 @@ export function PremarketDynamicInfo({
           %
         </Text>
         <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-          {convertLamportToSmallCount(tokenDynamicInfo.marketCapSolLamp).toFixed(2)} SOL Raised
+          {formatNumberNoTrailingZeros(convertLamportToSmallCount(tokenDynamicInfo.marketCapSolLamp))} SOL Raised
         </Text>
       </View>
     </View>
