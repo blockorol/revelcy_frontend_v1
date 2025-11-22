@@ -74,11 +74,15 @@ export function convertSolanaToTokenNoFee(params: {
 export function convertSolanaToTokenNoFee_Rust(params: {
   input_sol_lamp: BN; // amount SOL (in lamport) to convert to token
   before_sol_lamp?: BN; // amount SOL reserved in account
-}): BN {
-  const vS0 = new BN('30000000000')
+}, settings?:
+    {
+      vS0: string,
+      vT0: string
+    }): BN {
+  const vS0 = new BN(settings?.vS0 ??'30000000000')
   // const vT0 = new BN('1280000000000000'); // 1_073_741_824_000_000
   // const vT0 = new BN('1073741824000000'); // 1_073_741_824_000_000
-  const vT0 = new BN('1073741824000000'); // 1_073_741_824_000_000
+  const vT0 = new BN(settings?.vT0 ??'1073000191000000'); // 1_073_741_824_000_000
   // const vT0 = new BN('1179900000000000'); // 1_073_741_824_000_000
 
   
@@ -177,5 +181,52 @@ export function convertSolanaToTokenWithFee(params: {
   input_sol_lamp: BN; // amount SOL (in lamport) to convert to token
   before_sol_lamp?: BN; // amount SOL reserved in account
 }): BN {
-  return convertSolanaToTokenNoFee(params) // TODO: FIX ME!!!!
+
+  const {inCurve} = splitInput(params.input_sol_lamp)
+
+  return convertSolanaToTokenNoFee_Rust({input_sol_lamp: inCurve, before_sol_lamp: params.before_sol_lamp}) // TODO: FIX ME!!!!
+}
+
+
+export function splitInput(inputAmount: BN, settgin?:{fee: number, points: number}) {
+  // const toPamp = inputAmount.muln(99).divn(100);
+  // const revelcyFee = inputAmount.sub(toPamp);
+  const fee = settgin?.fee ?? 950
+  const points = settgin?.fee ?? 1000
+
+  const inCurve = inputAmount.muln(fee).divn(points);
+  const pumpFee =  inputAmount.sub(inCurve);
+
+  return {
+    revelcyFee: new BN(0), 
+    pumpFee: pumpFee,
+    inCurve: inCurve,
+  }
+
+}
+
+
+
+export function convertSolanaToTokenWithFeeWithParams(params: {
+  input_sol_lamp: BN; // amount SOL (in lamport) to convert to token
+  before_sol_lamp?: BN; // amount SOL reserved in account
+}, settings: {
+  pumpfunFee: number; 
+  pumpfunPoints: number;
+  vS0: string;
+  vT0: string;
+}): BN {
+
+  const {inCurve} = splitInput(params.input_sol_lamp, {
+    fee:settings.pumpfunFee,
+    points: settings.pumpfunPoints
+  })
+
+  return convertSolanaToTokenNoFee_Rust(
+    {input_sol_lamp: inCurve, before_sol_lamp: params.before_sol_lamp},
+    {
+      vS0: settings.vS0,
+      vT0: settings.vT0
+    }
+  ) // TODO: FIX ME!!!!
 }

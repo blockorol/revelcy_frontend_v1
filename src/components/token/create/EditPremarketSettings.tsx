@@ -10,10 +10,11 @@ import { CustomSlider } from "@components/base/CustomSlider";
 import BN from "bn.js";
 import { useIsMobileWithDemention } from "@hooks/useIsMobile";
 import { ExtendedMD3Colors } from "@theme/types";
-import { getPersentOfSuplyWithSol } from "@services/pumpfun/adds";
+import { convertSolToPercentOnStart } from "@services/pumpfun/adds";
 import { DonutWithLegend } from "@components/base/DonutWithLegend";
 import { round } from "@utils/numbers";
 import { makeTransparent } from "@utils/colors";
+import { convertLamportToSmallCount, convertSmallCountToLamport } from "@utils/premarket";
 
 const DEFAULT_PREMARKET_GOAL_SOL = 5;
 
@@ -171,7 +172,7 @@ export default function EditPremarketSettingsForm({
             <CustomSlider
               initValue={presetData?.goal_sol_lamp?convertLamportToSmallCount(presetData?.goal_sol_lamp):undefined}
               min={2}
-              max={80}
+              max={86}
               labels={[10, 30, 50, 70]}
               points={[10, 20, 30, 40, 50, 60, 70]}
               onValueChange={changeSliderPremarketValue}

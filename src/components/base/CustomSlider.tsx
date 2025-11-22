@@ -5,8 +5,8 @@ import { useTheme, Text } from "react-native-paper";
 import Slider from "@react-native-assets/slider";
 import { MarkerProps } from "@react-native-community/slider";
 import { TextProminent } from "@components/ui/Text";
-import { convertSolToPercentOnStart } from "@utils/premarket";
 import { round } from "@utils/numbers";
+import { convertSolToPercentOnStart } from "@services/pumpfun/adds";
 
 interface CustomSliderProps {
   initValue?: number;

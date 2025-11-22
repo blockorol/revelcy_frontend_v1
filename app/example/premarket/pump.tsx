@@ -1,21 +1,18 @@
-// TokenMathPlaygroundScreen.tsx
-import { useEffect, useRef, useState } from "react";
+// ConvertWithFeePlaygroundScreen.tsx
+import React, { useState } from "react";
 import { View, ScrollView } from "react-native";
-import { Text, TextInput, Button, ActivityIndicator, Divider } from "react-native-paper";
+import { Text, TextInput, Button, Divider, IconButton } from "react-native-paper";
 import { BN } from "@coral-xyz/anchor";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { convertSolanaToTokenWithFeeWithParams } from "@services/pumpfun/convertors";
+import { convertLamportToSmallCount } from "@utils/premarket";
 
-import { getSolanaConnection } from "@services/blockchain/solana";
-import {
-  Global,
-  BondingCurve,
-  FeeConfig,
-  getBuySolAmountFromTokenAmount,
-  OnlinePumpSdk,
-} from "@pump-fun/pump-sdk";
-
-const connection = getSolanaConnection("mainnet-beta");
-const onlineSdk = new OnlinePumpSdk(connection);
+type RowState = {
+  id: string;
+  inputSolLamp: string;      // строка для ввода
+  beforeSolLamp: string;     // строка для ввода (опционально)
+  result?: BN | null;
+  error?: string | null;
+};
 
 function formatBigNumberLike(value: unknown): string {
   let str: string;
@@ -27,7 +24,6 @@ function formatBigNumberLike(value: unknown): string {
   } else if (typeof value === "string") {
     str = value;
   } else if (Array.isArray(value) || (value && typeof value === "object")) {
-    // Для вложенных объектов делаем компактный JSON
     str = JSON.stringify(value, (k, v) => {
       if (BN.isBN(v)) return (v as BN).toString(10);
       return v;
@@ -38,220 +34,277 @@ function formatBigNumberLike(value: unknown): string {
     str = String(value);
   }
 
-  // Разбиение на разряды
   return str.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 }
 
-function renderObjectFields(obj: any | null, title: string) {
-  if (!obj) return null;
-
-  return (
-    <View style={{ marginTop: 16 }}>
-      <Text style={{ fontSize: 18, marginBottom: 8 }}>{title}</Text>
-      <Divider style={{ marginBottom: 8 }} />
-      {Object.entries(obj).map(([key, value]) => (
-        <View key={key} style={{ marginBottom: 4 }}>
-          <Text>
-            {key}: {formatBigNumberLike(value)}
-          </Text>
-        </View>
-      ))}
-    </View>
-  );
+function parseBNString(input: string): BN | null {
+  const cleaned = input.replace(/[\s,_]/g, "");
+  if (!cleaned) return null;
+  if (!/^\d+$/.test(cleaned)) return null;
+  return new BN(cleaned, 10);
 }
 
-export default function TokenMathPlaygroundScreen() {
-  const [tokenAddress, setTokenAddress] = useState<string>("");
-  const [solAmount, setSolAmount] = useState<string>("0"); // ввод в SOL
-  const amountLamport = useRef<BN>(new BN(0));
+function createRow(): RowState {
+  return {
+    id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    inputSolLamp: "",
+    beforeSolLamp: "",
+    result: undefined,
+    error: null,
+  };
+}
 
-  const [global, setGlobal] = useState<Global | null>(null);
-  const [feeConfig, setFeeConfig] = useState<FeeConfig | null>(null);
-  const [bondingCurve, setBondingCurve] = useState<BondingCurve | null>(null);
+export default function ConvertWithFeePlaygroundScreen() {
+  // SETTINGS
+  const [pumpfunFee, setPumpfunFee] = useState<string>("100");      // пример: 100 = 1.00% (зависит от твоей логики)
+  const [pumpfunPoints, setPumpfunPoints] = useState<string>("0");
+  const [vS0, setVS0] = useState<string>("0");
+  const [vT0, setVT0] = useState<string>("0");
 
-  const [buyAmount, setBuyAmount] = useState<BN | null>(null);
+  // TABLE ROWS
+  const [rows, setRows] = useState<RowState[]>([createRow()]);
 
-  const [loadingGlobal, setLoadingGlobal] = useState<boolean>(false);
-  const [loadingBonding, setLoadingBonding] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Загружаем global и feeConfig только один раз
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadBaseData = async () => {
-      try {
-        setLoadingGlobal(true);
-        const [g, f] = await Promise.all([
-          onlineSdk.fetchGlobal(),
-          onlineSdk.fetchFeeConfig(),
-        ]);
-        if (!cancelled) {
-          setGlobal(g);
-          setFeeConfig(f);
-        }
-      } catch (e: any) {
-        if (!cancelled) {
-          setError(e?.message ?? "Failed to fetch global/feeConfig");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoadingGlobal(false);
-        }
-      }
-    };
-
-    loadBaseData();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const handleSolAmountChange = (text: string) => {
-    setSolAmount(text);
-    const normalized = text.replace(",", "."); // на всякий случай
-    const num = parseFloat(normalized);
-    if (!isNaN(num) && num >= 0) {
-      // конвертация SOL → лампорты
-      const lamports = Math.round(num * LAMPORTS_PER_SOL);
-      amountLamport.current = new BN(lamports);
-    } else {
-      amountLamport.current = new BN(0);
-    }
+  const handleAddRow = () => {
+    setRows((prev) => [...prev, createRow()]);
   };
 
-  const handleLoadBondingCurve = async () => {
-    setError(null);
-    setBuyAmount(null);
-
-    const addr = tokenAddress.trim();
-    if (!addr) {
-      setError("Введите адрес токена");
-      return;
-    }
-
-    try {
-      setLoadingBonding(true);
-      const bc = await onlineSdk.fetchBondingCurve(addr);
-      setBondingCurve(bc);
-    } catch (e: any) {
-      setError(e?.message ?? "Failed to fetch bonding curve");
-      setBondingCurve(null);
-    } finally {
-      setLoadingBonding(false);
-    }
+  const handleRemoveRow = (id: string) => {
+    setRows((prev) => (prev.length === 1 ? prev : prev.filter((r) => r.id !== id)));
   };
 
-  const handleCalculateBuy = () => {
-    setError(null);
+  const handleChangeRowField = (id: string, field: keyof RowState, value: string) => {
+    setRows((prev) =>
+      prev.map((row) =>
+        row.id === id
+          ? {
+              ...row,
+              [field]: value,
+              // при изменении входных значений сбрасываем старый результат/ошибку
+              ...(field === "inputSolLamp" || field === "beforeSolLamp"
+                ? { result: undefined, error: null }
+                : {}),
+            }
+          : row
+      )
+    );
+  };
 
-    if (!global || !feeConfig) {
-      setError("Global и FeeConfig еще не загружены");
+  const handleCalculateAll = () => {
+    // парсим настройки
+    const feeNum = Number(pumpfunFee);
+    const pointsNum = Number(pumpfunPoints);
+
+    if (!isFinite(feeNum) || !isFinite(pointsNum)) {
+      // просто кинем общую ошибку в каждую строку
+      setRows((prev) =>
+        prev.map((row) => ({
+          ...row,
+          error: "Неверные значения fee/points",
+          result: undefined,
+        }))
+      );
       return;
     }
-    if (!bondingCurve) {
-      setError("Сначала загрузите bonding curve по адресу токена");
-      return;
-    }
 
-    try {
-      const result = getBuySolAmountFromTokenAmount({
-        global,
-        feeConfig,
-        bondingCurve,
-        mintSupply: bondingCurve.tokenTotalSupply, // 👈 берём из BondingCurve
-        amount: amountLamport.current,
-      });
-      setBuyAmount(result);
-    } catch (e: any) {
-      setError(e?.message ?? "Failed to calculate buy amount");
-      setBuyAmount(null);
-    }
+    setRows((prev) =>
+      prev.map((row) => {
+        // парсим input_sol_lamp
+        const inBN = parseBNString(row.inputSolLamp);
+        if (!inBN) {
+          return {
+            ...row,
+            error: "input_sol_lamp: введите неотрицательное целое число (лампорты)",
+            result: undefined,
+          };
+        }
+
+        // парсим before_sol_lamp (опционально)
+        const beforeBN = parseBNString(row.beforeSolLamp || "");
+        let result: BN | null = null;
+        let error: string | null = null;
+
+        try {
+          result = convertSolanaToTokenWithFeeWithParams(
+            {
+              input_sol_lamp: inBN,
+              before_sol_lamp: beforeBN || undefined,
+            },
+            {
+              pumpfunFee: feeNum,
+              pumpfunPoints: pointsNum,
+              vS0,
+              vT0,
+            }
+          );
+        } catch (e: any) {
+          error = e?.message ?? "Ошибка при вычислении";
+          result = null;
+        }
+
+        return {
+          ...row,
+          result,
+          error,
+        };
+      })
+    );
   };
 
   return (
     <ScrollView
-      style={{ backgroundColor: "grey" }}
-      contentContainerStyle={{ padding: 16 }}
+      style={{ flex: 1 }}
+      contentContainerStyle={{ padding: 16, gap: 16, backgroundColor: 'grey'}}
     >
-      <Text style={{ fontSize: 20, marginBottom: 10 }}>
-        🧪 Token Math Playground
+      <Text style={{ fontSize: 20, marginBottom: 4 }}>
+        🧪 convertSolanaToTokenWithFeeWithParams Playground
+      </Text>
+      <Text style={{ marginBottom: 8 }}>
+        Тестовый экран для локальной функции. Все значения — в лампортах / сырых числах.
       </Text>
 
-      {/* Ввод данных */}
-      <View style={{ gap: 12, marginBottom: 16 }}>
+      {/* SETTINGS */}
+      <View style={{ padding: 12, borderRadius: 12, borderWidth: 1, borderColor: "#555", gap: 8 }}>
+        <Text style={{ fontSize: 16, marginBottom: 4 }}>Settings</Text>
+        <Divider />
+
         <TextInput
-          label="Token address"
-          value={tokenAddress}
-          onChangeText={setTokenAddress}
+          label="pumpfunFee"
+          value={pumpfunFee}
+          onChangeText={setPumpfunFee}
+          keyboardType="numeric"
+          autoCorrect={false}
+        />
+
+        <TextInput
+          label="pumpfunPoints"
+          value={pumpfunPoints}
+          onChangeText={setPumpfunPoints}
+          keyboardType="numeric"
+          autoCorrect={false}
+        />
+        <Text>Pumpfun comission:   {(100 * (Number(pumpfunFee)) / Number(pumpfunPoints)).toFixed(2)}%</Text>
+
+        <TextInput
+          label="vS0"
+          value={vS0}
+          onChangeText={setVS0}
           autoCapitalize="none"
           autoCorrect={false}
-          style={{ backgroundColor: "gray", color: "black" }} // 👈 текст чёрный
         />
 
         <TextInput
-          label="Amount in SOL (будет конвертировано в lamports)"
-          value={solAmount}
-          onChangeText={handleSolAmountChange}
-          keyboardType="decimal-pad"
-          style={{ backgroundColor: "gray", color: "black" }} // 👈 текст чёрный
+          label="vT0"
+          value={vT0}
+          onChangeText={setVT0}
+          autoCapitalize="none"
+          autoCorrect={false}
         />
+      </View>
 
-        <Text>
-          Текущее значение в lamports:{" "}
-          {formatBigNumberLike(amountLamport.current)}
-        </Text>
-
-        <View
-          style={{
-            flexDirection: "row",
-            gap: 12,
-            alignItems: "center",
-            marginTop: 8,
-          }}
-        >
-          <Button
-            mode="contained"
-            onPress={handleLoadBondingCurve}
-            loading={loadingBonding}
-          >
-            Загрузить Bonding Curve
-          </Button>
-
-          <Button
-            mode="outlined"
-            onPress={handleCalculateBuy}
-            disabled={!bondingCurve}
-          >
-            Посчитать buy amount
-          </Button>
+      {/* TABLE HEADER */}
+      <View
+        style={{
+          flexDirection: "row",
+          paddingHorizontal: 4,
+          marginTop: 8,
+          marginBottom: 4,
+        }}
+      >
+        <View style={{ flex: 0.3 }}>
+          <Text variant="labelMedium"># / Actions</Text>
+        </View>
+        <View style={{ flex: 0.9 }}>
+          <Text variant="labelMedium">input_sol_lamp</Text>
+        </View>
+        <View style={{ flex: 0.9 }}>
+          <Text variant="labelMedium">before_sol_lamp (optional)</Text>
+        </View>
+        <View style={{ flex: 1.1 }}>
+          <Text variant="labelMedium">Result</Text>
         </View>
       </View>
 
-      {loadingGlobal && (
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-          <ActivityIndicator />
-          <Text>Загрузка global / feeConfig…</Text>
+      <Divider />
+
+      {/* ROWS */}
+      {rows.map((row, index) => (
+        <View
+          key={row.id}
+          style={{
+            flexDirection: "column",
+            paddingVertical: 8,
+            borderBottomWidth: 1,
+            borderBottomColor: "#444",
+            gap: 4,
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 4 }}>
+            {/* Index + remove button */}
+            <View style={{ flex: 0.3, alignItems: "center" }}>
+              <Text>{index + 1}</Text>
+              <IconButton
+                icon="delete"
+                size={18}
+                onPress={() => handleRemoveRow(row.id)}
+                disabled={rows.length === 1}
+              />
+            </View>
+
+            {/* input_sol_lamp */}
+            <View style={{ flex: 0.9 }}>
+              <TextInput
+                label="input_sol_lamp"
+                value={row.inputSolLamp}
+                onChangeText={(text) => handleChangeRowField(row.id, "inputSolLamp", text)}
+                keyboardType="numeric"
+                autoCorrect={false}
+              />
+              <Text>{convertLamportToSmallCount(new BN(row.inputSolLamp))} </Text>
+            </View>
+
+            {/* before_sol_lamp */}
+            <View style={{ flex: 0.9 }}>
+              <TextInput
+                label="before_sol_lamp"
+                value={row.beforeSolLamp}
+                onChangeText={(text) => handleChangeRowField(row.id, "beforeSolLamp", text)}
+                keyboardType="numeric"
+                autoCorrect={false}
+              />
+            </View>
+
+            {/* Result */}
+            <View style={{ flex: 1.1, paddingHorizontal: 4 }}>
+              {row.error ? (
+                <Text style={{ color: "red" }} numberOfLines={3}>
+                  {row.error}
+                </Text>
+              ) : row.result !== undefined ? (
+                <>
+                  <Text numberOfLines={1}>raw: {row.result?.toString(10) ?? "-"}</Text>
+                  <Text numberOfLines={2} variant="bodySmall">
+                    formatted: {row.result ? formatBigNumberLike(row.result) : "-"}
+                  </Text>
+                </>
+              ) : (
+                <Text variant="bodySmall" style={{ opacity: 0.6 }}>
+                  Нажми "Calculate for all"
+                </Text>
+              )}
+            </View>
+          </View>
         </View>
-      )}
+      ))}
 
-      {error && (
-        <Text style={{ color: "red", marginBottom: 8 }}>{error}</Text>
-      )}
-
-      {buyAmount && (
-        <View style={{ marginTop: 12, marginBottom: 16 }}>
-          <Text style={{ fontSize: 16 }}>
-            Buy amount {buyAmount.toString()} (в Decem, в лампортах): {formatBigNumberLike(buyAmount)}
-          </Text>
-        </View>
-      )}
-
-      {/* Вывод global, feeConfig и bondingCurve */}
-      {renderObjectFields(global, "Global")}
-      {renderObjectFields(feeConfig, "FeeConfig")}
-      {renderObjectFields(bondingCurve, "BondingCurve")}
+      {/* ACTIONS */}
+      <View style={{ flexDirection: "row", gap: 12, marginTop: 12 }}>
+        <Button mode="contained" onPress={handleCalculateAll}>
+          Calculate for all rows
+        </Button>
+        <Button mode="outlined" onPress={handleAddRow}>
+          Add row
+        </Button>
+      </View>
     </ScrollView>
   );
 }
