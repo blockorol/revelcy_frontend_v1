@@ -5,7 +5,8 @@ import { PremarketState, convertTokenToDecimal } from "@utils/premarket";
 import { toDecString } from "@api/tx_premarket";
 import { http } from "@api/http";
 import shortString from "@utils/address_shorter";
-import { convertSolanaToTokenWithFee, DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/convertors";
+import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
+import { DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
 
 const RETRY_DEFAULT = 6;
 

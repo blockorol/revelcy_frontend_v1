@@ -10,16 +10,16 @@ import {
   PremarketState,
 } from '@utils/premarket';
 import { MD3Colors, MD3Typescale } from 'react-native-paper/lib/typescript/types';
-import { convertSolToPercentOnStart } from '@services/pumpfun/adds';
+import { convertSolToPercentOnStartNoFee } from '@services/pumpfun/adds';
 
 interface BondingCurvePoint { sol_lamp: BN; persent: number }
 interface BondingCurvePointWithCoordinate extends BondingCurvePoint { x: number; y: number }
 interface GenerateBondingCurvePointsArgs {
-  from: number; to: number; stepSol: number
+  from: number; to: number; stepSol: number; stepPercent: number;
 }
 
 export function generateBondingCurvePointsFromZero(args: GenerateBondingCurvePointsArgs): BondingCurvePoint[] {
-  const { from, to, stepSol } = args;
+  const { from, to, stepSol, stepPercent} = args;
 
   if (stepSol <= 0) throw new Error("step must be positive integer");
   if (from < 0 || to > 200 || from > to) throw new Error("solana must satisfy 0 ≤ from ≤ to ≤ 200");
@@ -27,9 +27,11 @@ export function generateBondingCurvePointsFromZero(args: GenerateBondingCurvePoi
   const result: BondingCurvePoint[] = [];
 
 
-
+  let lastPercent = -10;
   for (let p = 0; p < to; p += stepSol) {
-    const persent = convertSolToPercentOnStart(p)
+    const persent = convertSolToPercentOnStartNoFee(p)
+    if (persent < stepPercent+lastPercent) continue;
+    lastPercent = persent;
     const currentSolana = convertSmallCountToLamport(p)
     result.push({ persent: persent, sol_lamp: currentSolana });
   }
@@ -40,7 +42,8 @@ export function generateBondingCurvePointsFromZero(args: GenerateBondingCurvePoi
 const bondingCurvePoints = generateBondingCurvePointsFromZero({
   from: 0,
   to: 120,
-  stepSol: 0.1,
+  stepSol: 0.05,
+  stepPercent: 0.1,
 });
 
 export interface Joiner {

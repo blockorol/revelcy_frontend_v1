@@ -17,7 +17,8 @@ import BN from "bn.js";
 import { useEffect, useState, useMemo } from "react";
 import { MD3Colors, MD3Typescale } from "react-native-paper/lib/typescript/types";
 import { SvgIcon } from "@components/base/SvgIcon";
-import { convertSolanaToTokenWithFee, DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/convertors";
+import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
+import { DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
 
 
 interface YourEntryProps {

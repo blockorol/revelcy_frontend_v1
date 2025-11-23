@@ -156,7 +156,7 @@ export default function OverviewPremarketCreation({
   const percentInitialBuy = round(convertSolToPercentOnStart(
     data.tokenomicsData.creatorInitialBuy
   ), 1);
-  const goalSol =convertLamportToSmallCount(data.premarket.goal_sol_lamp)
+  const goalSol =data.premarket.goal_sol;
   const percentGoal = convertSolToPercentOnStart(goalSol);
 
   const { tokenName, tokenTicker, description, avatar, links } =
@@ -373,7 +373,7 @@ export default function OverviewPremarketCreation({
               width={isMobile ? width - 16 * 2 : 432}
               height={292}
               state="premarket"
-              goalSol={data.premarket.goal_sol_lamp}
+              goalSol={convertSmallCountToLamport(data.premarket.goal_sol)}
               nowSol={convertSmallCountToLamport(data.tokenomicsData.creatorInitialBuy)}
               joiners={[
                 {

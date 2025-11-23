@@ -1,12 +1,6 @@
 import BN from "bn.js";
 import { tokensOutFromSol_FROM_OUR_CONTRACT } from "@services/pumpfun/copyPastedMethods";
 
-const TOKEN_MULTIPLIER=1_000_000;
-const TOKEN_MULTIPLIER_BIG_INT=new BN(TOKEN_MULTIPLIER);
-
-export const DEFAULT_TOKEN_COUNT=1_000_000_000;
-export const DEFAULT_TOKEN_COUNT_DECIMAL = TOKEN_MULTIPLIER_BIG_INT.mul(new BN(DEFAULT_TOKEN_COUNT));
-
 export function convertSolanaToTokenNoFee_Rust(params: {
   input_sol_lamp: BN; // amount SOL (in lamport) to convert to token
   before_sol_lamp?: BN; // amount SOL reserved in account
@@ -15,8 +9,8 @@ export function convertSolanaToTokenNoFee_Rust(params: {
       vS0: string,
       vT0: string
     }): BN {
-  const vS0 = new BN(settings?.vS0 ??'8000000000')
-  const vT0 = new BN(settings?.vT0 ??'1073000191000000');
+  const vS0 = new BN(settings?.vS0 ??'8000000000') // todo: double checl looks like wrong value should be 30*
+  const vT0 = new BN(settings?.vT0 ??'1073000000000000');
 
   if (params.before_sol_lamp === undefined) {
     return tokensOutFromSol_FROM_OUR_CONTRACT(

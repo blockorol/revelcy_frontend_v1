@@ -49,13 +49,11 @@ export default function EditPremarketSettingsForm({
 
   const [percent, setPercent] = useState(0);
   const [premarketGoalSol, setPremarketGoalSol] = useState(
-    presetData?.goal_sol_lamp ?
-      convertLamportToSmallCount(presetData?.goal_sol_lamp):
-      minPremarketSol
+    presetData?.goal_sol ??minPremarketSol
     );
 
   const [premarketGoalLamp, setPremarketGoalLamp] = useState<BN>
-      (presetData?.goal_sol_lamp??convertSmallCountToLamport(minPremarketSol));
+      (convertSmallCountToLamport(presetData?.goal_sol??minPremarketSol));
   const [goalError, setGoalError] = useState<string | null>(null);
 
 
@@ -91,7 +89,7 @@ export default function EditPremarketSettingsForm({
     if ((tokenomicsData?.creatorInitialBuy??0) >= premarketGoalSol) return
     onNext({
       deadline_sec: deadlineDateTimeSec,
-      goal_sol_lamp: premarketGoalLamp,
+      goal_sol: premarketGoalSol,
     });
   };
   const isFilledAll = (): boolean => {
@@ -170,8 +168,8 @@ export default function EditPremarketSettingsForm({
           <View style={{ marginTop: 64 }}>
             <Text variant="labelLarge" prominent>Premarket Goal</Text>
             <CustomSlider
-              initValue={presetData?.goal_sol_lamp?convertLamportToSmallCount(presetData?.goal_sol_lamp):undefined}
-              min={2}
+              initValue={presetData?.goal_sol}
+              min={1} // tod0: rollback me to 2
               max={86}
               labels={[10, 30, 50, 70]}
               points={[10, 20, 30, 40, 50, 60, 70]}

@@ -284,7 +284,7 @@ export default function PremarketCreationFlow() {
       symbol: tokenData.mainData.tokenTicker,
       uri: ipfsData.metadataUri,
       deadline: tokenData.premarketSettingsData.deadline_sec,
-      goal_sol_lamp: tokenData.premarketSettingsData.goal_sol_lamp,
+      goal_sol_lamp: convertSmallCountToLamport(tokenData.premarketSettingsData.goal_sol),
       max_sol_lamp: new BN(85_000_000_000),
       creator_allocate_lamp: convertSmallCountToLamport(
         tokenData.tokenomicsData.creatorInitialBuy
@@ -360,7 +360,7 @@ export default function PremarketCreationFlow() {
               twitter: tokenData.mainData.links.twitter,
               webSite: tokenData.mainData.links.website,
             },
-            premarketGoalSolLamp: tokenData.premarketSettingsData.goal_sol_lamp,
+            premarketGoalSolLamp: convertSmallCountToLamport(tokenData.premarketSettingsData.goal_sol),
             premarketDeadline: tokenData.premarketSettingsData.deadline_sec,
             premarketCreated: Math.floor(Date.now() / 1000),
             createdByPubkey: wallet.publicKey.toString(),

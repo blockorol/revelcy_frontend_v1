@@ -1,14 +1,9 @@
 import { BN } from "@coral-xyz/anchor";
-import { DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/convertors";
+import { DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
 
 export const LAMPORT_MULTIPLIER=1_000_000_000;
 export const LAMPORT_MULTIPLIER_BIG_INT=new BN(LAMPORT_MULTIPLIER);
 
-
-
-export function getPersentOfPremartet(per: number): BN {
-  return DEFAULT_TOKEN_COUNT_DECIMAL.muln(per).divn(100)
-}
 
 export function convertTokenToDecimal(value: number | BN): BN {
   if (BN.isBN(value)) {
