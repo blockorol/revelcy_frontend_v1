@@ -16,7 +16,7 @@ export interface PremarketDraft<TMain, TTok, TPrem, TCustom> {
   __v?: number;
 }
 
-const VERSION = 2;
+const VERSION = 3;
 
 /** Device-scoped ключ без привязки к пользователю/сети */
 export function draftKey() {
