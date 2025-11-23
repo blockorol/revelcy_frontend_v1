@@ -1,5 +1,4 @@
 import {  convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
-import { getTotalSuply } from "@services/pumpfun/pumpGlobalCache";
 import { convertSmallCountToLamport } from "@utils/premarket";
 import BN from "bn.js";
 

@@ -31,7 +31,7 @@ import {
   virtualSupplyRatioLamp,
   virtualTokenRatioDecim,
 } from "@services/pumpfun/deprecated";
-import { convertSolanaToTokenNoFee, convertSolanaToTokenNoFee_Rust } from "@services/pumpfun/convertors";
+import { convertSolanaToTokenNoFee_Rust } from "@services/pumpfun/convertors";
 import { convertSolToPercentOnStart } from "@services/pumpfun/adds";
 
 type NumStr = string;
@@ -295,7 +295,7 @@ export default function TokenMathPlaygroundScreen() {
                     try {
                       const solAmountToConvert: BN = convertSmallCountToLamport(Number(solToBuy))
                       const solAmountBefore: BN = convertSmallCountToLamport(Number(solBefore))
-                      const res = await convertSolanaToTokenNoFee({input_sol_lamp: solAmountToConvert, before_sol_lamp:solAmountBefore})
+                      const res = await convertSolanaToTokenNoFee_Rust({input_sol_lamp: solAmountToConvert, before_sol_lamp:solAmountBefore})
                       const res2 = await convertSolanaToTokenNoFee_Rust({input_sol_lamp: solAmountToConvert, before_sol_lamp:solAmountBefore})
                       const tokenAmount = convertDecimalToToken(res).toFixed(0)
                       const tokenAmount2 = convertDecimalToToken(res2).toFixed(0)

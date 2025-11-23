@@ -104,7 +104,7 @@ function PremarketJoinBase({
   
   const defaultTokenCount = convertSolanaToTokenWithFee({
     input_sol_lamp: convertSmallCountToLamport(DEFAULT_VALUE),
-    before_sol_lamp: tokenDynamicInfo.reservedSolLamp,
+    before_lamp: tokenDynamicInfo.reservedSolLamp,
   })
   const [amountToken, setAmountToken] = useState<BN>(defaultTokenCount);
 
@@ -166,7 +166,7 @@ function PremarketJoinBase({
       setAmountToken(
         convertSolanaToTokenWithFee({
           input_sol_lamp: convertSmallCountToLamport(val),
-          before_sol_lamp: tokenDynamicInfo.reservedSolLamp,
+          before_lamp: tokenDynamicInfo.reservedSolLamp,
         })
       );
     }

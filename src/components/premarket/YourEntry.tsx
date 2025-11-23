@@ -125,7 +125,7 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, on
             // Calculate tokens this holder got
             const holderTokens = convertSolanaToTokenWithFee({
                 input_sol_lamp: holder.amountSolLamp,
-                before_sol_lamp: cumulativeSolLamp,
+                before_lamp: cumulativeSolLamp,
             });
             
             // Update cumulative reserves for next holder
@@ -147,7 +147,7 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, on
         // Always use bonding curve formula with calculated reserves at entry time
         return convertSolanaToTokenWithFee({
             input_sol_lamp: userEntry.amountSolLamp,
-            before_sol_lamp: entryReserves.reserves_sol,
+            before_lamp: entryReserves.reserves_sol,
         });
     }, [userEntry.amountSolLamp, entryReserves, loadingEntryPrice]);
     

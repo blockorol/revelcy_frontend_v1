@@ -1,75 +1,5 @@
 import BN from "bn.js";
-import { getGlobalFast } from "@services/pumpfun/pumpGlobalCache";
-import { getBuySolAmountFromTokenAmountQuote, getBuyTokenAmountFromSolAmountQuote, modifyInputWithFeeBps, pumpfunBuyQuote, tokensOutFromSol_FROM_OUR_CONTRACT } from "@services/pumpfun/copyPastedMethods";
-
-/**
- * Convertor SOL → TOKENS for pre-launch without fees
- *
- * beforeAmount — how many SOL (lamport) already in token.
- * inputAmount — additionalAmount SOL (lamport).
- *
- * return ΔT = tokens for inputAmount (decimal)
- */
-export function convertSolanaToTokenNoFee(params: {
-  input_sol_lamp: BN; // amount SOL (in lamport) to convert to token
-  before_sol_lamp?: BN; // amount SOL reserved in account
-}): BN {
-  const global =  getGlobalFast();
-
-  // const vS0 = global.initialVirtualSolReserves;
-  // const vS0 = global.initialVirtualSolReserves // WTF!????? this value better!
-  // const vT0 = global.initialVirtualTokenReserves;
-  
-  const vS0 = new BN('30000000000')
-  // const vT0 = new BN('1280000000000000'); // 1_073_741_824_000_000
-  // const vT0 = new BN('1073741824000000'); // 1_073_741_824_000_000
-  const vT0 = new BN('1179900000000000'); // 1_073_741_824_000_000
-
-  // const feeBps = global.feeBasisPoints.toNumber()
-  const feeBps = 1000
-
-  // const feeBps = 0
-
-  const {totalCurve} = modifyInputWithFeeBps({
-    inputAmount: params.input_sol_lamp,
-    beforeAmount: params.before_sol_lamp,
-    feeBps: feeBps,
-  })
-  console.log("global", {
-    initialVirtualSolReserves: vS0.toString(), 
-    initialVirtualTokenReserves: vT0.toString(),
-    inputAmount: params.input_sol_lamp.toString(),
-    totalCurve: totalCurve.toString(),
-    feeBps: feeBps,
-  })
-  if (!params.before_sol_lamp || params.before_sol_lamp.eqn(0)) {
-    return pumpfunBuyQuote({
-      virtualSolReserves: vS0,
-      virtualTokenReserves: vT0,
-      curveIn: totalCurve,
-    });
-  }
-
-  const currectTokenSelledTotal = pumpfunBuyQuote({
-    virtualSolReserves: vS0,
-    virtualTokenReserves: vT0,
-    curveIn: params.before_sol_lamp,
-  });
-
-  let newTokenSelledTotal = pumpfunBuyQuote({
-    virtualSolReserves: vS0,
-    virtualTokenReserves: vT0,
-    curveIn: totalCurve,
-  });
-
-  if (newTokenSelledTotal.gt(global.tokenTotalSupply)) {
-    // TODO: check what should we do here!!!!
-    newTokenSelledTotal = global.tokenTotalSupply;
-  }
-
-  const tokensOut = newTokenSelledTotal.sub(currectTokenSelledTotal);
-  return tokensOut;
-}
+import { tokensOutFromSol_FROM_OUR_CONTRACT } from "@services/pumpfun/copyPastedMethods";
 
 export function convertSolanaToTokenNoFee_Rust(params: {
   input_sol_lamp: BN; // amount SOL (in lamport) to convert to token
@@ -79,22 +9,8 @@ export function convertSolanaToTokenNoFee_Rust(params: {
       vS0: string,
       vT0: string
     }): BN {
-  const vS0 = new BN(settings?.vS0 ??'30000000000')
-  // const vT0 = new BN('1280000000000000'); // 1_073_741_824_000_000
-  // const vT0 = new BN('1073741824000000'); // 1_073_741_824_000_000
-  const vT0 = new BN(settings?.vT0 ??'1073000191000000'); // 1_073_741_824_000_000
-  // const vT0 = new BN('1179900000000000'); // 1_073_741_824_000_000
-
-  
-  
-
-  // 1073000000000000
-  // 0793100000000000
-  // 1866100000000000
-
-  // 1072642475650061
-  // 0792742475650061
-  // 0279900000000000
+  const vS0 = new BN(settings?.vS0 ??'8000000000')
+  const vT0 = new BN(settings?.vT0 ??'1073000191000000');
 
   if (params.before_sol_lamp === undefined) {
     return tokensOutFromSol_FROM_OUR_CONTRACT(
@@ -117,57 +33,6 @@ export function convertSolanaToTokenNoFee_Rust(params: {
 
 }
 
-/**
- * Convertor SOL → TOKENS for pre-launch without fees
- *
- * beforeAmount — how many SOL (lamport) already in token.
- * inputAmount — additionalAmount SOL (lamport).
- *
- * return ΔT = tokens for inputAmount (decimal)
- */
-export function convertTokenToSolNoFee(params: {
-  input_token_dec: BN; // amount token (in decimal) to convert
-  before_token_dec?: BN; // amount token (in decimal) reserved in account
-  before_sol_dec_lamp?: BN; // amount sol (in lamport) reserved in account
-}): BN {
-  const global =  getGlobalFast();
-
-  const vS0 = global.initialVirtualSolReserves;
-  const vT0 = global.initialVirtualTokenReserves;
-  if (!params.before_token_dec && !params.before_sol_dec_lamp) {
-  }
-
-  const currectSolSelledTotal = 
-  params.before_token_dec ?
-  getBuySolAmountFromTokenAmountQuote({
-    virtualSolReserves: vS0,
-    virtualTokenReserves: vT0,
-    minAmount: params.before_token_dec,
-  }): params.before_token_dec;
-  if (!currectSolSelledTotal) {
-    return getBuySolAmountFromTokenAmountQuote({
-      virtualSolReserves: vS0,
-      virtualTokenReserves: vT0,
-      minAmount: params.input_token_dec,
-    });
-  }
-
-  const currectTokenSelledTotal = params.before_token_dec?? convertSolanaToTokenNoFee({input_sol_lamp:currectSolSelledTotal})
-
-
-  const afterAmount = currectTokenSelledTotal.add(params.input_token_dec);
-
-  let newSolSelledTotal = getBuySolAmountFromTokenAmountQuote({
-    virtualSolReserves: vS0,
-    virtualTokenReserves: vT0,
-    minAmount: afterAmount,
-  });
-
-
-  const tokensOut = newSolSelledTotal.sub(currectSolSelledTotal);
-  return tokensOut;
-}
-
 
 /**
  * Convertor SOL → TOKENS for pre-launch with fees
@@ -178,55 +43,30 @@ export function convertTokenToSolNoFee(params: {
  * return ΔT = tokens for inputAmount (decimal)
  */
 export function convertSolanaToTokenWithFee(params: {
-  input_sol_lamp: BN; // amount SOL (in lamport) to convert to token
-  before_sol_lamp?: BN; // amount SOL reserved in account
+  input_sol_lamp: BN; // amount SOL before fees (in lamport) to convert to token
+  before_lamp?: BN; // amount SOL before fees  reserved in account
+  before_in_curve_lamp?: BN; // amount SOL already in curve (in lamport)
 }): BN {
 
   const {inCurve} = splitInput(params.input_sol_lamp)
-
-  return convertSolanaToTokenNoFee_Rust({input_sol_lamp: inCurve, before_sol_lamp: params.before_sol_lamp}) // TODO: FIX ME!!!!
+  const  beforeInCurveLamp = params.before_in_curve_lamp ? 
+    params.before_in_curve_lamp :
+    params.before_lamp?splitInput(params.before_lamp).inCurve: undefined;
+  return convertSolanaToTokenNoFee_Rust({input_sol_lamp: inCurve, before_sol_lamp: beforeInCurveLamp })
 }
 
 
-export function splitInput(inputAmount: BN, settgin?:{fee: number, points: number}) {
-  // const toPamp = inputAmount.muln(99).divn(100);
-  // const revelcyFee = inputAmount.sub(toPamp);
-  const fee = settgin?.fee ?? 950
-  const points = settgin?.fee ?? 1000
+export function splitInput(inputAmount: BN) {
+  const toPamp = inputAmount.muln(99).divn(100);
+  const revelcyFee = inputAmount.sub(toPamp);
 
-  const inCurve = inputAmount.muln(fee).divn(points);
+  const inCurve = inputAmount.muln(987).divn(1000);
   const pumpFee =  inputAmount.sub(inCurve);
 
   return {
-    revelcyFee: new BN(0), 
+    revelcyFee: revelcyFee, 
     pumpFee: pumpFee,
     inCurve: inCurve,
   }
 
-}
-
-
-
-export function convertSolanaToTokenWithFeeWithParams(params: {
-  input_sol_lamp: BN; // amount SOL (in lamport) to convert to token
-  before_sol_lamp?: BN; // amount SOL reserved in account
-}, settings: {
-  pumpfunFee: number; 
-  pumpfunPoints: number;
-  vS0: string;
-  vT0: string;
-}): BN {
-
-  const {inCurve} = splitInput(params.input_sol_lamp, {
-    fee:settings.pumpfunFee,
-    points: settings.pumpfunPoints
-  })
-
-  return convertSolanaToTokenNoFee_Rust(
-    {input_sol_lamp: inCurve, before_sol_lamp: params.before_sol_lamp},
-    {
-      vS0: settings.vS0,
-      vT0: settings.vT0
-    }
-  ) // TODO: FIX ME!!!!
 }

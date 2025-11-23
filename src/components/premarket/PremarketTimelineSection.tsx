@@ -204,7 +204,7 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
                     convertDecimalToToken(
                       convertSolanaToTokenWithFee({
                         input_sol_lamp: DEFAULT_BUY_AMOUNT_LAMP,
-                        before_sol_lamp: tokenInfo.dynamicInfo.reservedSolLamp,
+                        before_lamp: tokenInfo.dynamicInfo.reservedSolLamp,
                       })
                     )
                   )}{' '}
