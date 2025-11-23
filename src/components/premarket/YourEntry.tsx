@@ -17,8 +17,7 @@ import BN from "bn.js";
 import { useEffect, useState, useMemo } from "react";
 import { MD3Colors, MD3Typescale } from "react-native-paper/lib/typescript/types";
 import { SvgIcon } from "@components/base/SvgIcon";
-import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
-import { getTotalSuply } from "@services/pumpfun/pumpGlobalCache";
+import { convertSolanaToTokenWithFee, DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/convertors";
 
 
 interface YourEntryProps {
@@ -118,7 +117,7 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, on
         
         // Calculate cumulative SOL reserves at entry time
         let cumulativeSolLamp = new BN(0);
-        let remainingTokensDec = getTotalSuply();
+        let remainingTokensDec = DEFAULT_TOKEN_COUNT_DECIMAL;
         
         // For each holder before the user, calculate their tokens and update reserves
         for (const holder of holdersBeforeUser) {

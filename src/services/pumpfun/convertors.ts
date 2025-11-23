@@ -1,6 +1,12 @@
 import BN from "bn.js";
 import { tokensOutFromSol_FROM_OUR_CONTRACT } from "@services/pumpfun/copyPastedMethods";
 
+const TOKEN_MULTIPLIER=1_000_000;
+const TOKEN_MULTIPLIER_BIG_INT=new BN(TOKEN_MULTIPLIER);
+
+export const DEFAULT_TOKEN_COUNT=1_000_000_000;
+export const DEFAULT_TOKEN_COUNT_DECIMAL = TOKEN_MULTIPLIER_BIG_INT.mul(new BN(DEFAULT_TOKEN_COUNT));
+
 export function convertSolanaToTokenNoFee_Rust(params: {
   input_sol_lamp: BN; // amount SOL (in lamport) to convert to token
   before_sol_lamp?: BN; // amount SOL reserved in account

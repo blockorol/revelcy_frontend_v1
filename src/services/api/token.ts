@@ -5,8 +5,7 @@ import { PremarketState, convertTokenToDecimal } from "@utils/premarket";
 import { toDecString } from "@api/tx_premarket";
 import { http } from "@api/http";
 import shortString from "@utils/address_shorter";
-import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
-import { getTotalSuply } from "@services/pumpfun/pumpGlobalCache";
+import { convertSolanaToTokenWithFee, DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/convertors";
 
 const RETRY_DEFAULT = 6;
 
@@ -294,7 +293,7 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
     tokenMarketCapFromCurve: tokenMarketCapFromCurve.toString(),
 });
   
-  const reservedToken = getTotalSuply().sub(tokenMarketCapFromCurve);
+  const reservedToken = DEFAULT_TOKEN_COUNT_DECIMAL.sub(tokenMarketCapFromCurve);
 
   return {
     holdersCount: raw.holders_count,

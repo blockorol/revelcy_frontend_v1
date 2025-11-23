@@ -1,6 +1,5 @@
 import { BN } from "@coral-xyz/anchor";
-import { convertSolanaToTokenBuy, DEFAULT_TOKEN_COUNT } from "@services/pumpfun/deprecated";
-import { getTotalSuply } from "@services/pumpfun/pumpGlobalCache";
+import { DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/convertors";
 
 export const LAMPORT_MULTIPLIER=1_000_000_000;
 export const LAMPORT_MULTIPLIER_BIG_INT=new BN(LAMPORT_MULTIPLIER);
@@ -8,12 +7,12 @@ export const LAMPORT_MULTIPLIER_BIG_INT=new BN(LAMPORT_MULTIPLIER);
 
 
 export function getPersentOfPremartet(per: number): BN {
-  return getTotalSuply().muln(per).divn(100)
+  return DEFAULT_TOKEN_COUNT_DECIMAL.muln(per).divn(100)
 }
 
 export function convertTokenToDecimal(value: number | BN): BN {
   if (BN.isBN(value)) {
-    return getTotalSuply().mul(value);
+    return DEFAULT_TOKEN_COUNT_DECIMAL.mul(value);
   }
 
   const parts = value.toFixed(6).split(".");

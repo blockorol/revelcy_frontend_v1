@@ -25,12 +25,6 @@ import {
   formatNumberCompact,
   getTimeLeftLabel,
 } from "@utils/premarket";
-import {
-  DEFAULT_TOKEN_COUNT,
-  DEFAULT_TOKEN_COUNT_DECIMAL,
-  virtualSupplyRatioLamp,
-  virtualTokenRatioDecim,
-} from "@services/pumpfun/deprecated";
 import { convertSolanaToTokenNoFee_Rust } from "@services/pumpfun/convertors";
 import { convertSolToPercentOnStart } from "@services/pumpfun/adds";
 
@@ -381,11 +375,7 @@ export default function TokenMathPlaygroundScreen() {
           <Text variant="titleSmall">Константы</Text>
           <Card style={{ marginTop: 8 }}>
             <Card.Content>
-              <Text>DEFAULT_TOKEN_COUNT: {DEFAULT_TOKEN_COUNT}</Text>
-              <Text>DEFAULT_TOKEN_COUNT_DECIMAL (BN): {prettyBN(DEFAULT_TOKEN_COUNT_DECIMAL)}</Text>
               <Text>LAMPORT_MULTIPLIER: {LAMPORT_MULTIPLIER}</Text>
-              <Text>virtualSupplyRatioLamp: {prettyBN(virtualSupplyRatioLamp)}</Text>
-              <Text>virtualTokenRatioDecim: {prettyBN(virtualTokenRatioDecim)}</Text>
             </Card.Content>
           </Card>
         </View>
