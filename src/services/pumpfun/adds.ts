@@ -16,10 +16,5 @@ export function convertSolToPercentOnStart(sol: number): number {
   const tokens = convertSolanaToTokenWithFee({input_sol_lamp:solLamp})
 
   const percent = (tokens.muln(100)).div(TOTAL).toNumber()
-    console.log("tokens", {
-    tokens: tokens.toString(),
-    solLamp: solLamp.toString(),
-    percent: percent
-  })
   return percent
 }
