@@ -7,10 +7,10 @@ import { AppTheme } from '@theme/types';
 import {
   convertLamportToSmallCount,
   convertSmallCountToLamport,
-  convertSolToPercentOnStart,
   PremarketState,
 } from '@utils/premarket';
 import { MD3Colors, MD3Typescale } from 'react-native-paper/lib/typescript/types';
+import { convertSolToPercentOnStart } from '@services/pumpfun/adds';
 
 interface BondingCurvePoint { sol_lamp: BN; persent: number }
 interface BondingCurvePointWithCoordinate extends BondingCurvePoint { x: number; y: number }

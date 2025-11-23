@@ -47,7 +47,7 @@ export const PINATA_SECRET_KEY = getRequired(
 );
 export const API_HOST = getRequired("HOST_BACKEND", ENV.HOST_BACKEND);
 export const HELIUS_KEY = getRequired("HELIUS_KEY", ENV.HELIUS_KEY);
-export const NETWORK = ENV.NETWORK;
+export const NETWORK = ENV.NETWORK??'devnet';
 
 // ---- Helpers ----
 

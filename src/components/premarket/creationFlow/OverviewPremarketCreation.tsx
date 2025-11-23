@@ -16,15 +16,14 @@ import { useAuth } from "@providers/AuthContext";
 import {
   convertLamportToSmallCount,
   convertSmallCountToLamport,
-  convertSolToPercentOnStart,
 } from "@utils/premarket";
 import LoginButton from "@components/login/LoginButton";
 import { DonutWithLegend } from "@components/base/DonutWithLegend";
 import { round, formatNumberNoTrailingZeros } from "@utils/numbers";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import TransactionLoadingModal from "@components/modals/TransactionLoadingModal";
-import BN from "bn.js";
 import { makeTransparent } from "@utils/colors";
+import { convertSolToPercentOnStart } from "@services/pumpfun/adds";
 
 type Props = {
   data: TokenCreateFullData;

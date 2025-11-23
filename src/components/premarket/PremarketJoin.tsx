@@ -9,7 +9,6 @@ import { convertDecimalToToken } from "@utils/premarket";
 
 import {
   formatNumberCompact,
-  convertSolanaToTokenBuy,
   convertSmallCountToLamport,
 } from "@utils/premarket";
 import { useState, useEffect } from "react";
@@ -35,6 +34,8 @@ import { LoginModal } from "@components/login/LoginButton";
 import { convertNumberWithRaw } from "@utils/setterWithValidate";
 const SUFFIX = " SOL"
 const DEFAULT_VALUE = 0.5
+import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
+
 interface PremarketJoinProps {
   tokenDynamicInfo: TokenDynamicInfo;
   tokenMainInfo: TokenMainInfo;
@@ -101,11 +102,10 @@ function PremarketJoinBase({
       end: number|undefined;
     }>({ start: 0, end: 0 });
   
-  const defaultTokenCount = convertSolanaToTokenBuy({
-          sol_amount: convertSmallCountToLamport(DEFAULT_VALUE),
-          reserves_sol: tokenDynamicInfo.reservedSolLamp,
-          reserves_token: tokenDynamicInfo.reservedTokenLamp,
-        })
+  const defaultTokenCount = convertSolanaToTokenWithFee({
+    input_sol_lamp: convertSmallCountToLamport(DEFAULT_VALUE),
+    before_lamp: tokenDynamicInfo.reservedSolLamp,
+  })
   const [amountToken, setAmountToken] = useState<BN>(defaultTokenCount);
 
   const [walletInfo, setWalletInfo] = useState<WalletInfoResponseDto | null>(null); // todo: change to internal struct
@@ -164,10 +164,9 @@ function PremarketJoinBase({
 
       setAmountSol(val);
       setAmountToken(
-        convertSolanaToTokenBuy({
-          sol_amount: convertSmallCountToLamport(val),
-          reserves_sol: tokenDynamicInfo.reservedSolLamp,
-          reserves_token: tokenDynamicInfo.reservedTokenLamp,
+        convertSolanaToTokenWithFee({
+          input_sol_lamp: convertSmallCountToLamport(val),
+          before_lamp: tokenDynamicInfo.reservedSolLamp,
         })
       );
     }

@@ -12,11 +12,13 @@ import { outOfPremarket } from "@services/blockchain/premarket/outOfPremarket";
 import { userOutOfPremarket, getHolderEntryPrice } from "@services/api/token";
 import { PublicKey } from "@solana/web3.js";
 import { TokenDynamicInfo, TokenMainInfo } from "@api/token";
-import { convertLamportToSmallCount, formatNumberCompact, convertSolanaToTokenBuy, convertDecimalToToken, DEFAULT_TOKEN_COUNT_DECIMAL } from "@utils/premarket";
+import { convertLamportToSmallCount, formatNumberCompact, convertDecimalToToken } from "@utils/premarket";
 import BN from "bn.js";
 import { useEffect, useState, useMemo } from "react";
 import { MD3Colors, MD3Typescale } from "react-native-paper/lib/typescript/types";
 import { SvgIcon } from "@components/base/SvgIcon";
+import { convertSolanaToTokenWithFee, DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/convertors";
+
 
 interface YourEntryProps {
   premarketPubkey: PublicKey;
@@ -120,10 +122,9 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, on
         // For each holder before the user, calculate their tokens and update reserves
         for (const holder of holdersBeforeUser) {
             // Calculate tokens this holder got
-            const holderTokens = convertSolanaToTokenBuy({
-                sol_amount: holder.amountSolLamp,
-                reserves_sol: cumulativeSolLamp,
-                reserves_token: remainingTokensDec,
+            const holderTokens = convertSolanaToTokenWithFee({
+                input_sol_lamp: holder.amountSolLamp,
+                before_lamp: cumulativeSolLamp,
             });
             
             // Update cumulative reserves for next holder
@@ -143,10 +144,9 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, on
             return new BN(0);
         }
         // Always use bonding curve formula with calculated reserves at entry time
-        return convertSolanaToTokenBuy({
-            sol_amount: userEntry.amountSolLamp,
-            reserves_sol: entryReserves.reserves_sol,
-            reserves_token: entryReserves.reserves_token,
+        return convertSolanaToTokenWithFee({
+            input_sol_lamp: userEntry.amountSolLamp,
+            before_lamp: entryReserves.reserves_sol,
         });
     }, [userEntry.amountSolLamp, entryReserves, loadingEntryPrice]);
     
