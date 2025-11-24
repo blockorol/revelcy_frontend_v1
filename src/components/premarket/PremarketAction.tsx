@@ -28,6 +28,14 @@ export function PremarketAction({
 
   switch (tokenMainInfo.state) {
     case "premarket":
+    case "times_up":
+      return <PremarketActionPremarket
+        tokenMainInfo={tokenMainInfo}
+        tokenDynamicInfo={tokenDynamicInfo}
+        onUpdated={onUpdated}
+        isMobile={isMobile}
+      />
+    case "expired":
       return  <PremarketActionPremarket
           tokenMainInfo={tokenMainInfo}
           tokenDynamicInfo={tokenDynamicInfo}
