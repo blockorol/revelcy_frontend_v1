@@ -11,7 +11,7 @@ export function ShareTextButton({ shareMessage, children, ...rest}: Props) {
 
   return (
     <Button
-      leftSvgIconName='tg-logo'
+      leftSvgIconName='send'
       onPress={onShare}
       {...rest}
     >{children}</Button>

@@ -162,7 +162,9 @@ export default function UserAvatar({
           buttonText="Finish"
           onClick={async () => {
             try {
-              await setUploadAvatarToServer(avatarUri);
+              if (avatarUri) {
+                await setUploadAvatarToServer(avatarUri);
+              }
               toNext();
             } catch {
               setError(" Something went wrong. Please, try again");

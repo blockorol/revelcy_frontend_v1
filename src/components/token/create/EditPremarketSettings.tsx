@@ -1,5 +1,5 @@
 import ContinueButtonWithProgressBar from "@components/ContinueButtonWithProgressBar";
-import { PremarketSettingData } from "@components/token/create/interface";
+import { PremarketSettingData, TokenomicsData } from "@components/token/create/interface";
 import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeader";
 import React, { useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -8,13 +8,16 @@ import { Text } from "@components/ui/Text";
 import { DateTimeEditField } from "@components/base/DateTimeEditField";
 import { CustomSlider } from "@components/base/CustomSlider";
 import BN from "bn.js";
-import {
-  convertTokenToSolanaBuy,
-  DEFAULT_TOKEN_COUNT_DECIMAL,
-  getPersentOfPremartet,
-} from "@utils/premarket";
 import { useIsMobileWithDemention } from "@hooks/useIsMobile";
 import { ExtendedMD3Colors } from "@theme/types";
+import { convertSolToPercentOnStart } from "@services/pumpfun/adds";
+import { DonutWithLegend } from "@components/base/DonutWithLegend";
+import { round } from "@utils/numbers";
+import { makeTransparent } from "@utils/colors";
+import { convertLamportToSmallCount, convertSmallCountToLamport } from "@utils/premarket";
+import { TOKEN_CONVERTOR_SETTINGS } from "env";
+
+const DEFAULT_PREMARKET_GOAL_SOL = 5;
 
 export type EditPremarketSettingsFormProps = {
   onNext: (data: PremarketSettingData) => void;
@@ -23,9 +26,11 @@ export type EditPremarketSettingsFormProps = {
   step: number;
   totalSteps: number;
   presetData?: PremarketSettingData;
+  tokenomicsData?: TokenomicsData;
 };
 
 export default function EditPremarketSettingsForm({
+  tokenomicsData,
   presetData,
   onClose,
   onBack,
@@ -33,43 +38,73 @@ export default function EditPremarketSettingsForm({
   step,
   totalSteps,
 }: EditPremarketSettingsFormProps) {
-  const { isMobile, height } = useIsMobileWithDemention();
+  const { isMobile } = useIsMobileWithDemention();
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
-  const [premarketGoalPers, setPremarketGoalPers] = useState<number>(0);
+  const minPremarketSol = tokenomicsData?.creatorInitialBuy??DEFAULT_PREMARKET_GOAL_SOL
+  
+  const initialBuyPersent = 
+    tokenomicsData?.creatorInitialBuy ? 
+      round(convertSolToPercentOnStart(tokenomicsData?.creatorInitialBuy), 1)
+      : undefined
 
-  const [premarketGoalSolLamp, setPremarketGoalSolLamp] = useState<
-    BN | undefined
-  >(presetData?.goal_sol_lamp);
-  const [deadlineDateTime, setDeadlineDateTime] = useState<number | undefined>(
-    presetData?.deadline
+  const [percent, setPercent] = useState(0);
+  const [premarketGoalSol, setPremarketGoalSol] = useState(
+    presetData?.goal_sol ??minPremarketSol
+    );
+
+  const [premarketGoalLamp, setPremarketGoalLamp] = useState<BN>
+      (convertSmallCountToLamport(presetData?.goal_sol??minPremarketSol));
+  const [goalError, setGoalError] = useState<string | null>(null);
+
+
+  const [deadlineDateTimeSec, setDeadlineDateTimeSec] = useState<number | undefined>(
+    presetData?.deadline_sec
   );
   const [dataTimeError, setDataTimeError] = useState<string | null>(null);
   const [currentDataTime, setDataTime] = useState<Date>(new Date());
 
-  const changeSliderPremarketValue = (value: number) => {
-    setPremarketGoalPers(value);
-    const tokenDec = getPersentOfPremartet(value);
-    const zero = new BN(0);
-    const sol = convertTokenToSolanaBuy({
-      token_amount: tokenDec,
-      reserves_sol: zero,
-      reserves_token: DEFAULT_TOKEN_COUNT_DECIMAL,
-    });
-    setPremarketGoalSolLamp(sol.muln(-1));
+  const isMoreThanOneMonthAway = (d: Date) => {
+    const now = new Date();
+    const max = new Date(now);
+    max.setMonth(max.getMonth() + 1); 
+    return d.getTime() > max.getTime();
   };
-  const handleSubmit = () => {
-    if (premarketGoalSolLamp !== undefined && deadlineDateTime !== undefined) {
-      onNext({
-        goal_percent: premarketGoalPers,
-        deadline: deadlineDateTime,
-        goal_sol_lamp: premarketGoalSolLamp,
-      });
+  const ONE_HOUR_MS = 60 * 60 * 1000;
+  const isLessThanOneHourAhead = (d: Date) => d.getTime() <= Date.now() + ONE_HOUR_MS;
+
+
+  const changeSliderPremarketValue = (value: number) => {
+    setPremarketGoalSol(value)
+    setPremarketGoalLamp(convertSmallCountToLamport(value))
+    setPercent(convertSolToPercentOnStart(value))
+    if (value < minPremarketSol) {
+      setGoalError("The premarket goal must exceed the initial buy amount")
+    } else {
+      setGoalError(null)
     }
   };
-  const isFilledAll = (): boolean => {
-    return premarketGoalSolLamp !== undefined && deadlineDateTime !== undefined;
+  const handleSubmit = () => {
+    if (!deadlineDateTimeSec) return;
+    if (dataTimeError) return;
+    if ((tokenomicsData?.creatorInitialBuy??0) >= premarketGoalSol) return
+    onNext({
+      deadline_sec: deadlineDateTimeSec,
+      goal_sol: premarketGoalSol,
+    });
   };
+  const isFilledAll = (): boolean => {
+    return (
+      (tokenomicsData?.creatorInitialBuy??0) < premarketGoalSol &&
+      deadlineDateTimeSec !== undefined
+    );
+  };
+  const sliderFrom = 1
+  const sliderTo = TOKEN_CONVERTOR_SETTINGS.SolTo80Percent
+              
+  const labels: number[]=sliderTo > 50 ? [10, 30, 50, 70, 86]: [5, 10, 15, 20]
+  const points: number[]=sliderTo > 50 ?[10, 20, 30, 40, 50, 60, 70, 80, 86]: [2.5, 5, 7.5 , 10, 12.5,  15, 17.5, 20, 22.5]
+
 
   return (
     <ScrollView
@@ -77,8 +112,8 @@ export default function EditPremarketSettingsForm({
       style={{
         backgroundColor: colors.surfaceContainerLowest,
         borderRadius: isMobile ? 0 : 16,
-        height: height,
       }}
+      contentContainerStyle={{ flexGrow: 1 }}
     >
       <View
         style={{
@@ -87,11 +122,10 @@ export default function EditPremarketSettingsForm({
           paddingHorizontal: isMobile ? 16 : 24,
           paddingVertical: isMobile ? 40 : 24,
           maxWidth: 500,
-          minHeight: isMobile ? height: height * 0.9,
-          justifyContent: "space-between",
+          flex: 1,
         }}
       >
-        <View style={{ flex: 1, gap: 0}}>
+        <View style={{ flex: 1, gap: 0 }}>
           <TokenCreateFormHeader
             title={"Premarket"}
             theme={theme}
@@ -109,51 +143,100 @@ export default function EditPremarketSettingsForm({
               value={currentDataTime}
               onChange={(newDate: Date) => {
                 setDataTime(newDate);
-
+                if (isLessThanOneHourAhead(newDate)) {
+                  setDataTimeError("Deadline must be at least 1 hour from now");
+                  setDeadlineDateTimeSec(undefined);
+                  return;
+                }
                 const dataTimeNow = new Date();
                 if (newDate.getTime() < dataTimeNow.getTime()) {
                   setDataTimeError("time should be in the future");
-                  setDeadlineDateTime(undefined);
+                  setDeadlineDateTimeSec(undefined);
+                  return;
+                }
+                if (isMoreThanOneMonthAway(newDate)) {
+                  setDataTimeError("Deadline can't be more than 1 month");
+                  setDeadlineDateTimeSec(undefined);
                   return;
                 }
                 setDataTimeError(null);
-                setDeadlineDateTime(Math.floor(newDate.getTime() / 1000)); // todo: check /1000(?)
+                setDeadlineDateTimeSec(Math.floor(newDate.getTime() / 1000)); // todo: check /1000(?)
               }}
             />
-            {dataTimeError && (
-              <View style={{ marginTop: -20 }}>
-                {" "}
-                <HelperText type="error" visible={!!dataTimeError}>
-                  {dataTimeError}
-                </HelperText>
-              </View>
-            )}
+            <View style={{ marginTop: -20 }}>
+              {" "}
+              <HelperText type="error" visible={!!dataTimeError}>
+                {dataTimeError??""}
+              </HelperText>
+            </View>
           </View>
 
           {/* Goal */}
           <View style={{ marginTop: 64 }}>
             <Text variant="labelLarge" prominent>Premarket Goal</Text>
             <CustomSlider
-              min={15}
-              max={80}
-              labels={[20, 40, 60, 79]}
-              points={[20, 30, 40, 50, 60, 70, 79]}
+              initValue={presetData?.goal_sol}
+              min={sliderFrom}
+              max={sliderTo}
+              labels={labels}
+              points={points}
               onValueChange={changeSliderPremarketValue}
               isMobile={isMobile}
             />
+            <View style={{ marginTop: -30 }}>
+              {" "}
+              <HelperText type="error" visible={true}>
+                {goalError??" "}
+              </HelperText>
+            </View>
+            <View style={{ marginTop: 24 }}>
+              <DonutWithLegend
+                slices={[
+                  {
+                    value: round(percent, 1),
+                    additional: premarketGoalSol.toFixed(2),
+                    label: "Premarket",
+                    color: theme.colors.primary,
+
+                    subSlices: initialBuyPersent?{
+                      restColor: makeTransparent(theme.colors.onPrimary, 0.7),
+                      slices: [{
+                        value: initialBuyPersent??0,
+                        label: "Creator (you) buy",
+                        color:  makeTransparent(theme.colors.onPrimary, 0.5),
+                        additional: tokenomicsData?.creatorInitialBuy.toFixed(2)
+                      }]
+                    }:undefined
+                  },
+                  {
+                    value: round(80 - percent, 1),
+                    label: "Bonding curve",
+                    color: theme.colors.onSurface,
+                  },
+                  {
+                    value: 20,
+                    label: "Pumpswap pool",
+                    color: theme.colors.secondary,
+                  },
+                ]}
+              />
+            </View>
+            
+            
           </View>
         </View>
-
-        <ContinueButtonWithProgressBar
-          theme={theme}
-          progress={{
-            before: (step - 1) / totalSteps,
-            after: step / totalSteps,
-          }}
-          handleSubmit={handleSubmit}
-          isFilledAll={isFilledAll}
-          onBack={onBack}
-        />
+        <View style={{ marginTop: 16, paddingBottom: isMobile ? 8 : 16 }}>
+          <ContinueButtonWithProgressBar
+            theme={theme}
+            progress={{
+              before: (step - 1) / totalSteps,
+              after: step / totalSteps,
+            }}
+            handleSubmit={handleSubmit}
+            isFilledAll={isFilledAll}
+            onBack={onBack}
+          />
+        </View>
       </View>
     </ScrollView>
   );

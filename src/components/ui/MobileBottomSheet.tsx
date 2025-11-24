@@ -1,7 +1,7 @@
 // MobileBottomSheet.tsx
 import * as React from 'react';
 import { View, Animated, PanResponder, Easing, Platform } from 'react-native';
-import { Modal, Portal, useTheme, Surface, IconButton } from 'react-native-paper';
+import { Modal, Portal, useTheme, Surface } from 'react-native-paper';
 
 const CLOSE_DY = 90;       // сколько протянуть вниз, чтобы закрыть
 const CLOSE_VY = 1.0;      // или достаточно быстрый "смах" вниз
@@ -10,10 +10,12 @@ export function MobileBottomSheet({
   visible,
   onDismiss,
   children,
+  backgroundColor,
 }: {
   visible: boolean;
   onDismiss: () => void;
   children: React.ReactNode;
+  backgroundColor?: string;
 }) {
   const theme = useTheme();
 
@@ -28,7 +30,6 @@ export function MobileBottomSheet({
     }).start(() => cb && cb());
   }, [translateY]);
 
-  // при открытии — сбрасываем позицию
   React.useEffect(() => {
     if (visible) {
       translateY.setValue(Platform.OS === 'ios' ? 16 : 0); // лёгкий “прыжок”
@@ -65,7 +66,7 @@ export function MobileBottomSheet({
         contentContainerStyle={{
           position: 'absolute',
           bottom: 0,
-          width: '100%',
+          width: "100%",
           padding: 0,                 // всё внутри Surface
         }}
       >
@@ -79,7 +80,7 @@ export function MobileBottomSheet({
           <Surface
             elevation={4}
             style={{
-              backgroundColor: theme.colors.surface,
+              backgroundColor: backgroundColor || theme.colors.surface,
               borderTopLeftRadius: 24,
               borderTopRightRadius: 24,
               paddingBottom: 16,

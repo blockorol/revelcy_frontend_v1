@@ -2,22 +2,19 @@
 import React, { useState, useEffect } from "react";
 import { View, Image, TouchableOpacity, StyleSheet } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { Badge, Text, useTheme } from "react-native-paper";
+import { Text, useTheme } from "react-native-paper";
 import ContinueAndProgress from "@components/ContinueButtonWithProgressBar";
 import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeader";
 import { TokenMainData } from "@components/token/create/interface";
 import { ScrollView } from "react-native-gesture-handler";
-import normalizeUrl, {
-  normalizeTelegramUrl,
-  normalizeTwitterUrl,
-  normalizeWebsiteUrl,
-} from "@utils/url";
+import normalizeUrl from "@utils/url";
 import { SvgIcon, SvgIconButton } from "@components/base/SvgIcon";
 import TextInputMultiline from "@components/base/form/TextInputMutiline";
 import TextInput from "@components/ui/TextInput";
-import useIsMobile, { useIsMobileWithDemention } from "@hooks/useIsMobile";
-import { MD3ElevationColors } from "react-native-paper/lib/typescript/types";
+import { useIsMobileWithDemention } from "@hooks/useIsMobile";
 import { ExtendedMD3Colors } from "@theme/types";
+import { validateImageFile } from "@utils/imageValidation";
+import { useNotification } from "@providers/NotificationContext";
 
 type CreateTokenFormProps = {
   onNext: (data: TokenMainData) => void;
@@ -39,6 +36,7 @@ export default function CreateTokenForm({
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
   const { isMobile, height } = useIsMobileWithDemention();
+  const notify = useNotification();
 
   const [tokenName, setTokenName] = useState(presetData?.tokenName ?? "");
   const [tokenTicker, setTokenTicker] = useState(presetData?.tokenTicker ?? "");
@@ -65,15 +63,26 @@ export default function CreateTokenForm({
   );
 
   const pickAvatar = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      aspect: [1, 1],
-      allowsEditing: true,
-      quality: 0.5,
-    });
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        aspect: [1, 1],
+        allowsEditing: true,
+        quality: 0.5,
+      });
 
-    if (!result.canceled) {
-      setAvatar(result.assets[0].uri);
+      if (!result.canceled) {
+        const uri = result.assets[0].uri;
+        // Token images use default 15 MB limit
+        const validationError = await validateImageFile(uri);
+        if (validationError) {
+          notify.error(validationError.message);
+          return;
+        }
+        setAvatar(uri);
+      }
+    } catch (err) {
+      notify.error("Failed to pick image. Please try again.");
     }
   };
 
@@ -105,8 +114,8 @@ export default function CreateTokenForm({
       style={{
         backgroundColor: colors.surfaceContainerLowest,
         borderRadius: isMobile ? 0 : 16,
-        height: height,
       }}
+      contentContainerStyle={{ flexGrow: 1 }}
     >
       <View
         style={{
@@ -115,8 +124,7 @@ export default function CreateTokenForm({
           paddingHorizontal: isMobile ? 16 : 24,
           paddingVertical: isMobile ? 40 : 24,
           maxWidth: 500,
-          minHeight: isMobile ? height : height * 0.9,
-          justifyContent: "space-between",
+          flex: 1,
         }}
       >
         <View style={{ gap: 16 }}>
@@ -173,10 +181,11 @@ export default function CreateTokenForm({
                   alignItems: "baseline",
                 }}
               >
-                <Text variant="bodyLarge">Image, video or gif</Text>
+                <Text variant="bodyLarge">Token Image</Text>
                 <View>
+                  <Text variant="bodySmall">PNG or JPEG format, max 15 MB</Text>
                   <Text variant="bodySmall">This will be shown as</Text>
-                  <Text variant="bodySmall">your Token’s picture</Text>
+                  <Text variant="bodySmall">your Token's picture</Text>
                 </View>
               </View>
             </View>
@@ -187,7 +196,7 @@ export default function CreateTokenForm({
                 label="Token Name"
                 value={tokenName}
                 onChangeText={setTokenName}
-                maxLength={20}
+                maxLength={32}
                 placeholder="eg. Bitcoin"
                 style={{ flex: 1 }}
               />
@@ -205,6 +214,7 @@ export default function CreateTokenForm({
                 id="Description"
                 label="Description"
                 value={description}
+                maxLength={5000}
                 onChangeValue={setDescription}
                 placeholder="Bitcoin is..."
               />
@@ -218,7 +228,7 @@ export default function CreateTokenForm({
                     label="Telegram"
                     value={telegram}
                     onChangeText={(val) =>
-                      setTelegram(normalizeWebsiteUrl(val))
+                      setTelegram(normalizeUrl(val))
                     }
                     placeholder="https://t.me/username"
                     mode="flat"
@@ -233,7 +243,7 @@ export default function CreateTokenForm({
                     }}
                     label="Twitter"
                     value={twitter}
-                    onChangeText={(val) => setTwitter(normalizeWebsiteUrl(val))}
+                    onChangeText={(val) => setTwitter(normalizeUrl(val))}
                     placeholder="https://x.com/username"
                   />
                 )}
@@ -246,7 +256,7 @@ export default function CreateTokenForm({
                     }}
                     label="Website"
                     value={website}
-                    onChangeText={(val) => setWebsite(normalizeWebsiteUrl(val))}
+                    onChangeText={(val) => setWebsite(normalizeUrl(val))}
                     placeholder="https://example.com"
                   />
                 )}
@@ -298,7 +308,7 @@ export default function CreateTokenForm({
             </View>
           </View>
         </View>
-        <View style={{ gap: 16 }}>
+        <View style={{ gap: 16, paddingBottom: isMobile ? 8 : 16 }}>
           <ContinueAndProgress
             theme={theme}
             progress={{
@@ -307,6 +317,7 @@ export default function CreateTokenForm({
             }}
             handleSubmit={handleSubmit}
             isFilledAll={isFilledAll}
+            onBack={onBack}
           />
         </View>
       </View>

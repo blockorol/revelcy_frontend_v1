@@ -6,8 +6,10 @@ import shortString from "@utils/address_shorter";
 import { View, Image } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { ExpandableText } from '@components/base/ExpandableText';
-import { SvgIcon } from '@components/base/SvgIcon';
-import { ChipDisplay } from '@components/ui/Chip';  
+import { SvgIcon, SvgIconButton } from '@components/base/SvgIcon';
+import { ChipDisplay } from '@components/ui/Chip';
+import { QuestionMarkModal } from "@components/modals/QuestionMarkModal";
+import { useState } from "react";  
 
 interface PremarketBaseInfoProps {
   tokenMainInfo: TokenMainInfo;
@@ -16,8 +18,10 @@ interface PremarketBaseInfoProps {
 }
 
 export function PremarketBaseInfo({ tokenMainInfo, tokenDynamicInfo, isMobile}: PremarketBaseInfoProps) {
+  console.log("tokenMainInfo:", tokenMainInfo);
   const theme = useTheme();
   const { left } = useIsMobileForTwoScreenWithDemention();
+  const [showQuestionModal, setShowQuestionModal] = useState(false);
 
   // Determine the effective state based on conditions
   const getEffectiveState = () => {
@@ -80,7 +84,7 @@ export function PremarketBaseInfo({ tokenMainInfo, tokenDynamicInfo, isMobile}: 
 
   if (tokenMainInfo.state === "premarket") {
     const deadline = getTimeLeftLabel(tokenMainInfo.premarketDeadline)
-    deadlineText = deadline === 'Expired' ?"Deadline reached" :  deadline+" left"
+    deadlineText = deadline === 'Expired' ? "" :  deadline+" left"
   }
 
   return (
@@ -171,17 +175,27 @@ export function PremarketBaseInfo({ tokenMainInfo, tokenDynamicInfo, isMobile}: 
             color={theme.colors.onSurfaceVariant} 
           />
         )}
-        <Text variant="labelLarge" style={{color: deadlineText === "Deadline reached" ? theme.colors.error : theme.colors.secondary}}>
-          {deadlineText}
-        </Text>
+        {deadlineText && (
+          <Text variant="labelLarge" style={{color: theme.colors.secondary}}>
+            {deadlineText}
+          </Text>
+        )}
         {(tokenMainInfo.state === 'premarket' || tokenMainInfo.state === 'canceled') && (
-          <SvgIcon 
-          name="question-mark-circle" 
-          size={24} 
-          color="#938F9566" 
-        />
+          <View style={{ justifyContent: "center", alignItems: "center" }}>
+            <SvgIconButton 
+              name="question-mark-circle" 
+              size={24} 
+              color={theme.colors.outline}
+              onPress={() => setShowQuestionModal(true)}
+            />
+          </View>
         )}
       </View>
+      
+      <QuestionMarkModal 
+        visible={showQuestionModal} 
+        onClose={() => setShowQuestionModal(false)} 
+      />
     </View>
   );
 }

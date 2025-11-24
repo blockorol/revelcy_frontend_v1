@@ -13,7 +13,7 @@ import {
   useTheme,
   HelperText,
 } from "react-native-paper";
-import   TextInput from '@components/ui/TextInput'
+import TextInput from '@components/ui/TextInput'
 import { Text } from "@components/ui/Text";
 import ContinueAndProgress from "@components/ContinueButtonWithProgressBar";
 import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeader";
@@ -25,6 +25,11 @@ import { ExtendedMD3Colors } from "@theme/types";
 import { round } from "@utils/numbers";
 import TextInputMultiline from "@components/base/form/TextInputMutiline";
 import { Button } from "@components/ui/Button";
+import { validateImageFile, BANNER_MAX_FILE_SIZE_BYTES } from "@utils/imageValidation";
+import { useContext } from "react";
+import { NotificationContext } from "@providers/NotificationContext";
+
+const MAX_CALL_TO_ACTION = 5
 
 type CustomizeTokenProps = {
   onNext: (data: CustomizeTokenData) => void;
@@ -55,6 +60,7 @@ export default function CustomizeTokenForm({
 
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
+  const notificationContext = useContext(NotificationContext);
 
   const [banner, setBanner] = useState<string | undefined>(
     presetData?.banner?.data
@@ -66,17 +72,11 @@ export default function CustomizeTokenForm({
   );
 
   const [links, setLinks] = useState<Link[]>(presetData?.links ?? []);
-
-  const addTelegramLink = () => {
-    setLinks((prev) => [...prev, { text: "", url: "", type: "tg" }]);
-  };
-  const addXLink = () => {
-    setLinks((prev) => [...prev, { text: "", url: "", type: "x" }]);
-  };
-
-  const addOtherLink = () => {
-    setLinks((prev) => [...prev, { text: "", url: "", type: "other" }]);
-  };
+  const addLink = (type: 'tg' | "x" | "other") => {
+    if (links.length >= MAX_CALL_TO_ACTION)
+      return
+    setLinks((prev) => [...prev, { text: "", url: "", type: type }]);
+  }
 
   const updateLink = (index: number, field: "text" | "url", value: string) => {
     const newLinks = [...links];
@@ -90,12 +90,29 @@ export default function CustomizeTokenForm({
 
   const pickBanner = async () => {
     try {
-      const url = await pickImageWithLimited({ max_bytes: 5000 * 1024 });
+      const url = await pickImageWithLimited({ max_bytes: BANNER_MAX_FILE_SIZE_BYTES }); // 5 MB
       if (!!!url) return;
+      
+      // Validate image format (PNG or JPEG) with 5 MB limit for banners
+      const validationError = await validateImageFile(url, { maxSizeBytes: BANNER_MAX_FILE_SIZE_BYTES });
+      if (validationError) {
+        setBannerError(validationError.message);
+        // Also show notification if available
+        if (notificationContext) {
+          notificationContext.error(validationError.message);
+        }
+        return;
+      }
+      
       setBanner(url);
       setBannerError(undefined);
     } catch (e) {
-      setBannerError(e as string);
+      const errorMessage = e as string;
+      setBannerError(errorMessage);
+      // Also show notification if available
+      if (notificationContext) {
+        notificationContext.error(errorMessage || "Failed to pick banner image. Please try again.");
+      }
     }
   };
 
@@ -121,8 +138,8 @@ export default function CustomizeTokenForm({
     return type === "x"
       ? "x-logo"
       : type === "tg"
-      ? "tg-logo"
-      : "world-outlined";
+        ? "tg-logo"
+        : "world-outlined";
   };
 
   return (
@@ -132,6 +149,7 @@ export default function CustomizeTokenForm({
         backgroundColor: colors.surfaceContainerLowest,
         borderRadius: isMobile ? 0 : 16,
       }}
+      contentContainerStyle={{ flexGrow: 1 }}
     >
       <View
         style={{
@@ -140,8 +158,7 @@ export default function CustomizeTokenForm({
           paddingHorizontal: isMobile ? 16 : 24,
           paddingVertical: isMobile ? 40 : 24,
           maxWidth: 500,
-          minHeight: isMobile ? height: height * 0.9,
-          justifyContent: "space-between",
+          flex: 1,
         }}
       >
         <View style={{ gap: 24, flex: 1 }}>
@@ -150,9 +167,9 @@ export default function CustomizeTokenForm({
             theme={theme}
             onClose={onClose}
           />
-          <View style={{ flexDirection: "row", gap: 16 }}>
+          <View style={{ flexDirection: "row", gap: 16, alignItems: "flex-start" }}>
             <SvgIcon name="info-circle" color={colors.primary} size={24} />
-            <View style={{ gap: 8, maxWidth: 392 }}>
+            <View style={{ gap: 8, flex: 1, minWidth: 0 }}>
               <Text
                 variant="bodyMedium"
                 style={{ color: colors.onSurfaceVariant }}
@@ -203,13 +220,15 @@ export default function CustomizeTokenForm({
               >
                 <TouchableOpacity
                   onPress={pickBanner}
-                  style={{ alignSelf: "center" }}
+                  style={{ alignSelf: "center", width: "100%" }}
                 >
                   <View
                     style={{
-                      height: 120,
-                      width: 380,
+                      width: "100%",
+                      aspectRatio: 3,           
                       borderRadius: 24,
+                      borderWidth: 1,          
+                      borderColor: colors.outlineVariant,
                       backgroundColor: colors.surfaceContainerHighest,
                       alignItems: "center",
                       justifyContent: "center",
@@ -220,6 +239,7 @@ export default function CustomizeTokenForm({
                       <Image
                         source={{ uri: banner ?? presetData?.banner?.url }}
                         style={{ width: "100%", height: "100%" }}
+                        resizeMode="cover"
                       />
                     ) : (
                       <>
@@ -233,7 +253,7 @@ export default function CustomizeTokenForm({
                             variant="labelMedium"
                             style={{ color: colors.onSurfaceVariant }}
                           >
-                            Upload image or GIF
+                            Upload image
                           </Text>
                           <Text
                             variant="labelSmall"
@@ -245,7 +265,7 @@ export default function CustomizeTokenForm({
                             variant="labelSmall"
                             style={{ color: colors.onSurfaceVariant }}
                           >
-                            Max 5 Mb
+                            PNG or JPEG format, max 5 MB
                           </Text>
                         </View>
                       </>
@@ -265,8 +285,9 @@ export default function CustomizeTokenForm({
               </Text>
 
               <TextInputMultiline
+                maxLength={20000}
                 value={description}
-                onChangeValue={setDescription}
+                onChangeValue={(val) => setDescription(val.trimStart())}
                 placeholder="Describe your community..."
               />
             </View>
@@ -295,8 +316,9 @@ export default function CustomizeTokenForm({
                           mode="outlined"
                           leftSvgIconName={convertLinkIcon(link.type)}
                           size="small"
+                          style={{ borderRadius: 999, alignSelf: "flex-start" }}
                         >
-                          {link.text}
+                          {link.text || "Button preview"}
                         </Button>
 
                         <TextInput
@@ -305,7 +327,7 @@ export default function CustomizeTokenForm({
                           placeholder="e.g. Subcribe to..."
                           maxLength={25}
                           value={link.text}
-                          onChangeText={(val) => updateLink(index, "text", val)}
+                          onChangeText={(val) => updateLink(index, "text", val.trimStart())}
                           mode="flat"
                           backgroundColor={colors.surfaceContainerLow}
                         />
@@ -314,8 +336,8 @@ export default function CustomizeTokenForm({
                           label={"URL"}
                           placeholder="e.g. https://example.com/..."
                           value={link.url}
-                          onChangeText={(val) =>
-                            updateLink(index, "url", normalizeUrl(val))
+                          onChangeText={(val) => 
+                            updateLink(index, "url", normalizeUrl(val.trimStart()))
                           }
                           mode="flat"
                           backgroundColor={colors.surfaceContainerLow}
@@ -341,53 +363,57 @@ export default function CustomizeTokenForm({
               </View>
 
               {/* Add link */}
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "flex-start",
-                  width: "100%",
-                }}
-              >
-                <View style={{ flexDirection: "row", gap: 16, height: 24 }}>
-                  <SvgIcon
-                    name="add-circle-outlined"
-                    color={theme.colors.onSurfaceVariant}
-                  />
+              {links.length < MAX_CALL_TO_ACTION &&
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "flex-start",
+                    width: "100%",
+                  }}
+                >
+                  <View style={{ flexDirection: "row", gap: 16, height: 24 }}>
+                    <SvgIcon
+                      name="add-circle-outlined"
+                      color={theme.colors.onSurfaceVariant}
+                    />
 
-                  <SvgIconButton
-                    name="tg-logo"
-                    color={theme.colors.onSurface}
-                    onPress={() => addTelegramLink()}
-                  />
-                  <SvgIconButton
-                    name="x-logo"
-                    color={theme.colors.onSurface}
-                    onPress={() => addXLink()}
-                  />
-                  <SvgIconButton
-                    name="world-outlined"
-                    color={theme.colors.onSurface}
-                    onPress={() => addOtherLink()}
-                  />
+                    <SvgIconButton
+                      name="tg-logo"
+                      color={theme.colors.onSurface}
+                      onPress={() => addLink('tg')}
+                    />
+                    <SvgIconButton
+                      name="x-logo"
+                      color={theme.colors.onSurface}
+                      onPress={() => addLink('x')}
+                    />
+                    <SvgIconButton
+                      name="world-outlined"
+                      color={theme.colors.onSurface}
+                      onPress={() => addLink('other')}
+                    />
+                  </View>
                 </View>
-              </View>
+              }
             </View>
           </View>
         </View>
-        <ContinueAndProgress
-          theme={theme}
-          progress={
-            steps
-              ? {
+        <View style={{ marginTop: 24 }}>
+          <ContinueAndProgress
+            theme={theme}
+            progress={
+              steps
+                ? {
                   before: (steps.current - 1) / steps.total,
                   after: steps.current / steps.total,
                 }
-              : undefined
-          }
-          handleSubmit={handleSubmit}
-          isFilledAll={isFilledAll}
-          onBack={onBack}
-        />
+                : undefined
+            }
+            handleSubmit={handleSubmit}
+            isFilledAll={isFilledAll}
+            onBack={onBack}
+          />
+        </View>
       </View>
     </ScrollView>
   );

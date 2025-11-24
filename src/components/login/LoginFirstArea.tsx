@@ -1,7 +1,7 @@
 // components/LoginPopup.tsx
 import React from 'react';
 import { View, StyleSheet, DimensionValue} from 'react-native';
-import { Text, useTheme } from 'react-native-paper';
+import { Text, useTheme, IconButton } from 'react-native-paper';
 import WalletButton from './buttons/WalletButton';
 import { TermsNotice } from '@components/login/TermsNotice';
 import { ExtendedMD3Colors } from '@theme/types';
@@ -12,9 +12,10 @@ interface LoginFirstAreaProps {
   width: number;
   overrideSaveJwt?: (jwt:string, isNewUser: boolean) => void;
   toNext: () => void;
+  onClose?: () => void;
 }
 
-export default function LoginFirstArea({height, width, toNext, overrideSaveJwt }: LoginFirstAreaProps) {
+export default function LoginFirstArea({height, width, toNext, overrideSaveJwt, onClose }: LoginFirstAreaProps) {
   const theme = useTheme();
   const colors =theme.colors as ExtendedMD3Colors 
 
@@ -27,9 +28,18 @@ export default function LoginFirstArea({height, width, toNext, overrideSaveJwt }
         width: width,
     }}>
         <View style={styles.headerContainer}>      
-            <Text variant="titleMedium" style={{color: colors.onSurface}}>
+            <Text variant="titleMedium" style={styles.titleText}>
                 Log in / Sign up
             </Text>
+            {onClose && (
+                <IconButton 
+                    icon="close" 
+                    size={24} 
+                    iconColor={colors.onSurface} 
+                    onPress={onClose}
+                    style={styles.closeButton}
+                />
+            )}
         </View>
 
         <View style={{gap:56}}>
@@ -53,6 +63,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
+    flexDirection: 'row',
+    position: 'relative',
+  },
+  titleText: {
+    flex: 1,
+    textAlign: 'center',
+  },
+  closeButton: {
+    position: 'absolute',
+    right: 0,
+    margin: 0,
+    padding: 0,
   },
   centerSection: {
     alignItems: 'center',

@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "revelcy-cross-app",
-    "slug": "revelcy-cross-app",
+    "name": "Revelcy",
+    "slug": "revelcy",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/r_icon_green_black.png",
+    "icon": "./public/favicon.ico",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -28,7 +28,7 @@
       }
     },
     "web": {
-      "favicon": "./assets/r_icon_green_black.png"
+      "favicon": "./public/favicon.ico"
     },
     "plugins": []
   }

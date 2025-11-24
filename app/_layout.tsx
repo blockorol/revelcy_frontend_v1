@@ -1,6 +1,8 @@
 import React, { useEffect } from "react";
 import { Stack } from "expo-router";
-import { PaperProvider } from "react-native-paper";
+import CookiesModal from "@components/modals/CookiesModal";
+import Head from "expo-router/head";
+import { PaperProvider, Portal } from "react-native-paper";
 import {
   View,
   StyleSheet,
@@ -31,7 +33,7 @@ import process from "process";
 import { AuthProvider } from "@providers/AuthContext";
 import { ContentAreaProvider, useContentArea } from "@hooks/useContentArea";
 import { UserModalProvider } from "@storage/UserModalContext";
-import { NotificationProvider } from "@storage/NotificationContext";
+import { NotificationProvider } from "@providers/NotificationContext";
 import { UniversalOverlayProvider } from "@storage/UniversalOverlayProvider";
 
 if (typeof globalThis.Buffer === "undefined") {
@@ -62,6 +64,10 @@ export default function Layout() {
   if (!fontsLoaded) return null;
 
   return (
+    <>
+      <Head>
+        <title>Revelcy</title>
+      </Head>
     <NetworkProvider>
       <AuthProvider>
         <WalletProvider>
@@ -71,6 +77,7 @@ export default function Layout() {
         </WalletProvider>
       </AuthProvider>
     </NetworkProvider>
+  </>
   );
 }
 
@@ -106,6 +113,8 @@ function InnerLayout() {
       <NotificationProvider>
         <UserModalProvider>
           <UniversalOverlayProvider>
+            <Portal.Host>
+
             <StatusBar
               barStyle={scheme === "dark" ? "light-content" : "dark-content"}
               backgroundColor={theme.colors.background}
@@ -126,7 +135,10 @@ function InnerLayout() {
                   <NavigationBottom />
                 </View> 
               */}
+              <CookiesModal />
             </View>
+            
+            </Portal.Host>
           </UniversalOverlayProvider>
         </UserModalProvider>
       </NotificationProvider>

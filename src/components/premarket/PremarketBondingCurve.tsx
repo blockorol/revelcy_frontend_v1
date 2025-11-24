@@ -1,25 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { DimensionValue, View, Image as RNImage } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
-import { Svg, Path, Circle, Line, Image as SvgImage, Text as SvgText, Defs, ClipPath, Polygon } from 'react-native-svg';
+import { Svg, Path, Circle, Line, Text as SvgText, Polygon, ForeignObject } from 'react-native-svg';
 import { BN } from '@coral-xyz/anchor';
 import { AppTheme } from '@theme/types';
 import {
   convertLamportToSmallCount,
   convertSmallCountToLamport,
-  convertSolToPercentOnStart,
   PremarketState,
 } from '@utils/premarket';
 import { MD3Colors, MD3Typescale } from 'react-native-paper/lib/typescript/types';
+import { convertSolToPercentOnStartNoFee } from '@services/pumpfun/adds';
 
 interface BondingCurvePoint { sol_lamp: BN; persent: number }
 interface BondingCurvePointWithCoordinate extends BondingCurvePoint { x: number; y: number }
 interface GenerateBondingCurvePointsArgs {
-  from: number; to: number; stepSol: number
+  from: number; to: number; stepSol: number; stepPercent: number;
 }
 
 export function generateBondingCurvePointsFromZero(args: GenerateBondingCurvePointsArgs): BondingCurvePoint[] {
-  const { from, to, stepSol } = args;
+  const { from, to, stepSol, stepPercent} = args;
 
   if (stepSol <= 0) throw new Error("step must be positive integer");
   if (from < 0 || to > 200 || from > to) throw new Error("solana must satisfy 0 ≤ from ≤ to ≤ 200");
@@ -27,20 +27,22 @@ export function generateBondingCurvePointsFromZero(args: GenerateBondingCurvePoi
   const result: BondingCurvePoint[] = [];
 
 
-
+  let lastPercent = -10;
   for (let p = 0; p < to; p += stepSol) {
-    const persent = convertSolToPercentOnStart(p)
+    const persent = convertSolToPercentOnStartNoFee(p)
+    if (persent < stepPercent+lastPercent) continue;
+    lastPercent = persent;
     const currentSolana = convertSmallCountToLamport(p)
     result.push({ persent: persent, sol_lamp: currentSolana });
   }
   return result;
 }
 
-
 const bondingCurvePoints = generateBondingCurvePointsFromZero({
   from: 0,
   to: 120,
-  stepSol: 0.1,
+  stepSol: 0.05,
+  stepPercent: 0.1,
 });
 
 export interface Joiner {
@@ -122,20 +124,30 @@ const JoinerMarker: React.FC<{
           cy={y}
           r={8}
           stroke={color}
-          strokeWidth={1}
+          strokeWidth={0.1}
           fill={color}
         />
-        <SvgImage
-          href={{ uri: url }}
-          width={16}
-          height={16}
-          x={x - 8}
-          y={y - 8}
-          clipPath={`url(#clip-${x}-${y})`}
-        />
-        <ClipPath id={`clip-${x}-${y}`}>
-          <Circle cx={x} cy={y} r={8} />
-        </ClipPath>
+        <ForeignObject x={x - 8} y={y - 8} width={16} height={16}>
+          <View style={{
+            width: 16,
+            height: 16,
+            borderRadius: 8,
+            overflow: 'hidden',
+            backgroundColor: color,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <RNImage
+              source={{ uri: url }}
+              style={{
+                width: 14,
+                height: 14,
+                borderRadius: 7,
+              }}
+              resizeMode="cover"
+            />
+          </View>
+        </ForeignObject>
       </>
     );
   }
@@ -161,8 +173,9 @@ interface PremarketBondingCurveProps {
   currentUserId?: string;
   state: PremarketState;
 
-  goalPercent: number;
-  nowPercent: number;
+  goalSol: BN;
+  nowSol: BN;
+
   currentPrice?: number;
   joiners: Joiner[];
   background?: string;
@@ -179,8 +192,8 @@ interface PremarketBondingCurveProps {
 export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
   currentUserId="no_user",
   state,
-  goalPercent,
-  nowPercent,
+  goalSol,
+  nowSol,
   currentPrice,
   joiners,
   background,
@@ -238,8 +251,8 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
     ""
   );
 
-  const goalPoint = findPointByPercent(curvePoints, goalPercent);
-  const nowPoint = findPointByPercent(curvePoints, nowPercent);
+  const goalPoint = findPointBySol(curvePoints, goalSol);
+  const nowPoint = findPointBySol(curvePoints, nowSol);
 
   const goalTop = 
     state === 'premarket' && goalPoint.y === nowPoint.y  ? 
@@ -255,15 +268,15 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
   const labelsOverlap = Math.abs(goalTop - nowTop) < 30
 
   const goalColor = 
-    state === 'canceled' ? colors.error : 
+    state === 'canceled' || state === 'expired' ? colors.error : 
     state === 'finished' ? colors.primary :
     colors.secondary
   const onGoalColor = 
-    state === 'canceled' ? colors.onError : 
+    state === 'canceled' || state === 'expired' ? colors.onError : 
     state === 'finished' ? colors.onPrimary :
     colors.onSecondary
 
-  if (state === 'canceled') {
+  if (state === 'canceled' || state === 'expired') {
     currentPrice = 0
   }
   
@@ -299,6 +312,18 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
         { state === 'premarket' && !labelsOverlap &&
           <Line x1={YLineWight} x2={nowPoint.x} y1={nowPoint.y} y2={nowPoint.y} stroke={colors.primary} strokeDasharray="4" />
         }
+        { state === 'premarket' && !labelsOverlap && joiners.length === 0 &&
+          <Circle
+            cx={nowPoint.x}
+            cy={nowPoint.y}
+            r={4}
+            stroke={colors.primary}
+            strokeWidth={1}
+            fill="none"
+          />
+        }
+
+
 
         {/* joiners */}
         {joiners.map((j) => {
@@ -467,17 +492,16 @@ function formatMax5Significant(n: number): string {
 
 function convertNumberWithNull(num: number): { zeros: number; val: number } {
   if (num === 0) return { zeros: 0, val: 0 };
-  const str = num.toExponential();
-  const match = str.match(/^([\d.]+)e-(\d+)$/);
-  if (match) {
-    const digits = match[1].replace('.', '');
-    const zeros = parseInt(match[2], 10) - (digits.length - 1);
-    return { zeros, val: parseInt(digits) };
-  }
+  
+  // Use decimal string approach for more accurate counting
   const decimalStr = num.toString().split('.')[1] || '';
   const leadingZeros = decimalStr.match(/^0*/)?.[0].length || 0;
   const rest = decimalStr.slice(leadingZeros);
-  return { zeros: leadingZeros, val: parseInt(rest) };
+  
+  // Limit val to maximum 2 decimal places
+  const truncatedRest = rest.substring(0, 2);
+  
+  return { zeros: leadingZeros, val: parseInt(truncatedRest) };
 }
 
 

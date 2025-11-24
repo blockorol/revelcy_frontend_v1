@@ -137,7 +137,7 @@ export function TokenPremarketPageNormal({
                 paddingTop: 0,
               }}
             >
-              <View style={{ gap: 48}}>
+              <View style={{ gap: 32}}>
                 <PremarketBaseInfo tokenMainInfo={token.mainInfo} tokenDynamicInfo={token.dynamicInfo} isMobile={false}/>
                 <PremarketDynamicInfo
                   tokenMainInfo={token.mainInfo}
@@ -157,6 +157,7 @@ export function TokenPremarketPageNormal({
             <YourEntry 
               premarketPubkey={token.mainInfo.premarketPubkey}
               tokenDynamicInfo={token.dynamicInfo}
+              tokenMainInfo={token.mainInfo}
               onUpdated={refetchTokenInfo}
               isMobile={false}
             />
@@ -316,6 +317,7 @@ function BriefMobile({
           <YourEntry 
             premarketPubkey={token.mainInfo.premarketPubkey}
             tokenDynamicInfo={token.dynamicInfo}
+            tokenMainInfo={token.mainInfo}
             onUpdated={refetchTokenInfo}
             isMobile={true}
           />
@@ -367,7 +369,7 @@ function BriefMobile({
       <View
         style={{
           position: "absolute",
-          bottom: 0,
+          bottom: 20,
           left: 0,
           right: 0,
           alignItems: "center",

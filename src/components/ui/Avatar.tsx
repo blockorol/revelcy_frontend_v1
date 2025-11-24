@@ -1,8 +1,9 @@
 // components/base/Avatar.tsx
 import React, { useState } from "react";
 import { View, Image as RNImage } from "react-native";
-import { useTheme } from "react-native-paper";
 import type { AppTheme } from "@theme/types";
+import { Avatar as PaperAvatar, useTheme } from "react-native-paper";
+
 const WALLET_BUCKET_COUNT = 7;
 
 const defaultAvatars = [

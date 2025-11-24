@@ -10,6 +10,7 @@ import OneScreenContainer from "@components/base/container/OneScreenContainer";
 import LoginFlow from "@components/login/LoginFlow";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import { ShareTextButton } from "@components/base/ButtonShare";
+import { openInBrowser } from "@utils/openLinks";
 
 interface PremarketActionProps {
   tokenMainInfo: TokenMainInfo;
@@ -27,6 +28,7 @@ export function PremarketAction({
 
   switch (tokenMainInfo.state) {
     case "premarket":
+    case "expired":
       return  <PremarketActionPremarket
           tokenMainInfo={tokenMainInfo}
           tokenDynamicInfo={tokenDynamicInfo}
@@ -36,7 +38,7 @@ export function PremarketAction({
     case "canceled":
       return <PremarketActionCanceled />;
     case "finished":
-      return <PremarketActionLaunched />;
+      return <PremarketActionLaunched tokenMainInfo={tokenMainInfo} />;
   }
 }
 
@@ -54,35 +56,20 @@ export function PremarketActionPremarket({
   isMobile
 }: PremarketActionLaunchedProps) {
   let { user } = useAuth();
-  const { open, close } = useOverlay();
   const { colors } = useTheme();
   const currentURL = window.location.href;
 
-  const renderLogin = () => (
-    <OneScreenContainer>
-      <LoginFlow onCloseButton={close} />
-    </OneScreenContainer>
-  );
 
-  if (!user) {
-    return (
-      <View style={{flexDirection: "row", padding: isMobile ? 16 : 24, width: "100%", gap: 16}}>
-        <Button style={{flex: 3}} onPress={() => open(renderLogin())}>Login</Button>
-        <ShareTextButton style={{flex: 1}} shareMessage={`Join to premarket on: ${currentURL}`}/>
-      </View>
-    );
-  }
-
-    const isCreator = tokenMainInfo.createdByPubkey === user.walletAddress;
-    const userJoined =
-    tokenDynamicInfo.holders.find((holder) => holder.id === user.userId) !==
-    undefined;
+  const isCreator = tokenMainInfo.createdByPubkey === user?.walletAddress;
+  const userJoined =
+  tokenDynamicInfo.holders.find((holder) => holder.id === user?.userId) !==
+  undefined;
 
   const now = Math.floor(Date.now() / 1000);
   const isDeadline = tokenMainInfo.premarketDeadline < now;
   if (isCreator) {
     return (
-    <View style={{ gap: 48, alignItems: "center", paddingTop: 0, paddingBottom: 0, paddingLeft: isMobile?16:24, paddingRight: isMobile?16:24, width: '100%', backgroundColor: isMobile?colors.shadow:undefined}}>
+    <View style={{ gap: 48, alignItems: "center", paddingTop: 0, paddingBottom: 20, paddingLeft: isMobile?16:24, paddingRight: isMobile?16:24, width: '100%', backgroundColor: isMobile?colors.shadow:undefined, marginBottom: isMobile?-20:0}}>
         <CreatorInfo
             tokenMainInfo={tokenMainInfo}
             isDeadLine={isDeadline}
@@ -96,13 +83,13 @@ export function PremarketActionPremarket({
 )}
 
   return (
-    <View style={{ gap: 48, alignItems: "center", width: '100%',backgroundColor: isMobile?colors.shadow:undefined}}>
+    <View style={{ gap: 48, paddingLeft: isMobile?16:24, paddingRight: isMobile?16:24, alignItems: "center", width: '100%'}}>
       {isDeadline ? (
         <Text variant="labelSmall" style={{ color: colors.onSurfaceVariant }}>
           Waiting for creator action: Finish premarket
         </Text>
       ) : userJoined ? (
-        <ShareTextButton style={{width: "90%"}} shareMessage={`Join to premarket on: ${currentURL}`}>Share</ShareTextButton>
+        <ShareTextButton style={{width: "100%"}} shareMessage={`Join to premarket on: ${currentURL}`}>Share</ShareTextButton>
       ) : (
         <PremarketJoin
           tokenMainInfo={tokenMainInfo}
@@ -121,18 +108,37 @@ export function PremarketActionCanceled() {
   return null;
 }
 
-export function PremarketActionLaunched() {
+interface PremarketActionLaunchedComponentProps {
+  tokenMainInfo: TokenMainInfo;
+}
+
+export function PremarketActionLaunched({ tokenMainInfo }: PremarketActionLaunchedComponentProps) {
   const { colors } = useTheme();
+
+  const handleBuyPress = () => {
+    if (tokenMainInfo.tokenMint) {
+      openInBrowser(`https://pump.fun/coin/${tokenMainInfo.tokenMint}`);
+    }
+  };
+
   return (
-    <View style={{ flexDirection: "row", gap: 16 }}>
-      {/* <Button mode='contained' disabled  style={{width:270}}>Buy</Button>  */}
+    <View style={{ flexDirection: "row", gap: 16, alignSelf: "center" }}>
+      <Button
+        mode="contained"
+        leftSvgIconName="buy"
+        textColor={colors.onPrimary}
+        style={{ width: 168, height: 40 }}
+        onPress={handleBuyPress}
+      >
+        Buy
+      </Button>
       <Button
         mode="contained"
         leftSvgIconName="pumpfun"
         textColor={colors.onPrimary}
-        style={{ width: "100%" }}
+        style={{ width: 168, height: 40 }}
+        onPress={handleBuyPress}
       >
-        {" "}
         View
       </Button>
     </View>

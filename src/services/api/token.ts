@@ -1,10 +1,12 @@
 import { API_HOST } from "env";
 import { BN } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
-import { convertSolanaToTokenBuy, DEFAULT_TOKEN_COUNT_DECIMAL, PremarketState, convertTokenToDecimal } from "@utils/premarket";
+import { PremarketState, convertTokenToDecimal } from "@utils/premarket";
 import { toDecString } from "@api/tx_premarket";
 import { http } from "@api/http";
 import shortString from "@utils/address_shorter";
+import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
+import { DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
 
 const RETRY_DEFAULT = 6;
 
@@ -42,7 +44,6 @@ export async function premarketCreated(args: premarketCreatedArgs) {
         twitter: args.mainInfo.links.twitter,
         web_site: args.mainInfo.links.webSite,
       },
-      premarket_goal_pers: args.mainInfo.premarketGoalPers,
       premarket_goal_sol_lamp: toDecString(args.mainInfo.premarketGoalSolLamp),
       premarket_deadline: args.mainInfo.premarketDeadline,
       premarket_created: args.mainInfo.premarketCreated,
@@ -124,6 +125,34 @@ export async function premarketFinished(args: {
   }
 }
 
+export async function extendedPremarket(args: {
+  premarketPubKey: string;
+  userWallet: string;
+  userId: string;
+  tx: string;
+  network: "devnet" | "mainnet-beta";
+  newDeadline: number; // unix timestamp
+}) {
+  const payload = {
+    base: {
+      premarket_pub_key: args.premarketPubKey,
+      user_wallet: args.userWallet,
+      user_id: args.userId,
+      tx: args.tx,
+    },
+    network: args.network,
+    new_deadline: args.newDeadline,
+  };
+  
+  try {
+    await http.post(`${API_HOST}/premarket/extended_premarket`, { json: payload, retry: RETRY_DEFAULT });
+    return;
+  } catch (e: any) {
+    console.log("failed with", payload);
+    throw new Error(`Failed to extend premarket: ${e.message ?? "Unknown error"}`);
+  }
+}
+
 export async function userJoinedToPremarket(args: userJoinedToPremarketArgs) {
   const payload = {
     premarket_pub_key: args.premarketPubKey,
@@ -184,7 +213,6 @@ export async function getPremarketInfo({
       twitter: data.blockchain_info.links.twitter || undefined,
       webSite: data.blockchain_info.links.web_site || undefined,
     },
-    premarketGoalPers: data.blockchain_info.premarket_goal_pers,
     premarketGoalSolLamp: new BN(data.blockchain_info.premarket_goal_sol_lamp),
     premarketDeadline: data.blockchain_info.premarket_deadline,
     premarketCreated: data.blockchain_info.premarket_created,
@@ -204,6 +232,26 @@ export async function getPremarketInfo({
     })) || [],
   };
   const dynamicInfo = await fetchTokenDynamicInfo(tokenPubKey);
+  
+  // Determine the effective state based on conditions
+  const convertState = () => {
+    const now = Math.floor(Date.now() / 1000);
+    const isPremarket = mainInfo.state === 'premarket';
+    const isDeadlinePassed = mainInfo.premarketDeadline < now;
+    const isGoalNotReached = dynamicInfo.reservedSolLamp.lt(mainInfo.premarketGoalSolLamp);
+    
+    // If it's premarket and deadline passed and goal reached, show "times_up"
+    if (isPremarket && isDeadlinePassed && !isGoalNotReached) {
+      return 'times_up';
+    }
+    if (isPremarket && isDeadlinePassed && isGoalNotReached) {
+      return 'expired';
+    }
+    
+    return mainInfo.state;
+  };
+  mainInfo.state = convertState();
+
   
   console.log("Premarket dynamicInfo:", dynamicInfo);
 
@@ -237,7 +285,6 @@ export async function getPremarketList({
       twitter:  b.links?.twitter  || undefined,
       webSite:  b.links?.web_site || undefined,
     },
-    premarketGoalPers: b.premarket_goal_pers,
     premarketGoalSolLamp: new BN(b.premarket_goal_sol_lamp), 
     premarketDeadline: b.premarket_deadline,
     premarketCreated:  b.premarket_created,
@@ -257,21 +304,23 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
 
   // Debug current price values
   const currentPriceValue = raw.current_price_lamp ?? raw.current_price ?? raw.currentPriceLamp ?? raw.currentPrice ?? 0;
-  console.log("currentPriceValue from API:", currentPriceValue);
-  console.log("current_price_lamp:", raw.current_price_lamp);
-  console.log("current_price:", raw.current_price);
-  console.log("currentPriceLamp:", raw.currentPriceLamp);
-  console.log("currentPrice:", raw.currentPrice);
+  console.log("currentPriceValue from API", {
+    currentPriceValue:currentPriceValue, 
+    current_price_lamp: raw.current_price_lamp,
+    current_price: raw.current_price, 
+    currentPriceLamp: raw.currentPriceLamp,
+    currentPrice: raw.currentPrice
+  })
   
   const reservedSolLamp = new BN(raw.reserved_sol_lamp);
-  console.log("reservedSolLamp:", reservedSolLamp);
-  const tokenMarketCapFromCurve = convertSolanaToTokenBuy({
-    sol_amount: reservedSolLamp,
-    reserves_sol: new BN(0),
-    reserves_token: DEFAULT_TOKEN_COUNT_DECIMAL
+  const tokenMarketCapFromCurve = convertSolanaToTokenWithFee({
+    input_sol_lamp: reservedSolLamp,
   });
   
-  console.log("tokenMarketCapFromCurve:", tokenMarketCapFromCurve);
+  console.log("tokenMarketCapFromCurve:", {
+    reservedSolLamp: reservedSolLamp.toString(),
+    tokenMarketCapFromCurve: tokenMarketCapFromCurve.toString(),
+});
   
   const reservedToken = DEFAULT_TOKEN_COUNT_DECIMAL.sub(tokenMarketCapFromCurve);
 
@@ -284,10 +333,11 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
       const priceInSolPerToken = Number(currentPriceValue) || 0;
       const marketCapInSol = priceInSolPerToken * 1_000_000_000; // 1e9 tokens supply
       const marketCapValueDec = convertTokenToDecimal(marketCapInSol);
-      console.log("marketCapTokenDec calculation:");
-      console.log("  - priceInSolPerToken:", priceInSolPerToken);
-      console.log("  - marketCapInSol:", marketCapInSol);
-      console.log("  - marketCapValueDec:", marketCapValueDec.toString());
+      console.log("marketCapTokenDec calculation:",{
+        priceInSolPerToken: priceInSolPerToken,
+        marketCapInSol: marketCapInSol,
+        marketCapValueDec: marketCapValueDec.toString()
+      });
       return marketCapValueDec;
     })(),
     marketCapSolLamp: reservedSolLamp,
@@ -320,7 +370,6 @@ export interface TokenMainInfo {
     imageURL?: string;
     ipfsURI: string;
     links: TokenLinks;
-    premarketGoalPers: number;
     premarketGoalSolLamp: BN;
     premarketDeadline: number;
     premarketCreated: number;
@@ -365,5 +414,21 @@ export interface HoldersInfo {
     amountSolLamp: BN;
     iconURL?: string;
     username: string;
+}
+
+export interface HolderEntryPriceDTO {
+    entry_price_lamp: string | number;
+}
+
+export async function getHolderEntryPrice({
+    premarketId,
+    holderWallet,
+}: {
+    premarketId: string;
+    holderWallet: string;
+}): Promise<HolderEntryPriceDTO> {
+    const url = `${API_HOST}/premarket/get_holder_entry_price?premarket_id=${premarketId}&holder_wallet=${holderWallet}`;
+    const data = await http.get<HolderEntryPriceDTO>(url, { retry: RETRY_DEFAULT });
+    return data;
 }
 

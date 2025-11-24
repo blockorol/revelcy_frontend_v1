@@ -6,7 +6,7 @@ import { useWallet } from "@storage/wallet-adapter";
 import { useAnchorWalletSafe } from "@storage/wallet-adapter/useWallet.web";
 import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
-import { useNotification } from "@storage/NotificationContext";
+import { useNotification } from "@providers/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import { joinToPremarket } from "@services/blockchain/premarket/joinPremarket";
 import { userJoinedToPremarket } from "@api/token";
@@ -53,17 +53,8 @@ export function useJoinFlow(onUpdated:()=>void) {
         return "invalid-amount";
       }
       if (!user) {
-        notify.error("Please log in to continue", 
-          {
-            action: {
-              label: "connect",
-              onAction() {
-                open(renderLogin())
-              },
-            }
-          }
-        );
-
+        // For unauthenticated users, show login flow directly
+        open(renderLogin());
         return "need-login";
       }
       if (!wallet || !connected) {

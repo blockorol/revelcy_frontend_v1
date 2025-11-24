@@ -5,7 +5,7 @@ import Slider from "@react-native-community/slider";
 import { PremarketCard } from "@components/premarket/PremarketCard";
 import { TokenMainInfo } from "@api/token";
 import { PublicKey } from "@solana/web3.js";
-import { convertSmallCountToLamport, convertSolToPercentOnStart } from "@utils/premarket";
+import { convertSmallCountToLamport } from "@utils/premarket";
 
 export default function PremarketCardExampleScreen() {
   const nowSec = Math.floor(Date.now() / 1000);
@@ -49,7 +49,6 @@ export default function PremarketCardExampleScreen() {
         twitter: twitter || undefined,
         webSite: website || undefined,
       },
-      premarketGoalPers: convertSolToPercentOnStart(goalSOL),
       premarketGoalSolLamp: convertSmallCountToLamport(goalSOL), // BN-совместимая заглушка
       premarketDeadline: nowSec + Math.max(0, Math.round(deadlineInHours * 3600)),
       premarketCreated: nowSec - Math.max(0, Math.round(createdAgoHours * 3600)),

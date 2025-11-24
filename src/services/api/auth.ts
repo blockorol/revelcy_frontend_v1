@@ -67,6 +67,9 @@ export async function confirmLogin({
     signature: base64js.fromByteArray(signature),
     jwt: jwt
   });
+  if (res.status === 401) {
+    return null;
+  }
   return {
     jwt: res.data.jwt,
     isNewUser: res.data.is_new_user

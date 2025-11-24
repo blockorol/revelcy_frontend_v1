@@ -47,7 +47,20 @@ export const PINATA_SECRET_KEY = getRequired(
 );
 export const API_HOST = getRequired("HOST_BACKEND", ENV.HOST_BACKEND);
 export const HELIUS_KEY = getRequired("HELIUS_KEY", ENV.HELIUS_KEY);
-export const NETWORK = ENV.NETWORK;
+export const NETWORK = ENV.NETWORK??'devnet';
+export const TOKEN_CONVERTOR_SETTINGS = 
+  NETWORK === 'devnet' ?
+  {
+      vS0: '8000000000',
+      vT0: '1073000000000000',
+      SolTo80Percent: 23.80,
+      SolToDisplay: 50,
+  }: {
+      vS0: '30000000000',
+      vT0: '1073000000000000',
+      SolTo80Percent: 86.6,
+      SolToDisplay: 100,
+  }
 
 // ---- Helpers ----
 

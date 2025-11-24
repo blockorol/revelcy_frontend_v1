@@ -158,9 +158,10 @@ function TimeField({
         ]}
         >
         <RNTextInput
+            placeholder='00'
             ref={ref}
             accessibilityLabel={ariaLabel}
-            value={pad2(value)}
+            value={value === 0? undefined:value.toString()}
             onChangeText={(t) => onChange(parseNumeric(t))}
             keyboardType="number-pad"
             maxLength={3}

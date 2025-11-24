@@ -2,8 +2,8 @@ import { TokenInfo } from "@api/token";
 import { Joiner, PremarketBondingCurve } from "@components/premarket/PremarketBondingCurve";
 import { PremarketTimelineSection } from "@components/premarket/PremarketTimelineSection";
 import { AppTheme } from "@theme/types";
-import { convertDecimalToToken, convertLamportToSmallCount, DEFAULT_TOKEN_COUNT } from "@utils/premarket";
 import BN from "bn.js";
+import { TOKEN_CONVERTOR_SETTINGS } from "env";
 import { View } from "react-native";
 import { useTheme, Text} from "react-native-paper";
 
@@ -53,14 +53,13 @@ export function PremarketInfo({currentUserId, tokenInfo, isMobile, withJoinButto
         }}
       >
         <PremarketBondingCurve
+          maxSolDisplayed = {TOKEN_CONVERTOR_SETTINGS.SolToDisplay}
           currentUserId={currentUserId}
           width={isMobile?width-16*2:448}
           height={252}
           state={tokenInfo.mainInfo.state}
-          goalPercent={tokenInfo.mainInfo.premarketGoalPers}
-          nowPercent={
-            (100 * convertDecimalToToken(tokenInfo.dynamicInfo.marketCapTokenDec)) / DEFAULT_TOKEN_COUNT
-          }
+          goalSol={tokenInfo.mainInfo.premarketGoalSolLamp}
+          nowSol={tokenInfo.dynamicInfo.marketCapTokenDec}
           currentPrice={tokenInfo.dynamicInfo.currentPriceLamp}
           joiners={joiners}
           background={colors.surfaceContainerLow}

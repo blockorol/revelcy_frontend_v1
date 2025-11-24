@@ -1,7 +1,7 @@
 // components/token/TokenOverviewCreation.tsx
-import React, { useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { View, Image, ScrollView } from "react-native";
-import { useTheme, ActivityIndicator, Divider } from "react-native-paper";
+import { useTheme, Divider } from "react-native-paper";
 import { Button } from "@components/ui/Button";
 import { Text } from "@components/ui/Text";
 import { format } from "date-fns";
@@ -14,25 +14,33 @@ import { ExtendedMD3Colors } from "@theme/types";
 import { PremarketBondingCurve } from "@components/premarket/PremarketBondingCurve";
 import { useAuth } from "@providers/AuthContext";
 import {
+  convertLamportToSmallCount,
   convertSmallCountToLamport,
-  convertSolToPercentOnStart,
-  DEFAULT_TOKEN_COUNT,
 } from "@utils/premarket";
 import LoginButton from "@components/login/LoginButton";
 import { DonutWithLegend } from "@components/base/DonutWithLegend";
-import { round } from "@utils/numbers";
+import { round, formatNumberNoTrailingZeros } from "@utils/numbers";
+import { useOverlay } from "@storage/UniversalOverlayProvider";
+import TransactionLoadingModal from "@components/modals/TransactionLoadingModal";
+import { makeTransparent } from "@utils/colors";
+import { convertSolToPercentOnStart } from "@services/pumpfun/adds";
 
 type Props = {
   data: TokenCreateFullData;
   onLaunch: () => void;
   launchState: string | undefined;
+  removeAll: () => void;
   onClose?: () => void;
   onBack?: () => void;
 };
+const PUMP_FEE_PERCENTAGE = 0.015;
+const REVELCY_FEE_PERCENTAGE = 0.01;
+const SOL_FEE = 0.059;
 export default function OverviewPremarketCreation({
   data,
   onLaunch,
   launchState,
+  removeAll,
   onClose,
   onBack,
 }: Props) {
@@ -41,7 +49,6 @@ export default function OverviewPremarketCreation({
   const { isMobile, width,height } = useIsMobileWithDemention();
   const { publicKey, connected, connect, disconnect } = useWallet();
   const { user, logout } = useAuth();
-  const solanaFee = 0.02;
   const errorMapper = {
     user: {
       text: "Please login",
@@ -73,6 +80,15 @@ export default function OverviewPremarketCreation({
         </View>
       ),
     },
+    "launch in progress": {
+      text: "Launch in progess,  keep calm and sign with wallet",
+      button: (
+        <Button onPress={()=>{}} disabled={true} variant="primary" size="normal">
+          Launching...
+        </Button>
+      ),
+
+    },
     "no data": {
       text: "Please fill data before launch",
       button: (
@@ -82,6 +98,23 @@ export default function OverviewPremarketCreation({
       ),
     },
   };
+  const {open: openOverlay, replace, isOpen, close} = useOverlay()
+
+  useEffect(()=> {
+    if (!launchState) {
+      close();
+      return
+    }
+    const stateDisplay = (
+    <View>
+      <TransactionLoadingModal launchState={launchState} />
+    </View>)
+    if (isOpen) {
+      replace(stateDisplay)
+    } else {
+      openOverlay(stateDisplay)
+    }
+  }, [launchState])
 
   const error = useMemo(() => {
     if (!user) {
@@ -96,8 +129,11 @@ export default function OverviewPremarketCreation({
     if (!data) {
       return errorMapper["no data"];
     }
+    if (launchState !== undefined) {
+      return errorMapper["launch in progress"];
+    }
     return undefined;
-  }, [connected, publicKey, user]);
+  }, [launchState, connected, publicKey, user]);
 
   const shortAddress = useMemo(() => {
     if (!connected || !publicKey) {
@@ -113,12 +149,15 @@ export default function OverviewPremarketCreation({
         style={{ padding: 24, alignItems: "center", justifyContent: "center" }}
       >
         <Text variant="bodyLarge">Loading...</Text>
+        <Button variant='primary' mode='outlined' onPress={removeAll}>Remove all info</Button>
       </View>
     );
   }
-  const percent = convertSolToPercentOnStart(
+  const percentInitialBuy = round(convertSolToPercentOnStart(
     data.tokenomicsData.creatorInitialBuy
-  );
+  ), 1);
+  const goalSol =data.premarket.goal_sol;
+  const percentGoal = convertSolToPercentOnStart(goalSol);
 
   const { tokenName, tokenTicker, description, avatar, links } =
     data.mainData || {};
@@ -135,11 +174,8 @@ export default function OverviewPremarketCreation({
   // description
   const descriptionCommunity = customData?.description;
 
-  // premaket data
-  const prem = data.premarket;
-
-  const deadlineText = prem?.deadline
-    ? format(new Date(prem.deadline * 1000), "dd.MM.yyyy HH:mm (XXX)")
+  const deadlineText = data.premarket?.deadline_sec
+    ? format(new Date(data.premarket.deadline_sec * 1000), "dd.MM.yyyy HH:mm (XXX)")
     : undefined;
 
     
@@ -150,14 +186,8 @@ export default function OverviewPremarketCreation({
             revelcy: "0",
           };
         }
-        let symbols = 4;
-        let pump = (0.015 * data.tokenomicsData.creatorInitialBuy).toFixed(symbols);
-        let revelcy = (0.01 * data.tokenomicsData.creatorInitialBuy).toFixed(symbols);
-        while (pump.endsWith("0") && revelcy.endsWith("0") && symbols != 0) {
-          symbols--;
-          pump = (0.015 * data.tokenomicsData.creatorInitialBuy).toFixed(symbols);
-          revelcy = (0.01 * data.tokenomicsData.creatorInitialBuy).toFixed(symbols);
-        }
+        const pump = formatNumberNoTrailingZeros(PUMP_FEE_PERCENTAGE * data.tokenomicsData.creatorInitialBuy);
+        const revelcy = formatNumberNoTrailingZeros(REVELCY_FEE_PERCENTAGE * data.tokenomicsData.creatorInitialBuy);
     
         return {
           pump: pump,
@@ -185,37 +215,6 @@ export default function OverviewPremarketCreation({
           minHeight: isMobile ? height: height * 0.9,
         }}
       >
-        {launchState && (
-          <View
-            style={{
-              position: "absolute",
-              left: -(isMobile ? 16 : 24),
-              right: -(isMobile ? 16 : 24),
-              top: -(isMobile ? 40 : 24),
-              bottom: -(isMobile ? 40 : 24),
-              zIndex: 9999,
-              backgroundColor: theme.colors.shadow,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <View
-              style={{
-                backgroundColor: colors.surfaceContainerHighest,
-                gap: 20,
-                padding: 16,
-                borderRadius: 16,
-              }}
-            >
-              <Text variant="titleMedium"> {launchState}</Text>
-              <ActivityIndicator
-                animating
-                color={theme.colors.primary}
-                size="large"
-              />
-            </View>
-          </View>
-        )}
 
         <TokenCreateFormHeader
           title="Overview"
@@ -371,14 +370,11 @@ export default function OverviewPremarketCreation({
             )}
             <PremarketBondingCurve
               currentUserId={user?.userId ?? "dummy_id"}
-              width={isMobile ? width - 16 * 2 : 448}
+              width={isMobile ? width - 16 * 2 : 432}
               height={292}
               state="premarket"
-              goalPercent={prem?.goal_percent ?? 0}
-              nowPercent={
-                (100 * data.tokenomicsData.creatorInitialBuy) /
-                DEFAULT_TOKEN_COUNT
-              }
+              goalSol={convertSmallCountToLamport(data.premarket.goal_sol)}
+              nowSol={convertSmallCountToLamport(data.tokenomicsData.creatorInitialBuy)}
               joiners={[
                 {
                   id: user?.userId ?? "dummy_id",
@@ -395,14 +391,14 @@ export default function OverviewPremarketCreation({
             />
           </View>
 
-          <View
+          {(bannerSrc||descriptionCommunity) && (<View
             // sections community
             style={{
               backgroundColor: colors.surfaceContainerLowest,
               gap: 16,
             }}
           >
-            <Text
+            (<Text
               variant="labelLarge"
               prominent
               style={{ color: colors.onSurface }}
@@ -441,14 +437,14 @@ export default function OverviewPremarketCreation({
             )}
 
             {/* Description */}
-            {descriptionCommunity ? (
+            {descriptionCommunity &&(
               <Text
                 variant="bodyMedium"
                 style={{ color: colors.onSurfaceVariant }}
               >
                 {descriptionCommunity}
               </Text>
-            ) : null}
+            )}
 
             {/* Links detail (main + custom) */}
             {customLinks.length > 0 && (
@@ -479,7 +475,7 @@ export default function OverviewPremarketCreation({
                 </View>
               </ScrollView>
             )}
-          </View>
+          </View>)}
 
           {/* Tokenomics */}
           <View
@@ -501,10 +497,19 @@ export default function OverviewPremarketCreation({
             <DonutWithLegend
               slices={[
                 {
-                  value: round(percent, 1),
-                  additional: data.tokenomicsData.creatorInitialBuy.toFixed(2),
-                  label: "Creator (You)",
+                  value: round(percentGoal, 1),
+                  additional: percentGoal.toFixed(2),
+                  label: "Premarket",
                   color: theme.colors.primary,
+                  subSlices: {
+                    restColor: makeTransparent(theme.colors.onPrimary, 0.7),
+                    slices: [{
+                      value: percentInitialBuy,
+                      label: "Creator (you) buy",
+                      color:  makeTransparent(theme.colors.onPrimary, 0.5),
+                      additional: data.tokenomicsData.creatorInitialBuy.toFixed(2)
+                    }]
+                  }
                 },
                 {
                   value: 20,
@@ -512,7 +517,7 @@ export default function OverviewPremarketCreation({
                   color: theme.colors.secondary,
                 },
                 {
-                  value: round(80 - percent, 1),
+                  value: round(80 - percentGoal, 1),
                   label: "Bonding curve",
                   color: theme.colors.onSurface,
                 },
@@ -556,6 +561,20 @@ export default function OverviewPremarketCreation({
               <Text variant="bodySmall">{fees.revelcy} SOL</Text>
             </View>
 
+            <View
+              style={{
+                paddingTop: 16,
+                justifyContent: "space-between",
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <Text variant="bodySmall">
+                Sol fee
+              </Text>
+              <Text variant="bodySmall">{formatNumberNoTrailingZeros(SOL_FEE)} SOL</Text>
+            </View>
+
             </View>
             <View style={{ gap: 8 }}>
               <Divider />
@@ -570,9 +589,7 @@ export default function OverviewPremarketCreation({
                   Cost
                 </Text>
                 <Text variant="titleMedium" style={{ color: colors.onSurface }}>
-                  {(
-                    data.tokenomicsData.creatorInitialBuy*1.025
-                  ).toFixed(2)}
+                  {formatNumberNoTrailingZeros(data.tokenomicsData.creatorInitialBuy * (1 + PUMP_FEE_PERCENTAGE + REVELCY_FEE_PERCENTAGE) + SOL_FEE)} SOL
                 </Text>
               </View>
             </View>
@@ -616,7 +633,7 @@ export default function OverviewPremarketCreation({
               />
             )}
             {!error ? (
-              <Button mode="contained" onPress={onLaunch}>
+              <Button disabled={launchState!==undefined} mode="contained" onPress={onLaunch}>
                 {`Start premarket with ${shortAddress}`}
               </Button>
             ) : (

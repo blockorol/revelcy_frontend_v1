@@ -4,16 +4,13 @@ import { useTheme, Text } from "react-native-paper";
 
 import Slider from "@react-native-assets/slider";
 import { MarkerProps } from "@react-native-community/slider";
-import {
-  convertLamportToSmallCount,
-  convertTokenToSolanaBuy,
-  DEFAULT_TOKEN_COUNT_DECIMAL,
-  getPersentOfPremartet,
-} from "@utils/premarket";
-import BN from "bn.js";
 import { TextProminent } from "@components/ui/Text";
+import { round } from "@utils/numbers";
+import { convertSolToPercentOnStart } from "@services/pumpfun/adds";
+import { linearOffset, linearOffsetReverse } from "@utils/math";
 
 interface CustomSliderProps {
+  initValue?: number;
   min?: number;
   max?: number;
   onValueChange: (value: number) => void;
@@ -23,6 +20,7 @@ interface CustomSliderProps {
 }
 
 export const CustomSlider: React.FC<CustomSliderProps> = ({
+  initValue,
   min = 20,
   max = 80,
   onValueChange,
@@ -32,7 +30,10 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
 }) => {
   const theme = useTheme();
   const [sliderWidth, setSliderWidth] = useState(0);
-  const [sliderValue, setSliderValue] = useState(min);
+  const [sliderValue, setSliderValue] = useState(initValue??min);
+  const bubleWidth = 110;
+  const treangleSize = 8;
+  const maxOffset = (bubleWidth-treangleSize-20)/2
 
   return (
     <View style={{ marginVertical: 32 }}>
@@ -44,7 +45,7 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
           style={{ width: "100%", height: 40 }}
           minimumValue={min}
           maximumValue={max}
-          step={1}
+          step={0.1}
           value={sliderValue}
           onValueChange={(val: number) => {
             setSliderValue(val);
@@ -54,8 +55,28 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
           maximumTrackTintColor={theme.colors.onSurfaceVariant}
           thumbTintColor={theme.colors.onBackground}
           StepMarker={(props: MarkerProps) => {
+            if (!props.stepMarked) {
+              return null
+            }
             const value = props.currentValue ?? 0;
-            let offsetX = value < 50 ? 120 / (value-11.6) : 120 / (value - 83.4);
+            const percent = round(convertSolToPercentOnStart(value), 0)
+            const settingsFirst = {
+              min: min,
+              max: 0.3*(max-min)+min,
+              maxOffset: maxOffset
+            }
+            const settingsLast = {
+              min: 0.6*(max-min)+min,
+              max: max,
+              maxOffset: maxOffset
+            }
+
+
+            let offsetX = 
+              value < 0.3*(max-min)+min ?
+              linearOffset(value, settingsFirst.min, settingsFirst.max, settingsFirst.maxOffset)  :  // first 30%    a->0 при сдвиге от c до e
+              value < 0.6*(max-min)+min ? 0   // second 30%
+              : -linearOffsetReverse(value, settingsLast.min, settingsLast.max, settingsLast.maxOffset); // last 30%
 
             return (
               <View
@@ -74,7 +95,7 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
                         top: -30,
                         alignSelf: "center",
                         backgroundColor: theme.colors.primary,
-                        width: 95,
+                        width: 110,
                         height: 25,
                         paddingHorizontal: 2,
                         borderRadius: 8,
@@ -89,7 +110,7 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
                         variant="labelMedium"
                         style={{ color: theme.colors.onPrimary }}
                       >
-                        {value}% {solByPers(value)} SOL
+                        {percent}% {value.toFixed(1)} SOL
                       </TextProminent>
                     </View>
 
@@ -143,14 +164,12 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
                 position: "absolute",
                 top: 33,
                 left,
-                transform: [{ translateX: -10 }],
+                transform: [{ translateX: -5 }],
                 alignItems: "center",
               }}
             >
-              <Text
-                style={{ fontSize: 10, color: theme.colors.onSurfaceVariant }}
-              >
-                {label}%
+              <Text style={{ fontSize: 10, color: theme.colors.onSurfaceVariant }}>
+                {label} 
               </Text>
             </View>
           );
@@ -224,14 +243,3 @@ const styles = StyleSheet.create({
     color: "#000",
   },
 });
-
-const solByPers = (val: number): string => {
-  const tokenDec = getPersentOfPremartet(val);
-  const zero = new BN(0);
-  const sol = convertTokenToSolanaBuy({
-    token_amount: tokenDec,
-    reserves_sol: zero,
-    reserves_token: DEFAULT_TOKEN_COUNT_DECIMAL,
-  });
-  return (-convertLamportToSmallCount(sol)).toFixed(1);
-};

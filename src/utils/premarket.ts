@@ -1,21 +1,10 @@
 import { BN } from "@coral-xyz/anchor";
+import { DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
 
 export const LAMPORT_MULTIPLIER=1_000_000_000;
 export const LAMPORT_MULTIPLIER_BIG_INT=new BN(LAMPORT_MULTIPLIER);
 
-const TOKEN_MULTIPLIER=1_000_000;
-const TOKEN_MULTIPLIER_BIG_INT=new BN(TOKEN_MULTIPLIER);
 
-export const DEFAULT_TOKEN_COUNT=1_000_000_000;
-export const DEFAULT_TOKEN_COUNT_DECIMAL=TOKEN_MULTIPLIER_BIG_INT.mul(new BN(DEFAULT_TOKEN_COUNT));
-
-export const virtualSupplyRatioLamp = new BN(30_000_000_000)
-export const virtualTokenRatioDecim = new BN(1_073_000_191_000_000).sub(DEFAULT_TOKEN_COUNT_DECIMAL)
-
-
-export function getPersentOfPremartet(per: number): BN {
-  return DEFAULT_TOKEN_COUNT_DECIMAL.muln(per).divn(100)
-}
 export function convertTokenToDecimal(value: number | BN): BN {
   if (BN.isBN(value)) {
     return DEFAULT_TOKEN_COUNT_DECIMAL.mul(value);
@@ -34,7 +23,6 @@ export function convertDecimalToToken(value: BN): number {
   const fraction = decimalStr.slice(-6).padStart(6, '0');
 
   return parseFloat(`${whole}.${fraction}`);
-
 }
 
 export function convertLamportToSmallCount(lamportAmount: BN): number {
@@ -63,64 +51,6 @@ export function convertCountToLamport(n: number): BN {
   return new BN(combined);
 }
 
-export function convertSolToPercentOnStart(sol: number): number {
-  const solLamp = convertCountToLamport(sol)
-  const tokenDec = convertSolanaToTokenBuy({
-    sol_amount: solLamp,
-    reserves_sol: new BN(0),
-    reserves_token: DEFAULT_TOKEN_COUNT_DECIMAL
-  })
-  return (convertDecimalToToken(tokenDec)/DEFAULT_TOKEN_COUNT)*100
-
-}
-
-// Returns count tokens (in lamport) for Sol amount
-export function convertSolanaToTokenBuy(
-  args: {
-    sol_amount: BN,    // amount SOL (in lamport) to convert to token
-    reserves_sol: BN,  // amount SOL reserved in account
-    reserves_token: BN // amount Token reserved in account
-  }
-): BN {  
-    const solToCalc = args.reserves_sol.add(virtualSupplyRatioLamp)
-    const tokenToCalc = args.reserves_token.add(virtualTokenRatioDecim)
-    return tokenToCalc.mul(args.sol_amount).div(args.sol_amount.add(solToCalc))
-}
-
-export function convertTokenToSolanaBuy(
-  args: {
-    token_amount: BN,  // amount Tokens (in lamport) to convert to SOL
-    reserves_sol: BN,  // amount SOL reserved in account
-    reserves_token: BN // amount Token reserved in account
-  }
-): BN {
-  if (args.token_amount.gt(args.reserves_token)) {
-    throw new Error("tokenIn must be less than virtualTokenReserves");
-  }
-
-  const solToCalc = args.reserves_sol.add(virtualSupplyRatioLamp)
-  const tokenToCalc = args.reserves_token.add(virtualTokenRatioDecim)
-  return solToCalc.mul(args.token_amount).div(args.token_amount.sub(tokenToCalc))
-}
-
-// Returns count SOL (in lamport) for token amount
-export function convertTokenToSolanaSell(
-  args: {
-    token_amount: BN,  // amount Tokens (in lamport) to convert to SOL
-    reserves_sol: BN,  // amount SOL reserved in account
-    reserves_token: BN // amount Token reserved in account
-  }
-): BN {
-  if (args.token_amount.gt(args.reserves_token)) {
-    throw new Error("tokenIn must be less than virtualTokenReserves");
-  }
-
-  const solToCalc = args.reserves_sol.add(virtualSupplyRatioLamp)
-  const tokenToCalc = args.reserves_token.add(virtualTokenRatioDecim)
-  return solToCalc.mul(args.token_amount).div(args.token_amount.add(tokenToCalc))
-  // return args.reserves_sol.mul(args.token_amount).div(args.reserves_token.add(args.token_amount));
-}
-
 
 
 export function formatNumberCompact(value: number | bigint | BN): string {
@@ -145,11 +75,32 @@ export function formatNumberCompact(value: number | bigint | BN): string {
   if (isNaN(num)) return 'NaN';
 
   if (num >= 1_000_000_000) {
-    return `${Math.round(num / 1_000_000_000)} B`;
+    const billions = num / 1_000_000_000;
+    if (billions >= 100) {
+      return `${Math.round(billions)}B`;
+    } else if (billions >= 10) {
+      return `${billions.toFixed(1)}B`;
+    } else {
+      return `${billions.toFixed(2)}B`;
+    }
   } else if (num >= 1_000_000) {
-    return `${Math.round(num / 1_000_000)} M`;
+    const millions = num / 1_000_000;
+    if (millions >= 100) {
+      return `${Math.round(millions)}M`;
+    } else if (millions >= 10) {
+      return `${millions.toFixed(1)}M`;
+    } else {
+      return `${millions.toFixed(2)}M`;
+    }
   } else if (num >= 1_000) {
-    return `${Math.round(num / 1_000)}k`;
+    const thousands = num / 1_000;
+    if (thousands >= 100) {
+      return `${Math.round(thousands)}k`;
+    } else if (thousands >= 10) {
+      return `${thousands.toFixed(1)}k`;
+    } else {
+      return `${thousands.toFixed(2)}k`;
+    }
   } else {
     return `${Math.round(num)}`;
   }

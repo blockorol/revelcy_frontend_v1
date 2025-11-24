@@ -1,19 +1,28 @@
 import React, { memo, useMemo } from "react";
-import { View, Pressable } from "react-native";
-import { Text, Avatar, useTheme } from "react-native-paper";
-import { formatDistanceToNow } from "date-fns";
+import { View, Pressable, Image } from "react-native";
+import { Text, useTheme } from "react-native-paper";
 import { router } from "expo-router";
 import { SvgIcon } from "@components/base/SvgIcon";
-import { TokenMainInfo } from "@api/token";
+import { ChipDisplay } from '@components/ui/Chip';
+import { RoundIconLink } from "@components/premarket/RoundIcons";
+import { getTimeLeftLabel, convertDecimalToToken, convertLamportToSmallCount, formatNumberCompact, convertTimeStampToDataMonth } from "@utils/premarket";
+import { formatNumberNoTrailingZeros } from "@utils/numbers";
+import shortString from "@utils/address_shorter";
+import { TokenMainInfo, TokenDynamicInfo } from "@api/token";
+import { AvatarGroup } from "@components/base/AvatarGroup";
+import Svg, { Path } from 'react-native-svg';
+import { ExtendedMD3Colors } from "@theme/types";
 
 type PremarketCardProps = {
   mainInfo: TokenMainInfo;
+  dynamicInfo?: TokenDynamicInfo;
   raisedLamports?: string | number; 
   compact?: boolean; // for future
 };
 
-export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, raisedLamports, compact = true }) => {
-  const { colors } = useTheme();
+export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dynamicInfo, raisedLamports, compact = true }) => {
+  const theme = useTheme();
+  const colors = theme.colors as ExtendedMD3Colors;
 
   const goalSOL = useMemo(() => {
     const lamp = mainInfo.premarketGoalSolLamp.toString();
@@ -25,27 +34,6 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, rai
     const lamp = typeof raisedLamports === "number" ? raisedLamports : parseInt(String(raisedLamports), 10);
     return lamportsToSol(lamp);
   }, [raisedLamports]);
-
-  const deadlineIn = useMemo(() => {
-    const ms = (mainInfo.premarketDeadline ?? 0) * 1000;
-    if (!ms) return undefined;
-    return formatDistanceToNow(ms, { addSuffix: false });
-  }, [mainInfo.premarketDeadline]);
-
-  const createdAgo = useMemo(() => {
-    const ms = (mainInfo.premarketCreated ?? 0) * 1000;
-    if (!ms) return undefined;
-    return formatDistanceToNow(ms, { addSuffix: false });
-  }, [mainInfo.premarketCreated]);
-
-  const stateColor = useMemo(() => {
-    switch (mainInfo.state) {
-      case "premarket": return colors.primary;
-      case "canceled": return colors.error;
-      case "finished": return colors.secondary;
-      default: return colors.onSurfaceVariant;
-    }
-  }, [mainInfo.state, colors]);
 
   const pubkeyStr = useMemo(() => {
     if (!mainInfo.premarketPubkey) return "";
@@ -60,6 +48,74 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, rai
     return pct;
   }, [raisedSOL, goalSOL]);
 
+  // Determine the effective state based on conditions
+  const getEffectiveState = () => {
+    const now = Math.floor(Date.now() / 1000);
+    const isPremarket = mainInfo.state === 'premarket';
+    const isDeadlinePassed = mainInfo.premarketDeadline < now;
+    
+    // Use dynamicInfo.reservedSolLamp if available, otherwise fall back to raisedSOL
+    const isGoalNotReached = dynamicInfo 
+      ? dynamicInfo.reservedSolLamp.lt(mainInfo.premarketGoalSolLamp)
+      : (raisedSOL == null || raisedSOL < goalSOL);
+    
+    // If it's premarket and deadline passed and goal reached, show "times_up"
+    if (isPremarket && isDeadlinePassed && !isGoalNotReached) {
+      return 'times_up';
+    }
+    if (isPremarket && isDeadlinePassed && isGoalNotReached) {
+      return 'expired';
+    }
+    
+    return mainInfo.state;
+  };
+
+  const button = (state: "premarket" | "canceled" | "finished" | "times_up" | "expired") => {
+    return state === 'premarket' ? 
+    (<ChipDisplay
+      variant="secondary"
+      size="normal"
+      mode="flat"
+    >Premarket</ChipDisplay>
+    ) : state === 'finished' ? (
+    <ChipDisplay
+      variant="primary"
+      size="normal"
+      mode="flat"
+    >Launched</ChipDisplay>
+  ) : state === 'canceled' ? (
+    <ChipDisplay
+      variant="error"
+      size="normal"
+      mode="flat"
+    >Refunded</ChipDisplay>
+  ) : state === 'times_up' ? (
+    <ChipDisplay
+      variant="primary"
+      size="normal"
+      mode="flat"
+    >Times Up</ChipDisplay>
+  ) : state === 'expired' ? (
+    <ChipDisplay
+      variant="error"
+      size="normal"
+      mode="flat"
+    >Expired</ChipDisplay>
+  ) : (
+    <ChipDisplay
+      variant="primary"
+      size="normal"
+      mode="flat"
+    >{state}</ChipDisplay>
+  ) 
+  }
+
+  let deadlineText = ""
+  if (mainInfo.state === "premarket") {
+    const deadline = getTimeLeftLabel(mainInfo.premarketDeadline)
+    deadlineText = deadline === 'Expired' ? "" :  deadline+" left"
+  }
+
   const goToDetails = () => {
     if (pubkeyStr) router.push(`/token/${pubkeyStr}`);
   };
@@ -68,85 +124,225 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, rai
     <Pressable onPress={goToDetails} style={{ width: 368 }}>
       <View
         style={{
-          backgroundColor: colors.surface,
+          backgroundColor: colors.surfaceContainerLowest,
           borderRadius: 24,
           padding: 20,
           width: 368,
-          minHeight: 140,
+          height: 590,
           overflow: "hidden",
+          gap: 16,
         }}
       >
-        {/* Header */}
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>          
-          <Avatar.Image
-            size={48}
-            source={
-              mainInfo.imageURL
-                ? { uri: mainInfo.imageURL }
-                : require("@assets/avatar-placeholder.png")
-            }
-          />
-          <View style={{ flex: 1, gap: 4 }}>
-            <Text variant="labelLarge" style={{ color: colors.onSurface }}>
+        {/* Image Section */}
+        {!!mainInfo.imageURL && (
+          <View style={{ paddingBottom: 8, paddingTop: 0 }}>
+            <Image
+              source={{ uri: mainInfo.imageURL }}
+              style={{
+                width: '100%',
+                aspectRatio: 1,
+                borderRadius: 20,
+                backgroundColor: 'transparent',
+              }}
+            />
+          </View>
+        )}
+
+        {/* Header with Title and Social Links */}
+        <View
+          style={{
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexDirection: "row",
+          }}
+        >
+          <View style={{ gap: 4 }}>
+            <Text variant="headlineSmall" style={{ color: colors.onSurface }}>
               {mainInfo.name}
             </Text>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-              <Text variant="labelMedium" style={{ color: colors.onSurfaceVariant }}>
+            <Text variant="labelLarge" style={{ color: colors.onSurfaceVariant }}>
                 {mainInfo.symbol}
               </Text>
-              {mainInfo.state && (
+          </View>
                 <View
                   style={{
-                    backgroundColor: colors.surfaceVariant,
-                    borderRadius: 6,
-                    paddingHorizontal: 8,
-                    paddingVertical: 2,
+              justifyContent: "center",
+              alignItems: "flex-start",
+              flexDirection: "row",
+              gap: 12,
+            }}
+          >
+            {mainInfo?.links?.twitter !== undefined && (
+              <SvgIcon
+                name="x-logo"
+                size={20}
+                color={colors.onSurface}
+              />
+            )}
+            {mainInfo?.links?.webSite !== undefined && (
+              <SvgIcon
+                name="world-outlined"
+                size={20}
+                color={colors.onSurface}
+              />
+            )}
+            {mainInfo?.links?.telegram !== undefined && (
+              <SvgIcon
+                name="tg-logo"
+                size={20}
+                color={colors.onSurface}
+              />
+            )}
+          </View>
+        </View>
+
+        {/* Status Row */}
+        <View
+          style={{
+            width: '100%',
+            justifyContent: "flex-start",
+            alignItems: "center",
+            flexDirection: "row",
+            gap: 10,
+          }}
+        >
+          {button(getEffectiveState())}
+          {deadlineText && (
+            <Text variant="labelLarge" style={{ color: colors.secondary }}>
+              {deadlineText}
+            </Text>
+          )}
+        </View>
+
+        {/* Dynamic Info Section */}
+        {mainInfo.state !== "canceled" && (
+          dynamicInfo ? (
+          <View
+            style={{
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              flexDirection: "row",
+              gap: 40,
+              width: "100%",
+            }}
+          >
+            {mainInfo.state === "finished" ? (
+              <View style={{ alignItems: "flex-start" }}>
+                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                  Current Mcap
+                </Text>
+                <Text variant="displaySmall" style={{ color: colors.onSurface }}>
+                  {formatNumberCompact(convertDecimalToToken(dynamicInfo.marketCapTokenDec))}
+                </Text>
+                <Text variant="labelMedium" style={{ color: colors.primary }}>
+                  {mainInfo?.finishDate ? `${convertTimeStampToDataMonth(mainInfo.finishDate)} launched` : "No launch date available!"}
+                </Text>
+              </View>
+            ) : (
+              <View style={{ alignItems: "flex-start" }}>
+                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                  Current Mcap
+                </Text>
+                <Text variant="displaySmall" style={{ color: colors.onSurface }}>
+                  {formatNumberCompact(convertDecimalToToken(dynamicInfo.marketCapTokenDec))}
+                </Text>
+                <Text
+                  variant="labelMedium"
+                  style={{
+                    color: dynamicInfo.change24h >= 0 ? colors.primary : colors.error,
                   }}
                 >
-                  <Text variant="labelSmall" style={{ color: stateColor }}>
-                    {mainInfo.state}
-                  </Text>
-                </View>
-              )}
+                  {dynamicInfo.change24h >= 0 ? (
+                    <View style={{ marginRight: 2}}>
+                      <SvgIcon 
+                        name="price-up" 
+                        size={5} 
+                        color={theme.colors.primary}
+                      />
+                    </View>
+                  ) : dynamicInfo.change24h < 0 ? (
+                    <View style={{ marginRight: 2, transform: [{ rotate: '180deg' }] }}>
+                      <SvgIcon 
+                        name="price-up" 
+                        size={5} 
+                        color={theme.colors.error}
+                      />
+                    </View>
+                  ) : null}
+                  {dynamicInfo.change24h.toFixed(2)}%{" "}
+                  <Text
+                    variant="labelMedium"
+                    style={{ color: colors.onSurfaceVariant }}
+                  > 24h</Text>
+                </Text>
+              </View>
+            )}
+
+            <View
+              style={{
+                alignItems: "flex-start",
+              }}
+            >
+              <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                People
+              </Text>
+              <Text variant="displaySmall">{dynamicInfo.holdersCount}</Text>
+              <AvatarGroup 
+                holders={dynamicInfo.holders}
+                maxAvatars={3}
+                size={20}
+              />
+            </View>
+
+            <View style={{ 
+              alignItems: "flex-start",
+            }}
+            >
+              <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                Achieved
+              </Text>
+              <Text variant="displaySmall" style={{ color: colors.primary }}>
+                {Math.round(
+                  (convertLamportToSmallCount(dynamicInfo.marketCapSolLamp) / 
+                   convertLamportToSmallCount(mainInfo.premarketGoalSolLamp)) *
+                    100
+                )}
+                %
+              </Text>
+              <Text variant="labelMedium" style={{ color: colors.onSurfaceVariant }}>
+                {formatNumberNoTrailingZeros(convertLamportToSmallCount(dynamicInfo.marketCapSolLamp))} SOL Raised
+              </Text>
             </View>
           </View>
-
-          {/* Goal */}
-          <View style={{ alignItems: "flex-end", gap: 2 }}>
-            <Text variant="labelLarge" style={{ color: colors.onSurface, fontWeight: "700" }}>
-              {goalSOL.toFixed(1)} SOL
-            </Text>
-            <Text variant="labelMedium" style={{ color: colors.onSurfaceVariant }}>
-              Goal
-            </Text>
-          </View>
-        </View>
-
-        {/* Body rows */}
-        <View style={{ height: 12 }} />
-
-        {/* Progress / Deadline */}
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-          <SvgIcon name='binoculars' size={20} color={colors.onSurface} style={{ paddingRight: 4 }} />
-          {deadlineIn && (
-            <Text variant="labelMedium" style={{ color: colors.onSurfaceVariant }}>
-              Deadline <Text variant="labelMedium" style={{ color: colors.onSurface, fontWeight: "700" }}>{deadlineIn}</Text>
-            </Text>
-          )}
-          {createdAgo && (
-            <Text variant="labelMedium" style={{ color: colors.onSurfaceVariant }}>
-              Created <Text variant="labelMedium" style={{ color: colors.onSurface, fontWeight: "700" }}>{createdAgo}</Text>
-            </Text>
-          )}
-        </View>
-
-        {/* Links row */}
-        {(mainInfo.links?.telegram || mainInfo.links?.twitter || mainInfo.links?.webSite) && (
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginTop: 8 }}>
-            {mainInfo.links?.telegram && <SvgIcon name='tg-logo' size={20} color={colors.onSurface} />}
-            {mainInfo.links?.twitter && <SvgIcon name='x-logo' size={20} color={colors.onSurface} />}
-            {mainInfo.links?.webSite && <SvgIcon name='world-outlined' size={20} color={colors.onSurface} />}
-          </View>
+          ) : (
+            // Loading state for dynamic info
+            <View
+              style={{
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                flexDirection: "row",
+                gap: 40,
+                width: "100%",
+                paddingVertical: 20,
+              }}
+            >
+              <View style={{ alignItems: "flex-start" }}>
+                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                  Loading...
+                </Text>
+              </View>
+              <View style={{ alignItems: "flex-start" }}>
+                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                  Loading...
+                </Text>
+              </View>
+              <View style={{ alignItems: "flex-start" }}>
+                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                  Loading...
+                </Text>
+              </View>
+            </View>
+          )
         )}
 
         {/* Progress bar (if raised exist) */}
@@ -179,6 +375,7 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, rai
           </View>
         )}
       </View>
+      
     </Pressable>
   );
 });

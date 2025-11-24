@@ -173,6 +173,36 @@ export async function getRefundPremarketTransaction(
   }
 }
 
+export interface ExtendPremarketTxRequest {
+  network: "devnet" | "mainnet-beta";
+  user_pubkey: string;
+  premarket_account: string;
+  new_deadline: number; // unix sec
+}
+
+export async function getExtendPremarketTransaction(
+  userPubkeyBase58: string,
+  premarketAccountBase58: string,
+  network: "devnet" | "mainnet-beta",
+  newDeadline: number
+): Promise<TxOnlyResponse> {
+  const payload: ExtendPremarketTxRequest = {
+    network,
+    user_pubkey: userPubkeyBase58,
+    premarket_account: premarketAccountBase58,
+    new_deadline: newDeadline,
+  };
+  try {
+    const data = await http.post<TxOnlyResponse>(
+      `${API_HOST}/premarket/tx/extend_premarket`,
+      { json: payload, retry: RETRY_TX_GEN }
+    );
+    return data;
+  } catch (e: any) {
+    throw new Error(`Failed to get extend premarket tx: ${e?.message ?? "Unknown error"}`);
+  }
+}
+
 export function toDecString(x: BN | string | number | bigint): string {
   if (BN.isBN(x)) return (x as BN).toString(10);
   if (typeof x === "bigint") return x.toString(10);
