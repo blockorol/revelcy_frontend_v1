@@ -235,7 +235,7 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
                   {formatNumberCompact(convertDecimalToToken(dynamicInfo.marketCapTokenDec))}
                 </Text>
                 <Text variant="labelMedium" style={{ color: colors.primary }}>
-                  {mainInfo?.finishDate ? `${convertTimeStampToDataMonth(mainInfo.finishDate)} launched` : "No launch date available!"}
+                  {mainInfo?.finishDate ? `${convertTimeStampToDataMonth(mainInfo.finishDate)} launched` : ""}
                 </Text>
               </View>
             ) : (
