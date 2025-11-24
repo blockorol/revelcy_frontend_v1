@@ -38,7 +38,6 @@ export function generateBondingCurvePointsFromZero(args: GenerateBondingCurvePoi
   return result;
 }
 
-
 const bondingCurvePoints = generateBondingCurvePointsFromZero({
   from: 0,
   to: 120,

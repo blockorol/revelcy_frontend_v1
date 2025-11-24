@@ -15,6 +15,7 @@ import { DonutWithLegend } from "@components/base/DonutWithLegend";
 import { round } from "@utils/numbers";
 import { makeTransparent } from "@utils/colors";
 import { convertLamportToSmallCount, convertSmallCountToLamport } from "@utils/premarket";
+import { TOKEN_CONVERTOR_SETTINGS } from "env";
 
 const DEFAULT_PREMARKET_GOAL_SOL = 5;
 
@@ -98,6 +99,12 @@ export default function EditPremarketSettingsForm({
       deadlineDateTimeSec !== undefined
     );
   };
+  const sliderFrom = 1
+  const sliderTo = TOKEN_CONVERTOR_SETTINGS.SolTo80Percent
+              
+  const labels: number[]=sliderTo > 50 ? [10, 30, 50, 70, 86]: [5, 10, 15, 20]
+  const points: number[]=sliderTo > 50 ?[10, 20, 30, 40, 50, 60, 70, 80, 86]: [2.5, 5, 7.5 , 10, 12.5,  15, 17.5, 20, 22.5]
+
 
   return (
     <ScrollView
@@ -169,10 +176,10 @@ export default function EditPremarketSettingsForm({
             <Text variant="labelLarge" prominent>Premarket Goal</Text>
             <CustomSlider
               initValue={presetData?.goal_sol}
-              min={1} // tod0: rollback me to 2
-              max={86}
-              labels={[10, 30, 50, 70]}
-              points={[10, 20, 30, 40, 50, 60, 70]}
+              min={sliderFrom}
+              max={sliderTo}
+              labels={labels}
+              points={points}
               onValueChange={changeSliderPremarketValue}
               isMobile={isMobile}
             />

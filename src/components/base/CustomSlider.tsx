@@ -7,6 +7,7 @@ import { MarkerProps } from "@react-native-community/slider";
 import { TextProminent } from "@components/ui/Text";
 import { round } from "@utils/numbers";
 import { convertSolToPercentOnStart } from "@services/pumpfun/adds";
+import { linearOffset, linearOffsetReverse } from "@utils/math";
 
 interface CustomSliderProps {
   initValue?: number;
@@ -30,6 +31,9 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
   const theme = useTheme();
   const [sliderWidth, setSliderWidth] = useState(0);
   const [sliderValue, setSliderValue] = useState(initValue??min);
+  const bubleWidth = 110;
+  const treangleSize = 8;
+  const maxOffset = (bubleWidth-treangleSize-20)/2
 
   return (
     <View style={{ marginVertical: 32 }}>
@@ -56,10 +60,23 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
             }
             const value = props.currentValue ?? 0;
             const percent = round(convertSolToPercentOnStart(value), 0)
+            const settingsFirst = {
+              min: min,
+              max: 0.3*(max-min)+min,
+              maxOffset: maxOffset
+            }
+            const settingsLast = {
+              min: 0.6*(max-min)+min,
+              max: max,
+              maxOffset: maxOffset
+            }
+
+
             let offsetX = 
-              value < 30 ? 
-                value < 50 ? 
-                200/(value+3)  : 0 : 200/(value-85);
+              value < 0.3*(max-min)+min ?
+              linearOffset(value, settingsFirst.min, settingsFirst.max, settingsFirst.maxOffset)  :  // first 30%    a->0 при сдвиге от c до e
+              value < 0.6*(max-min)+min ? 0   // second 30%
+              : -linearOffsetReverse(value, settingsLast.min, settingsLast.max, settingsLast.maxOffset); // last 30%
 
             return (
               <View

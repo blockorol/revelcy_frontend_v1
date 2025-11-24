@@ -285,7 +285,7 @@ export default function PremarketCreationFlow() {
       uri: ipfsData.metadataUri,
       deadline: tokenData.premarketSettingsData.deadline_sec,
       goal_sol_lamp: convertSmallCountToLamport(tokenData.premarketSettingsData.goal_sol),
-      max_sol_lamp: new BN(85_000_000_000),
+      max_sol_lamp: convertSmallCountToLamport(tokenData.premarketSettingsData.goal_sol+0.5),
       creator_allocate_lamp: convertSmallCountToLamport(
         tokenData.tokenomicsData.creatorInitialBuy
       ),
