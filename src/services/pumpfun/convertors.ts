@@ -9,7 +9,7 @@ export function convertSolanaToTokenNoFee_Rust(params: {
       vS0: string,
       vT0: string
     }): BN {
-  const vS0 = new BN(settings?.vS0 ??'8000000000') // todo: double checl looks like wrong value should be 30*
+  const vS0 = new BN(settings?.vS0 ??'30000000000') // todo: double checl looks like wrong value should be 30*
   const vT0 = new BN(settings?.vT0 ??'1073000000000000');
 
   if (params.before_sol_lamp === undefined) {
