@@ -9,23 +9,31 @@ export async function signAndSend(b64: string, connection: Connection, wallet: a
   const tx = Transaction.from(raw);
 
   dumpSignedTx(tx, "before-wallet-sign");
+  
+  console.log("Signing transaction with wallet:", wallet.publicKey.toBase58());
 
   const signed = await wallet.signTransaction(tx);
+  console.log("Transaction signed.");
 
   dumpSignedTx(signed, "after-wallet-sign");
 
   const raw2 = signed.serialize();
   const re = Transaction.from(raw2);
   dumpSignedTx(re, "redecoded-to-send");
+  console.log("Sending transaction to network...");
 
   const sig = await connection.sendRawTransaction(raw2, {
     skipPreflight: false,
     preflightCommitment: "finalized",
   });
+  console.log("Transaction sent to network with signature:", sig);
 
   try {
+    console.log("Confirming transaction...");
     await connection.confirmTransaction(sig, "finalized");
+    console.log("Transaction confirmed.");
   } catch (e) {
+    console.error("Error confirming transaction:", e);
     if ((e as any)?.logs) console.error("confirm logs:", (e as any).logs);
     throw e;
   }
