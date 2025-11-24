@@ -9,6 +9,7 @@ type EnvVars = {
   PINATA_SECRET_KEY?: string;
   HOST_BACKEND?: string;
   HELIUS_KEY?: string;
+  TRITON_URL?: string;
   NETWORK?: "devnet" | "mainnet-beta";
 };
 
@@ -26,6 +27,7 @@ function getEnv(platform: PlatformOSType): EnvVars {
       HOST_BACKEND: extra.HOST_BACKEND ?? process.env.HOST_BACKEND,
       HELIUS_KEY: extra.HELIUS_KEY ?? process.env.HELIUS_KEY,
       NETWORK: extra.NETWORK ?? process.env.NETWORK,
+      TRITON_URL: extra.TRITON_URL ?? process.env.TRITON_URL,
     };
   }
 
@@ -47,6 +49,7 @@ export const PINATA_SECRET_KEY = getRequired(
 );
 export const API_HOST = getRequired("HOST_BACKEND", ENV.HOST_BACKEND);
 export const HELIUS_KEY = getRequired("HELIUS_KEY", ENV.HELIUS_KEY);
+export const TRITON_URL = getRequired("TRITON_URL", ENV.TRITON_URL);
 export const NETWORK = ENV.NETWORK??'devnet';
 export const TOKEN_CONVERTOR_SETTINGS = 
   NETWORK === 'devnet' ?

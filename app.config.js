@@ -7,6 +7,7 @@ export default {
       HOST_BACKEND: process.env.HOST_BACKEND,
       HELIUS_KEY: process.env.HELIUS_KEY,
       NETWORK: process.env.NETWORK,
+      TRITON_URL: process.env.TRITON_URL,
     }
   }
 };

@@ -24,6 +24,7 @@ export async function createPremarket(
   onChangeState?: (state: string) => void
 ) {
   onChangeState?.("Creating transaction...");
+  console.log("Creating premarket with args:", args);
 
   const nowSec = Math.floor(Date.now() / 1000);
   if (args.deadline < nowSec + SECONDS_IN_HOUR - 1) {
@@ -50,6 +51,8 @@ export async function createPremarket(
   onChangeState?.("Sending transaction to blockchain...");
 
   const report = await signAndSend(transaction, connection, wallet);
+  
+  console.log("Transaction sent and confirmed. Report:", report);
 
   return {
     txId: report,
