@@ -13,15 +13,10 @@ import { TokenCreateFullData } from "@components/token/create/interface";
 import { ExtendedMD3Colors } from "@theme/types";
 import { PremarketBondingCurve } from "@components/premarket/PremarketBondingCurve";
 import { useAuth } from "@providers/AuthContext";
-import {
-  convertLamportToSmallCount,
-  convertSmallCountToLamport,
-} from "@utils/premarket";
+import { convertSmallCountToLamport } from "@utils/premarket";
 import LoginButton from "@components/login/LoginButton";
 import { DonutWithLegend } from "@components/base/DonutWithLegend";
 import { round, formatNumberNoTrailingZeros } from "@utils/numbers";
-import { useOverlay } from "@storage/UniversalOverlayProvider";
-import TransactionLoadingModal from "@components/modals/TransactionLoadingModal";
 import { makeTransparent } from "@utils/colors";
 import { convertSolToPercentOnStart } from "@services/pumpfun/adds";
 
@@ -98,23 +93,6 @@ export default function OverviewPremarketCreation({
       ),
     },
   };
-  const {open: openOverlay, replace, isOpen, close} = useOverlay()
-
-  useEffect(()=> {
-    if (!launchState) {
-      close();
-      return
-    }
-    const stateDisplay = (
-    <View>
-      <TransactionLoadingModal launchState={launchState} />
-    </View>)
-    if (isOpen) {
-      replace(stateDisplay)
-    } else {
-      openOverlay(stateDisplay)
-    }
-  }, [launchState])
 
   const error = useMemo(() => {
     if (!user) {

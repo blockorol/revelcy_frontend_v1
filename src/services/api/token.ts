@@ -71,8 +71,6 @@ export async function premarketCreated(args: premarketCreatedArgs) {
 }
 
 export async function updateAboutCommunity(premarketPubkey: string, args: TokenCommunityInfo) {
-  console.log("send to BE: updateAboutCommunity", args);
-
   const payload = {
     premarket_pubkey: premarketPubkey,
     community_info: {

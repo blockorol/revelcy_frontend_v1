@@ -38,11 +38,12 @@ import useIsMobile from "@hooks/useIsMobile";
 import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
 import { useNotification } from "@providers/NotificationContext";
-import { BN } from "@coral-xyz/anchor";
 import { validateImageFile, uriToFile, BANNER_MAX_FILE_SIZE_BYTES } from "@utils/imageValidation";
 
 import { usePremarketDraft } from "@hooks/usePremarketDraft";
 import { PublicKey } from "@solana/web3.js";
+import { useOverlay } from "@storage/UniversalOverlayProvider";
+import TransactionLoadingModal from "@components/modals/TransactionLoadingModal";
 
 enum FLOW_STEP {
   TOKEN_BASE_INFO = 1,
@@ -59,6 +60,8 @@ export default function PremarketCreationFlow() {
   const user = useAuth();
   const wallet = useAnchorWalletSafe();
   const { connected, connect } = useWallet();
+  const {open: openOverlay, replace: replaceOverlay, isOpen: isOverlayOpen, close: closeOverlay} = useOverlay();
+
 
   const router = useRouter();
   const { network } = useNetwork();
@@ -85,6 +88,23 @@ export default function PremarketCreationFlow() {
 
   const theme = useTheme();
   const [launchState, setLaunchState] = useState<string | undefined>(undefined);
+  useEffect(()=> {
+    if (!launchState) {
+      if (isOverlayOpen){
+        closeOverlay();
+      }
+      return
+    }
+    const stateDisplay = (
+    <View>
+      <TransactionLoadingModal launchState={launchState} />
+    </View>)
+    if (isOverlayOpen) {
+        replaceOverlay(stateDisplay)
+    } else {
+      openOverlay(stateDisplay)
+    }
+  }, [launchState])
 
   // === Хук черновика: авто-восстановление, таймаут, patch/clear ===
   const onRestore = React.useCallback((d: any) => {
@@ -193,239 +213,256 @@ export default function PremarketCreationFlow() {
   };
 
   const handleLaunch = async () => {
-  try {
-    setLaunchState("Started launch process");
-    await patch({ step: FLOW_STEP.OVERVIEW });
-
-    if (
-      !tokenMainData ||
-      !customizeTokenData ||
-      !tokenomicsData ||
-      !premarketSettingsData
-    ) {
-      console.error("no tokenData");
-      notify.error("no tokenData", {
-        suggest: "reload page and set all token data",
-      });
-      return;
-    }
-    const nowSec = Math.floor(Date.now() / 1000);
-    const SEC_IN_H = 60 * 60;
-    const SEC_IN_DAY = 24 * SEC_IN_H;
-
-    if (premarketSettingsData.deadline_sec < nowSec + SEC_IN_H) {
-      notify.error("Min deadline - 1 h", {
-        suggest: "Change deadline",
-      });
-      return;
-    }
-    if (premarketSettingsData.deadline_sec > nowSec + SEC_IN_DAY * 31) {
-      notify.error("Max deadline - 31 days", {
-        suggest: "Change deadline",
-      });
-      return;
-    }
-
-    const tokenData = {
-      mainData: tokenMainData,
-      customData: customizeTokenData,
-      tokenomicsData: tokenomicsData,
-      premarketSettingsData: premarketSettingsData,
-    };
-
-    setLaunchState("Connecting wallet...");
-    if (wallet === undefined || !connected) {
-      console.error("wallet is not connected");
-      notify.error("wallet is not connected", {
-        suggest: "enable phantom extention and try again",
-        action: {
-          label: "connect",
-          onAction: async () => {
-            try {
-              await connect();
-            } catch (e) {
-              console.log("error during connect:", e);
-            }
-          },
-        },
-      });
-      return;
-    }
-    if (network === "testnet") {
-      console.error("wallet is not connected");
-      notify.error("testnet network is not supported");
-      return;
-    }
-
-    setLaunchState("Uploading data to IPFS...");
-    const ipfsData = await uploadTokenMetadataToIPFS({
-      avatar: tokenData.mainData.avatar,
-      tokenInfo: {
-        name: tokenData.mainData.tokenName,
-        symbol: tokenData.mainData.tokenTicker,
-        description: tokenData.mainData.description,
-        links: {
-          telegram: tokenData.mainData.links.telegram,
-          twitter: tokenData.mainData.links.twitter,
-          website: tokenData.mainData.links.website,
-        },
-      },
-    });
-    if (!ipfsData) {
-      notify.error("failed to upload data to IPFS", {
-        suggest: "Please, try again later",
-      });
-      return;
-    }
-
-    setLaunchState("Creating premarket in blockchain...");
-    const createPremarketArgs: CreatePremarketArgs = {
-      name: tokenData.mainData.tokenName,
-      symbol: tokenData.mainData.tokenTicker,
-      uri: ipfsData.metadataUri,
-      deadline: tokenData.premarketSettingsData.deadline_sec,
-      goal_sol_lamp: convertSmallCountToLamport(tokenData.premarketSettingsData.goal_sol),
-      max_sol_lamp: convertSmallCountToLamport(tokenData.premarketSettingsData.goal_sol+0.5),
-      creator_allocate_lamp: convertSmallCountToLamport(
-        tokenData.tokenomicsData.creatorInitialBuy
-      ),
-    };
-    setLaunchState("try to create TX...");
-    let resp:
-      | undefined
-      | {
-          txId: string;
-          premarketPDA: PublicKey;
-          report: string;
-          mintAddress: string;
-        };
-
     try {
-      resp = await createPremarket(
-        network,
-        wallet,
-        currentConnection,
-        createPremarketArgs,
-        (text) => {
-          setLaunchState(text);
-        }
-      );
-      setLaunchState("Transaction created...");
-      setPremarketPDA(resp.premarketPDA.toString());
-      setTxId(resp.txId);
-    } catch {
-      notify.error("failed to create premarket", {
-        suggest: "Please, try again",
-        duration: 60000,
-        action: {
-          label: "Ok",
-          onAction: () => {},
-        },
-      });
-      return;
-    }
-    if (resp === undefined) {
-      notify.error("failed to create premarket: no txId linked", {
-        suggest: "Please, try again and contact admin",
-        duration: 60000,
-        action: {
-          label: "Ok",
-          onAction: () => {},
-        },
-      });
-      return;
-    }
+      await patch({ step: FLOW_STEP.OVERVIEW });
 
-    try {
-      // Сразу пишем в черновик PROCESSING (на случай перезагрузки)
-      await patch({ step: FLOW_STEP.PROCESSING });
-
-      setLaunchState("Adding to white list to Revelcy...");
-      try {
-        await premarketCreated({
-          tx: resp.txId,
-          premarketPubKey: resp.premarketPDA.toString(),
-          userWallet: wallet.publicKey.toString(),
-          userId: user.user?.userId,
-          mainInfo: {
-            id: "",
-            premarketPubkey: resp.premarketPDA,
-            name: tokenData.mainData.tokenName,
-            description: tokenData.mainData.description,
-            symbol: tokenData.mainData.tokenTicker,
-            imageURL: ipfsData.avatarUri,
-            ipfsURI: ipfsData.metadataUri,
-            links: {
-              telegram: tokenData.mainData.links.telegram,
-              twitter: tokenData.mainData.links.twitter,
-              webSite: tokenData.mainData.links.website,
-            },
-            premarketGoalSolLamp: convertSmallCountToLamport(tokenData.premarketSettingsData.goal_sol),
-            premarketDeadline: tokenData.premarketSettingsData.deadline_sec,
-            premarketCreated: Math.floor(Date.now() / 1000),
-            createdByPubkey: wallet.publicKey.toString(),
-            state: "premarket",
-            finishDate: undefined, // will be set when premarket finished
-            tokenMint: resp.mintAddress,
-          },
-          communityInfo: {
-            description: "",
-          },
+      if (
+        !tokenMainData ||
+        !customizeTokenData ||
+        !tokenomicsData ||
+        !premarketSettingsData
+      ) {
+        console.error("no tokenData");
+        notify.error("no tokenData", {
+          suggest: "reload page and set all token data",
         });
+        return;
+      }
+      const nowSec = Math.floor(Date.now() / 1000);
+      const SEC_IN_H = 60 * 60;
+      const SEC_IN_DAY = 24 * SEC_IN_H;
 
-        setLaunchState("Adding to white list to Revelcy step2...");
-        if (tokenData.tokenomicsData.creatorInitialBuy > 0) {
-          await userJoinedToPremarket({
-            joinAmountInSolLamport: convertSmallCountToLamport(
-              tokenData.tokenomicsData.creatorInitialBuy
-            ),
-            premarketPubKey: resp.premarketPDA.toString(),
-            tx: resp.txId,
-            userWallet: wallet.publicKey.toString(),
-            userId: user.user?.userId,
-          });
-        }
-      } catch (error) {
-        notify.error(
-          "Premarket created, but didn't added to whitelist in the website",
-          {
-            suggest:
-              "Please, contact administrator with premarket address:" +
-              resp.premarketPDA.toString(),
-            duration: 60000,
-            action: {
-              label: "Ok",
-              onAction: () => {},
-            },
-          }
-        );
+      if (premarketSettingsData.deadline_sec < nowSec + SEC_IN_H) {
+        notify.error("Min deadline - 1 h", {
+          suggest: "Change deadline",
+        });
+        return;
+      }
+      if (premarketSettingsData.deadline_sec > nowSec + SEC_IN_DAY * 31) {
+        notify.error("Max deadline - 31 days", {
+          suggest: "Change deadline",
+        });
         return;
       }
 
-      setLaunchState("Adding community info");
+      const tokenData = {
+        mainData: tokenMainData,
+        customData: customizeTokenData,
+        tokenomicsData: tokenomicsData,
+        premarketSettingsData: premarketSettingsData,
+      };
+
+      setLaunchState("Connecting wallet...");
+      if (wallet === undefined || !connected) {
+        console.error("wallet is not connected");
+        notify.error("wallet is not connected", {
+          suggest: "enable phantom extention and try again",
+          action: {
+            label: "connect",
+            onAction: async () => {
+              try {
+                await connect();
+              } catch (e) {
+                console.log("error during connect:", e);
+              }
+            },
+          },
+        });
+        return;
+      }
+      if (network === "testnet") {
+        console.error("wallet is not connected");
+        notify.error("testnet network is not supported");
+        return;
+      }
+
+      setLaunchState("Uploading data to IPFS...");
+      const ipfsData = await uploadTokenMetadataToIPFS({
+        avatar: tokenData.mainData.avatar,
+        tokenInfo: {
+          name: tokenData.mainData.tokenName,
+          symbol: tokenData.mainData.tokenTicker,
+          description: tokenData.mainData.description,
+          links: {
+            telegram: tokenData.mainData.links.telegram,
+            twitter: tokenData.mainData.links.twitter,
+            website: tokenData.mainData.links.website,
+          },
+        },
+      });
+      if (!ipfsData) {
+        notify.error("failed to upload data to IPFS", {
+          suggest: "Please, try again later",
+        });
+        return;
+      }
+
+      setLaunchState("Creating premarket in blockchain...");
+      const createPremarketArgs: CreatePremarketArgs = {
+        name: tokenData.mainData.tokenName,
+        symbol: tokenData.mainData.tokenTicker,
+        uri: ipfsData.metadataUri,
+        deadline: tokenData.premarketSettingsData.deadline_sec,
+        goal_sol_lamp: convertSmallCountToLamport(tokenData.premarketSettingsData.goal_sol),
+        max_sol_lamp: convertSmallCountToLamport(tokenData.premarketSettingsData.goal_sol+0.5),
+        creator_allocate_lamp: convertSmallCountToLamport(
+          tokenData.tokenomicsData.creatorInitialBuy
+        ),
+      };
+      setLaunchState("try to create TX...");
+      let resp:
+        | undefined
+        | {
+            txId: string;
+            premarketPDA: PublicKey;
+            report: string;
+            mintAddress: string;
+          };
+
       try {
-        try {
-          if (tokenData.customData.banner?.data) {
-            const validationError = await validateImageFile(tokenData.customData.banner.data, { maxSizeBytes: BANNER_MAX_FILE_SIZE_BYTES });
-            if (validationError) {
-              notify.error(validationError.message, {
-                suggest: "Please, select a PNG or JPEG image under 5 MB",
-                duration: 60000,
-                action: {
-                  label: "Ok",
-                  onAction: () => {},
-                },
-              });
-              tokenData.customData.banner = undefined;
-              return;
-            }
-            
-            const fileName = `${resp.premarketPDA.toString()}_banner`;
-            const file = await uriToFile(tokenData.customData.banner.data, fileName);
-            tokenData.customData.banner.url = await uploadImage(file, fileName);
+        resp = await createPremarket(
+          network,
+          wallet,
+          currentConnection,
+          createPremarketArgs,
+          (text) => {
+            setLaunchState(text);
           }
+        );
+        setLaunchState("Transaction created...");
+        setPremarketPDA(resp.premarketPDA.toString());
+        setTxId(resp.txId);
+      } catch (error) {
+        console.error("failed to create premarket in blockchain", error);
+        notify.error("failed to create premarket", {
+          suggest: "Please, try again",
+          duration: 60000,
+          action: {
+            label: "Ok",
+            onAction: () => {},
+          },
+        });
+        return;
+      }
+      if (resp === undefined) {
+        notify.error("failed to create premarket: no txId linked", {
+          suggest: "Please, try again and contact admin",
+          duration: 60000,
+          action: {
+            label: "Ok",
+            onAction: () => {},
+          },
+        });
+        return;
+      }
+
+      try {
+        // Сразу пишем в черновик PROCESSING (на случай перезагрузки)
+        await patch({ step: FLOW_STEP.PROCESSING });
+
+        setLaunchState("Adding to white list to Revelcy...");
+        try {
+          await premarketCreated({
+            tx: resp.txId,
+            premarketPubKey: resp.premarketPDA.toString(),
+            userWallet: wallet.publicKey.toString(),
+            userId: user.user?.userId,
+            mainInfo: {
+              id: "",
+              premarketPubkey: resp.premarketPDA,
+              name: tokenData.mainData.tokenName,
+              description: tokenData.mainData.description,
+              symbol: tokenData.mainData.tokenTicker,
+              imageURL: ipfsData.avatarUri,
+              ipfsURI: ipfsData.metadataUri,
+              links: {
+                telegram: tokenData.mainData.links.telegram,
+                twitter: tokenData.mainData.links.twitter,
+                webSite: tokenData.mainData.links.website,
+              },
+              premarketGoalSolLamp: convertSmallCountToLamport(tokenData.premarketSettingsData.goal_sol),
+              premarketDeadline: tokenData.premarketSettingsData.deadline_sec,
+              premarketCreated: Math.floor(Date.now() / 1000),
+              createdByPubkey: wallet.publicKey.toString(),
+              state: "premarket",
+              finishDate: undefined, // will be set when premarket finished
+              tokenMint: resp.mintAddress,
+            },
+            communityInfo: {
+              description: "",
+            },
+          });
+
+          setLaunchState("Adding to white list to Revelcy step2...");
+          if (tokenData.tokenomicsData.creatorInitialBuy > 0) {
+            await userJoinedToPremarket({
+              joinAmountInSolLamport: convertSmallCountToLamport(
+                tokenData.tokenomicsData.creatorInitialBuy
+              ),
+              premarketPubKey: resp.premarketPDA.toString(),
+              tx: resp.txId,
+              userWallet: wallet.publicKey.toString(),
+              userId: user.user?.userId,
+            });
+          }
+        } catch (error) {
+          notify.error(
+            "Premarket created, but didn't added to whitelist in the website",
+            {
+              suggest:
+                "Please, contact administrator with premarket address:" +
+                resp.premarketPDA.toString(),
+              duration: 60000,
+              action: {
+                label: "Ok",
+                onAction: () => {},
+              },
+            }
+          );
+          return;
+        }
+
+        setLaunchState("Adding community info");
+        try {
+          try {
+            if (tokenData.customData.banner?.data) {
+              const validationError = await validateImageFile(tokenData.customData.banner.data, { maxSizeBytes: BANNER_MAX_FILE_SIZE_BYTES });
+              if (validationError) {
+                notify.error(validationError.message, {
+                  suggest: "Please, select a PNG or JPEG image under 5 MB",
+                  duration: 60000,
+                  action: {
+                    label: "Ok",
+                    onAction: () => {},
+                  },
+                });
+                tokenData.customData.banner = undefined;
+                return;
+              }
+              
+              const fileName = `${resp.premarketPDA.toString()}_banner`;
+              const file = await uriToFile(tokenData.customData.banner.data, fileName);
+              tokenData.customData.banner.url = await uploadImage(file, fileName);
+            }
+          } catch {
+            notify.error("Failed to upload community banner", {
+              suggest: "Please, add it again from premarket page",
+              duration: 60000,
+              action: {
+                label: "Ok",
+                onAction: () => {},
+              },
+            });
+            tokenData.customData.banner = undefined;
+          }
+
+          await updateAboutCommunity(resp.premarketPDA.toString(), {
+            description: tokenData.customData.description ?? "",
+            tokenBannerURL: tokenData.customData.banner?.url,
+            links: tokenData.customData.links,
+          });
         } catch {
-          notify.error("Failed to upload community banner", {
+          notify.error("failed to add community info", {
             suggest: "Please, add it again from premarket page",
             duration: 60000,
             action: {
@@ -433,34 +470,18 @@ export default function PremarketCreationFlow() {
               onAction: () => {},
             },
           });
-          tokenData.customData.banner = undefined;
+          // no return just notify
         }
 
-        await updateAboutCommunity(resp.premarketPDA.toString(), {
-          description: tokenData.customData.description ?? "",
-          tokenBannerURL: tokenData.customData.banner?.url,
-          links: tokenData.customData.links,
+        setStep(FLOW_STEP.PROCESSING);
+      } catch (error) {
+        console.error("Error creating premarket:", error);
+        notify.error("Error creating: premarket is not created in blockchain", {
+          suggest: "Please, wait and try again",
         });
-      } catch {
-        notify.error("failed to add community info", {
-          suggest: "Please, add it again from premarket page",
-          duration: 60000,
-          action: {
-            label: "Ok",
-            onAction: () => {},
-          },
-        });
-        // no return just notify
       }
-
-      setStep(FLOW_STEP.PROCESSING);
-    } catch (error) {
-      console.error("Error creating premarket:", error);
-      notify.error("Error creating: premarket is not created in blockchain", {
-        suggest: "Please, wait and try again",
-      });
-    }
-  } finally {
+    } finally {
+      closeOverlay();
       setLaunchState(undefined);
     }
   };
@@ -485,6 +506,9 @@ export default function PremarketCreationFlow() {
 
   const handleOnDone = async () => {
     console.log("handleOnDone move to page:", `/premarket/${premarketPDA}`);
+    if (isOverlayOpen) {
+      closeOverlay();
+    }
     await clear();
     router.push(`/token/${premarketPDA}`);
   };
