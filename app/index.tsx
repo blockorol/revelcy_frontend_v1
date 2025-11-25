@@ -1,4 +1,5 @@
 // app/framer.tsx
+import { useIsMobileWithDemention } from "@hooks/useIsMobile";
 import { ActivityIndicator, Platform, View } from "react-native";
 import { useTheme } from "react-native-paper";
 import { WebView } from "react-native-webview";
@@ -7,6 +8,8 @@ const FRAMER_URL = "https://revelcy.com/";
 
 export default function FramerScreen() {
   const theme = useTheme();
+  
+  const {width} = useIsMobileWithDemention();
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
       {Platform.OS === "web" ? (
@@ -24,19 +27,8 @@ export default function FramerScreen() {
             sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
             style={{
               border: "none",
-              width: "100%",
+              width: width +15,
               height: "100%",
-            }}
-          />
-          <View
-            pointerEvents="none"
-            style={{
-              position: "absolute",
-              top: 0,
-              right: 0,
-              width: 18,
-              height: "100%",
-              backgroundColor: theme.colors.background,
             }}
           />
         </View>
