@@ -60,10 +60,8 @@ import {
   GestureResponderEvent,
   ViewStyle,
   View,
-  Platform,
 } from "react-native";
-import { Text, Tooltip, useTheme } from "react-native-paper";
-import { makeTransparent } from "@utils/colors";
+import { Text, useTheme } from "react-native-paper";
 
 export const icons = {
   "add-circle-outlined": AddCircleOutlined,

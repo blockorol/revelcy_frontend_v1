@@ -2,6 +2,7 @@
 import { SvgIcon } from '@components/base/SvgIcon';
 import { TokenCreateFullData } from '@components/token/create/interface';
 import { ExtendedMD3Colors } from '@theme/types';
+import { NETWORK } from 'env';
 import React, { useEffect, useState } from 'react';
 import { View, Image, ScrollView, Linking } from 'react-native';
 import { Text, ActivityIndicator, useTheme } from 'react-native-paper';
@@ -59,7 +60,7 @@ export default function TokenCreationProcess({txId, tokenData, onDone, isFinishe
         <Text variant='labelSmall' style={{ color: colors.onSurfaceVariant, marginBottom: 16 }}>Waiting transaction confirmation in blockchain...</Text>
         
         <Text variant='labelSmall' 
-        onPress={() => Linking.openURL(`https://solscan.io/tx/${txId}?cluster=devnet`)}
+        onPress={() => Linking.openURL(`https://solscan.io/tx/${txId}${NETWORK === 'devnet' ? '?cluster=devnet' : ''}`)}
         style={{ color: colors.onSurfaceVariant, marginBottom: 16 }}>
           Check on Solscan:
           {txId && (

@@ -19,13 +19,13 @@ interface AboutCommunityProps {
   communityInfo?: TokenCommunityInfo;
   width: number;
   isMobile: boolean;
-  isCreator?: boolean;
+  isEditable?: boolean;
 }
 
 export function AboutCommunity({
   premarketPubkey,
   communityInfo,
-  isCreator,
+  isEditable,
   width,
   isMobile,
 }: AboutCommunityProps) {
@@ -35,7 +35,7 @@ export function AboutCommunity({
   const notify = useNotification();
 
   if (
-    !isCreator &&
+    !isEditable &&
     (!communityInfoLocal ||
       (communityInfoLocal.description === "" &&
         (!communityInfoLocal.links || communityInfoLocal.links.length === 0) &&
@@ -158,7 +158,7 @@ export function AboutCommunity({
               }}
             >
               <Text variant="titleLarge">About Community</Text>
-              {isCreator && (
+              {isEditable && (
                 <Button
                   mode="outlined"
                   onPress={openEdit}
@@ -184,7 +184,7 @@ export function AboutCommunity({
             </View>
           </View>
         ) : (
-          isCreator && (
+          isEditable && (
             <Button
               mode="outlined"
               onPress={openEdit}
