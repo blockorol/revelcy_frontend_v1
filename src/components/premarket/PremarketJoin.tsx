@@ -247,6 +247,15 @@ function PremarketJoinBase({
   };
 
   useEffect(() => {
+    
+    if (amountSol <= 0.09999) {
+      setErrorBalance("Amount must be greater than or equal to 0.1")
+      return
+    }
+    if (amountSol > 2.00001) {
+      setErrorBalance("Amount must be less than or equal to 2")
+      return
+    }
     if (!walletInfo) {
       setErrorBalance(undefined)
       return
@@ -357,6 +366,7 @@ function PremarketJoinBase({
           leftSvgIconName="plus"
           mode="contained"
           onPress={handleJoin}
+          disabled={errorBalance !== undefined}
         >
           Join Premarket
         </Button>
