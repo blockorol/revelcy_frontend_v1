@@ -172,7 +172,7 @@ export function TokenPremarketPageNormal({
         >
           <View style={{ gap: 24}}>
             <AboutCommunity
-              isCreator={token.mainInfo.createdByPubkey === user?.walletAddress}
+              isEditable={(token.mainInfo.createdByPubkey === user?.walletAddress) && (token.mainInfo.state === 'premarket' || token.mainInfo.state === 'expired')}
               premarketPubkey={token.mainInfo.premarketPubkey.toString()}
               communityInfo={token.communityInfo}
               isMobile={false}
@@ -323,7 +323,7 @@ function BriefMobile({
           />
         )}
         <AboutCommunity
-          isCreator={token.mainInfo.createdByPubkey === user?.walletAddress}
+          isEditable={(token.mainInfo.createdByPubkey === user?.walletAddress) && (token.mainInfo.state === 'premarket' || token.mainInfo.state === 'expired')}
           premarketPubkey={token.mainInfo.premarketPubkey.toString()}
           communityInfo={token.communityInfo}
           isMobile={true}

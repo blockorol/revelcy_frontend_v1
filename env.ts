@@ -60,7 +60,7 @@ export const TOKEN_CONVERTOR_SETTINGS =
       SolToDisplay: 50,
   }: {
       vS0: '30000000000',
-      vT0: '1073000000000000',
+      vT0: '1073000191000000',
       SolTo80Percent: 86.6,
       SolToDisplay: 100,
   }
