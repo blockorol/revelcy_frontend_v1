@@ -147,7 +147,7 @@ export default function JoinScreen() {
         {txID ? (
           <Text
             style={{ color: 'blue' }}
-            onPress={() => Linking.openURL(`https://solscan.io/tx/${txID}?cluster=devnet`)}
+            onPress={() => Linking.openURL(`https://solscan.io/tx/${txID}${network === 'devnet' ? '?cluster=devnet' : ''}`)}
           >
             txID: {txID}
           </Text>

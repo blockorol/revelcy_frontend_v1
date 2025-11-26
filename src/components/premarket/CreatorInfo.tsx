@@ -98,7 +98,7 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
       notify.success("Premarket successfully refunding!", {action: {
         label: "check",
         onAction: ()=> {
-          Linking.openURL(`https://solscan.io/tx/${res.txId}?cluster=devnet`)
+          Linking.openURL(`https://solscan.io/tx/${res.txId}${network === 'devnet' ? '?cluster=devnet' : ''}`)
         }
       }});
       close();
@@ -235,7 +235,7 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
       notify.success("Premarket deadline successfully extended!", {action: {
         label: "check",
         onAction: ()=> {
-          Linking.openURL(`https://solscan.io/tx/${res.txId}?cluster=devnet`)
+          Linking.openURL(`https://solscan.io/tx/${res.txId}${network === 'devnet' ? '?cluster=devnet' : ''}`)
         }
       }});
       onUpdated()
@@ -305,7 +305,7 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
       notify.success("Premarket successfully finished!", {action: {
         label: "check",
         onAction: ()=> {
-          Linking.openURL(`https://solscan.io/tx/${res.txId}?cluster=devnet`)
+          Linking.openURL(`https://solscan.io/tx/${res.txId}${network === 'devnet' ? '?cluster=devnet' : ''}`)
         }
       }});
       close();

@@ -35,7 +35,7 @@ export default function TokenPremarketPage({
 
 
   useEffect(() => {
-    if (error) router.replace("/discovery");
+    if (error) router.replace("/discover");
   }, [error]);
 
   if (loading || !token) {
