@@ -36,7 +36,7 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
   const connection = getSolanaConnection(network);
   const { connected, connect } = useWallet();
   const wallet = useAnchorWalletSafe();
-  const { open, replace, close } = useOverlay();
+  const { open, replace, close: closeOverlay } = useOverlay();
   const { user } = useAuth();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -101,12 +101,12 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
           Linking.openURL(`https://solscan.io/tx/${res.txId}${network === 'devnet' ? '?cluster=devnet' : ''}`)
         }
       }});
-      close();
-      onUpdated()
+      closeOverlay();
+      onUpdated();
     } catch (e) {
       console.error("refund premarket error:", e);
       notify.error("Failed to refund premarket");
-      close();
+      closeOverlay();
     }
   };
   
@@ -238,26 +238,24 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
           Linking.openURL(`https://solscan.io/tx/${res.txId}${network === 'devnet' ? '?cluster=devnet' : ''}`)
         }
       }});
-      onUpdated()
+      onUpdated();
     } catch (e) {
       console.error("extend premarket error:", e);
       notify.error("Failed to extend premarket deadline");
     } finally {
-      close();
+      closeOverlay();
       setSelectedDate(null);
     }
   };
 
   const handleFinish = async () => {
-    // if (tokenMainInfo.premarketDeadline > now) {
-    //   notify.warning(
-    //     `Finish will be available in ${getTimeLeftLabel(tokenMainInfo.premarketDeadline)}`
-    //   );
-    //   return;
-    // }
-
-    notify.info("Skipped deadline check")
-
+    const now = Math.floor(Date.now() / 1000);
+    if (tokenMainInfo.premarketDeadline > now) {
+      notify.warning(
+        `Finish will be available in ${getTimeLeftLabel(tokenMainInfo.premarketDeadline)}`
+      );
+      return;
+    }
 
     if (!wallet || !connected) {
       notify.error("Wallet is not connected", {
@@ -299,8 +297,7 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
         tx: res.txId,
         isKilled: false,
         network: network
-      })
-
+      });
 
       notify.success("Premarket successfully finished!", {action: {
         label: "check",
@@ -308,12 +305,12 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
           Linking.openURL(`https://solscan.io/tx/${res.txId}${network === 'devnet' ? '?cluster=devnet' : ''}`)
         }
       }});
-      close();
-      onUpdated();
     } catch (e) {
       console.error("finish premarket error:", e);
       notify.error("Failed to finish premarket");
-      close();
+    } finally {
+      closeOverlay();
+      onUpdated();
     }
   };
 
