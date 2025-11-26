@@ -196,6 +196,14 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, on
     const isRefunded = useMemo(() => {
         return tokenMainInfo.state === 'canceled';
     }, [tokenMainInfo.state]);
+    
+    // Check if premarket is canceled (refunded)
+    const isShowLeaveBtn = useMemo(() => {
+        return tokenMainInfo.state !== 'canceled' &&
+            tokenMainInfo.state !== 'finished' && 
+            tokenMainInfo.state !== 'times_up';
+    }, [tokenMainInfo.state]);
+
 
     const renderLoader = (status: string) => (
         <View style={{ gap: 20 }}>
@@ -276,7 +284,7 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, on
                         </Text>
                     )}
                 </View>
-                {!isRefunded && (
+                {isShowLeaveBtn && (
                     <Button 
                         mode="outlined" 
                         compact
@@ -387,13 +395,7 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, on
                     <SvgIcon name='info-circle' size={24} color={theme.colors.primary} />
                     <View style={{ flex: 1, gap: 4 }}>
                         <Text variant='bodyMedium' style={{ color: theme.colors.onSurfaceVariant }}>
-                            Premarket didn't reach it's goal. Creator has
-                        </Text>
-                        <Text variant='bodyMedium' style={{ color: theme.colors.onSurfaceVariant }}>
-                            4 hours to extend the deadline, or you will be
-                        </Text>
-                        <Text variant='bodyMedium' style={{ color: theme.colors.onSurfaceVariant }}>
-                            refunded
+                            Premarket didn't reach it's goal. Creator has 48 hours to extend the deadline, or you will be refunded
                         </Text>
                     </View>
                 </View>
