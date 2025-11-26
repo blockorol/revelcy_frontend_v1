@@ -156,6 +156,7 @@ export function TokenPremarketPageNormal({
           {user && token.dynamicInfo.holders.find((h) => h.id === user.userId) !== undefined && (
             <YourEntry 
               premarketPubkey={token.mainInfo.premarketPubkey}
+              user={user}
               tokenDynamicInfo={token.dynamicInfo}
               tokenMainInfo={token.mainInfo}
               onUpdated={refetchTokenInfo}
@@ -315,6 +316,7 @@ function BriefMobile({
         />
         {user && token.dynamicInfo.holders.find((h) => h.id === user.userId) !== undefined && (
           <YourEntry 
+            user={user}
             premarketPubkey={token.mainInfo.premarketPubkey}
             tokenDynamicInfo={token.dynamicInfo}
             tokenMainInfo={token.mainInfo}
