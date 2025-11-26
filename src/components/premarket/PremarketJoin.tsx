@@ -95,6 +95,7 @@ function PremarketJoinBase({
 
   const [rawInput, setRawInput] = useState<string|undefined>(undefined);
   const [errorBalance, setErrorBalance] = useState<string|undefined>(undefined);
+  const [walletError, setWalletError] = useState<string|undefined>(undefined);
   
   const [amountSol, setAmountSol] = useState<number>(DEFAULT_VALUE);
     const [selection, setSelection] = React.useState<{
@@ -132,6 +133,14 @@ function PremarketJoinBase({
 
     fetchWalletInfo();
   }, [user?.walletAddress]);
+
+  useEffect(() => {
+    if (user?.walletAddress.toLowerCase() !== wallet?.publicKey?.toString().toLowerCase()) {
+      setWalletError("Connected wallet does not match user wallet");
+      return;
+    }
+    setWalletError(undefined);
+  }, [user?.walletAddress, wallet?.publicKey]);
 
   const renderLoader = (status: string) => (
     <View style={{ gap: 20 }}>
@@ -366,13 +375,14 @@ function PremarketJoinBase({
           leftSvgIconName="plus"
           mode="contained"
           onPress={handleJoin}
-          disabled={errorBalance !== undefined}
+          disabled={errorBalance !== undefined || walletError !== undefined}
         >
           Join Premarket
         </Button>
         
         {!isMobile&&<ShareTextButton style={{flex: 1}} shareMessage={`Join to premarket on: ${currentURL}`}/>}
       </View>
+        {walletError !== undefined && <HelperText type="error">{walletError}</HelperText>}
 
       <LoginModal 
         visible={loginModalVisible} 
