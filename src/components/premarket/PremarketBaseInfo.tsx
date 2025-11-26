@@ -147,6 +147,13 @@ export function PremarketBaseInfo({ tokenMainInfo, isMobile}: PremarketBaseInfoP
         {stateChip(tokenMainInfo.state)}
         {tokenMainInfo.state === 'finished' && (
           <TouchableOpacity
+            style={{
+              justifyContent: "flex-start",
+              alignItems: "center",
+              flexDirection: "row",
+              gap: 10,
+            }}
+
             onPress={() => {
               if (!tokenMainInfo.tokenMint) return;
               tryCopy(tokenMainInfo.tokenMint);
