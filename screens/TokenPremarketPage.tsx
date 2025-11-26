@@ -138,7 +138,7 @@ export function TokenPremarketPageNormal({
               }}
             >
               <View style={{ gap: 32}}>
-                <PremarketBaseInfo tokenMainInfo={token.mainInfo} tokenDynamicInfo={token.dynamicInfo} isMobile={false}/>
+                <PremarketBaseInfo tokenMainInfo={token.mainInfo} isMobile={false}/>
                 <PremarketDynamicInfo
                   tokenMainInfo={token.mainInfo}
                   tokenDynamicInfo={token.dynamicInfo}
@@ -307,7 +307,7 @@ function BriefMobile({
           // marginBottom: 70
         }}
       >
-        <PremarketBaseInfo tokenMainInfo={token.mainInfo} tokenDynamicInfo={token.dynamicInfo} isMobile={true} />
+        <PremarketBaseInfo tokenMainInfo={token.mainInfo} isMobile={true} />
         <PremarketDynamicInfo
           tokenMainInfo={token.mainInfo}
           tokenDynamicInfo={token.dynamicInfo}
