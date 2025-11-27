@@ -11,10 +11,8 @@ import BN from "bn.js";
 import { useIsMobileWithDemention } from "@hooks/useIsMobile";
 import { ExtendedMD3Colors } from "@theme/types";
 import { convertSolToPercentOnStart } from "@services/pumpfun/adds";
-import { DonutWithLegend } from "@components/base/DonutWithLegend";
 import { round } from "@utils/numbers";
-import { makeTransparent } from "@utils/colors";
-import { convertLamportToSmallCount, convertSmallCountToLamport } from "@utils/premarket";
+import { convertSmallCountToLamport } from "@utils/premarket";
 import { TOKEN_CONVERTOR_SETTINGS } from "env";
 
 const DEFAULT_PREMARKET_GOAL_SOL = 5;
@@ -43,18 +41,9 @@ export default function EditPremarketSettingsForm({
   const colors = theme.colors as ExtendedMD3Colors;
   const minPremarketSol = tokenomicsData?.creatorInitialBuy??DEFAULT_PREMARKET_GOAL_SOL
   
-  const initialBuyPersent = 
-    tokenomicsData?.creatorInitialBuy ? 
-      round(convertSolToPercentOnStart(tokenomicsData?.creatorInitialBuy), 1)
-      : undefined
-
-  const [percent, setPercent] = useState(0);
   const [premarketGoalSol, setPremarketGoalSol] = useState(
     presetData?.goal_sol ??minPremarketSol
     );
-
-  const [premarketGoalLamp, setPremarketGoalLamp] = useState<BN>
-      (convertSmallCountToLamport(presetData?.goal_sol??minPremarketSol));
   const [goalError, setGoalError] = useState<string | null>(null);
 
 
@@ -62,7 +51,7 @@ export default function EditPremarketSettingsForm({
     presetData?.deadline_sec
   );
   const [dataTimeError, setDataTimeError] = useState<string | null>(null);
-  const [currentDataTime, setDataTime] = useState<Date>(new Date());
+  const [currentDataTime, setDataTime] = useState<Date>(new Date(presetData?.deadline_sec ? presetData.deadline_sec * 1000 : Date.now()));
 
   const isMoreThanOneMonthAway = (d: Date) => {
     const now = new Date();
@@ -76,8 +65,6 @@ export default function EditPremarketSettingsForm({
 
   const changeSliderPremarketValue = (value: number) => {
     setPremarketGoalSol(value)
-    setPremarketGoalLamp(convertSmallCountToLamport(value))
-    setPercent(convertSolToPercentOnStart(value))
     if (value < minPremarketSol) {
       setGoalError("The premarket goal must exceed the initial buy amount")
     } else {
@@ -87,7 +74,7 @@ export default function EditPremarketSettingsForm({
   const handleSubmit = () => {
     if (!deadlineDateTimeSec) return;
     if (dataTimeError) return;
-    if ((tokenomicsData?.creatorInitialBuy??0) >= premarketGoalSol) return
+    if ((tokenomicsData?.creatorInitialBuy??0) > premarketGoalSol) return
     onNext({
       deadline_sec: deadlineDateTimeSec,
       goal_sol: premarketGoalSol,
@@ -95,7 +82,7 @@ export default function EditPremarketSettingsForm({
   };
   const isFilledAll = (): boolean => {
     return (
-      (tokenomicsData?.creatorInitialBuy??0) < premarketGoalSol &&
+      (tokenomicsData?.creatorInitialBuy??0) <= premarketGoalSol &&
       deadlineDateTimeSec !== undefined
     );
   };
@@ -189,40 +176,6 @@ export default function EditPremarketSettingsForm({
                 {goalError??" "}
               </HelperText>
             </View>
-            <View style={{ marginTop: 24 }}>
-              <DonutWithLegend
-                slices={[
-                  {
-                    value: round(percent, 1),
-                    additional: premarketGoalSol.toFixed(2),
-                    label: "Premarket",
-                    color: theme.colors.primary,
-
-                    subSlices: initialBuyPersent?{
-                      restColor: makeTransparent(theme.colors.onPrimary, 0.7),
-                      slices: [{
-                        value: initialBuyPersent??0,
-                        label: "Creator (you) buy",
-                        color:  makeTransparent(theme.colors.onPrimary, 0.5),
-                        additional: tokenomicsData?.creatorInitialBuy.toFixed(2)
-                      }]
-                    }:undefined
-                  },
-                  {
-                    value: round(80 - percent, 1),
-                    label: "Bonding curve",
-                    color: theme.colors.onSurface,
-                  },
-                  {
-                    value: 20,
-                    label: "Pumpswap pool",
-                    color: theme.colors.secondary,
-                  },
-                ]}
-              />
-            </View>
-            
-            
           </View>
         </View>
         <View style={{ marginTop: 16, paddingBottom: isMobile ? 8 : 16 }}>

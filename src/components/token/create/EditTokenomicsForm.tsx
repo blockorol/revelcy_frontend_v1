@@ -381,7 +381,7 @@ export default function EditTokenomicsForm({
                 ]}
               />
             </View>
-
+{/* 
             <View
               style={{
                 paddingTop: 16,
@@ -458,6 +458,7 @@ export default function EditTokenomicsForm({
                 {formatNumberNoTrailingZeros((creatorInitialBuy ?? 0) * (1 + PUMP_FEE_PERCENTAGE + REVELCY_FEE_PERCENTAGE) + SOL_FEE)} SOL
               </Text>
             </View>
+*/}
           </View>
         </View>
         <View style={{ marginTop: 16, paddingBottom: isMobile ? 8 : 16 }}>
