@@ -83,7 +83,7 @@ export function ChipDisplay({
       mode={mode}
       selected={false}
       disabled={disabled}
-      textStyle={{ margin: 0, padding: 0, cursor: cursor,}}
+      textStyle={{ margin: 0, padding: 1, cursor: cursor,}}
       style={[
         container,
         {
