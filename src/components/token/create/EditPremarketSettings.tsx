@@ -51,7 +51,7 @@ export default function EditPremarketSettingsForm({
     presetData?.deadline_sec
   );
   const [dataTimeError, setDataTimeError] = useState<string | null>(null);
-  const [currentDataTime, setDataTime] = useState<Date>(new Date());
+  const [currentDataTime, setDataTime] = useState<Date>(new Date(presetData?.deadline_sec ? presetData.deadline_sec * 1000 : Date.now()));
 
   const isMoreThanOneMonthAway = (d: Date) => {
     const now = new Date();
@@ -74,7 +74,7 @@ export default function EditPremarketSettingsForm({
   const handleSubmit = () => {
     if (!deadlineDateTimeSec) return;
     if (dataTimeError) return;
-    if ((tokenomicsData?.creatorInitialBuy??0) >= premarketGoalSol) return
+    if ((tokenomicsData?.creatorInitialBuy??0) > premarketGoalSol) return
     onNext({
       deadline_sec: deadlineDateTimeSec,
       goal_sol: premarketGoalSol,
@@ -82,7 +82,7 @@ export default function EditPremarketSettingsForm({
   };
   const isFilledAll = (): boolean => {
     return (
-      (tokenomicsData?.creatorInitialBuy??0) < premarketGoalSol &&
+      (tokenomicsData?.creatorInitialBuy??0) <= premarketGoalSol &&
       deadlineDateTimeSec !== undefined
     );
   };
