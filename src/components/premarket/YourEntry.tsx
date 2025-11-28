@@ -1,7 +1,7 @@
 import { View, ActivityIndicator } from "react-native";
 import { useTheme, Text, Button } from "react-native-paper";
 import { ExtendedMD3Colors, AppTheme } from "@theme/types";
-import { useAuth } from "@providers/AuthContext";
+import { useAuth, UserInfo } from "@providers/AuthContext";
 import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
 import { useWallet } from "@storage/wallet-adapter";
@@ -26,15 +26,15 @@ interface YourEntryProps {
   tokenDynamicInfo: TokenDynamicInfo;
   tokenMainInfo: TokenMainInfo;
   onUpdated: () => void;
+  user: UserInfo; 
   isMobile: boolean;
 }
 
-export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, onUpdated, isMobile }: YourEntryProps) {
+export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInfo, onUpdated, isMobile }: YourEntryProps) {
     const theme = useTheme() as AppTheme;
     const { network } = useNetwork();
     const connection = getSolanaConnection(network);
     const { connected, connect } = useWallet();
-    const { user } = useAuth();
     const wallet = useAnchorWalletSafe();
     const notify = useNotification();
     const { open, replace, close } = useOverlay();
@@ -42,7 +42,7 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, on
     const [loadingEntryPrice, setLoadingEntryPrice] = useState(true);
 
     // Find user's entry data
-    const userEntry = tokenDynamicInfo.holders.find((holder) => holder.id === user?.userId);
+    const userEntry = tokenDynamicInfo.holders.find((holder) => holder.id === user.userId);
     if (!userEntry) {
         return null;
     }
@@ -168,7 +168,7 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, on
         
         // Check if user is not the creator
         // Use user?.walletAddress to be consistent with other components, fallback to userEntry.walletAddress
-        const userWallet = (user?.walletAddress || userEntry.walletAddress)?.toLowerCase() || '';
+        const userWallet = user.walletAddress.toLowerCase();
         const creatorWallet = tokenMainInfo.createdByPubkey?.toLowerCase() || '';
         const isNotCreator = userWallet !== creatorWallet && userWallet !== '';
         
@@ -196,6 +196,14 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, on
     const isRefunded = useMemo(() => {
         return tokenMainInfo.state === 'canceled';
     }, [tokenMainInfo.state]);
+    
+    // Check if premarket is canceled (refunded)
+    const isShowLeaveBtn = useMemo(() => {
+        return tokenMainInfo.state !== 'canceled' &&
+            tokenMainInfo.state !== 'finished' && 
+            tokenMainInfo.state !== 'times_up';
+    }, [tokenMainInfo.state]);
+
 
     const renderLoader = (status: string) => (
         <View style={{ gap: 20 }}>
@@ -221,8 +229,8 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, on
             });
             return;
         }
-        if (!user) {
-            notify.error("Please log in to continue");
+        if (wallet.publicKey.toString().toLowerCase() !== user.walletAddress.toLowerCase()) {
+            notify.error("Connected wallet does not match entry wallet. Please reconnect with the correct wallet.");
             return;
         }
         if (network === 'testnet') {
@@ -276,7 +284,7 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, on
                         </Text>
                     )}
                 </View>
-                {!isRefunded && (
+                {isShowLeaveBtn && (
                     <Button 
                         mode="outlined" 
                         compact
@@ -387,13 +395,7 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, on
                     <SvgIcon name='info-circle' size={24} color={theme.colors.primary} />
                     <View style={{ flex: 1, gap: 4 }}>
                         <Text variant='bodyMedium' style={{ color: theme.colors.onSurfaceVariant }}>
-                            Premarket didn't reach it's goal. Creator has
-                        </Text>
-                        <Text variant='bodyMedium' style={{ color: theme.colors.onSurfaceVariant }}>
-                            4 hours to extend the deadline, or you will be
-                        </Text>
-                        <Text variant='bodyMedium' style={{ color: theme.colors.onSurfaceVariant }}>
-                            refunded
+                            Premarket didn't reach it's goal. Creator has 48 hours to extend the deadline, or you will be refunded
                         </Text>
                     </View>
                 </View>

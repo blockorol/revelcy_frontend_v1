@@ -9,7 +9,7 @@ const FRAMER_URL = "https://revelcy.com/";
 export default function FramerScreen() {
   const theme = useTheme();
   
-  const {width} = useIsMobileWithDemention();
+  const {width, isMobile} = useIsMobileWithDemention();
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
       {Platform.OS === "web" ? (
@@ -27,7 +27,7 @@ export default function FramerScreen() {
             sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
             style={{
               border: "none",
-              width: width +15,
+              width: width + (isMobile ? 0 : 15),
               height: "100%",
             }}
           />

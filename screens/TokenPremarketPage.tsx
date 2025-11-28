@@ -35,7 +35,7 @@ export default function TokenPremarketPage({
 
 
   useEffect(() => {
-    if (error) router.replace("/discovery");
+    if (error) router.replace("/discover");
   }, [error]);
 
   if (loading || !token) {
@@ -138,7 +138,7 @@ export function TokenPremarketPageNormal({
               }}
             >
               <View style={{ gap: 32}}>
-                <PremarketBaseInfo tokenMainInfo={token.mainInfo} tokenDynamicInfo={token.dynamicInfo} isMobile={false}/>
+                <PremarketBaseInfo tokenMainInfo={token.mainInfo} isMobile={false}/>
                 <PremarketDynamicInfo
                   tokenMainInfo={token.mainInfo}
                   tokenDynamicInfo={token.dynamicInfo}
@@ -156,6 +156,7 @@ export function TokenPremarketPageNormal({
           {user && token.dynamicInfo.holders.find((h) => h.id === user.userId) !== undefined && (
             <YourEntry 
               premarketPubkey={token.mainInfo.premarketPubkey}
+              user={user}
               tokenDynamicInfo={token.dynamicInfo}
               tokenMainInfo={token.mainInfo}
               onUpdated={refetchTokenInfo}
@@ -172,7 +173,7 @@ export function TokenPremarketPageNormal({
         >
           <View style={{ gap: 24}}>
             <AboutCommunity
-              isCreator={token.mainInfo.createdByPubkey === user?.walletAddress}
+              isEditable={(token.mainInfo.createdByPubkey === user?.walletAddress) && (token.mainInfo.state === 'premarket' || token.mainInfo.state === 'expired')}
               premarketPubkey={token.mainInfo.premarketPubkey.toString()}
               communityInfo={token.communityInfo}
               isMobile={false}
@@ -307,7 +308,7 @@ function BriefMobile({
           // marginBottom: 70
         }}
       >
-        <PremarketBaseInfo tokenMainInfo={token.mainInfo} tokenDynamicInfo={token.dynamicInfo} isMobile={true} />
+        <PremarketBaseInfo tokenMainInfo={token.mainInfo} isMobile={true} />
         <PremarketDynamicInfo
           tokenMainInfo={token.mainInfo}
           tokenDynamicInfo={token.dynamicInfo}
@@ -315,6 +316,7 @@ function BriefMobile({
         />
         {user && token.dynamicInfo.holders.find((h) => h.id === user.userId) !== undefined && (
           <YourEntry 
+            user={user}
             premarketPubkey={token.mainInfo.premarketPubkey}
             tokenDynamicInfo={token.dynamicInfo}
             tokenMainInfo={token.mainInfo}
@@ -323,7 +325,7 @@ function BriefMobile({
           />
         )}
         <AboutCommunity
-          isCreator={token.mainInfo.createdByPubkey === user?.walletAddress}
+          isEditable={(token.mainInfo.createdByPubkey === user?.walletAddress) && (token.mainInfo.state === 'premarket' || token.mainInfo.state === 'expired')}
           premarketPubkey={token.mainInfo.premarketPubkey.toString()}
           communityInfo={token.communityInfo}
           isMobile={true}

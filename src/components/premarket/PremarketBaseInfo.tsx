@@ -3,45 +3,27 @@ import { RoundIconLink } from "@components/premarket/RoundIcons";
 import { useIsMobileForTwoScreenWithDemention } from "@hooks/useIsMobile";
 import { getTimeLeftLabel } from "@utils/premarket";
 import shortString from "@utils/address_shorter";
-import { View, Image } from "react-native";
+import { View, Image, TouchableOpacity } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { ExpandableText } from '@components/base/ExpandableText';
 import { SvgIcon, SvgIconButton } from '@components/base/SvgIcon';
 import { ChipDisplay } from '@components/ui/Chip';
 import { QuestionMarkModal } from "@components/modals/QuestionMarkModal";
 import { useState } from "react";  
+import { tr } from "react-native-paper-dates";
+import { tryCopy } from "@utils/actions";
 
 interface PremarketBaseInfoProps {
   tokenMainInfo: TokenMainInfo;
-  tokenDynamicInfo: TokenDynamicInfo;
   isMobile: boolean
 }
 
-export function PremarketBaseInfo({ tokenMainInfo, tokenDynamicInfo, isMobile}: PremarketBaseInfoProps) {
-  console.log("tokenMainInfo:", tokenMainInfo);
+export function PremarketBaseInfo({ tokenMainInfo, isMobile}: PremarketBaseInfoProps) {
   const theme = useTheme();
   const { left } = useIsMobileForTwoScreenWithDemention();
   const [showQuestionModal, setShowQuestionModal] = useState(false);
 
-  // Determine the effective state based on conditions
-  const getEffectiveState = () => {
-    const now = Math.floor(Date.now() / 1000);
-    const isPremarket = tokenMainInfo.state === 'premarket';
-    const isDeadlinePassed = tokenMainInfo.premarketDeadline < now;
-    const isGoalNotReached = tokenDynamicInfo.reservedSolLamp.lt(tokenMainInfo.premarketGoalSolLamp);
-    
-    // If it's premarket and deadline passed and goal reached, show "times_up"
-    if (isPremarket && isDeadlinePassed && !isGoalNotReached) {
-      return 'times_up';
-    }
-    if (isPremarket && isDeadlinePassed && isGoalNotReached) {
-      return 'expired';
-    }
-    
-    return tokenMainInfo.state;
-  };
-
-  const button = (state: "premarket" | "canceled" | "finished" | "times_up" | "expired") => {
+  const stateChip = (state: "premarket" | "canceled" | "finished" | "times_up" | "expired") => {
     return state === 'premarket' ? 
     (<ChipDisplay
       variant="secondary"
@@ -162,18 +144,30 @@ export function PremarketBaseInfo({ tokenMainInfo, tokenDynamicInfo, isMobile}: 
           gap: 10,
         }}
       >
-        {button(getEffectiveState())}
+        {stateChip(tokenMainInfo.state)}
         {tokenMainInfo.state === 'finished' && (
+          <TouchableOpacity
+            style={{
+              justifyContent: "flex-start",
+              alignItems: "center",
+              flexDirection: "row",
+              gap: 10,
+            }}
+
+            onPress={() => {
+              if (!tokenMainInfo.tokenMint) return;
+              tryCopy(tokenMainInfo.tokenMint);
+            }}
+            >
             <Text variant="labelLarge">
-            {tokenMainInfo.tokenMint ? shortString(tokenMainInfo.tokenMint) : "No token address available!"} 
-          </Text>
-        )}
-        {tokenMainInfo.state === 'finished' && (
-          <SvgIcon 
-            name="copy-icon" 
-            size={14} 
-            color={theme.colors.onSurfaceVariant} 
-          />
+              {tokenMainInfo.tokenMint ? shortString(tokenMainInfo.tokenMint) : "No token address available!"} 
+            </Text>
+            <SvgIcon 
+              name="copy-icon" 
+              size={14} 
+              color={theme.colors.onSurfaceVariant} 
+            />
+          </TouchableOpacity>
         )}
         {deadlineText && (
           <Text variant="labelLarge" style={{color: theme.colors.secondary}}>

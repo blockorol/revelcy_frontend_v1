@@ -161,7 +161,7 @@ function TimeField({
             placeholder='00'
             ref={ref}
             accessibilityLabel={ariaLabel}
-            value={value === 0? undefined:value.toString()}
+            value={pad2(value)}
             onChangeText={(t) => onChange(parseNumeric(t))}
             keyboardType="number-pad"
             maxLength={3}
