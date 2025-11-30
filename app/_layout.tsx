@@ -1,3 +1,4 @@
+import "../src/polyfills";
 import React, { useEffect } from "react";
 import { Stack } from "expo-router";
 import CookiesModal from "@components/modals/CookiesModal";
@@ -28,7 +29,6 @@ import { en, registerTranslation } from "react-native-paper-dates";
 
 registerTranslation("en", en);
 
-import { Buffer } from "buffer";
 import process from "process";
 import { AuthProvider } from "@providers/AuthContext";
 import { ContentAreaProvider, useContentArea } from "@hooks/useContentArea";
@@ -36,9 +36,6 @@ import { UserModalProvider } from "@storage/UserModalContext";
 import { NotificationProvider } from "@providers/NotificationContext";
 import { UniversalOverlayProvider } from "@storage/UniversalOverlayProvider";
 
-if (typeof globalThis.Buffer === "undefined") {
-  globalThis.Buffer = Buffer;
-}
 if (typeof globalThis.process === "undefined") {
   globalThis.process = process;
 }
@@ -68,16 +65,16 @@ export default function Layout() {
       <Head>
         <title>Revelcy</title>
       </Head>
-    <NetworkProvider>
-      <AuthProvider>
-        <WalletProvider>
-          <ContentAreaProvider>
-            <InnerLayout />
-          </ContentAreaProvider>
-        </WalletProvider>
-      </AuthProvider>
-    </NetworkProvider>
-  </>
+      <NetworkProvider>
+        <AuthProvider>
+          <WalletProvider>
+            <ContentAreaProvider>
+              <InnerLayout />
+            </ContentAreaProvider>
+          </WalletProvider>
+        </AuthProvider>
+      </NetworkProvider>
+    </>
   );
 }
 
@@ -115,29 +112,29 @@ function InnerLayout() {
           <UniversalOverlayProvider>
             <Portal.Host>
 
-            <StatusBar
-              barStyle={scheme === "dark" ? "light-content" : "dark-content"}
-              backgroundColor={theme.colors.background}
-            />
+              <StatusBar
+                barStyle={scheme === "dark" ? "light-content" : "dark-content"}
+                backgroundColor={theme.colors.background}
+              />
 
-            <View
-              style={[
-                styles.container,
-                { backgroundColor: theme.colors.background },
-              ]}
-            >
-              <View onLayout={(e) => setTopHeight(e.nativeEvent.layout.height)}>
-                <NavigationTop />
-              </View>
-              <Stack screenOptions={{ headerShown: false }} />
-              {/* 
+              <View
+                style={[
+                  styles.container,
+                  { backgroundColor: theme.colors.background },
+                ]}
+              >
+                <View onLayout={(e) => setTopHeight(e.nativeEvent.layout.height)}>
+                  <NavigationTop />
+                </View>
+                <Stack screenOptions={{ headerShown: false }} />
+                {/* 
                 <View onLayout={(e) => setBottomHeight(e.nativeEvent.layout.height)}>
                   <NavigationBottom />
                 </View> 
               */}
-              <CookiesModal />
-            </View>
-            
+                <CookiesModal />
+              </View>
+
             </Portal.Host>
           </UniversalOverlayProvider>
         </UserModalProvider>
