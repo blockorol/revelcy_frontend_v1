@@ -1,4 +1,4 @@
-import { TokenDynamicInfo, TokenMainInfo } from "@api/token";
+import { TokenDynamicInfo, TokenMainInfo, tokensClaimed } from "@api/token";
 
 import { PremarketJoin } from "@components/premarket/PremarketJoin";
 import { CreatorInfo } from "@components/premarket/CreatorInfo";
@@ -200,6 +200,18 @@ export function PremarketActionLaunched({
         new PublicKey(tokenMainInfo.tokenMint),
         (text) => { replace(renderLoader(text)) }
       );
+
+      // Notify backend about successful claim
+      try {
+        await tokensClaimed({
+          network,
+          userPubkey: wallet.publicKey.toBase58(),
+          premarketAccount: tokenMainInfo.premarketPubkey.toBase58(),
+        });
+      } catch (e: any) {
+        console.error("Failed to notify backend about token claim:", e);
+        // Don't fail the whole operation if backend notification fails
+      }
 
       notify.success("Tokens claimed successfully!", {
         action: {
