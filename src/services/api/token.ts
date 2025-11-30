@@ -318,7 +318,7 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
   console.log("tokenMarketCapFromCurve:", {
     reservedSolLamp: reservedSolLamp.toString(),
     tokenMarketCapFromCurve: tokenMarketCapFromCurve.toString(),
-});
+  });
   
   const reservedToken = DEFAULT_TOKEN_COUNT_DECIMAL.sub(tokenMarketCapFromCurve);
 
@@ -348,7 +348,8 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
       joinTimestamp: h.join_timestamp,
       iconURL: h.icon_url ?? undefined,
       amountSolLamp: new BN(h.amount_sol_lamp),
-      username: h.username??shortString(h.wallet_address)
+      username: h.username??shortString(h.wallet_address),
+      claimed: h.claimed ?? false
     })),
   };
 }
@@ -412,6 +413,7 @@ export interface HoldersInfo {
     amountSolLamp: BN;
     iconURL?: string;
     username: string;
+    claimed?: boolean;
 }
 
 export interface HolderEntryPriceDTO {
