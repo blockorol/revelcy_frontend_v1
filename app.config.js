@@ -8,6 +8,7 @@ export default {
       HELIUS_KEY: process.env.HELIUS_KEY,
       NETWORK: process.env.NETWORK,
       TRITON_URL: process.env.TRITON_URL,
+      DEV_MODE: process.env.DEV_MODE,
     }
   }
 };

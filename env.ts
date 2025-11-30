@@ -11,6 +11,7 @@ type EnvVars = {
   HELIUS_KEY?: string;
   TRITON_URL?: string;
   NETWORK?: "devnet" | "mainnet-beta";
+  DEV_MODE?: string;
 };
 
 let ENV: EnvVars = getEnv(Platform.OS);
@@ -28,6 +29,7 @@ function getEnv(platform: PlatformOSType): EnvVars {
       HELIUS_KEY: extra.HELIUS_KEY ?? process.env.HELIUS_KEY,
       NETWORK: extra.NETWORK ?? process.env.NETWORK,
       TRITON_URL: extra.TRITON_URL ?? process.env.TRITON_URL,
+      DEV_MODE: extra.DEV_MODE ?? process.env.DEV_MODE,
     };
   }
 
@@ -51,7 +53,8 @@ export const API_HOST = getRequired("HOST_BACKEND", ENV.HOST_BACKEND);
 export const HELIUS_KEY = getRequired("HELIUS_KEY", ENV.HELIUS_KEY);
 export const TRITON_URL = getRequired("TRITON_URL", ENV.TRITON_URL);
 export const NETWORK = ENV.NETWORK??'devnet';
-export const TOKEN_CONVERTOR_SETTINGS = 
+export const DEV_MODE = ENV.DEV_MODE === 'true';
+export const TOKEN_CONVERTOR_SETTINGS =
   NETWORK === 'devnet' ?
   {
       vS0: '8000000000',
