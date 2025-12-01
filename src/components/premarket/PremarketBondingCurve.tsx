@@ -28,8 +28,10 @@ export function generateBondingCurvePointsFromZero(args: GenerateBondingCurvePoi
 
 
   let lastPercent = -10;
+  const points = [];
   for (let p = 0; p < to; p += stepSol) {
     const persent = convertSolToPercentOnStartNoFee(p)
+    points.push(persent);
     if (persent < stepPercent+lastPercent) continue;
     lastPercent = persent;
     const currentSolana = convertSmallCountToLamport(p)
@@ -255,16 +257,15 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
   const nowPoint = findPointBySol(curvePoints, nowSol);
 
   const goalTop = 
-    state === 'premarket' && goalPoint.y === nowPoint.y  ? 
-      goalPoint.y - (fonts.labelSmall.fontSize as number) * 0.2 :
-      goalPoint.y + (fonts.labelSmall.fontSize as number) / 2
+    // state === 'premarket' && goalPoint.y === nowPoint.y  ? goalPoint.y - (fonts.labelSmall.fontSize as number) * 0.2 :
+      goalPoint.y + (fonts.labelSmall.fontSize as number) *2/3
 
   const nowTop = 
-    goalPoint.y === nowPoint.y ? 
-      nowPoint.y + (fonts.labelSmall.fontSize as number) * 1.2 : 
-      nowPoint.y + (fonts.labelSmall.fontSize as number) / 2
+    // goalPoint.y === nowPoint.y ? nowPoint.y + (fonts.labelSmall.fontSize as number) * 1.2 : 
+      nowPoint.y + (fonts.labelSmall.fontSize as number) *2/3
 
   // Check if labels overlap (within 30px vertical distance)
+  
   const labelsOverlap = Math.abs(goalTop - nowTop) < 30
 
   const goalColor = 
@@ -279,7 +280,6 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
   if (state === 'canceled' || state === 'expired') {
     currentPrice = 0
   }
-  
 
   return (
     <View style={{
@@ -287,6 +287,7 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
       borderRadius: 16,
       padding: padding, width: width, height: height }}>
       <Svg height={heightSVG} width={widthSVG}>
+        {/* {renderPixelGrid(widthSVG, heightSVG, 20, 20)} */}
         {/* axes */}
         {/* 
         <Line x1={margin} y1={margin} x2={margin} y2={height - margin} stroke={colors.outlineVariant} />
@@ -312,6 +313,7 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
         { state === 'premarket' && !labelsOverlap &&
           <Line x1={YLineWight} x2={nowPoint.x} y1={nowPoint.y} y2={nowPoint.y} stroke={colors.primary} strokeDasharray="4" />
         }
+        {/* circle when no users  */}
         { state === 'premarket' && !labelsOverlap && joiners.length === 0 &&
           <Circle
             cx={nowPoint.x}
@@ -521,3 +523,41 @@ function findPointByPercent(points: BondingCurvePointWithCoordinate[], percent: 
   }
   return points[points.length - 1];
 }
+
+  function renderPixelGrid (widthSVG: number ,heightSVG: number, xStep: number = 20, yStep: number = 20): JSX.Element[] {
+    const gridLines: JSX.Element[] = [];
+
+    // Вертикальные линии каждые xStep px
+    for (let x = 0; x <= widthSVG; x += xStep) {
+      gridLines.push(
+        <Line
+          key={`grid-px-x-${x}`}
+          x1={x}
+          y1={0}
+          x2={x}
+          y2={heightSVG}
+          stroke={'grey'}
+          strokeWidth={0.3}
+          strokeDasharray="2 2"
+        />,
+      );
+    }
+
+    // Горизонтальные линии каждые yStep px
+    for (let y = 0; y <= heightSVG; y += yStep) {
+      gridLines.push(
+        <Line
+          key={`grid-px-y-${y}`}
+          x1={0}
+          y1={y}
+          x2={widthSVG}
+          y2={y}
+          stroke={'grey'}
+          strokeWidth={0.3}
+          strokeDasharray="2 2"
+        />,
+      );
+    }
+
+    return gridLines;
+  };
