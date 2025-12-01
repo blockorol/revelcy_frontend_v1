@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { DimensionValue, View, Image as RNImage } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import { Svg, Path, Circle, Line, Text as SvgText, Polygon, ForeignObject } from 'react-native-svg';
@@ -12,33 +12,38 @@ import {
 import { MD3Colors, MD3Typescale } from 'react-native-paper/lib/typescript/types';
 import { convertSolToPercentOnStartNoFee } from '@services/pumpfun/adds';
 
-interface BondingCurvePoint { sol_lamp: BN; persent: number }
+interface BondingCurvePoint { sol_lamp: BN; persent: number; sol_small: number; }
 interface BondingCurvePointWithCoordinate extends BondingCurvePoint { x: number; y: number }
 interface GenerateBondingCurvePointsArgs {
   from: number; to: number; stepSol: number; stepPercent: number;
 }
 
-export function generateBondingCurvePointsFromZero(args: GenerateBondingCurvePointsArgs): BondingCurvePoint[] {
-  const { from, to, stepSol, stepPercent} = args;
+export function generateBondingCurvePointsFromZero(
+  args: GenerateBondingCurvePointsArgs
+): BondingCurvePoint[] {
+  const { from, to, stepSol, stepPercent } = args;
 
   if (stepSol <= 0) throw new Error("step must be positive integer");
   if (from < 0 || to > 200 || from > to) throw new Error("solana must satisfy 0 ≤ from ≤ to ≤ 200");
 
   const result: BondingCurvePoint[] = [];
 
-
   let lastPercent = -10;
-  const points = [];
-  for (let p = 0; p < to; p += stepSol) {
-    const persent = convertSolToPercentOnStartNoFee(p)
-    points.push(persent);
-    if (persent < stepPercent+lastPercent) continue;
+  for (let p = from; p < to; p += stepSol) {
+    const persent = convertSolToPercentOnStartNoFee(p);
+    if (persent < stepPercent + lastPercent) continue;
     lastPercent = persent;
-    const currentSolana = convertSmallCountToLamport(p)
-    result.push({ persent: persent, sol_lamp: currentSolana });
+
+    const currentSolana = convertSmallCountToLamport(p);
+    result.push({
+      persent,
+      sol_lamp: currentSolana,
+      sol_small: p,
+    });
   }
   return result;
 }
+
 
 const bondingCurvePoints = generateBondingCurvePointsFromZero({
   from: 0,
@@ -227,12 +232,18 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
   };
   const percentToX = (p: number) => ((widthGraph * p )/ maxPercentDisplay) + dWidthGraph_SVG;
 
-  const curvePoints: BondingCurvePointWithCoordinate[] = bondingCurvePoints.map((v) => ({
-    persent: v.persent,
-    sol_lamp: v.sol_lamp,
-    x: percentToX(v.persent),
-    y: solToY(convertLamportToSmallCount(v.sol_lamp)),
-  }));
+  const curvePoints: BondingCurvePointWithCoordinate[] = useMemo(
+    () =>
+      bondingCurvePoints.map((v) => ({
+        persent: v.persent,
+        sol_lamp: v.sol_lamp,
+        sol_small: v.sol_small,
+        x: percentToX(v.persent),
+        y: solToY(v.sol_small),
+      })),
+    [widthGraph, heightGraph, maxSolDisplayed, maxPercentDisplay]
+  );
+
   
   // Find the last buyer's position (highest cumulative SOL amount)
   const lastBuyerPercent = joiners.length > 0 
