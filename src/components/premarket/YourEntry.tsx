@@ -96,6 +96,7 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, on
     
     // Calculate real values
     const solValue = convertLamportToSmallCount(userEntry.amountSolLamp);
+    const refundAmount = parseFloat(solValue.toFixed(4));
     
     // Calculate reserves at entry time (cumulative from all holders who joined strictly before user)
     const entryReserves = useMemo(() => {
@@ -252,6 +253,21 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, on
             close();
         }
     };
+
+    const openLeaveModal = () => {
+        open(
+        <LeavePremarketModal
+            refundAmount={refundAmount}
+            onCancel={close}
+            onConfirm={() => {
+            
+            close();
+            handleOut();
+            }}
+        />,
+        );
+    };
+
     return (
         <View style={{ 
             backgroundColor: (theme.colors as ExtendedMD3Colors).surfaceContainerLowest,
@@ -279,7 +295,7 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, on
                     <Button 
                         mode="outlined" 
                         compact
-                        onPress={handleOut}
+                        onPress={openLeaveModal}
                         style={{ 
                             borderColor: theme.colors.outline,
                             borderRadius: 8,
@@ -415,7 +431,91 @@ export function YourEntry({ premarketPubkey, tokenDynamicInfo, tokenMainInfo, on
                 </View>
             )}
         </View>
-    )
+  );
+}
+
+type LeavePremarketModalProps = {
+  refundAmount: number;
+  onCancel: () => void;
+  onConfirm: () => void;
+};
+
+function LeavePremarketModal({ refundAmount, onCancel, onConfirm }: LeavePremarketModalProps) {
+  const theme = useTheme() as AppTheme;
+
+  return (
+    <View
+      style={{
+        backgroundColor: theme.colors.background,
+        borderRadius: 24,
+        paddingHorizontal: 24,
+        paddingVertical: 24,
+        minWidth: 320,
+        maxWidth: 380,
+        gap: 16,
+      }}
+    >
+      <View style={{ alignItems: "center", marginBottom: 4 }}>
+        <SvgIcon
+          name="arrows-clockwise" 
+          size={28}
+          color={(theme.colors as ExtendedMD3Colors).onSurface ?? theme.colors.onSurface}
+        />
+      </View>
+
+      <Text
+        variant="headlineSmall"
+        style={{ textAlign: "center", color: theme.colors.onSurface, marginBottom: 4 }}
+      >
+        Leave Premarket
+      </Text>
+
+      <Text
+        variant="bodyMedium"
+        style={{ textAlign: "center", color: theme.colors.onSurfaceVariant }}
+      >
+        Are you sure you want to leave the premarket? If you exit now, you'll
+        {"\n"}
+        lose your entry spot
+      </Text>
+
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 12,
+          marginTop: 12,
+        }}
+      >
+        <SvgIcon name="info-circle" size={20} color={theme.colors.error} />
+        <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
+          You will receive a refund of {refundAmount} SOL
+        </Text>
+      </View>
+
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "flex-end",
+          marginTop: 24,
+          gap: 12,
+        }}
+      >
+        <Button mode="outlined" onPress={onCancel} style={{ flex: 1 }}>
+          Cancel
+        </Button>
+        <Button
+          mode="contained"
+          onPress={onConfirm}
+          style={{ flex: 1 }}
+          textColor={theme.colors.onError}
+          buttonColor={theme.colors.error}
+        >
+          Refund
+        </Button>
+      </View>
+    </View>
+  );
 }
 
 function EntryPriceValue({
