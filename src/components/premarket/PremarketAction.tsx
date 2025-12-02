@@ -83,11 +83,16 @@ export function PremarketActionPremarket({
     </View>
 )}
 
+  const isTimesUp = tokenMainInfo.state === "times_up";
+
   return (
     <View style={{ gap: 48, paddingLeft: isMobile?16:24, paddingRight: isMobile?16:24, alignItems: "center", width: '100%'}}>
       {isDeadline ? (
         <Text variant="labelSmall" style={{ color: colors.onSurfaceVariant }}>
-          Waiting for creator action: Finish premarket
+          {isTimesUp 
+            ? "Waiting for creator action: Finish premarket"
+            : "Waiting for creator action: extend or refund"
+          }
         </Text>
       ) : userJoined ? (
         <ShareTextButton style={{width: "100%"}} shareMessage={`Join to premarket on: ${currentURL}`}>Share</ShareTextButton>

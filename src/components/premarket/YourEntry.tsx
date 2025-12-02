@@ -392,7 +392,7 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
                     justifyContent: 'flex-start',
                     marginTop: 8,
                 }}>
-                    <SvgIcon name='info-circle' size={24} color={theme.colors.primary} />
+                    <SvgIcon name='info-circle' size={24} color={theme.colors.error} />
                     <View style={{ flex: 1, gap: 4 }}>
                         <Text variant='bodyMedium' style={{ color: theme.colors.onSurfaceVariant }}>
                             Premarket didn't reach it's goal. Creator has 48 hours to extend the deadline, or you will be refunded
