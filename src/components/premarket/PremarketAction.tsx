@@ -83,15 +83,13 @@ export function PremarketActionPremarket({
     </View>
 )}
 
-  const isGoalReached = tokenMainInfo.premarketGoalSolLamp.lte(
-    tokenDynamicInfo.marketCapSolLamp
-  );
+  const isTimesUp = tokenMainInfo.state === "times_up";
 
   return (
     <View style={{ gap: 48, paddingLeft: isMobile?16:24, paddingRight: isMobile?16:24, alignItems: "center", width: '100%'}}>
       {isDeadline ? (
         <Text variant="labelSmall" style={{ color: colors.onSurfaceVariant }}>
-          {isGoalReached 
+          {isTimesUp 
             ? "Waiting for creator action: Finish premarket"
             : "Waiting for creator action: extend or refund"
           }
