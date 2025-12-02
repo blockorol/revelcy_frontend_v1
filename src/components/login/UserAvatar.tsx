@@ -35,7 +35,7 @@ export default function UserAvatar({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       aspect: [1, 1],
       allowsEditing: true,
-      quality: 0.5,
+      quality: 1,
     });
 
     if (!result.canceled) {

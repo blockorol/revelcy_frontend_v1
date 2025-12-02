@@ -80,7 +80,7 @@ export const UserModalInternal: React.FC<UserModalProps> = ({
       mediaTypes: "images",
       aspect: [1, 1],
       allowsEditing: true,
-      quality: 0.5,
+      quality: 1,
     });
 
     if (!result.canceled) {
