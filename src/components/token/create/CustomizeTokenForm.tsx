@@ -436,7 +436,7 @@ export async function pickImageWithLimited(args?: {
   const res = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: "images",
     allowsEditing: true,
-    quality: 0.6,
+    quality: 1,
   });
   if (res.canceled) throw "No image was selected";
 

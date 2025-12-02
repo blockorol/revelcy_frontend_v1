@@ -37,7 +37,7 @@ const ImageUploader: React.FC = () => {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         aspect: [1, 1],
         allowsEditing: true,
-        quality: 0.8,
+        quality: 1,
       });
     
       if (!result.canceled) {
