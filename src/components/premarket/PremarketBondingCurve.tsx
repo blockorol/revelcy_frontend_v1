@@ -400,12 +400,13 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
       </Svg>
 
       {/* Right section */}
-      <View style={{justifyContent:'flex-end', position: 'absolute', right: padding+graphMarginRight, bottom: (padding + dHeightGraph_SVG), maxWidth: '40%' }}>
+      
+      {currentPrice&&<View style={{justifyContent:'flex-end', position: 'absolute', right: padding+graphMarginRight, bottom: (padding + dHeightGraph_SVG), maxWidth: '40%' }}>
         <Text variant="labelSmall" style={{ color: colors.onSurfaceVariant, textAlign: 'right' }}>
           Current Price
         </Text>
         <CurrentPriceValue currentPrice={currentPrice || 0} colors={colors} fonts={fonts}/>
-      </View>
+      </View>}
 
       {/* Labels */}
       <Text
