@@ -12,8 +12,6 @@ import shortString from "@utils/address_shorter";
 import * as ImagePicker from "expo-image-picker";
 import { AppTheme } from "@theme/types";
 import { MobileBottomSheet } from "@components/ui/MobileBottomSheet";
-import { validateImageFile, AVATAR_MAX_FILE_SIZE_BYTES } from "@utils/imageValidation";
-import { useNotification } from "@providers/NotificationContext";
 
 interface UserModalProps {
   user: {
@@ -77,32 +75,17 @@ export const UserModalInternal: React.FC<UserModalProps> = ({
 }) => {
   const { colors } = useTheme() as AppTheme;
   const { isMobile, width } = useIsMobileForOneScreenWithDemention();
-  const notify = useNotification();
-  
   const pickAvatar = async () => {
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: "images",
-        aspect: [1, 1],
-        allowsEditing: true,
-        quality: 1,
-      });
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: "images",
+      aspect: [1, 1],
+      allowsEditing: true,
+      quality: 0.5,
+    });
 
-      if (!result.canceled) {
-        const uri = result.assets[0].uri;
-        
-        // Validate image format (PNG or JPEG) with 5 MB limit for avatars
-        const validationError = await validateImageFile(uri, { maxSizeBytes: AVATAR_MAX_FILE_SIZE_BYTES });
-        if (validationError) {
-          notify.error(validationError.message);
-          return;
-        }
-        
-        user.avatarUrl = uri;
-        updateAvatar(uri);
-      }
-    } catch (err) {
-      notify.error("Failed to pick avatar image. Please try again.");
+    if (!result.canceled) {
+      user.avatarUrl = result.assets[0].uri;
+      updateAvatar(result.assets[0].uri);
     }
   };
 
