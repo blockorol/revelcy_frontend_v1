@@ -12,7 +12,7 @@ interface WalletButtonProps {
   overrideSaveJwt?: (jwt: string, isNewUser: boolean) => void;
 }
 
-const FRAMES = ["⠋","⠙","⠹","⠸","⠼","⠴","⠦","⠧","⠇","⠏"]; // или ["⠁","⠃","⠇","⠧","⠷","⠿","⠟","⠯","⠷","⠧","⠇","⠃"]
+const FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]; // или ["⠁","⠃","⠇","⠧","⠷","⠿","⠟","⠯","⠷","⠧","⠇","⠃"]
 
 function useSpinner(active: boolean, interval = 120) {
   const [frame, setFrame] = React.useState(FRAMES[0]);
@@ -35,10 +35,14 @@ export default function WalletButton({
 }: WalletButtonProps) {
   const theme = useTheme();
   const connectWallet = getConnectToWallet();
-  const { run, busy } = useWalletLoginFlow(connectWallet, {
+  const { connected } = useWallet();
+
+  const opts = React.useMemo(() => ({
     onSuccess: afterClick,
     overrideSaveJwt,
-  });
+  }), [afterClick, overrideSaveJwt]);
+
+  const { run, busy } = useWalletLoginFlow(connectWallet, opts);
   const frame = useSpinner(busy);
 
   return (
@@ -46,7 +50,7 @@ export default function WalletButton({
       mode="outlined"
       onPress={() => run()}
       disabled={busy}
-      labelStyle={{ ...theme.fonts.labelLarge}}
+      labelStyle={{ ...theme.fonts.labelLarge }}
       style={{
         width: "100%",
         borderColor: theme.colors.outline,
@@ -61,7 +65,7 @@ export default function WalletButton({
         />
       )}
     >
-      {busy ? `Connecting${frame}` : "Connect with Wallet"}
+      {busy ? `Processing${frame}` : (connected ? "Authenticate Wallet" : "Connect with Wallet")}
     </Button>
   );
 }
@@ -74,10 +78,12 @@ export function AnoterWalletButton({
   const connectWallet = getConnectToWallet();
   const { disconnect } = useWallet();
 
-  const { run, busy } = useWalletLoginFlow(connectWallet, {
+  const opts = React.useMemo(() => ({
     overrideSaveJwt,
     disconnect,
-  });
+  }), [overrideSaveJwt, disconnect]);
+
+  const { run, busy } = useWalletLoginFlow(connectWallet, opts);
   const frame = useSpinner(busy);
 
   const handleReconnect = React.useCallback(() => {

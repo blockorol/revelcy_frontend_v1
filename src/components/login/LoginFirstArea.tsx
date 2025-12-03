@@ -1,59 +1,71 @@
 // components/LoginPopup.tsx
 import React from 'react';
-import { View, StyleSheet, DimensionValue} from 'react-native';
-import { Text, useTheme, IconButton } from 'react-native-paper';
+import { View, StyleSheet, DimensionValue } from 'react-native';
+import { Text, useTheme, IconButton, Button } from 'react-native-paper';
 import WalletButton from './buttons/WalletButton';
 import { TermsNotice } from '@components/login/TermsNotice';
 import { ExtendedMD3Colors } from '@theme/types';
+import { useWallet } from '@storage/wallet-adapter';
 // import TwitterButton from '@components/login/buttons/TwitterButton';
 // import PrivyButton from '@components/login/buttons/PrivyButton';
 interface LoginFirstAreaProps {
   height: DimensionValue;
   width: number;
-  overrideSaveJwt?: (jwt:string, isNewUser: boolean) => void;
+  overrideSaveJwt?: (jwt: string, isNewUser: boolean) => void;
   toNext: () => void;
   onClose?: () => void;
 }
 
-export default function LoginFirstArea({height, width, toNext, overrideSaveJwt, onClose }: LoginFirstAreaProps) {
+export default function LoginFirstArea({ height, width, toNext, overrideSaveJwt, onClose }: LoginFirstAreaProps) {
   const theme = useTheme();
-  const colors =theme.colors as ExtendedMD3Colors 
+  const colors = theme.colors as ExtendedMD3Colors
+  const { connected, disconnect } = useWallet();
+
 
   return (
     <View style={{
-        backgroundColor: colors.surfaceContainerLow,
-        flex: 1,
-        justifyContent: 'space-between',
-        height:height,
-        width: width,
+      backgroundColor: colors.surfaceContainerLow,
+      flex: 1,
+      justifyContent: 'space-between',
+      height: height,
+      width: width,
     }}>
-        <View style={styles.headerContainer}>      
-            <Text variant="titleMedium" style={styles.titleText}>
-                Log in / Sign up
-            </Text>
-            {onClose && (
-                <IconButton 
-                    icon="close" 
-                    size={24} 
-                    iconColor={colors.onSurface} 
-                    onPress={onClose}
-                    style={styles.closeButton}
-                />
-            )}
+      <View style={styles.headerContainer}>
+        <Text variant="titleMedium" style={styles.titleText}>
+          Log in / Sign up
+        </Text>
+        {onClose && (
+          <IconButton
+            icon="close"
+            size={24}
+            iconColor={colors.onSurface}
+            onPress={onClose}
+            style={styles.closeButton}
+          />
+        )}
+      </View>
+
+      <View style={{ gap: 56 }}>
+        <View style={styles.centerSection}>
+          {/* <TwitterButton /> */}
+          <WalletButton afterClick={toNext} overrideSaveJwt={overrideSaveJwt} />
+          {connected && (
+            <Button
+              mode="text"
+              onPress={disconnect}
+              textColor={colors.error}
+            >
+              Disconnect Wallet
+            </Button>
+          )}
+          {/* <PrivyButton /> */}
         </View>
 
-        <View style={{gap:56}}>
-            <View style={styles.centerSection}>
-                {/* <TwitterButton /> */}
-                <WalletButton afterClick={toNext} overrideSaveJwt={overrideSaveJwt}/>
-                {/* <PrivyButton /> */}
-            </View>
-
-            <View style={styles.bottomSection}>
-                {/* Footer */}
-                <TermsNotice/>
-            </View>
+        <View style={styles.bottomSection}>
+          {/* Footer */}
+          <TermsNotice />
         </View>
+      </View>
     </View>
   );
 }
