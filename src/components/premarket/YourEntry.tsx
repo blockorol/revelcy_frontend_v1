@@ -22,15 +22,15 @@ import { DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
 
 
 interface YourEntryProps {
-  premarketPubkey: PublicKey;
-  tokenDynamicInfo: TokenDynamicInfo;
-  tokenMainInfo: TokenMainInfo;
-  onUpdated: () => void;
-  user: UserInfo; 
-  isMobile: boolean;
+    premarketPubkey: PublicKey;
+    tokenDynamicInfo: TokenDynamicInfo;
+    tokenMainInfo: TokenMainInfo;
+    onUpdated: () => void;
+    user: UserInfo;
+    isMobile: boolean;
 }
 
-export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInfo, onUpdated, isMobile }: YourEntryProps) {
+export function YourEntry({ user, premarketPubkey, tokenDynamicInfo, tokenMainInfo, onUpdated, isMobile }: YourEntryProps) {
     const theme = useTheme() as AppTheme;
     const { network } = useNetwork();
     const connection = getSolanaConnection(network);
@@ -46,32 +46,32 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
     if (!userEntry) {
         return null;
     }
-    
+
     // Calculate user's rank/place in premarket
     const sortedHolders = tokenDynamicInfo.holders
         .slice()
         .sort((a, b) => a.joinTimestamp - b.joinTimestamp);
     const userRank = sortedHolders.findIndex(holder => holder.id === userEntry.id) + 1;
-    
+
     // Fetch entry price from backend
     useEffect(() => {
         const fetchEntryPrice = async () => {
             if (!userEntry) return;
-            
+
             try {
                 setLoadingEntryPrice(true);
                 const response = await getHolderEntryPrice({
                     premarketId: premarketPubkey.toString(),
                     holderWallet: userEntry.walletAddress,
                 });
-                
+
                 // Backend returns entry_price_lamp, but it appears to be already in SOL format (decimal)
                 // Check if it's a decimal (already in SOL) or integer (in lamports)
-                const rawValueStr = typeof response.entry_price_lamp === 'string' 
-                    ? response.entry_price_lamp 
+                const rawValueStr = typeof response.entry_price_lamp === 'string'
+                    ? response.entry_price_lamp
                     : response.entry_price_lamp.toString();
                 const rawValue = parseFloat(rawValueStr);
-                
+
                 let price: number;
                 // If value contains decimal point or is less than 1 billion, it's likely already in SOL
                 if (rawValueStr.includes('.') || rawValue < 1_000_000_000) {
@@ -82,7 +82,7 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
                     const entryPriceLamp = new BN(rawValueStr);
                     price = convertLamportToSmallCount(entryPriceLamp);
                 }
-                
+
                 console.log("Entry price raw:", rawValueStr, "converted:", price);
                 setEntryPrice(price);
             } catch (error) {
@@ -96,16 +96,16 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
 
         fetchEntryPrice();
     }, [premarketPubkey, userEntry?.walletAddress]);
-    
+
     // Calculate real values
     const solValue = convertLamportToSmallCount(userEntry.amountSolLamp);
-    
+
     // Calculate reserves at entry time (cumulative from all holders who joined strictly before user)
     const entryReserves = useMemo(() => {
         // Get all holders who joined strictly before the user (or at same time but different id, sorted by timestamp then id)
         const holdersBeforeUser = tokenDynamicInfo.holders
-            .filter(holder => 
-                holder.joinTimestamp < userEntry.joinTimestamp || 
+            .filter(holder =>
+                holder.joinTimestamp < userEntry.joinTimestamp ||
                 (holder.joinTimestamp === userEntry.joinTimestamp && holder.id !== userEntry.id)
             )
             .sort((a, b) => {
@@ -115,11 +115,11 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
                 // If same timestamp, sort by id for consistency
                 return a.id.localeCompare(b.id);
             });
-        
+
         // Calculate cumulative SOL reserves at entry time
         let cumulativeSolLamp = new BN(0);
         let remainingTokensDec = DEFAULT_TOKEN_COUNT_DECIMAL;
-        
+
         // For each holder before the user, calculate their tokens and update reserves
         for (const holder of holdersBeforeUser) {
             // Calculate tokens this holder got
@@ -127,18 +127,18 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
                 input_sol_lamp: holder.amountSolLamp,
                 before_lamp: cumulativeSolLamp,
             });
-            
+
             // Update cumulative reserves for next holder
             cumulativeSolLamp = cumulativeSolLamp.add(holder.amountSolLamp);
             remainingTokensDec = remainingTokensDec.sub(holderTokens);
         }
-        
+
         return {
             reserves_sol: cumulativeSolLamp,
             reserves_token: remainingTokensDec,
         };
     }, [tokenDynamicInfo.holders, userEntry.joinTimestamp, userEntry.id]);
-    
+
     // Calculate tokens using bonding curve formula (same as join section)
     const tokensBN = useMemo(() => {
         if (loadingEntryPrice) {
@@ -150,7 +150,7 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
             before_lamp: entryReserves.reserves_sol,
         });
     }, [userEntry.amountSolLamp, entryReserves, loadingEntryPrice]);
-    
+
     const tokens = convertDecimalToToken(tokensBN);
     const MAX_SOL = 85; // TODO: find real max sol
     const supplyPercent = (solValue / MAX_SOL) * 100;
@@ -161,17 +161,17 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
         const isPremarket = tokenMainInfo.state === 'premarket';
         const isDeadlinePassed = tokenMainInfo.premarketDeadline < now;
         const isGoalNotReached = tokenDynamicInfo.reservedSolLamp.lt(tokenMainInfo.premarketGoalSolLamp);
-        
+
         // Check if effective state is expired
-        const isExpired = tokenMainInfo.state === 'expired' || 
+        const isExpired = tokenMainInfo.state === 'expired' ||
             (isPremarket && isDeadlinePassed && isGoalNotReached);
-        
+
         // Check if user is not the creator
         // Use user?.walletAddress to be consistent with other components, fallback to userEntry.walletAddress
         const userWallet = user.walletAddress.toLowerCase();
         const creatorWallet = tokenMainInfo.createdByPubkey?.toLowerCase() || '';
         const isNotCreator = userWallet !== creatorWallet && userWallet !== '';
-        
+
         // Debug logging
         if (isExpired) {
             console.log('[YourEntry] Expired check:', {
@@ -188,7 +188,7 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
                 result: isExpired && isNotCreator
             });
         }
-        
+
         return isExpired && isNotCreator;
     }, [tokenMainInfo.state, tokenMainInfo.premarketDeadline, tokenMainInfo.createdByPubkey, tokenDynamicInfo.reservedSolLamp, user?.walletAddress, userEntry.walletAddress]);
 
@@ -196,11 +196,11 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
     const isRefunded = useMemo(() => {
         return tokenMainInfo.state === 'canceled';
     }, [tokenMainInfo.state]);
-    
+
     // Check if premarket is canceled (refunded)
     const isShowLeaveBtn = useMemo(() => {
         return tokenMainInfo.state !== 'canceled' &&
-            tokenMainInfo.state !== 'finished' && 
+            tokenMainInfo.state !== 'finished' &&
             tokenMainInfo.state !== 'times_up';
     }, [tokenMainInfo.state]);
 
@@ -215,7 +215,7 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
     const handleOut = async () => {
         if (!wallet || !connected) {
             notify.error("Wallet is not connected", {
-                suggest: "Enable Phantom extension and try again",
+                suggest: "Please connect your wallet and try again",
                 action: {
                     label: "connect",
                     onAction: async () => {
@@ -262,17 +262,17 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
         }
     };
     return (
-        <View style={{ 
+        <View style={{
             backgroundColor: (theme.colors as ExtendedMD3Colors).surfaceContainerLowest,
             borderRadius: 20,
             padding: 24,
             gap: 16,
             width: isMobile ? "92%" : "100%"
         }}>
-            <View style={{ 
-                flexDirection: "row", 
-                justifyContent: "space-between", 
-                alignItems: "center" 
+            <View style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center"
             }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                     <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>
@@ -285,11 +285,11 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
                     )}
                 </View>
                 {isShowLeaveBtn && (
-                    <Button 
-                        mode="outlined" 
+                    <Button
+                        mode="outlined"
                         compact
                         onPress={handleOut}
-                        style={{ 
+                        style={{
                             borderColor: theme.colors.outline,
                             borderRadius: 8,
                             //width: 68,
@@ -299,7 +299,7 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
                             paddingVertical: 0,
                             paddingHorizontal: 0
                         }}
-                        labelStyle={{ 
+                        labelStyle={{
                             fontSize: 12,
                             width: 50,
                             height: 10,
@@ -312,12 +312,12 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
                     </Button>
                 )}
             </View>
-            
+
             <View style={{ gap: 12 }}>
-                <View style={{ 
-                    flexDirection: "row", 
-                    justifyContent: "space-between", 
-                    alignItems: "center" 
+                <View style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center"
                 }}>
                     <Text variant="labelMedium" style={{ color: theme.colors.onSurface }}>
                         SOL value
@@ -326,11 +326,11 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
                         {parseFloat(solValue.toFixed(4))} SOL
                     </Text>
                 </View>
-                
-                <View style={{ 
-                    flexDirection: "row", 
-                    justifyContent: "space-between", 
-                    alignItems: "center" 
+
+                <View style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center"
                 }}>
                     <Text variant="labelMedium" style={{ color: theme.colors.onSurface }}>
                         Entry price
@@ -338,25 +338,25 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
                     {loadingEntryPrice ? (
                         <ActivityIndicator size="small" color={theme.colors.primary} />
                     ) : (
-                        <EntryPriceValue 
-                            entryPrice={entryPrice} 
-                            colors={theme.colors} 
+                        <EntryPriceValue
+                            entryPrice={entryPrice}
+                            colors={theme.colors}
                             fonts={theme.fonts}
                         />
                     )}
                 </View>
-                
+
                 {/* Separator line */}
                 <View style={{
                     height: 1,
                     backgroundColor: theme.colors.outline,
                     marginVertical: 8
                 }} />
-                
-                <View style={{ 
-                    flexDirection: "row", 
-                    justifyContent: "space-between", 
-                    alignItems: "center" 
+
+                <View style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center"
                 }}>
                     <Text variant="labelMedium" style={{ color: theme.colors.onSurface }}>
                         Tokens
@@ -369,11 +369,11 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
                         </Text>
                     )}
                 </View>
-                
-                <View style={{ 
-                    flexDirection: "row", 
-                    justifyContent: "space-between", 
-                    alignItems: "center" 
+
+                <View style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center"
                 }}>
                     <Text variant="labelMedium" style={{ color: theme.colors.onSurface }}>
                         Supply %
@@ -487,14 +487,14 @@ function formatMax5Significant(n: number): string {
 
 function convertNumberWithNull(num: number): { zeros: number; val: number } {
     if (num === 0) return { zeros: 0, val: 0 };
-    
+
     // Use decimal string approach for more accurate counting
     const decimalStr = num.toString().split('.')[1] || '';
     const leadingZeros = decimalStr.match(/^0*/)?.[0].length || 0;
     const rest = decimalStr.slice(leadingZeros);
-    
+
     // Limit val to maximum 2 decimal places
     const truncatedRest = rest.substring(0, 2);
-    
+
     return { zeros: leadingZeros, val: parseInt(truncatedRest) };
 }

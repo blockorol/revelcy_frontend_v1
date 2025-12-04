@@ -18,7 +18,7 @@ import LoginFlow from "@components/login/LoginFlow";
 
 export type JoinOutcome = "ok" | "need-login" | "need-wallet" | "invalid-amount" | "error";
 
-export function useJoinFlow(onUpdated:()=>void) {
+export function useJoinFlow(onUpdated: () => void) {
   const { user } = useAuth();
   const { connected, connect } = useWallet();
   const wallet = useAnchorWalletSafe();
@@ -34,10 +34,10 @@ export function useJoinFlow(onUpdated:()=>void) {
       <ActivityIndicator animating color={theme.colors.primary} size="large" />
     </View>
   );
-  
+
   const renderLogin = () => (
     <OneScreenContainer>
-      <LoginFlow onCloseButton={close}/>
+      <LoginFlow onCloseButton={close} />
     </OneScreenContainer>
   );
 
@@ -47,7 +47,7 @@ export function useJoinFlow(onUpdated:()=>void) {
     amountLamp: BN
   ): Promise<JoinOutcome> => {
     try {
-        
+
       if (!amountLamp || amountLamp.isNeg() || amountLamp.isZero()) {
         notify.warning("Please set amount in SOL");
         return "invalid-amount";
@@ -59,7 +59,7 @@ export function useJoinFlow(onUpdated:()=>void) {
       }
       if (!wallet || !connected) {
         notify.error("Wallet is not connected", {
-          suggest: "Enable Phantom extension and try again",
+          suggest: "Please connect your wallet and try again",
           action: {
             label: "connect",
             onAction: async () => {
@@ -83,7 +83,7 @@ export function useJoinFlow(onUpdated:()=>void) {
 
       open(renderLoader("join to premarket..."));
       const res = await joinToPremarket(wallet, connection, network, premarketPubkey, amountLamp, amountLamp,
-        (text) => {replace(renderLoader(text))});
+        (text) => { replace(renderLoader(text)) });
 
       replace(renderLoader("Syncing with backend..."));
       await userJoinedToPremarket({
