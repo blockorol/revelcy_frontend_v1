@@ -85,7 +85,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         const storedSessionToken = typeof localStorage !== 'undefined' ? localStorage.getItem('wallet_session_token') : null;
 
         const isMobileDevice = isMobile();
-        const isConnected = isMobileDevice ? !!storedPubkey && !!storedSessionToken : !!storedPubkey;
+        const isConnected = !!storedPubkey;
 
         return {
             connected: isConnected,
@@ -219,8 +219,8 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             const reqId = generateUUID();
 
             if (!sess.sharedSecret || !state.publicKeyBase58) {
-                disconnect();
-                throw new Error('Wallet connection invalid. Please connect again.');
+                console.warn('[WalletProvider] Missing shared secret or public key for signing');
+                throw new Error('Your wallet session has expired. Please reconnect your wallet to continue.');
             }
 
             // geting session token from state or localStorage
@@ -230,7 +230,8 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             }
 
             if (!sessionToken) {
-                throw new Error('Session token not found. Please reconnect your wallet.');
+                console.warn('[WalletProvider] Missing session token for signing');
+                throw new Error('Your wallet session has expired. Please reconnect your wallet to continue.');
             }
 
             // build and encrypt payload
@@ -283,6 +284,14 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             return startMobileSignMessage(m, display);
         },
         [startMobileSignMessage]
+    );
+
+    const signTransaction = useCallback(
+        async (transaction: any) => {
+            console.log('[WalletProvider] signTransaction called (mobile stub)');
+            return transaction;
+        },
+        []
     );
 
     const resetLastSignature = useCallback(() => {
@@ -540,13 +549,14 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             ...state,
             connect,
             signMessage,
+            signTransaction,
             disconnect,
             resetLastSignature,
             wallet: { name: 'Phantom' },
             select: async (_name: string) => {
             },
         }),
-        [state, connect, signMessage, disconnect, resetLastSignature]
+        [state, connect, signMessage, signTransaction, disconnect, resetLastSignature]
     );
 
     return <WalletReactContext.Provider value={value}>{children}</WalletReactContext.Provider>;
