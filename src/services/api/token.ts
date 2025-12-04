@@ -245,6 +245,7 @@ export async function getPremarketInfo({
     createdByPubkey: data.blockchain_info.creator_address,
     state: data.blockchain_info.state,
     finishDate: data.blockchain_info.premarket_finished || undefined,
+    isExtended: false,
     tokenMint: data.blockchain_info.mint_address,
   };
 
@@ -400,9 +401,10 @@ export interface TokenMainInfo {
     premarketGoalSolLamp: BN;
     premarketDeadline: number;
     premarketCreated: number;
-    createdByPubkey: string;      // creator pubkey
+    createdByPubkey: string;
     state: PremarketState;
     finishDate?: number;
+    isExtended: boolean;
     tokenMint?: string;
 }
 

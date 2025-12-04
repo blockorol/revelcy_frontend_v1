@@ -323,10 +323,11 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
           <Button style={{flex:1}} variant="error" 
             mode="contained"
             onPress={handleRefund}>Refund all</Button>
-          <Button style={{flex:1}} variant='primary' 
+          {tokenMainInfo.isExtended ? null : <Button style={{flex:1}} variant='primary' 
             mode="contained"
-            onPress={handleExtended}>Extend</Button>
+            onPress={handleExtended}>Extend</Button>}
         </View>
+        {tokenMainInfo.isExtended ? null :
         <View style={{flexDirection:'row', gap:16, alignContent:'center', justifyContent:'flex-start' }}>
           <SvgIcon name='info-circle' size={24} color={colors.error} />
           <View style={{flex: 1, gap:8, alignContent:'flex-start', justifyContent:'center' }}>
@@ -334,6 +335,7 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
             <Text variant='bodyMedium' selectionColor={colors.onSurfaceVariant} numberOfLines={2}>If you take no action, people will be automatically refunded</Text>
           </View>
         </View>
+        }
       </View>
 
       {/* Date Picker for Extending Deadline */}
