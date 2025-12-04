@@ -1,19 +1,21 @@
 import { useWallet } from "@storage/wallet-adapter";
 
-export function getConnectToWallet (): () => Promise<boolean> {
-    const { connected, connect} = useWallet();
+export function getConnectToWallet(): () => Promise<boolean> {
+    const { connected, connect } = useWallet();
 
-    return async () => {
+    const connectFn = async (): Promise<boolean> => {
         if (connected) {
-            return true
+            return true;
         }
         try {
             console.log('Connecting to wallet...');
-            await connect();
-            return true;
+            const result = await connect();
+            return result === undefined ? true : (result as boolean);
         } catch (err) {
             console.warn('Wallet connection failed:', err);
             return false;
         }
-    }
+    };
+
+    return connectFn;
 };

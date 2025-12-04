@@ -1,3 +1,2 @@
-export { WalletProvider } from './WalletProvider.mobile';
-export { useWallet, useAnchorWalletSafe } from './WalletContext.mobile';
-export type { WalletContextValue, WalletState } from './WalletContext.mobile';
+export { WalletProvider } from './WalletProvider.web';
+export { useWallet, useAnchorWalletSafe } from './useWallet.web';

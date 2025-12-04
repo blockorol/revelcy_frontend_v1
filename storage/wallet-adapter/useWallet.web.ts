@@ -5,6 +5,18 @@ import {
 } from "@solana/wallet-adapter-react";
 import { SignerWalletAdapter } from "@solana/wallet-adapter-base";
 import { PhantomWalletName } from "@solana/wallet-adapter-phantom";
+import type { PublicKey } from "@solana/web3.js";
+
+export interface WalletContextValue {
+  connected: boolean;
+  publicKey: PublicKey | null;
+  connect: () => Promise<boolean>;
+  connectIfAvailable: () => Promise<boolean>;
+  disconnect: () => Promise<void> | void;
+  wallet: any;
+  wallets: any[];
+  signMessage: (message: Uint8Array, display?: 'utf8' | 'hex') => Promise<Uint8Array>;
+}
 
 function isUserReject(e: unknown) {
   const any = e as any;
@@ -19,7 +31,7 @@ function isUserReject(e: unknown) {
   );
 }
 
-export const useWallet = () => {
+export const useWallet = (): WalletContextValue => {
   const {
     connected,
     publicKey,
@@ -31,38 +43,56 @@ export const useWallet = () => {
     signMessage,
   } = useSolanaWallet();
 
-  // защита от повторных вызовов connect
   const inFlightRef = React.useRef(false);
 
   const selectIfNeeded = React.useCallback(async () => {
-    // если выбран не Phantom — выбираем Phantom
     if (!wallet || wallet.adapter.name !== PhantomWalletName) {
       await rawSelect(PhantomWalletName as any);
     }
   }, [wallet, rawSelect]);
 
-  /**
-   * "Умный" connect: делает select(Phantom) при необходимости и один раз вызывает connect().
-   * Возвращает true при успехе; false — если пользователь отменил.
-   */
   const connect = React.useCallback(async (): Promise<boolean> => {
-    if (inFlightRef.current) return false;
+    if (inFlightRef.current) {
+      return false;
+    }
+
+    if (!(window as any).solana?.isPhantom) {
+      throw new Error('Phantom extension is not installed or not detected');
+    }
+
     inFlightRef.current = true;
     try {
       await selectIfNeeded();
-      try {
-        await rawConnect();
-        return true;
-      } catch (e) {
-        if (isUserReject(e)) return false; // пользователь нажал "Отмена"
-        throw e; // прочие ошибки — наверх (логируй у себя)
+
+      const phantomWallet = (window as any).solana;
+
+      if (phantomWallet?.isConnected) {
+        try {
+          await rawConnect();
+        } catch (syncError) {}
+      } else {
+        try {
+          await phantomWallet.connect({ onlyIfTrusted: false });
+
+          try {
+            await rawConnect();
+          } catch (syncError) {}
+        } catch (directError: any) {
+          await rawConnect();
+        }
       }
+
+      return true;
+    } catch (e) {
+      if (isUserReject(e)) {
+        return false;
+      }
+      throw e;
     } finally {
       inFlightRef.current = false;
     }
   }, [selectIfNeeded, rawConnect]);
 
-  // без исключений — всегда boolean
   const connectIfAvailable = React.useCallback(async (): Promise<boolean> => {
     try {
       return await connect();
@@ -71,15 +101,25 @@ export const useWallet = () => {
     }
   }, [connect]);
 
+  const wrappedSignMessage = React.useCallback(
+    async (message: Uint8Array, _display?: 'utf8' | 'hex'): Promise<Uint8Array> => {
+      if (!signMessage) {
+        throw new Error('Wallet does not support message signing');
+      }
+      return await signMessage(message);
+    },
+    [signMessage]
+  );
+
   return {
     connected,
     publicKey,
-    connect, // select(Phantom) + connect()
-    connectIfAvailable, // безопасный вариант
+    connect,
+    connectIfAvailable,
     disconnect,
     wallet,
     wallets,
-    signMessage,
+    signMessage: wrappedSignMessage,
   };
 };
 
