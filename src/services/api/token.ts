@@ -245,7 +245,7 @@ export async function getPremarketInfo({
     createdByPubkey: data.blockchain_info.creator_address,
     state: data.blockchain_info.state,
     finishDate: data.blockchain_info.premarket_finished || undefined,
-    isExtended: (data.blockchain_info.is_extended|| undefined) ?? false,
+    isExtended: (data.blockchain_info.premarket_is_extended|| undefined) ?? false,
     tokenMint: data.blockchain_info.mint_address,
   };
 
