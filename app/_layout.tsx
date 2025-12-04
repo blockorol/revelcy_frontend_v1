@@ -14,7 +14,7 @@ import {
 import { darkTheme } from "@theme/theme";
 import { NavigationTop } from "@components/navigation/NavigationTop";
 import { NetworkProvider } from "@providers/NetworkContext";
-import { WalletProvider } from "@storage/wallet-adapter/index";
+import { WalletProvider } from "@storage/wallet-adapter";
 import * as SplashScreen from "expo-splash-screen";
 import {
   useFonts,
