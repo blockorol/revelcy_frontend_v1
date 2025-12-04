@@ -83,9 +83,10 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         // check for stored connection state
         const storedPubkey = typeof localStorage !== 'undefined' ? localStorage.getItem('wallet_public_key') : null;
         const storedSessionToken = typeof localStorage !== 'undefined' ? localStorage.getItem('wallet_session_token') : null;
+        const storedPhantomKey = typeof localStorage !== 'undefined' ? localStorage.getItem('wallet_phantom_key') : null;
 
         const isMobileDevice = isMobile();
-        const isConnected = !!storedPubkey;
+        const isConnected = !!(storedPubkey && storedSessionToken && storedPhantomKey);
 
         return {
             connected: isConnected,
@@ -310,6 +311,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             ...prev,
             connected: false,
             publicKeyBase58: undefined,
+            publicKey: undefined,
             lastSignature: undefined,
             sessionToken: undefined,
             isMobileFallbackActive: true,
@@ -325,6 +327,19 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             // ignore
         }
     }, []);
+
+    // Initialize session on mount if we have stored connection data
+    useEffect(() => {
+        const storedPubkey = typeof localStorage !== 'undefined' ? localStorage.getItem('wallet_public_key') : null;
+        const storedSessionToken = typeof localStorage !== 'undefined' ? localStorage.getItem('wallet_session_token') : null;
+        const storedPhantomKey = typeof localStorage !== 'undefined' ? localStorage.getItem('wallet_phantom_key') : null;
+
+        if (storedPubkey && storedSessionToken && storedPhantomKey) {
+            console.log('[WalletProvider] Restoring wallet session on mount');
+            // Ensure session is initialized with shared secret
+            ensureSession();
+        }
+    }, [ensureSession]);
 
     // handle redirect from Phantom ->
     useEffect(() => {
