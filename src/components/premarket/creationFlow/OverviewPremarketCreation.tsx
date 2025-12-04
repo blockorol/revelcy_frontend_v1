@@ -31,8 +31,7 @@ type Props = {
 };
 // const PUMP_FEE_PERCENTAGE = 0.015;
 // const REVELCY_FEE_PERCENTAGE = 0.01;
-const SOL_FEE = 0.009;
-const SOL_LOCK = 0.05;
+const SOL_LOCK = 0.059;
 export default function OverviewPremarketCreation({
   data,
   onLaunch,
@@ -586,25 +585,11 @@ export default function OverviewPremarketCreation({
                 <Text variant="bodySmall">
                   Solana lock {" "}
                   <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
-                    returned after the premarket finishes
+                    refunded after the premarket finishes
                   </Text>
 
                 </Text>
                 <Text variant="bodySmall">{formatNumberNoTrailingZeros(SOL_LOCK)} SOL</Text>
-              </View>
-
-              <View
-                style={{
-                  paddingTop: 16,
-                  justifyContent: "space-between",
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text variant="bodySmall">
-                  Solana fee
-                </Text>
-                <Text variant="bodySmall">{formatNumberNoTrailingZeros(SOL_FEE)} SOL</Text>
               </View>
             </View>
             <View style={{ gap: 8 }}>
@@ -620,7 +605,7 @@ export default function OverviewPremarketCreation({
                   Cost
                 </Text>
                 <Text variant="titleMedium" style={{ color: colors.onSurface }}>
-                  {formatNumberNoTrailingZeros(data.tokenomicsData.creatorInitialBuy + SOL_FEE + SOL_LOCK)} SOL
+                  {formatNumberNoTrailingZeros(data.tokenomicsData.creatorInitialBuy + SOL_LOCK)} SOL
                 </Text>
               </View>
             </View>
