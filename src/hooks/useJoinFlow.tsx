@@ -2,8 +2,7 @@
 import BN from "bn.js";
 import { PublicKey } from "@solana/web3.js";
 import { useAuth } from "@providers/AuthContext";
-import { useWallet } from "@storage/wallet-adapter";
-import { useAnchorWalletSafe } from "@storage/wallet-adapter/useWallet.web";
+import { useWallet, useAnchorWalletSafe } from "@storage/wallet-adapter";
 import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
 import { useNotification } from "@providers/NotificationContext";

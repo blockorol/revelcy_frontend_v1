@@ -19,7 +19,7 @@ import EditTokenomicsForm from "@components/token/create/EditTokenomicsForm";
 import {
   useAnchorWalletSafe,
   useWallet,
-} from "@storage/wallet-adapter/useWallet.web";
+} from "@storage/wallet-adapter";
 import { uploadTokenMetadataToIPFS } from "@services/files/ipfs/pumpfun";
 import {
   createPremarket,

@@ -3,8 +3,7 @@ import { finishPremarket, refundPremarket } from "@services/blockchain/premarket
 import { extendPremarket } from "@services/blockchain/premarket/extendPremarket";
 import { getTimeLeftLabel } from "@utils/premarket";
 import { useAuth, UserInfo } from "@providers/AuthContext";
-import { useWallet } from "@storage/wallet-adapter";
-import { useAnchorWalletSafe } from "@storage/wallet-adapter/useWallet.web";
+import { useWallet, useAnchorWalletSafe } from "@storage/wallet-adapter";
 import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
 import { useNotification } from "@providers/NotificationContext";

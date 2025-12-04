@@ -4,7 +4,7 @@ import { SvgIcon } from "@components/base/SvgIcon";
 import { BN } from "@coral-xyz/anchor";
 import { joinToPremarket } from "@services/blockchain/premarket/joinPremarket";
 import { UserInfo } from "@providers/AuthContext";
-import { useAnchorWalletSafe } from '@storage/wallet-adapter/useWallet.web';
+import { useAnchorWalletSafe } from '@storage/wallet-adapter';
 import { convertDecimalToToken } from "@utils/premarket";
 
 import {
