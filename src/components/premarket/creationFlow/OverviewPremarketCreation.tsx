@@ -43,7 +43,7 @@ export default function OverviewPremarketCreation({
 }: Props) {
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
-  const { isMobile, width,height } = useIsMobileWithDemention();
+  const { isMobile, width, height } = useIsMobileWithDemention();
   const { publicKey, connected, connect, disconnect } = useWallet();
   const { user, logout } = useAuth();
   const errorMapper = {
@@ -80,7 +80,7 @@ export default function OverviewPremarketCreation({
     "launch in progress": {
       text: "Launch in progess,  keep calm and sign with wallet",
       button: (
-        <Button onPress={()=>{}} disabled={true} variant="primary" size="normal">
+        <Button onPress={() => { }} disabled={true} variant="primary" size="normal">
           Launching...
         </Button>
       ),
@@ -133,7 +133,7 @@ export default function OverviewPremarketCreation({
       </View>
     );
   }
-  const goalSol =data.premarket.goal_sol;
+  const goalSol = data.premarket.goal_sol;
   const percentGoal = convertSolToPercentOnStart(goalSol);
 
   const { tokenName, tokenTicker, description, avatar, links } =
@@ -155,23 +155,22 @@ export default function OverviewPremarketCreation({
     ? format(new Date(data.premarket.deadline_sec * 1000), "dd.MM.yyyy HH:mm (XXX)")
     : undefined;
 
-    
-      // const fees = useMemo(() => {
-      //   if (!data.tokenomicsData.creatorInitialBuy) {
-      //     return {
-      //       pump: "0",
-      //       revelcy: "0",
-      //     };
-      //   }
-      //   const pump = formatNumberNoTrailingZeros(PUMP_FEE_PERCENTAGE * data.tokenomicsData.creatorInitialBuy);
-      //   const revelcy = formatNumberNoTrailingZeros(REVELCY_FEE_PERCENTAGE * data.tokenomicsData.creatorInitialBuy);
-    
-      //   return {
-      //     pump: pump,
-      //     revelcy: revelcy,
-      //   };
-      // }, [data.tokenomicsData.creatorInitialBuy]);
-    
+
+  // const fees = useMemo(() => {
+  //   if (!data.tokenomicsData.creatorInitialBuy) {
+  //     return {
+  //       pump: "0",
+  //       revelcy: "0",
+  //     };
+  //   }
+  //   const pump = formatNumberNoTrailingZeros(PUMP_FEE_PERCENTAGE * data.tokenomicsData.creatorInitialBuy);
+  //   const revelcy = formatNumberNoTrailingZeros(REVELCY_FEE_PERCENTAGE * data.tokenomicsData.creatorInitialBuy);
+
+  //   return {
+  //     pump: pump,
+  //     revelcy: revelcy,
+  //   };
+  // }, [data.tokenomicsData.creatorInitialBuy]);
 
   return (
     <ScrollView
@@ -189,7 +188,7 @@ export default function OverviewPremarketCreation({
           width: "100%",
           paddingHorizontal: isMobile ? 16 : 24,
           paddingVertical: isMobile ? 40 : 24,
-          minHeight: isMobile ? height: height * 0.9,
+          minHeight: isMobile ? height : height * 0.9,
         }}
       >
 
@@ -368,7 +367,7 @@ export default function OverviewPremarketCreation({
             />
           </View>
 
-          {(bannerSrc||descriptionCommunity) && (<View
+          {(bannerSrc || descriptionCommunity) && (<View
             // sections community
             style={{
               backgroundColor: colors.surfaceContainerLowest,
@@ -414,7 +413,7 @@ export default function OverviewPremarketCreation({
             )}
 
             {/* Description */}
-            {descriptionCommunity &&(
+            {descriptionCommunity && (
               <Text
                 variant="bodyMedium"
                 style={{ color: colors.onSurfaceVariant }}
@@ -441,8 +440,8 @@ export default function OverviewPremarketCreation({
                         l.type === "x"
                           ? "x-logo"
                           : l.type === "tg"
-                          ? "tg-logo"
-                          : "world-outlined"
+                            ? "tg-logo"
+                            : "world-outlined"
                       }
                       onPress={() => open(l.url)}
                     >
@@ -500,7 +499,7 @@ export default function OverviewPremarketCreation({
                 },
               ]}
             />
-           
+
             {/*
             <View style={{ gap: 8 }}>
               <View
@@ -553,7 +552,7 @@ export default function OverviewPremarketCreation({
 
             </View>
             */}
-            
+
             <View style={{ gap: 8 }}>
 
               <View
@@ -568,7 +567,7 @@ export default function OverviewPremarketCreation({
                   Initial buy {" "}
                   <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
                     {formatNumberCompact(convertSolanaToTokenWithFee(
-                        {input_sol_lamp:convertSmallCountToLamport(data.tokenomicsData.creatorInitialBuy)}
+                      { input_sol_lamp: convertSmallCountToLamport(data.tokenomicsData.creatorInitialBuy) }
                     ))} {tokenTicker}
                   </Text>
                 </Text>
@@ -664,7 +663,7 @@ export default function OverviewPremarketCreation({
               />
             )}
             {!error ? (
-              <Button disabled={launchState!==undefined} mode="contained" onPress={onLaunch}>
+              <Button disabled={launchState !== undefined} mode="contained" onPress={onLaunch}>
                 {`Start premarket with ${shortAddress}`}
               </Button>
             ) : (
@@ -693,8 +692,8 @@ function RowLine({
   const formatedValue = value.startsWith("https://")
     ? value.slice(8)
     : value.startsWith("http://")
-    ? value.slice(7)
-    : value;
+      ? value.slice(7)
+      : value;
 
   return (
     <View
