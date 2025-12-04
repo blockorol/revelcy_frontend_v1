@@ -456,7 +456,7 @@ export default function OverviewPremarketCreation({
               slices={[
                 {
                   value: round(percentGoal, 1),
-                  additional: percentGoal.toFixed(2),
+                  additional: goalSol.toFixed(2),
                   label: "Premarket",
                   color: theme.colors.primary,
                 },
