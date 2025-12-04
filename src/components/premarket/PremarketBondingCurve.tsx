@@ -401,7 +401,7 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
 
       {/* Right section */}
       
-      {currentPrice&&<View style={{justifyContent:'flex-end', position: 'absolute', right: padding+graphMarginRight, bottom: (padding + dHeightGraph_SVG), maxWidth: '40%' }}>
+      {currentPrice!== undefined&&<View style={{justifyContent:'flex-end', position: 'absolute', right: padding+graphMarginRight, bottom: (padding + dHeightGraph_SVG), maxWidth: '40%' }}>
         <Text variant="labelSmall" style={{ color: colors.onSurfaceVariant, textAlign: 'right' }}>
           Current Price
         </Text>
