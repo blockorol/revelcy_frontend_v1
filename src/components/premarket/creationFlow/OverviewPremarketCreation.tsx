@@ -13,7 +13,7 @@ import { TokenCreateFullData } from "@components/token/create/interface";
 import { ExtendedMD3Colors } from "@theme/types";
 import { PremarketBondingCurve } from "@components/premarket/PremarketBondingCurve";
 import { useAuth } from "@providers/AuthContext";
-import { convertSmallCountToLamport, formatNumberCompact } from "@utils/premarket";
+import { convertDecimalToToken, convertSmallCountToLamport, formatNumberCompact } from "@utils/premarket";
 import LoginButton from "@components/login/LoginButton";
 import { DonutWithLegend } from "@components/base/DonutWithLegend";
 import { round, formatNumberNoTrailingZeros } from "@utils/numbers";
@@ -153,24 +153,6 @@ export default function OverviewPremarketCreation({
   const deadlineText = data.premarket?.deadline_sec
     ? format(new Date(data.premarket.deadline_sec * 1000), "dd.MM.yyyy HH:mm (XXX)")
     : undefined;
-
-    
-      // const fees = useMemo(() => {
-      //   if (!data.tokenomicsData.creatorInitialBuy) {
-      //     return {
-      //       pump: "0",
-      //       revelcy: "0",
-      //     };
-      //   }
-      //   const pump = formatNumberNoTrailingZeros(PUMP_FEE_PERCENTAGE * data.tokenomicsData.creatorInitialBuy);
-      //   const revelcy = formatNumberNoTrailingZeros(REVELCY_FEE_PERCENTAGE * data.tokenomicsData.creatorInitialBuy);
-    
-      //   return {
-      //     pump: pump,
-      //     revelcy: revelcy,
-      //   };
-      // }, [data.tokenomicsData.creatorInitialBuy]);
-    
 
   return (
     <ScrollView
@@ -477,15 +459,6 @@ export default function OverviewPremarketCreation({
                   additional: percentGoal.toFixed(2),
                   label: "Premarket",
                   color: theme.colors.primary,
-                  // subSlices: {
-                  //   restColor: makeTransparent(theme.colors.onPrimary, 0.7),
-                  //   slices: [{
-                  //     value: percentInitialBuy,
-                  //     label: "Creator (you) buy",
-                  //     color:  makeTransparent(theme.colors.onPrimary, 0.5),
-                  //     additional: data.tokenomicsData.creatorInitialBuy.toFixed(2)
-                  //   }]
-                  // }
                 },
                 {
                   value: 20,
@@ -499,59 +472,6 @@ export default function OverviewPremarketCreation({
                 },
               ]}
             />
-           
-            {/*
-            <View style={{ gap: 8 }}>
-              <View
-                style={{
-                  paddingTop: 16,
-                  justifyContent: "space-between",
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text variant="bodySmall">
-                  Pumpfun fees {" "}
-                  <Text  variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
-                    1.5% of creator buy
-                  </Text>
-                </Text>
-                <Text variant="bodySmall">{fees.pump} SOL</Text>
-              </View>
-
-              <View
-                style={{
-                  paddingTop: 16,
-                  justifyContent: "space-between",
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text variant="bodySmall">
-                  Revelcy fees {" "}
-                  <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
-                    1% of creator buy
-                  </Text>
-                </Text>
-                <Text variant="bodySmall">{fees.revelcy} SOL</Text>
-              </View>
-
-              <View
-                style={{
-                  paddingTop: 16,
-                  justifyContent: "space-between",
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text variant="bodySmall">
-                  Sol fee
-                </Text>
-                <Text variant="bodySmall">{formatNumberNoTrailingZeros(SOL_FEE)} SOL</Text>
-              </View>
-
-            </View>
-            */}
             
             <View style={{ gap: 8 }}>
 
@@ -566,9 +486,11 @@ export default function OverviewPremarketCreation({
                 <Text variant="bodySmall">
                   Initial buy {" "}
                   <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
-                    {formatNumberCompact(convertSolanaToTokenWithFee(
-                        {input_sol_lamp:convertSmallCountToLamport(data.tokenomicsData.creatorInitialBuy)}
-                    ))} {tokenTicker}
+                    ~{formatNumberCompact(
+                      convertDecimalToToken(
+                        convertSolanaToTokenWithFee(
+                          {input_sol_lamp:convertSmallCountToLamport(data.tokenomicsData.creatorInitialBuy)}
+                    )))} {tokenTicker}
                   </Text>
                 </Text>
                 <Text variant="bodySmall">{formatNumberNoTrailingZeros(data.tokenomicsData.creatorInitialBuy)} SOL</Text>

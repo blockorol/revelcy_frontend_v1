@@ -1,6 +1,6 @@
 import { TokenCommunityInfo, updateAboutCommunity } from "@api/token";
 import { CommunityLinksGrid } from "@components/premarket/CommunityLinksGrid";
-import { View, Image, ScrollView } from "react-native";
+import { View, Image } from "react-native";
 import { useTheme, Button } from "react-native-paper";
 import { Text } from "@components/ui/Text";
 import { ExpandableText } from "@components/base/ExpandableText";
