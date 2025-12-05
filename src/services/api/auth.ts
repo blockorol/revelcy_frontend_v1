@@ -24,6 +24,33 @@ export async function updateUsername({
   return res.data as { jwt: string };
 }
 
+export async function setInviteCode({
+  inviteCode,
+  jwt
+}: {
+  inviteCode: string;
+  jwt: string;
+}): Promise<boolean> {
+  try {
+    const res = await axios.post(
+      `${API_USER_URL}/set_invite_code`,
+      { inviteCode },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwt}`,
+        },
+      }
+    );
+
+    // Если сервер ответил 2xx — успех
+    return res.status >= 200 && res.status < 300;
+  } catch (err) {
+    // Любая ошибка = неудача
+    return false;
+  }
+}
+
 export async function updateAvatar({
   file,
   jwt

@@ -8,9 +8,10 @@ import useIsMobile from '@hooks/useIsMobile';
 import WalletConnectionChecker from '@components/login/WalletConnectionCheckerArea';
 import UserAvatar from '@components/login/UserAvatar';
 import { useAuth } from '@providers/AuthContext';
-import { updateAvatar, updateUsername } from '@api/auth';
+import { setInviteCode, updateAvatar, updateUsername } from '@api/auth';
 import UserName from '@components/login/UserName';
 import { ExtendedMD3Colors } from '@theme/types';
+import InviteCode from '@components/login/InviteCode';
 
 interface LoginFlowProps {
   loginFlowStateOverride?: LoginState;
@@ -20,6 +21,7 @@ interface LoginFlowProps {
 export enum LoginState {
   FIRST = "FIRST",
   //WALLET_CONNECTING = "WALLET_CONNECTING",
+  INVITE_CODE = "INVITE_CODE",
   SET_USER_NAME = "SET_USER_NAME",
   SET_AVATAR = "SET_AVATAR",
 }
@@ -78,7 +80,7 @@ export default function LoginFlow({loginFlowStateOverride, onCloseButton}:LoginF
         width={activeProp.width - DEF_PADDINGS.left - DEF_PADDINGS.right}
         toNext={() => {
           moveBetweenStateRef.current = true
-          setLoginFlowState(LoginState.SET_USER_NAME)
+          setLoginFlowState(LoginState.INVITE_CODE)
         }}
         overrideSaveJwt={ (jwt: string, isNewUser: boolean) => {
           jwtCurrentRef.current = jwt
@@ -90,7 +92,38 @@ export default function LoginFlow({loginFlowStateOverride, onCloseButton}:LoginF
         onClose={onCloseButton}
        />)
        break;
-   /* case LoginState.WALLET_CONNECTING:
+    
+    case LoginState.INVITE_CODE:
+      currentArea = (<InviteCode 
+        height={"100%" }
+        width={activeProp.width - DEF_PADDINGS.left - DEF_PADDINGS.right}
+        toNext={() => {
+          moveBetweenStateRef.current = true
+          setLoginFlowState(LoginState.SET_USER_NAME)
+        }}
+        setInviteCodeToServer={async (inviteCode: string) => {
+          try {
+            const resp = await setInviteCode({
+              inviteCode: inviteCode,
+              jwt: jwtCurrentRef.current
+            })
+            if (!resp) {
+              throw Error("reponse is not ok");
+            }
+          } catch {
+            return {
+              ok: false
+            }
+          }
+          return {
+            ok: true
+          }
+        }}
+      />)
+       break;
+    
+   /* 
+    case LoginState.WALLET_CONNECTING:
       currentArea = (<WalletConnectionChecker 
         height={"100%" }
         width={activeProp.width - DEF_PADDINGS.left - DEF_PADDINGS.right}
@@ -112,6 +145,7 @@ export default function LoginFlow({loginFlowStateOverride, onCloseButton}:LoginF
        />)
        break;
     */
+
     case LoginState.SET_USER_NAME:
       currentArea = (<UserName 
         height={"100%" }
@@ -138,6 +172,7 @@ export default function LoginFlow({loginFlowStateOverride, onCloseButton}:LoginF
         }}
       />)
        break;
+    
     case LoginState.SET_AVATAR:
       currentArea = (<UserAvatar 
         height={"100%" }
@@ -178,6 +213,3 @@ export default function LoginFlow({loginFlowStateOverride, onCloseButton}:LoginF
   </ImageBackgroundOverlay>
   );
 }
-
-const styles = StyleSheet.create({
-});

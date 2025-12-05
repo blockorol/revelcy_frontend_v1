@@ -156,6 +156,7 @@ export default function UserAvatar({
           </View>
         </View>
       </View>
+      <HelperText type="error" visible={!!error}> {error} </HelperText>
 
       <View style={[styles.headerContainer, { gap: 40 }]}>
         <GreenButton
@@ -167,7 +168,7 @@ export default function UserAvatar({
               }
               toNext();
             } catch {
-              setError(" Something went wrong. Please, try again");
+              setError("Something went wrong. Please, try again");
             }
           }}
         />
