@@ -181,43 +181,44 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
           </View>
         }
         {state === 'premarket' ?
-        <View style={{ position: 'relative', paddingLeft: 30, paddingVertical: 24, gap: 12, width: 280}}>
-          <View style={styles.countdownText}>{timeLeft}</View>
-          {withJoinButton && <Button 
-            style={{ 
-              width: 'auto',
-              height: 30,
-              alignSelf: 'flex-start',
-              borderRadius: 10,
-            }}
-            mode="outlined"
-            onPress={() => joinPremarketBySol(tokenInfo.mainInfo.premarketPubkey, DEFAULT_BUY_AMOUNT)} 
-            textColor={colors.onSurface}
-            contentStyle={{
-              height: 28,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-              <Text variant="labelMedium" style={{color:colors.onSurface}}>
-                + Buy{' '}
-                {formatNumberCompact(
-                    convertDecimalToToken(
-                      convertSolanaToTokenWithFee({
-                        input_sol_lamp: DEFAULT_BUY_AMOUNT_LAMP,
-                        before_lamp: tokenInfo.dynamicInfo.reservedSolLamp,
-                      })
-                    )
-                  )}{' '}
-                for{' '}
-                {DEFAULT_BUY_AMOUNT} SOL
-              </Text>
-          </Button>}
-        </View>
-        : <View style={{ 
-            position: 'relative', 
-            paddingLeft: 20, 
-            paddingVertical: state === 'finished' ? 0 : 24, 
-            gap: 12 
+          <View style={{ position: 'relative', paddingLeft: 30, paddingVertical: 24, gap: 12, width: 280}}>
+            <View style={styles.countdownText}>{timeLeft}</View>
+            {withJoinButton && <Button 
+              style={{ 
+                width: 'auto',
+                height: 30,
+                alignSelf: 'flex-start',
+                borderRadius: 10,
+              }}
+              mode="outlined"
+              onPress={() => joinPremarketBySol(tokenInfo.mainInfo.premarketPubkey, DEFAULT_BUY_AMOUNT)} 
+              textColor={colors.onSurface}
+              contentStyle={{
+                height: 28,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+                <Text variant="labelMedium" style={{color:colors.onSurface}}>
+                  + Buy{' '}
+                  {formatNumberCompact(
+                      convertDecimalToToken(
+                        convertSolanaToTokenWithFee({
+                          input_sol_lamp: DEFAULT_BUY_AMOUNT_LAMP,
+                          before_lamp: tokenInfo.dynamicInfo.reservedSolLamp,
+                        })
+                      )
+                    )}{' '}
+                  for{' '}
+                  {DEFAULT_BUY_AMOUNT} SOL
+                </Text>
+            </Button>}
+          </View>
+          : <View style={{ 
+              position: 'relative', 
+              paddingLeft: 20, 
+              paddingVertical: state === 'finished' ? 0 : 24, 
+              gap: 12,
+              width: 280
           }}/>
         }
       </View>

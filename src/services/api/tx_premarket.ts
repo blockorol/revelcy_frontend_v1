@@ -203,6 +203,36 @@ export async function getExtendPremarketTransaction(
   }
 }
 
+export interface ClaimTokensTxRequest {
+  network: Network;
+  user_pubkey: string;       // base58
+  premarket_account: string; // base58
+  token_mint: string;        // base58
+}
+
+export async function GetClaimTokensTransaction(
+  userPubkeyBase58: string,
+  premarketAccountBase58: string,
+  tokenMint: string,
+  network: Network
+): Promise<TxOnlyResponse> {
+  const payload: ClaimTokensTxRequest = {
+    network,
+    user_pubkey: userPubkeyBase58,
+    premarket_account: premarketAccountBase58,
+    token_mint: tokenMint,
+  };
+  try {
+    const data = await http.post<TxOnlyResponse>(
+      `${API_HOST}/premarket/tx/claim_tokens`,
+      { json: payload, retry: RETRY_TX_GEN }
+    );
+    return data;
+  } catch (e: any) {
+    throw new Error(`Failed to get claim tokens tx: ${e?.message ?? "Unknown error"}`);
+  }
+}
+
 export function toDecString(x: BN | string | number | bigint): string {
   if (BN.isBN(x)) return (x as BN).toString(10);
   if (typeof x === "bigint") return x.toString(10);

@@ -123,6 +123,34 @@ export async function premarketFinished(args: {
   }
 }
 
+export interface TokenClaimedResponse {
+  claimed: boolean;
+  updated_in_db: boolean;
+}
+
+export async function tokensClaimed(args: {
+  network: "devnet" | "testnet" | "mainnet-beta";
+  userPubkey: string;
+  premarketAccount: string;
+}): Promise<TokenClaimedResponse> {
+  const payload = {
+    network: args.network,
+    user_pubkey: args.userPubkey,
+    premarket_account: args.premarketAccount,
+  };
+
+  try {
+    const response = await http.post<TokenClaimedResponse>(
+      `${API_HOST}/premarket/token_claimed`,
+      { json: payload, retry: RETRY_DEFAULT }
+    );
+    return response;
+  } catch (e: any) {
+    console.log("failed with", payload);
+    throw new Error(`Failed to verify tokens claimed: ${e.message ?? "Unknown error"}`);
+  }
+}
+
 export async function extendedPremarket(args: {
   premarketPubKey: string;
   userWallet: string;
@@ -217,6 +245,7 @@ export async function getPremarketInfo({
     createdByPubkey: data.blockchain_info.creator_address,
     state: data.blockchain_info.state,
     finishDate: data.blockchain_info.premarket_finished || undefined,
+    isExtended: (data.blockchain_info.premarket_is_extended|| undefined) ?? false,
     tokenMint: data.blockchain_info.mint_address,
   };
 
@@ -318,7 +347,7 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
   console.log("tokenMarketCapFromCurve:", {
     reservedSolLamp: reservedSolLamp.toString(),
     tokenMarketCapFromCurve: tokenMarketCapFromCurve.toString(),
-});
+  });
   
   const reservedToken = DEFAULT_TOKEN_COUNT_DECIMAL.sub(tokenMarketCapFromCurve);
 
@@ -348,7 +377,8 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
       joinTimestamp: h.join_timestamp,
       iconURL: h.icon_url ?? undefined,
       amountSolLamp: new BN(h.amount_sol_lamp),
-      username: h.username??shortString(h.wallet_address)
+      username: h.username??shortString(h.wallet_address),
+      claimed: h.claimed ?? false
     })),
   };
 }
@@ -371,9 +401,10 @@ export interface TokenMainInfo {
     premarketGoalSolLamp: BN;
     premarketDeadline: number;
     premarketCreated: number;
-    createdByPubkey: string;      // creator pubkey
+    createdByPubkey: string;
     state: PremarketState;
     finishDate?: number;
+    isExtended: boolean;
     tokenMint?: string;
 }
 
@@ -412,6 +443,7 @@ export interface HoldersInfo {
     amountSolLamp: BN;
     iconURL?: string;
     username: string;
+    claimed?: boolean;
 }
 
 export interface HolderEntryPriceDTO {

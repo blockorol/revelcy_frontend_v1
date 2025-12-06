@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { DimensionValue, View, Image as RNImage } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import { Svg, Path, Circle, Line, Text as SvgText, Polygon, ForeignObject } from 'react-native-svg';
@@ -12,31 +12,38 @@ import {
 import { MD3Colors, MD3Typescale } from 'react-native-paper/lib/typescript/types';
 import { convertSolToPercentOnStartNoFee } from '@services/pumpfun/adds';
 
-interface BondingCurvePoint { sol_lamp: BN; persent: number }
+interface BondingCurvePoint { sol_lamp: BN; persent: number; sol_small: number; }
 interface BondingCurvePointWithCoordinate extends BondingCurvePoint { x: number; y: number }
 interface GenerateBondingCurvePointsArgs {
   from: number; to: number; stepSol: number; stepPercent: number;
 }
 
-export function generateBondingCurvePointsFromZero(args: GenerateBondingCurvePointsArgs): BondingCurvePoint[] {
-  const { from, to, stepSol, stepPercent} = args;
+export function generateBondingCurvePointsFromZero(
+  args: GenerateBondingCurvePointsArgs
+): BondingCurvePoint[] {
+  const { from, to, stepSol, stepPercent } = args;
 
   if (stepSol <= 0) throw new Error("step must be positive integer");
   if (from < 0 || to > 200 || from > to) throw new Error("solana must satisfy 0 ≤ from ≤ to ≤ 200");
 
   const result: BondingCurvePoint[] = [];
 
-
   let lastPercent = -10;
-  for (let p = 0; p < to; p += stepSol) {
-    const persent = convertSolToPercentOnStartNoFee(p)
-    if (persent < stepPercent+lastPercent) continue;
+  for (let p = from; p < to; p += stepSol) {
+    const persent = convertSolToPercentOnStartNoFee(p);
+    if (persent < stepPercent + lastPercent) continue;
     lastPercent = persent;
-    const currentSolana = convertSmallCountToLamport(p)
-    result.push({ persent: persent, sol_lamp: currentSolana });
+
+    const currentSolana = convertSmallCountToLamport(p);
+    result.push({
+      persent,
+      sol_lamp: currentSolana,
+      sol_small: p,
+    });
   }
   return result;
 }
+
 
 const bondingCurvePoints = generateBondingCurvePointsFromZero({
   from: 0,
@@ -225,12 +232,18 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
   };
   const percentToX = (p: number) => ((widthGraph * p )/ maxPercentDisplay) + dWidthGraph_SVG;
 
-  const curvePoints: BondingCurvePointWithCoordinate[] = bondingCurvePoints.map((v) => ({
-    persent: v.persent,
-    sol_lamp: v.sol_lamp,
-    x: percentToX(v.persent),
-    y: solToY(convertLamportToSmallCount(v.sol_lamp)),
-  }));
+  const curvePoints: BondingCurvePointWithCoordinate[] = useMemo(
+    () =>
+      bondingCurvePoints.map((v) => ({
+        persent: v.persent,
+        sol_lamp: v.sol_lamp,
+        sol_small: v.sol_small,
+        x: percentToX(v.persent),
+        y: solToY(v.sol_small),
+      })),
+    [widthGraph, heightGraph, maxSolDisplayed, maxPercentDisplay]
+  );
+
   
   // Find the last buyer's position (highest cumulative SOL amount)
   const lastBuyerPercent = joiners.length > 0 
@@ -255,16 +268,15 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
   const nowPoint = findPointBySol(curvePoints, nowSol);
 
   const goalTop = 
-    state === 'premarket' && goalPoint.y === nowPoint.y  ? 
-      goalPoint.y - (fonts.labelSmall.fontSize as number) * 0.2 :
-      goalPoint.y + (fonts.labelSmall.fontSize as number) / 2
+    // state === 'premarket' && goalPoint.y === nowPoint.y  ? goalPoint.y - (fonts.labelSmall.fontSize as number) * 0.2 :
+      goalPoint.y + (fonts.labelSmall.fontSize as number) *2/3
 
   const nowTop = 
-    goalPoint.y === nowPoint.y ? 
-      nowPoint.y + (fonts.labelSmall.fontSize as number) * 1.2 : 
-      nowPoint.y + (fonts.labelSmall.fontSize as number) / 2
+    // goalPoint.y === nowPoint.y ? nowPoint.y + (fonts.labelSmall.fontSize as number) * 1.2 : 
+      nowPoint.y + (fonts.labelSmall.fontSize as number) *2/3
 
   // Check if labels overlap (within 30px vertical distance)
+  
   const labelsOverlap = Math.abs(goalTop - nowTop) < 30
 
   const goalColor = 
@@ -279,7 +291,6 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
   if (state === 'canceled' || state === 'expired') {
     currentPrice = 0
   }
-  
 
   return (
     <View style={{
@@ -287,6 +298,7 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
       borderRadius: 16,
       padding: padding, width: width, height: height }}>
       <Svg height={heightSVG} width={widthSVG}>
+        {/* {renderPixelGrid(widthSVG, heightSVG, 20, 20)} */}
         {/* axes */}
         {/* 
         <Line x1={margin} y1={margin} x2={margin} y2={height - margin} stroke={colors.outlineVariant} />
@@ -312,6 +324,7 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
         { state === 'premarket' && !labelsOverlap &&
           <Line x1={YLineWight} x2={nowPoint.x} y1={nowPoint.y} y2={nowPoint.y} stroke={colors.primary} strokeDasharray="4" />
         }
+        {/* circle when no users  */}
         { state === 'premarket' && !labelsOverlap && joiners.length === 0 &&
           <Circle
             cx={nowPoint.x}
@@ -387,12 +400,13 @@ export const PremarketBondingCurve: React.FC<PremarketBondingCurveProps> = ({
       </Svg>
 
       {/* Right section */}
-      <View style={{justifyContent:'flex-end', position: 'absolute', right: padding+graphMarginRight, bottom: (padding + dHeightGraph_SVG), maxWidth: '40%' }}>
+      
+      {currentPrice!== undefined&&<View style={{justifyContent:'flex-end', position: 'absolute', right: padding+graphMarginRight, bottom: (padding + dHeightGraph_SVG), maxWidth: '40%' }}>
         <Text variant="labelSmall" style={{ color: colors.onSurfaceVariant, textAlign: 'right' }}>
           Current Price
         </Text>
         <CurrentPriceValue currentPrice={currentPrice || 0} colors={colors} fonts={fonts}/>
-      </View>
+      </View>}
 
       {/* Labels */}
       <Text
@@ -521,3 +535,41 @@ function findPointByPercent(points: BondingCurvePointWithCoordinate[], percent: 
   }
   return points[points.length - 1];
 }
+
+  function renderPixelGrid (widthSVG: number ,heightSVG: number, xStep: number = 20, yStep: number = 20): JSX.Element[] {
+    const gridLines: JSX.Element[] = [];
+
+    // Вертикальные линии каждые xStep px
+    for (let x = 0; x <= widthSVG; x += xStep) {
+      gridLines.push(
+        <Line
+          key={`grid-px-x-${x}`}
+          x1={x}
+          y1={0}
+          x2={x}
+          y2={heightSVG}
+          stroke={'grey'}
+          strokeWidth={0.3}
+          strokeDasharray="2 2"
+        />,
+      );
+    }
+
+    // Горизонтальные линии каждые yStep px
+    for (let y = 0; y <= heightSVG; y += yStep) {
+      gridLines.push(
+        <Line
+          key={`grid-px-y-${y}`}
+          x1={0}
+          y1={y}
+          x2={widthSVG}
+          y2={y}
+          stroke={'grey'}
+          strokeWidth={0.3}
+          strokeDasharray="2 2"
+        />,
+      );
+    }
+
+    return gridLines;
+  };

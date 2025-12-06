@@ -387,6 +387,7 @@ export default function PremarketCreationFlow() {
               state: "premarket",
               finishDate: undefined, // will be set when premarket finished
               tokenMint: resp.mintAddress,
+              isExtended: false,
             },
             communityInfo: {
               description: "",

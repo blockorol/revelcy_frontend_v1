@@ -59,7 +59,7 @@ export function PremarketInfo({currentUserId, tokenInfo, isMobile, withJoinButto
           height={252}
           state={tokenInfo.mainInfo.state}
           goalSol={tokenInfo.mainInfo.premarketGoalSolLamp}
-          nowSol={tokenInfo.dynamicInfo.marketCapTokenDec}
+          nowSol={tokenInfo.dynamicInfo.reservedSolLamp}
           currentPrice={tokenInfo.dynamicInfo.currentPriceLamp}
           joiners={joiners}
           background={colors.surfaceContainerLow}

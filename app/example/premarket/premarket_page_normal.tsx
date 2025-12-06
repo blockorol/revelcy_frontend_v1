@@ -63,6 +63,7 @@ function makeInitialMockToken(): TokenInfo {
     createdByPubkey: "holder_wallet_1",
     state: 'premarket',
     finishDate: undefined,
+    isExtended: false,
     tokenMint: undefined
   };
 

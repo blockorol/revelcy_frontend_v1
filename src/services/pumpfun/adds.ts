@@ -15,7 +15,7 @@ export function convertSolToPercentOnStart(sol: number): number {
   const solLamp = convertSmallCountToLamport(sol)
   const tokens = convertSolanaToTokenWithFee({input_sol_lamp:solLamp})
 
-  const percent = (tokens.muln(100)).div(DEFAULT_TOKEN_COUNT_DECIMAL).toNumber()
+  const percent = (tokens.muln(100*1000)).div(DEFAULT_TOKEN_COUNT_DECIMAL).toNumber()/1000; // 1000 because of rounding for BN, and 0.001 is ok for precent
   return percent
 }
 
@@ -27,6 +27,6 @@ export function convertSolToPercentOnStartNoFee(sol: number): number {
   const solLamp = convertSmallCountToLamport(sol)
   const tokens = convertSolanaToTokenNoFee_Rust({input_sol_lamp:solLamp})
 
-  const percent = (tokens.muln(100)).div(DEFAULT_TOKEN_COUNT_DECIMAL).toNumber()
+  const percent = (tokens.muln(100*1000)).div(DEFAULT_TOKEN_COUNT_DECIMAL).toNumber()/1000; // 1000 because of rounding for BN, and 0.001 is ok for precent
   return percent
 }
