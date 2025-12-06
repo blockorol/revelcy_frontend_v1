@@ -29,11 +29,17 @@ export async function uploadTokenMetadataToIPFS({
     for (let i = 0; i < byteCharacters.length; i++) byteArray[i] = byteCharacters.charCodeAt(i);
     const blob = new Blob([byteArray], { type: mimeType });
 
+    // Append Revelcy info after the description
+    const revelcyText = "Premarket done with Revelcy; initial buy distributed to the community. More: beta.revelcy.com";
+    const descriptionUpdated = tokenInfo.description 
+      ? `${tokenInfo.description}\n\n${revelcyText}`
+      : revelcyText;
+
     const formData = new FormData();
     formData.append("file", blob, tokenInfo.name);
     formData.append("name", tokenInfo.name);
     formData.append("symbol", tokenInfo.symbol);
-    formData.append("description", tokenInfo.description ?? "");
+    formData.append("description", descriptionUpdated);
     if (tokenInfo.links.telegram) formData.append("telegram", tokenInfo.links.telegram);
     if (tokenInfo.links.twitter) formData.append("twitter", tokenInfo.links.twitter);
     if (tokenInfo.links.website) formData.append("website", tokenInfo.links.website);
