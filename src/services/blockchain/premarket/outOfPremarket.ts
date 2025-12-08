@@ -22,6 +22,5 @@ export async function outOfPremarket(
 
   const report = await signAndSend(transaction, connection, wallet);
 
-
   return { txId: report };
 }

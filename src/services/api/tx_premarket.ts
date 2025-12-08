@@ -27,6 +27,30 @@ export interface CreatePremarketTxRequest {
   creator_allocate_lamp: string;  // u64 as string
 }
 
+export interface SignTxResponse {
+  transaction: string;            // base64(Transaction)
+}
+
+export async function signCreatePremarketTransaction(params: {
+  network: "devnet" | "mainnet-beta";
+  txBase64: string;
+}) {
+  const payload = {
+    network: params.network,
+    unsigned_tx: params.txBase64,
+    tx_type: "create_premarket"
+  };
+  const data = await http.post<SignTxResponse>(`${API_HOST}/premarket/tx/sign_create_transaction`, {
+    json: payload, retry: RETRY_TX_GEN
+  });
+
+  // ожидаю, что бек вернёт { transaction: string }
+  return data as {
+    transaction: string; // base64, подписанная и юзером, и revelcy
+  };
+}
+
+
 export interface CreatePremarketArgs {
   name: string;
   symbol: string;

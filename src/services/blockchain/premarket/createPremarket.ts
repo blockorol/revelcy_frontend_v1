@@ -1,8 +1,15 @@
+// createPremarket.ts
 import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
-import { getCreatePremarketTransaction } from "@api/tx_premarket";
-import { signAndSend } from "@services/blockchain/signAndSend";
+import {
+  getCreatePremarketTransaction,
+  signCreatePremarketTransaction,
+} from "@api/tx_premarket";
+import {
+  simulateAndSignRawTx,
+  sendRawTx,
+} from "@services/blockchain/signAndSend";
 
 const SECONDS_IN_HOUR = 60 * 60;
 
@@ -40,24 +47,39 @@ export async function createPremarket(
     network
   );
 
-  console.log("transaction created by BE:", {
+  console.log("Unsigned transaction created by BE:", {
     ...args,
     wallet: wallet.publicKey.toBase58(),
-    network: network,
+    network,
     transaction,
     pda: premarket_account_pda,
   });
 
-  onChangeState?.("Sending transaction to blockchain...");
+  // 2) Симуляция + подпись пользователем
+  onChangeState?.("Simulating and signing transaction with wallet...");
+  const userSignedB64 = await simulateAndSignRawTx(transaction, connection, wallet);
 
-  const report = await signAndSend(transaction, connection, wallet);
-  
-  console.log("Transaction sent and confirmed. Report:", report);
+  console.log("Transaction signed by wallet, sending to BE for Revelcy signature...");
+
+  // 3) Отправляем на бекенд для подписи Revelcy
+  onChangeState?.("Signing transaction on backend...");
+  const { transaction: backendSignedB64 } = await signCreatePremarketTransaction({
+    network,
+    txBase64: userSignedB64,
+  });
+
+  console.log("Transaction signed by backend. Sending to blockchain...");
+
+  // 4) Отправка в сеть
+  onChangeState?.("Sending transaction to blockchain...");
+  const txSig = await sendRawTx(backendSignedB64, connection);
+
+  console.log("Transaction sent and confirmed. Signature:", txSig);
 
   return {
-    txId: report,
+    txId: txSig,
     premarketPDA: new PublicKey(premarket_account_pda),
-    report,
-    mintAddress: mint_address
+    report: txSig,
+    mintAddress: mint_address,
   };
 }
