@@ -1,7 +1,7 @@
 import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey } from "@solana/web3.js";
-import { getOutPremarketTransaction } from "@api/tx_premarket";
-import { signAndSend } from "@services/blockchain/signAndSend";
+import { getOutPremarketTransaction, signTransactionWithRevelcyAuth } from "@api/tx_premarket";
+import { simulateAndSignRawTx, sendRawTx } from "@services/blockchain/signAndSend";
 
 export async function outOfPremarket(
   wallet: AnchorWallet,
@@ -11,6 +11,11 @@ export async function outOfPremarket(
   onChangeState?: (state: string) => void
 ): Promise<{ txId: string }> {
   onChangeState?.("Creating transaction...");
+  console.log("Exiting premarket with args:", {
+    premarket: premarketAccount.toBase58(),
+    wallet: wallet.publicKey.toBase58(),
+    network,
+  });
 
   const { transaction } = await getOutPremarketTransaction(
     premarketAccount.toBase58(),
@@ -18,9 +23,31 @@ export async function outOfPremarket(
     network
   );
 
+  console.log("Unsigned exit transaction created by BE:", {
+    premarket: premarketAccount.toBase58(),
+    wallet: wallet.publicKey.toBase58(),
+    network,
+    transaction,
+  });
+
+  onChangeState?.("Simulating and signing transaction with wallet...");
+  const userSignedB64 = await simulateAndSignRawTx(transaction, connection, wallet);
+
+  console.log("Exit transaction signed by wallet, sending to BE for Revelcy signature...");
+
+  onChangeState?.("Signing transaction on backend...");
+  const { transaction: backendSignedB64 } = await signTransactionWithRevelcyAuth({
+    network,
+    txBase64: userSignedB64,
+    txType: 'out_of_premarket',
+  });
+
+  console.log("Exit transaction signed by backend. Sending to blockchain...");
+
   onChangeState?.("Sending transaction to blockchain...");
+  const txSig = await sendRawTx(backendSignedB64, connection);
 
-  const report = await signAndSend(transaction, connection, wallet);
+  console.log("Exit transaction sent and confirmed. Signature:", txSig);
 
-  return { txId: report };
+  return { txId: txSig };
 }

@@ -4,7 +4,7 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import {
   getCreatePremarketTransaction,
-  signCreatePremarketTransaction,
+  signTransactionWithRevelcyAuth,
 } from "@api/tx_premarket";
 import {
   simulateAndSignRawTx,
@@ -63,9 +63,10 @@ export async function createPremarket(
 
   // 3) Отправляем на бекенд для подписи Revelcy
   onChangeState?.("Signing transaction on backend...");
-  const { transaction: backendSignedB64 } = await signCreatePremarketTransaction({
+  const { transaction: backendSignedB64 } = await signTransactionWithRevelcyAuth({
     network,
     txBase64: userSignedB64,
+    txType: "create_premarket"
   });
 
   console.log("Transaction signed by backend. Sending to blockchain...");
