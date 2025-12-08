@@ -46,6 +46,7 @@ export async function finishPremarket(
     network,
     txBase64: userSignedB64,
     txType: "finish_premarket",
+    premarket: premarketAccount.toBase58()
   });
 
   console.log("Finish transaction signed by backend. Sending to blockchain...");
