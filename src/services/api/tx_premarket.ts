@@ -31,14 +31,24 @@ export interface SignTxResponse {
   transaction: string;            // base64(Transaction)
 }
 
-export async function signCreatePremarketTransaction(params: {
+type TX_TYPE = 
+    "create_premarket" | 
+    "join_premarket" | 
+    "out_of_premarket" | 
+    "finish_premarket" | 
+    "extend_premarket" | 
+    "claim_tokens" | 
+    "refund_premarket"
+
+export async function signTransactionWithRevelcyAuth(params: {
   network: "devnet" | "mainnet-beta";
   txBase64: string;
+  txType: TX_TYPE
 }) {
   const payload = {
     network: params.network,
     unsigned_tx: params.txBase64,
-    tx_type: "create_premarket"
+    tx_type: params.txType
   };
   const data = await http.post<SignTxResponse>(`${API_HOST}/premarket/tx/sign_create_transaction`, {
     json: payload, retry: RETRY_TX_GEN
