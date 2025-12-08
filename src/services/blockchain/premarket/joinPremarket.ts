@@ -1,8 +1,8 @@
 import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
-import { getJoinPremarketTransaction } from "@api/tx_premarket";
-import { signAndSend } from "@services/blockchain/signAndSend";
+import { getJoinPremarketTransaction, signTransactionWithRevelcyAuth } from "@api/tx_premarket";
+import { simulateAndSignRawTx, sendRawTx } from "@services/blockchain/signAndSend";
 
 export async function joinToPremarket(
   wallet: AnchorWallet,
@@ -14,17 +14,46 @@ export async function joinToPremarket(
   onChangeState?: (state: string) => void
 ): Promise<{ txId: string }> {
   onChangeState?.("Creating transaction...");
+  console.log("Joining premarket with args:", {
+    premarket: premarketAccount.toBase58(),
+    amountSolLamp: amountSolLamp.toString(),
+    wallet: wallet.publicKey.toBase58(),
+    network,
+  });
 
   const { transaction } = await getJoinPremarketTransaction(
     premarketAccount.toBase58(),
     amountSolLamp,
     wallet.publicKey.toBase58(),
-    network 
+    network
   );
 
+  console.log("Unsigned join transaction created by BE:", {
+    premarket: premarketAccount.toBase58(),
+    amountSolLamp: amountSolLamp.toString(),
+    wallet: wallet.publicKey.toBase58(),
+    network,
+    transaction,
+  });
+
+  onChangeState?.("Simulating and signing transaction with wallet...");
+  const userSignedB64 = await simulateAndSignRawTx(transaction, connection, wallet);
+
+  console.log("Join transaction signed by wallet, sending to BE for Revelcy signature...");
+
+  onChangeState?.("Signing transaction on backend...");
+  const { transaction: backendSignedB64 } = await signTransactionWithRevelcyAuth({
+    network,
+    txBase64: userSignedB64,
+    txType: "join_premarket",
+  });
+
+  console.log("Join transaction signed by backend. Sending to blockchain...");
+
   onChangeState?.("Sending transaction to blockchain...");
+  const txSig = await sendRawTx(backendSignedB64, connection);
 
-  const report = await signAndSend(transaction, connection, wallet);
+  console.log("Join transaction sent and confirmed. Signature:", txSig);
 
-  return { txId: report };
+  return { txId: txSig };
 }
