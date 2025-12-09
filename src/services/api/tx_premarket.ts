@@ -43,20 +43,29 @@ type TX_TYPE =
 export async function signTransactionWithRevelcyAuth(params: {
   network: "devnet" | "mainnet-beta";
   txBase64: string;
-  txType: TX_TYPE
+  txType: TX_TYPE;
+  premarket?: string;
 }) {
-  const payload = {
+  const payload: any = {
     network: params.network,
     unsigned_tx: params.txBase64,
-    tx_type: params.txType
+    tx_type: params.txType,
   };
-  const data = await http.post<SignTxResponse>(`${API_HOST}/premarket/tx/sign_create_transaction`, {
-    json: payload, retry: RETRY_TX_GEN
-  });
 
-  // ожидаю, что бек вернёт { transaction: string }
+  if (params.txType === "finish_premarket") {
+    payload.premarket = params.premarket;
+  }
+
+  const data = await http.post<SignTxResponse>(
+    `${API_HOST}/premarket/tx/sign_create_transaction`,
+    {
+      json: payload,
+      retry: RETRY_TX_GEN,
+    }
+  );
+
   return data as {
-    transaction: string; // base64, подписанная и юзером, и revelcy
+    transaction: string;
   };
 }
 
