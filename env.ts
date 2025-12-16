@@ -11,6 +11,7 @@ type EnvVars = {
   HELIUS_KEY?: string;
   TRITON_URL?: string;
   NETWORK?: "devnet" | "mainnet-beta";
+  IS_VESTING_ENABLE?: string;
 };
 
 let ENV: EnvVars = getEnv(Platform.OS);
@@ -28,6 +29,7 @@ function getEnv(platform: PlatformOSType): EnvVars {
       HELIUS_KEY: extra.HELIUS_KEY ?? process.env.HELIUS_KEY,
       NETWORK: extra.NETWORK ?? process.env.NETWORK,
       TRITON_URL: extra.TRITON_URL ?? process.env.TRITON_URL,
+      IS_VESTING_ENABLE: extra.IS_VESTING_ENABLE ?? process.env.IS_VESTING_ENABLE,
     };
   }
 
@@ -39,7 +41,7 @@ function getEnv(platform: PlatformOSType): EnvVars {
     throw new Error("@env is not available on native");
   }
 }
-
+export const IsVestingEnable = getRequired("IS_VESTING_ENABLE", ENV.IS_VESTING_ENABLE) ;
 // ---- Exported constants ----
 export const PINATA_JWT = getRequired("PINATA_JWT", ENV.PINATA_JWT);
 export const PINATA_API_KEY = getRequired("PINATA_API_KEY", ENV.PINATA_API_KEY);
