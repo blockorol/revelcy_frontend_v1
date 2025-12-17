@@ -14,8 +14,8 @@ interface Props {
   isMobile: boolean;
   limited: boolean;
 }
-const DEFAULT_SHOW_COUNT = 2;
-const STEP_SHOW_COUNT = 2;
+const DEFAULT_SHOW_COUNT = 10;
+const STEP_SHOW_COUNT = 10;
 export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Props) {
   const [showCount, setShowCount] = useState(DEFAULT_SHOW_COUNT)
   const [order, setOrder] = useState<OrderValue>("SUPPLY")

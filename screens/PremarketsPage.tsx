@@ -10,6 +10,7 @@ import { SvgIcon } from "@components/base/SvgIcon";
 import { AppTheme } from "@theme/types";
 import { Text } from "@components/ui/Text";
 import { useAuth } from "@providers/AuthContext";
+import { IS_DISCOVERY_FILTER_ENABLED } from "env";
 
 const H_PADDING = 16;
 const GAP = 24;
@@ -141,7 +142,7 @@ export default function PremarketsPage() {
   const { isMobile } = dem;
   const { width: vw } = useWindowDimensions();
   const { user } = useAuth();
-  const [filterValue, setFilterValue] = useState<"premarket" | "launched" | "my_tokens">("premarket");
+  const [filterValue, setFilterValue] = useState<"all" | "premarket" | "launched" | "my_tokens">("all");
   const [order, setOrder] = useState<OrderValue>("FRESH");
 
   const rightWidth = useMemo(() => {
@@ -161,7 +162,7 @@ export default function PremarketsPage() {
         flex: 1,
       }}
     >
-      <View style={[isMobile ? styles.topInnerMobile : styles.topInner, !isMobile && { width: innerWidth, paddingHorizontal: H_PADDING  }]}> 
+      {IS_DISCOVERY_FILTER_ENABLED && <View style={[isMobile ? styles.topInnerMobile : styles.topInner, !isMobile && { width: innerWidth, paddingHorizontal: H_PADDING  }]}> 
         <View style={styles.segmentedButtonWrapper}>
           <RevelcySegmentedButtons
             value={filterValue}
@@ -189,9 +190,10 @@ export default function PremarketsPage() {
             baseBackgroundColor="transparent"
             baseTextColor={colors.onSurfaceVariant}
           />
+          </View>
+          <OrderMenu value={order} onChange={setOrder} isMobile={isMobile} />
         </View>
-        <OrderMenu value={order} onChange={setOrder} isMobile={isMobile} />
-      </View>
+      }
 
       <PremarketList 
         initialLimit={30} 

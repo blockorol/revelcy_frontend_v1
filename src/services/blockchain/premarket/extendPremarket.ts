@@ -45,7 +45,7 @@ export async function extendPremarket(
   const { transaction: backendSignedB64 } = await signTransactionWithRevelcyAuth({
     network,
     txBase64: userSignedB64,
-    txType: "extend_premarket", // проверь, что бек ожидает именно этот тип
+    txType: "extend_premarket",
   });
 
   console.log("Extend transaction signed by backend. Sending to blockchain...");

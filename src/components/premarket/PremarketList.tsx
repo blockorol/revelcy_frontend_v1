@@ -9,13 +9,14 @@ import { convertLamportToSmallCount } from "@utils/premarket";
 
 
 type OrderValue = "FRESH" | "ACHIEVED" | "TOP_MCAP" | "LOW_MCAP" | "EARLY_DEADLINE" | "LATE_DEADLINE";
+const HidedTokensPubkeys = ["Gs4xGhrH1cfFoE5FPVd6DWtTMsrNENLD5Vg2zyQGbcp", "5J644u4QgS69SYSu7Cd1UdSPqBqp2U754ZosMRyKsfS"]
 
 type PremarketListProps = {
   initialLimit?: number;
   pageSizeOptions?: number[];
   style?: any;
   containerWidth?: number;
-  filter?: "premarket" | "launched" | "my_tokens";
+  filter?: "all" | "premarket" | "launched" | "my_tokens";
   userWalletAddress?: string;
   order?: OrderValue;
 };
@@ -109,7 +110,10 @@ export const PremarketList: React.FC<PremarketListProps> = ({
   };
 
   const filterItem = useCallback((it: TokenMainInfo): boolean => {
-    if (!filter) return true;
+    if (HidedTokensPubkeys.includes(it.premarketPubkey.toString()))
+      return false;
+
+    if (!filter || filter === "all") return true;
     
     if (filter === "premarket") {
       return it.state === "premarket";

@@ -101,7 +101,7 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
     const solValue = convertLamportToSmallCount(userEntry.amountSolLamp);
     const { inCurve, pumpFee } = splitInput(userEntry.amountSolLamp);
     const refundLamports = inCurve.add(pumpFee);
-    const refundAmount = parseFloat(convertLamportToSmallCount(refundLamports).toFixed(4));
+    const refundAmount = Number(convertLamportToSmallCount(refundLamports).toFixed(4)).toString();
     
     // Calculate reserves at entry time (cumulative from all holders who joined strictly before user)
     const entryReserves = useMemo(() => {
@@ -441,7 +441,7 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
 }
 
 type LeavePremarketModalProps = {
-  refundAmount: number;
+  refundAmount: string;
   onCancel: () => void;
   onConfirm: () => void;
   isMobile: boolean;
@@ -494,7 +494,7 @@ function LeavePremarketModal({ refundAmount, onCancel, onConfirm, isMobile }: Le
       >
         <SvgIcon name="info-circle" size={20} color={theme.colors.error} />
         <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-          You will receive a refund of {refundAmount} SOL
+          You will receive a refund of ~{refundAmount} SOL
         </Text>
       </View>
 

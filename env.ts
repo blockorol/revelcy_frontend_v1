@@ -11,6 +11,7 @@ type EnvVars = {
   HELIUS_KEY?: string;
   TRITON_URL?: string;
   NETWORK?: "devnet" | "mainnet-beta";
+  IS_DISCOVERY_FILTER_ENABLED?: boolean;
 };
 
 let ENV: EnvVars = getEnv(Platform.OS);
@@ -64,6 +65,10 @@ export const TOKEN_CONVERTOR_SETTINGS =
       SolTo80Percent: 86.6,
       SolToDisplay: 100,
   }
+
+// -----Feature flags
+export const IS_DISCOVERY_FILTER_ENABLED = ENV.IS_DISCOVERY_FILTER_ENABLED??false
+
 
 // ---- Helpers ----
 

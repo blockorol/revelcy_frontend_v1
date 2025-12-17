@@ -270,7 +270,7 @@ export function PremarketActionLaunched({
             style={{ width: 170, height: 40 }}
             onPress={handleClaimTokens}
           >
-            Claim Token
+            Claim
           </Button>
           <Button
             mode="contained"
