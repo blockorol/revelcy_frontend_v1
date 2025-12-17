@@ -17,7 +17,7 @@ import BN from "bn.js";
 import { useEffect, useState, useMemo } from "react";
 import { MD3Colors, MD3Typescale } from "react-native-paper/lib/typescript/types";
 import { SvgIcon } from "@components/base/SvgIcon";
-import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
+import { convertSolanaToTokenWithFee, splitInput  } from "@services/pumpfun/convertors";
 import { DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
 
 
@@ -99,7 +99,9 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
     
     // Calculate real values
     const solValue = convertLamportToSmallCount(userEntry.amountSolLamp);
-    const refundAmount = parseFloat(solValue.toFixed(4));
+    const { inCurve, pumpFee } = splitInput(userEntry.amountSolLamp);
+    const refundLamports = inCurve.add(pumpFee);
+    const refundAmount = Number(convertLamportToSmallCount(refundLamports).toFixed(4)).toString();
     
     // Calculate reserves at entry time (cumulative from all holders who joined strictly before user)
     const entryReserves = useMemo(() => {
@@ -273,6 +275,7 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
             close();
             handleOut();
             }}
+            isMobile={isMobile} 
         />,
         );
     };
@@ -438,23 +441,24 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
 }
 
 type LeavePremarketModalProps = {
-  refundAmount: number;
+  refundAmount: string;
   onCancel: () => void;
   onConfirm: () => void;
+  isMobile: boolean;
 };
 
-function LeavePremarketModal({ refundAmount, onCancel, onConfirm }: LeavePremarketModalProps) {
+function LeavePremarketModal({ refundAmount, onCancel, onConfirm, isMobile }: LeavePremarketModalProps) {
   const theme = useTheme() as AppTheme;
 
   return (
     <View
       style={{
-        backgroundColor: theme.colors.background,
+        backgroundColor: (theme.colors as ExtendedMD3Colors).surfaceContainerLow,
         borderRadius: 24,
         paddingHorizontal: 24,
         paddingVertical: 24,
-        minWidth: 320,
-        maxWidth: 380,
+        width: isMobile ? 380 : 480,
+        maxWidth: "100%",
         gap: 16,
       }}
     >
@@ -475,11 +479,9 @@ function LeavePremarketModal({ refundAmount, onCancel, onConfirm }: LeavePremark
 
       <Text
         variant="bodyMedium"
-        style={{ textAlign: "center", color: theme.colors.onSurfaceVariant }}
+        style={{ textAlign: "center", color: theme.colors.onSurface }}
       >
-        Are you sure you want to leave the premarket? If you exit now, you'll
-        {"\n"}
-        lose your entry spot
+        Are you sure you want to leave the premarket? If you exit now, you'll lose your entry spot
       </Text>
 
       <View
@@ -491,28 +493,39 @@ function LeavePremarketModal({ refundAmount, onCancel, onConfirm }: LeavePremark
         }}
       >
         <SvgIcon name="info-circle" size={20} color={theme.colors.error} />
-        <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
-          You will receive a refund of {refundAmount} SOL
+        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+          You will receive a refund of ~{refundAmount} SOL
         </Text>
       </View>
 
       <View
         style={{
           flexDirection: "row",
-          justifyContent: "flex-end",
+          justifyContent: "center",
           marginTop: 24,
           gap: 12,
         }}
       >
-        <Button mode="outlined" onPress={onCancel} style={{ flex: 1 }}>
+        <Button
+          mode="outlined"
+          compact
+          onPress={onCancel}
+          style={{ borderRadius: 14 }}
+          contentStyle={{ paddingHorizontal: 16 }}
+          labelStyle={{ fontSize: 14 }}
+          textColor={theme.colors.onSurface}  
+        >
           Cancel
         </Button>
         <Button
           mode="contained"
+          compact
           onPress={onConfirm}
-          style={{ flex: 1 }}
-          textColor={theme.colors.onError}
+          style={{ borderRadius: 14 }}
+          contentStyle={{ paddingHorizontal: 16 }}
+          labelStyle={{ fontSize: 14 }}
           buttonColor={theme.colors.error}
+          textColor={theme.colors.onError}
         >
           Refund
         </Button>

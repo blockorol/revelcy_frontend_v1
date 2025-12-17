@@ -61,8 +61,8 @@ export function splitInput(inputAmount: BN) {
   const toPamp = inputAmount.muln(99).divn(100);
   const revelcyFee = inputAmount.sub(toPamp);
 
-  const inCurve = inputAmount.muln(987).divn(1000);
-  const pumpFee =  inputAmount.sub(inCurve);
+  const inCurve = toPamp.muln(987).divn(1000);
+  const pumpFee =  toPamp.sub(inCurve);
 
   return {
     revelcyFee: revelcyFee, 
