@@ -281,8 +281,6 @@ const MockDataModal: React.FC = () => {
           <TextInput label="reservedTokenLamp (BN, integer string)" mode="outlined" value={reservedTokenLamp} onChangeText={setReservedTokenLamp} keyboardType="numeric" style={{ marginBottom: 8 }} />
           <TextInput label="reservedSolLamp (BN, integer string)" mode="outlined" value={reservedSolLamp} onChangeText={setReservedSolLamp} keyboardType="numeric" style={{ marginBottom: 8 }} />
           <TextInput label="change24h (%)" mode="outlined" value={change24h} onChangeText={setChange24h} keyboardType="numeric" style={{ marginBottom: 12 }} />
-
-
         </ScrollView>
       </Card.Content>
 

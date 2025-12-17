@@ -363,18 +363,13 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
       username: h.username ?? shortString(h.wallet_address),
       claimed: h.claimed ?? false,
     }))
-    .sort((a: { joinTimestamp: number; }, b: { joinTimestamp: number; }) => a.joinTimestamp - b.joinTimestamp)
-    .map((holder: { amountSolLamp: BN; }) => {
-      holder.amountSolLamp = convertSolanaToTokenWithFee({
+    .sort((a: { joinTimestamp: number; }, b: { joinTimestamp: number; }) => a.joinTimestamp - b.joinTimestamp);
+  holders.forEach((holder: HoldersInfo) => {
+      holder.amountTokenDec = convertSolanaToTokenWithFee({
         input_sol_lamp: holder.amountSolLamp,
         before_lamp: cumulativeSolLamp,
       });
-
       cumulativeSolLamp = cumulativeSolLamp.add(holder.amountSolLamp);
-
-      return {
-        ...holder,
-      };
     });
 
 
