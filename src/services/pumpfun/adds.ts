@@ -8,6 +8,10 @@ export function getPersentOfSuply(per: number): BN {
   return DEFAULT_TOKEN_COUNT_DECIMAL.muln(per).divn(100)
 }
 
+export function convertTokenToPersent(token: BN) {
+  return (token.muln(100*1000)).div(DEFAULT_TOKEN_COUNT_DECIMAL).toNumber()/1000
+}
+
 export function convertSolToPercentOnStart(sol: number): number {
   if (sol===0) {
     return 0
