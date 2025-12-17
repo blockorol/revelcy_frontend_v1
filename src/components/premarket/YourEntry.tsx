@@ -18,7 +18,7 @@ import { useEffect, useState, useMemo } from "react";
 import { MD3Colors, MD3Typescale } from "react-native-paper/lib/typescript/types";
 import { SvgIcon } from "@components/base/SvgIcon";
 import { convertSolanaToTokenWithFee, splitInput  } from "@services/pumpfun/convertors";
-import { DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
+import { convertTokenToPersent, DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
 
 
 interface YourEntryProps {
@@ -154,9 +154,9 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
         });
     }, [userEntry.amountSolLamp, entryReserves, loadingEntryPrice]);
     
+    // todo: check and fix
     const tokens = convertDecimalToToken(tokensBN);
-    const MAX_SOL = 85; // TODO: find real max sol
-    const supplyPercent = (solValue / MAX_SOL) * 100;
+    const supplyPercent = convertTokenToPersent(tokensBN);
 
     // Determine if premarket is expired and user is not creator
     const isExpiredAndNotCreator = useMemo(() => {
