@@ -350,6 +350,33 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
   });
   
   const reservedToken = DEFAULT_TOKEN_COUNT_DECIMAL.sub(tokenMarketCapFromCurve);
+  let cumulativeSolLamp = new BN(0);
+
+  const holders: HoldersInfo[] = raw.holders
+    .map((h: any): HoldersInfo => ({
+      id: h.id ?? "",
+      walletAddress: h.wallet_address,
+      joinTimestamp: h.join_timestamp,
+      iconURL: h.icon_url ?? undefined,
+      amountSolLamp: new BN(h.amount_sol_lamp),
+      amountTokenDec: h.amountTokenDec??new BN(0),
+      username: h.username ?? shortString(h.wallet_address),
+      claimed: h.claimed ?? false,
+    }))
+    .sort((a: { joinTimestamp: number; }, b: { joinTimestamp: number; }) => a.joinTimestamp - b.joinTimestamp)
+    .map((holder: { amountSolLamp: BN; }) => {
+      holder.amountSolLamp = convertSolanaToTokenWithFee({
+        input_sol_lamp: holder.amountSolLamp,
+        before_lamp: cumulativeSolLamp,
+      });
+
+      cumulativeSolLamp = cumulativeSolLamp.add(holder.amountSolLamp);
+
+      return {
+        ...holder,
+      };
+    });
+
 
   return {
     holdersCount: raw.holders_count,
@@ -371,15 +398,7 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
     reservedTokenLamp: reservedToken,
     reservedSolLamp: reservedSolLamp,
     change24h: raw.change_24h,
-    holders: raw.holders.map((h: any): HoldersInfo => ({
-      id: h.id ?? "",
-      walletAddress: h.wallet_address,
-      joinTimestamp: h.join_timestamp,
-      iconURL: h.icon_url ?? undefined,
-      amountSolLamp: new BN(h.amount_sol_lamp),
-      username: h.username??shortString(h.wallet_address),
-      claimed: h.claimed ?? false
-    })),
+    holders: holders,
   };
 }
 
@@ -441,6 +460,7 @@ export interface HoldersInfo {
     walletAddress: string
     joinTimestamp: number;
     amountSolLamp: BN;
+    amountTokenDec: BN;
     iconURL?: string;
     username: string;
     claimed?: boolean;

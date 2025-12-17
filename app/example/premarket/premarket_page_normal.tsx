@@ -43,6 +43,7 @@ function makeInitialMockToken(): TokenInfo {
     // адреса холдеров — просто строки, НЕ base58
     walletAddress: `holder_wallet_${i + 1}`,
     joinTimestamp: nowSec - (i + 1) * (oneDay / 2),
+    amountTokenDec: new BN(1 * 1e9 * (i + 1)),
     amountSolLamp: new BN(1 * 1e9 * (i + 1)),
     iconURL: i===4?"https://picsum.photos/seed/forest/512":undefined,
     username: `user_${i + 1}`,
@@ -131,7 +132,7 @@ const MockDataModal: React.FC = () => {
   const [reservedTokenLamp, setReservedTokenLamp] = useState(token.dynamicInfo.reservedTokenLamp.toString());
   const [reservedSolLamp, setReservedSolLamp] = useState(token.dynamicInfo.reservedSolLamp.toString());
   const [change24h, setChange24h] = useState(String(token.dynamicInfo.change24h));
-  const [holders, setHolders] = useState<HoldersInfo[]>(token.dynamicInfo.holders);
+  const holders = token.dynamicInfo.holders;
 
   const addCommLink = () => {
     const next = [...(commLinks ?? []), { text: "", url: "", type: "other" as const }];
@@ -149,44 +150,6 @@ const MockDataModal: React.FC = () => {
     const next = [...(commLinks ?? [])];
     next.splice(i, 1);
     setCommLinks(next);
-  };
-
-  const addHolder = () => {
-    const idx = holders.length + 1;
-    const next = [
-      ...holders,
-      {
-        id: `user_${idx}`,
-        walletAddress: `holder_wallet_${idx}`,
-        joinTimestamp: nowSec,
-        amountSolLamp: new BN(0),
-        iconURL: "",
-        username:`user_${idx}`,
-      },
-    ];
-    setHolders(next);
-  };
-  const updateHolder = <K extends keyof HoldersInfo>(i: number, key: K, value: any) => {
-    const next = [...holders];
-    const item = { ...next[i] };
-    if (key === "amountSolLamp") {
-      try {
-        item.amountSolLamp = new BN(String(value || "0"));
-      } catch {
-        // игнор, оставим старое значение
-      }
-    } else if (key === "joinTimestamp") {
-      item.joinTimestamp = Number(value) || 0;
-    } else {
-      (item as any)[key] = value;
-    }
-    next[i] = item;
-    setHolders(next);
-  };
-  const removeHolder = (i: number) => {
-    const next = [...holders];
-    next.splice(i, 1);
-    setHolders(next);
   };
 
   const apply = () => {
@@ -319,22 +282,6 @@ const MockDataModal: React.FC = () => {
           <TextInput label="reservedSolLamp (BN, integer string)" mode="outlined" value={reservedSolLamp} onChangeText={setReservedSolLamp} keyboardType="numeric" style={{ marginBottom: 8 }} />
           <TextInput label="change24h (%)" mode="outlined" value={change24h} onChangeText={setChange24h} keyboardType="numeric" style={{ marginBottom: 12 }} />
 
-          {/* HOLDERS */}
-          <Text style={{ marginTop: 12, marginBottom: 6, fontWeight: "600" }}>Holders</Text>
-          <View style={{ gap: 8 }}>
-            {holders.map((h, i) => (
-              <View key={`h-${i}`} style={{ borderWidth: 1, borderColor: "#ddd", borderRadius: 8, padding: 8 }}>
-                <Text style={{ marginBottom: 6, fontWeight: "600" }}>Holder #{i + 1}</Text>
-                <TextInput label="id" mode="outlined" value={h.id} onChangeText={(v) => updateHolder(i, "id", v)} style={{ marginBottom: 8 }} />
-                <TextInput label="walletAddress (string)" mode="outlined" value={h.walletAddress} onChangeText={(v) => updateHolder(i, "walletAddress", v)} style={{ marginBottom: 8 }} />
-                <TextInput label="joinTimestamp (epoch sec)" mode="outlined" value={String(h.joinTimestamp)} onChangeText={(v) => updateHolder(i, "joinTimestamp", v)} keyboardType="numeric" style={{ marginBottom: 8 }} />
-                <TextInput label="amountSolLamp (BN, integer string)" mode="outlined" value={h.amountSolLamp.toString()} onChangeText={(v) => updateHolder(i, "amountSolLamp", v)} keyboardType="numeric" style={{ marginBottom: 8 }} />
-                <TextInput label="iconURL (optional)" mode="outlined" value={h.iconURL ?? ""} onChangeText={(v) => updateHolder(i, "iconURL", v)} style={{ marginBottom: 8 }} />
-                <Button mode="outlined" onPress={() => removeHolder(i)}>Remove holder</Button>
-              </View>
-            ))}
-            <Button mode="contained" onPress={addHolder}>Add holder</Button>
-          </View>
 
         </ScrollView>
       </Card.Content>
