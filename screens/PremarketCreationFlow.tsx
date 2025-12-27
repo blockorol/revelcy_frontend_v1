@@ -31,6 +31,7 @@ import { convertSmallCountToLamport } from "@utils/premarket";
 import {
   premarketCreated,
   updateAboutCommunity,
+  updateVestingInfo,
   userJoinedToPremarket,
 } from "@api/token";
 import { useAuth } from "@providers/AuthContext";
@@ -430,6 +431,23 @@ export default function PremarketCreationFlow() {
             }
           );
           return;
+        }
+        // Send vesting info 
+        try {
+          if (IsVestingEnable && vestingData) {
+            await updateVestingInfo(resp.premarketPDA.toString(), {
+              enabled: vestingData.enabled,
+              unlock_at_launch_percent: vestingData.unlockAtLaunchPercent,
+              vesting_period: vestingData.vestingPeriod,
+              vesting_period_sec: vestingData.vestingPeriodSec,
+            });
+          }
+        } catch (e) {
+          notify.error("Failed to add vesting info", {
+            suggest: "You can update it later from premarket page",
+            duration: 60000,
+            action: { label: "Ok", onAction: () => { } },
+          });
         }
 
         setLaunchState("Adding community info");

@@ -92,6 +92,35 @@ export async function updateAboutCommunity(premarketPubkey: string, args: TokenC
     throw new Error(`Failed to update community: ${e.message ?? "Unknown error"}`);
   }
 }
+export type VestingPeriodKey = "1w" | "1m" | "3m" | "6m" | "1y";
+
+export interface VestingInfoDTO {
+  enabled: boolean;
+  unlock_at_launch_percent: number; // 0..50
+  vesting_period: VestingPeriodKey; // or omit if BE wants only sec
+  vesting_period_sec: number; // seconds
+}
+
+export async function updateVestingInfo(premarketPubkey: string, args: VestingInfoDTO) {
+  const payload = {
+    premarket_pubkey: premarketPubkey,
+    vesting_info: {
+      enabled: args.enabled,
+      unlock_at_launch_percent: args.unlock_at_launch_percent,
+      vesting_period: args.vesting_period,
+      vesting_period_sec: args.vesting_period_sec,
+    },
+  };
+
+  try {
+    // TODO: confirm exact route name with BE 
+    await http.post(`${API_HOST}/premarket/update_vesting`, { json: payload, retry: RETRY_DEFAULT });
+    return;
+  } catch (e: any) {
+    console.log("failed with", payload);
+    throw new Error(`Failed to update vesting: ${e.message ?? "Unknown error"}`);
+  }
+}
 
 export async function premarketFinished(args: {
   premarketPubKey: string;

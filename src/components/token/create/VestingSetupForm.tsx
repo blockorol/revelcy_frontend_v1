@@ -73,7 +73,6 @@ function InfoBadge({ onPress }: { onPress?: () => void }) {
     );
 }
 
-    
 export default function VestingSetupForm({
     onNext,
     onClose,
@@ -142,7 +141,7 @@ export default function VestingSetupForm({
                     {/* Vesting toggle */}
                     <View
                         style={{
-                            marginTop: 18,
+                            marginTop: 22,
                             flexDirection: "row",
                             alignItems: "center",
                             justifyContent: "space-between",
@@ -155,13 +154,13 @@ export default function VestingSetupForm({
                     </View>
 
                     {/* Unlock at launch */}
-                    <View style={{ marginTop: 22, opacity: disabledOpacity }}>
+                    <View style={{ marginTop: 30, opacity: disabledOpacity }}>
                         <View
                             style={{
                                 flexDirection: "row",
                                 alignItems: "center",
                                 justifyContent: "space-between",
-                                marginBottom: 14,
+                                marginBottom: 8,
                             }}
                         >
                             <Text variant="labelLarge" prominent>
@@ -181,6 +180,8 @@ export default function VestingSetupForm({
                                 bubbleWidth={120}
                                 formatBubbleText={(v) => `${Math.round(v)}% unlock`}
                                 labels={unlockLabels}
+                                formatLabel={(v) => `${v}%`}
+                                edgeLabelInset={8}
                                 points={unlockPoints}
                                 onValueChange={(v) => setUnlockPercent(clampInt(v, UNLOCK_MIN, UNLOCK_MAX))}
                                 isMobile={isMobile}
@@ -195,7 +196,7 @@ export default function VestingSetupForm({
                                 flexDirection: "row",
                                 alignItems: "center",
                                 justifyContent: "space-between",
-                                marginBottom: 14,
+                                marginBottom: 8,
                             }}
                         >
                             <Text variant="labelLarge" prominent>
@@ -217,25 +218,13 @@ export default function VestingSetupForm({
                                     const idx = clampInt(v, 0, 4);
                                     return PERIODS[idx].pill;
                                 }}
-                                labels={periodLabels}
+                                labels={[0, 1, 2, 3, 4]}
+                                formatLabel={(_, idx) => PERIODS[idx]?.label ?? ""} 
+                                edgeLabelInset={8}                                  
                                 points={periodPoints}
                                 onValueChange={(v) => setPeriodIndex(clampInt(v, 0, 4))}
                                 isMobile={isMobile}
                             />
-                            <View
-                                style={{
-                                    marginTop: -6,
-                                    flexDirection: "row",
-                                    justifyContent: "space-between",
-                                    paddingHorizontal: 2,
-                                }}
-                            >
-                                {PERIODS.map((p) => (
-                                    <Text key={p.key} variant="labelSmall" style={{ color: colors.onSurfaceVariant }}>
-                                        {p.label}
-                                    </Text>
-                                ))}
-                            </View>
                         </View>
                     </View>
                 </View>

@@ -20,6 +20,8 @@ interface CustomSliderProps {
   step?: number;
   bubbleWidth?: number;
   formatBubbleText?: (value: number) => string;
+  formatLabel?: (label: number, index: number) => string;
+  edgeLabelInset?: number; // px, move first/last label toward center
 }
 
 export const CustomSlider: React.FC<CustomSliderProps> = ({
@@ -33,6 +35,8 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
   step = 0.1,
   bubbleWidth = 110,
   formatBubbleText,
+  formatLabel,
+  edgeLabelInset = 0,
 }) => {
   const theme = useTheme();
   const [sliderWidth, setSliderWidth] = useState(0);
@@ -160,11 +164,21 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
         })}
 
         {/* Labels */}
-        {labels.map((label) => {
-          const left = ((label - min) / (max - min)) * sliderWidth;
+        {labels.map((label, idx) => {
+          const leftBase = ((label - min) / (max - min)) * sliderWidth;
+
+          const left =
+            idx === 0
+              ? leftBase + edgeLabelInset
+              : idx === labels.length - 1
+              ? leftBase - edgeLabelInset
+              : leftBase;
+
+          const labelText = formatLabel ? formatLabel(label, idx) : String(label);
+
           return (
             <View
-              key={`label-${label}`}
+              key={`label-${label}-${idx}`}
               style={{
                 position: "absolute",
                 top: 33,
@@ -174,7 +188,7 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
               }}
             >
               <Text style={{ fontSize: 10, color: theme.colors.onSurfaceVariant }}>
-                {label} 
+                {labelText}
               </Text>
             </View>
           );
