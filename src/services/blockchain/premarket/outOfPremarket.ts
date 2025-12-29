@@ -1,7 +1,7 @@
 import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { getOutPremarketTransaction, signTransactionWithRevelcyAuth } from "@api/tx_premarket";
-import { simulateAndSignRawTx, sendRawTx } from "@services/blockchain/signAndSend";
+import { simulateAndSignRawTx, confirmTxFinalised } from "@services/blockchain/signAndSend";
 
 export async function outOfPremarket(
   wallet: AnchorWallet,
@@ -35,19 +35,21 @@ export async function outOfPremarket(
 
   console.log("Exit transaction signed by wallet, sending to BE for Revelcy signature...");
 
-  onChangeState?.("Signing transaction on backend...");
-  const { transaction: backendSignedB64 } = await signTransactionWithRevelcyAuth({
+  onChangeState?.("Send transaction to blockchain...");
+  const { signature, status } = await signTransactionWithRevelcyAuth({
     network,
     txBase64: userSignedB64,
     txType: 'out_of_premarket',
   });
 
-  console.log("Exit transaction signed by backend. Sending to blockchain...");
+  onChangeState?.(`Waiting to tx ${signature} finalisation. Current status: ${status}}...`);
+  try {
+    await confirmTxFinalised(connection, signature);
+  } catch (e) {
+    console.error("transation is not finalised!", e)
+    throw e
+  }
 
-  onChangeState?.("Sending transaction to blockchain...");
-  const txSig = await sendRawTx(backendSignedB64, connection);
-
-  console.log("Exit transaction sent and confirmed. Signature:", txSig);
-
-  return { txId: txSig };
+  console.log("transaction finalised!");
+  return { txId: signature }
 }

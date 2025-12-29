@@ -119,7 +119,6 @@ export default function JoinScreen() {
             }
             const res = await outOfPremarket(wallet, currentConnection, network, premarketPDAPub)
             setTxId(res.txId)
-
           }
           }>out of premarket</Button>
 

@@ -8,7 +8,7 @@ import {
 } from "@api/tx_premarket";
 import {
   simulateAndSignRawTx,
-  sendRawTx,
+  confirmTxFinalised,
 } from "@services/blockchain/signAndSend";
 
 const SECONDS_IN_HOUR = 60 * 60;
@@ -39,9 +39,8 @@ export async function createPremarket(
       `deadline should be more than 1 h after current. now: ${nowSec}, deadline: ${args.deadline}`
     );
   }
-  
 
-  const { transaction, premarket_account_pda, mint_address } = await getCreatePremarketTransaction(
+  const { transaction, premarket_account_pda } = await getCreatePremarketTransaction(
     args,
     wallet.publicKey.toBase58(),
     network
@@ -62,25 +61,24 @@ export async function createPremarket(
   console.log("Transaction signed by wallet, sending to BE for Revelcy signature...");
 
   // 3) Отправляем на бекенд для подписи Revelcy
-  onChangeState?.("Signing transaction on backend...");
-  const { transaction: backendSignedB64 } = await signTransactionWithRevelcyAuth({
+  onChangeState?.("Send transaction to blockchain...");
+  const { signature, status } = await signTransactionWithRevelcyAuth({
     network,
     txBase64: userSignedB64,
     txType: "create_premarket"
   });
 
-  console.log("Transaction signed by backend. Sending to blockchain...");
+  onChangeState?.(`Waiting to tx ${signature} finalisation. Current status: ${status}}...`);
+  try {
+    await confirmTxFinalised(connection, signature);
+  } catch (e) {
+    console.error("transation is not finalised!", e)
+    throw e
+  }
 
-  // 4) Отправка в сеть
-  onChangeState?.("Sending transaction to blockchain...");
-  const txSig = await sendRawTx(backendSignedB64, connection);
-
-  console.log("Transaction sent and confirmed. Signature:", txSig);
-
+  console.log("transaction finalised!");
   return {
-    txId: txSig,
-    premarketPDA: new PublicKey(premarket_account_pda),
-    report: txSig,
-    mintAddress: mint_address,
-  };
+    txId: signature,
+    premarketPDA: premarket_account_pda,
+  }
 }

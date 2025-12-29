@@ -314,9 +314,7 @@ export default function PremarketCreationFlow() {
         | undefined
         | {
             txId: string;
-            premarketPDA: PublicKey;
-            report: string;
-            mintAddress: string;
+            premarketPDA: string;
           };
 
       try {
@@ -329,7 +327,7 @@ export default function PremarketCreationFlow() {
             setLaunchState(text);
           }
         );
-        setLaunchState("Transaction created...");
+        setLaunchState("Premarket created...");
         setPremarketPDA(resp.premarketPDA.toString());
         setTxId(resp.txId);
       } catch (error) {
@@ -362,39 +360,6 @@ export default function PremarketCreationFlow() {
 
         setLaunchState("Adding to white list to Revelcy...");
         try {
-          await premarketCreated({
-            tx: resp.txId,
-            premarketPubKey: resp.premarketPDA.toString(),
-            userWallet: wallet.publicKey.toString(),
-            userId: user.user?.userId,
-            mainInfo: {
-              id: "",
-              premarketPubkey: resp.premarketPDA,
-              name: tokenData.mainData.tokenName,
-              description: tokenData.mainData.description,
-              symbol: tokenData.mainData.tokenTicker,
-              imageURL: ipfsData.avatarUri,
-              ipfsURI: ipfsData.metadataUri,
-              links: {
-                telegram: tokenData.mainData.links.telegram,
-                twitter: tokenData.mainData.links.twitter,
-                webSite: tokenData.mainData.links.website,
-              },
-              premarketGoalSolLamp: convertSmallCountToLamport(tokenData.premarketSettingsData.goal_sol),
-              premarketDeadline: tokenData.premarketSettingsData.deadline_sec,
-              premarketCreated: Math.floor(Date.now() / 1000),
-              createdByPubkey: wallet.publicKey.toString(),
-              state: "premarket",
-              finishDate: undefined, // will be set when premarket finished
-              tokenMint: resp.mintAddress,
-              isExtended: false,
-            },
-            communityInfo: {
-              description: "",
-            },
-          });
-
-          setLaunchState("Adding to white list to Revelcy step2...");
           if (tokenData.tokenomicsData.creatorInitialBuy > 0) {
             await userJoinedToPremarket({
               joinAmountInSolLamport: convertSmallCountToLamport(
@@ -408,7 +373,7 @@ export default function PremarketCreationFlow() {
           }
         } catch (error) {
           notify.error(
-            "Premarket created, but didn't added to whitelist in the website",
+            "Premarket created, but info about your entry is not added",
             {
               suggest:
                 "Please, contact administrator with premarket address:" +

@@ -37,7 +37,7 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
     const { connected, connect } = useWallet();
     const wallet = useAnchorWalletSafe();
     const notify = useNotification();
-    const { open, replace, close } = useOverlay();
+    const { open, replace, close: closeOverlay} = useOverlay();
     const [entryPrice, setEntryPrice] = useState<number>(0);
     const [loadingEntryPrice, setLoadingEntryPrice] = useState(true);
 
@@ -243,25 +243,17 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
 
         try {
             open(renderLoader("out of premarket..."));
-            const res = await outOfPremarket(wallet, connection, network, premarketPubkey,
+            await outOfPremarket(wallet, connection, network, premarketPubkey,
                 (text) => { replace(renderLoader(text)) }
             );
 
-            replace(renderLoader("Syncing with backend..."));
-            await userOutOfPremarket({
-                tx: res.txId,
-                userWallet: wallet.publicKey.toString(),
-                userId: user.userId,
-                premarketPubKey: premarketPubkey.toString()
-            });
-
             notify.success("Successfully left premarket!");
-            close();
+            closeOverlay();
             onUpdated();
         } catch (e) {
             console.error("outOfPremarket error:", e);
             notify.error("Failed to leave premarket");
-            close();
+            closeOverlay();
         }
     };
 
@@ -269,11 +261,10 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
         open(
         <LeavePremarketModal
             refundAmount={refundAmount}
-            onCancel={close}
+            onCancel={closeOverlay}
             onConfirm={() => {
-            
-            close();
-            handleOut();
+                closeOverlay();
+                handleOut();
             }}
             isMobile={isMobile} 
         />,

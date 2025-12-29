@@ -1,7 +1,7 @@
 import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { GetClaimTokensTransaction, signTransactionWithRevelcyAuth } from "@api/tx_premarket";
-import { simulateAndSignRawTx, sendRawTx } from "@services/blockchain/signAndSend";
+import { simulateAndSignRawTx, confirmTxFinalised } from "@services/blockchain/signAndSend";
 
 export async function claimTokens(
   wallet: AnchorWallet,
@@ -39,19 +39,22 @@ export async function claimTokens(
 
   console.log("Claim transaction signed by wallet, sending to BE for Revelcy signature...");
 
-  onChangeState?.("Signing transaction on backend...");
-  const { transaction: backendSignedB64 } = await signTransactionWithRevelcyAuth({
+  onChangeState?.("Send transaction to blockchain...");
+  const { signature, status } = await signTransactionWithRevelcyAuth({
     network,
     txBase64: userSignedB64,
     txType: "claim_tokens",
   });
 
-  console.log("Claim transaction signed by backend. Sending to blockchain...");
-
-  onChangeState?.("Sending transaction to blockchain...");
-  const txSig = await sendRawTx(backendSignedB64, connection);
-
-  console.log("Claim transaction sent and confirmed. Signature:", txSig);
-
-  return { txId: txSig };
+  
+    onChangeState?.(`Waiting to tx ${signature} finalisation. Current status: ${status}}...`);
+    try {
+      await confirmTxFinalised(connection, signature);
+    } catch (e) {
+      console.error("transation is not finalised!", e)
+      throw e
+    }
+  
+    console.log("transaction finalised!");
+    return { txId: signature }
 }
