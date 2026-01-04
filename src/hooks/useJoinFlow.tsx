@@ -25,7 +25,7 @@ export function useJoinFlow(onUpdated:()=>void) {
   const { network } = useNetwork();
   const connection = getSolanaConnection(network);
   const notify = useNotification();
-  const { open, replace, close } = useOverlay();
+  const { open, replace, close: closeOverlay } = useOverlay();
   const theme = useTheme();
 
   const renderLoader = (status: string) => (
@@ -37,7 +37,7 @@ export function useJoinFlow(onUpdated:()=>void) {
   
   const renderLogin = () => (
     <OneScreenContainer>
-      <LoginFlow onCloseButton={close}/>
+      <LoginFlow onCloseButton={closeOverlay}/>
     </OneScreenContainer>
   );
 
@@ -85,23 +85,14 @@ export function useJoinFlow(onUpdated:()=>void) {
       const res = await joinToPremarket(wallet, connection, network, premarketPubkey, amountLamp, amountLamp,
         (text) => {replace(renderLoader(text))});
 
-      replace(renderLoader("Syncing with backend..."));
-      await userJoinedToPremarket({
-        joinAmountInSolLamport: amountLamp,
-        tx: res.txId,
-        userWallet: wallet.publicKey.toString(),
-        userId: user.userId,
-        premarketPubKey: premarketPubkey.toString(),
-      });
-
-      close();
+      closeOverlay();
       notify.success("Successfully joined premarket!");
       onUpdated()
       return "ok";
     } catch (e) {
       console.error("join premarket error:", e);
       notify.error("Failed to join premarket");
-      close();
+      closeOverlay();
       return "error";
     }
   };

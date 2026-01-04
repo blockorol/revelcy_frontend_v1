@@ -28,7 +28,8 @@ export interface CreatePremarketTxRequest {
 }
 
 export interface SignTxResponse {
-  transaction: string;            // base64(Transaction)
+  signature: string;
+  status: 'pending' | 'confirmed' | 'finalized' |'failed';
 }
 
 type TX_TYPE = 
@@ -52,7 +53,11 @@ export async function signTransactionWithRevelcyAuth(params: {
     tx_type: params.txType,
   };
 
-  if (params.txType === "finish_premarket") {
+  if (
+    params.txType === "finish_premarket" ||
+    params.txType === "extend_premarket" ||
+    params.txType === "refund_premarket"
+  ) {
     payload.premarket = params.premarket;
   }
 
@@ -65,7 +70,8 @@ export async function signTransactionWithRevelcyAuth(params: {
   );
 
   return data as {
-    transaction: string;
+    signature: string;
+    status: string;
   };
 }
 
