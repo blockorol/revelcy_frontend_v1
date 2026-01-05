@@ -7,6 +7,7 @@ import { http } from "@api/http";
 import shortString from "@utils/address_shorter";
 import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
 import { DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
+import { VestingApiResponse } from "@utils/vesting";
 
 const RETRY_DEFAULT = 6;
 
@@ -477,3 +478,20 @@ export async function getHolderEntryPrice({
     return data;
 }
 
+
+export async function getHolderVesting(params: {
+  premarketId: string;
+  holderWallet: string;
+}): Promise<VestingApiResponse | null> {
+  try {
+    // имитация задержки API
+    await new Promise((r) => setTimeout(r, 300));
+
+    return {
+      vested_percent: 80,
+      claimed_percent: 65,
+    };
+  } catch {
+    return null;
+  }
+}
