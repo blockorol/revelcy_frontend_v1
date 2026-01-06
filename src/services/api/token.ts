@@ -93,36 +93,6 @@ export async function updateAboutCommunity(premarketPubkey: string, args: TokenC
   }
 }
 
-export async function premarketFinished(args: {
-  premarketPubKey: string;
-  userWallet: string;
-  userId?: string | null;
-  tx: string;
-  isKilled: boolean;
-  network: "devnet" | "testnet"| "mainnet-beta";
-}) {
-  const payload = {
-    base: {
-      premarket_pub_key: args.premarketPubKey,
-      user_wallet: args.userWallet,
-      user_id: args.userId ?? null,
-      tx: args.tx,
-    },
-    network: args.network
-  };
-  
-  try {
-    await http.post(
-      args.isKilled ? `${API_HOST}/premarket/killed` : `${API_HOST}/premarket/finished`,
-      { json: payload, retry: RETRY_DEFAULT }
-    );
-    return;
-  } catch (e: any) {
-    console.log("failed with", payload);
-    throw new Error(`Failed to finish PM: ${e.message ?? "Unknown error"}`);
-  }
-}
-
 export interface TokenClaimedResponse {
   claimed: boolean;
   updated_in_db: boolean;

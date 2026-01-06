@@ -90,7 +90,7 @@ function PremarketJoinBase({
 
   const wallet = useAnchorWalletSafe();
   const theme = useTheme();
-  const { open, replace, close } = useOverlay();
+  const { open, replace, close: closeOverlay } = useOverlay();
   const [loginModalVisible, setLoginModalVisible] = React.useState(false);
 
   const [rawInput, setRawInput] = useState<string|undefined>(undefined);
@@ -217,7 +217,7 @@ function PremarketJoinBase({
 
     try {
       open(renderLoader("join to premarket..."));
-      const res = await joinToPremarket(
+      await joinToPremarket(
         wallet,
         currentConnection,
         network,
@@ -227,22 +227,13 @@ function PremarketJoinBase({
         (text) => {replace(renderLoader(text))}
       );
 
-      replace(renderLoader("Syncing with backend..."));
-      await userJoinedToPremarket({
-        joinAmountInSolLamport: solInLamp,
-        tx: res.txId,
-        userWallet: wallet.publicKey.toString(),
-        userId: user.userId,
-        premarketPubKey: tokenMainInfo.premarketPubkey.toString(),
-      });
-
       notify.success("Successfully joined premarket!");
-      close();
+      closeOverlay();
       onUpdated();
     } catch (e) {
       console.error("join premarket error:", e);
       notify.error("Failed to join premarket");
-      close();
+      closeOverlay();
     }
   };
 

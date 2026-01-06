@@ -1,8 +1,8 @@
-import { premarketFinished, extendedPremarket, TokenMainInfo } from "@api/token";
+import { extendedPremarket, TokenMainInfo } from "@api/token";
 import { finishPremarket, refundPremarket } from "@services/blockchain/premarket/finishPremarket";
 import { extendPremarket } from "@services/blockchain/premarket/extendPremarket";
 import { getTimeLeftLabel } from "@utils/premarket";
-import { useAuth, UserInfo } from "@providers/AuthContext";
+import { useAuth } from "@providers/AuthContext";
 import { useWallet } from "@storage/wallet-adapter";
 import { useAnchorWalletSafe } from "@storage/wallet-adapter/useWallet.web";
 import { useNetwork } from "@providers/NetworkContext";
@@ -85,23 +85,13 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
         tokenMainInfo.premarketPubkey,
         (text) => {replace(renderLoader(text))}
       );
-      open(renderLoader("link data to Revelcy..."));
-      await premarketFinished({
-        premarketPubKey: tokenMainInfo.premarketPubkey.toString(),
-        userWallet: wallet.publicKey.toString(),
-        tx: res.txId,
-        isKilled: true,
-        network: network
-      })
-
-
+      closeOverlay();
       notify.success("Premarket successfully refunding!", {action: {
         label: "check",
         onAction: ()=> {
           Linking.openURL(`https://solscan.io/tx/${res.txId}${network === 'devnet' ? '?cluster=devnet' : ''}`)
         }
       }});
-      closeOverlay();
       onUpdated();
     } catch (e) {
       console.error("refund premarket error:", e);
@@ -222,15 +212,6 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
         newDeadline,
         (text) => {replace(renderLoader(text))}
       );
-      replace(renderLoader("Linking data to Revelcy..."));
-      await extendedPremarket({
-        premarketPubKey: tokenMainInfo.premarketPubkey.toString(),
-        userWallet: wallet.publicKey.toString(),
-        userId: user.userId,
-        tx: res.txId,
-        network: network,
-        newDeadline: newDeadline,
-      });
 
       notify.success("Premarket deadline successfully extended!", {action: {
         label: "check",
@@ -291,13 +272,6 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
         tokenMainInfo.premarketPubkey,
         (text) => {replace(renderLoader(text))}
       );
-      premarketFinished({
-        premarketPubKey: tokenMainInfo.premarketPubkey.toString(),
-        userWallet: wallet.publicKey.toString(),
-        tx: res.txId,
-        isKilled: false,
-        network: network
-      });
 
       notify.success("Premarket successfully finished!", {action: {
         label: "check",
@@ -361,7 +335,8 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
     </>
     )
   }
-  if (isDeadLine && isGoalReached) {
+  if (isGoalReached) {
+  // if (isDeadLine && isGoalReached) {
     return (
       <View style={{flexDirection:'row', gap:16, width:'100%'}}>
         <Button leftSvgIconName='pumpfun' style={{flex:3}} variant='primary' 

@@ -157,6 +157,20 @@ export async function sendRawTx(
   return sig;
 }
 
+export async function confirmTxFinalised(connection: Connection, sig: string) {
+  // double check do we need loop + timeout here?
+  try {
+    const res = await connection.confirmTransaction(sig, "finalized");
+    if (res.value.err !== null) {
+      console.error("[sendRawTx] Error confirming transaction with finalized state:", res.value.err)
+    }
+  } catch (e) {
+    console.error("[sendRawTx] Error confirming transaction:", e);
+    if ((e as any)?.logs) console.error("[sendRawTx] confirm logs:", (e as any).logs);
+    throw e;
+  }
+}
+
 function base64ToBytes(b64: string): Uint8Array {
   return Uint8Array.from(atob(b64), c => c.charCodeAt(0));
 }
