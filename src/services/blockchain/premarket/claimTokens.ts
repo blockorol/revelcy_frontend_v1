@@ -44,6 +44,7 @@ export async function claimTokens(
     network,
     txBase64: userSignedB64,
     txType: "claim_tokens",
+    premarket: premarketAccount.toBase58(),
   });
 
   
