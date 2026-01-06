@@ -230,7 +230,7 @@ export const PremarketTimelineSection: React.FC<Props> = ({ withJoinButton, toke
         text={{
           text: state === 'expired' 
             ? 'Now' 
-            : tokenInfo.mainInfo.state === 'canceled' && tokenInfo.mainInfo.finishDate
+            : (tokenInfo.mainInfo.state === 'canceled' || tokenInfo.mainInfo.state === 'finished') && tokenInfo.mainInfo.finishDate
               ? convertTimeStampToDataMonth(tokenInfo.mainInfo.finishDate)
               : convertTimeStampToDataMonth(tokenInfo.mainInfo.premarketDeadline),
           color: colors.onSurface
