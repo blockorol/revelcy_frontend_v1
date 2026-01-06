@@ -42,7 +42,7 @@ export async function outOfPremarket(
     txType: 'out_of_premarket',
   });
 
-  onChangeState?.(`Waiting to tx ${signature} finalisation. Current status: ${status}}...`);
+  onChangeState?.(`Waiting to tx finalisation. Current status: ${status}...`);
   try {
     await confirmTxFinalised(connection, signature);
   } catch (e) {

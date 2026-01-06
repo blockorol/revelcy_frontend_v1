@@ -49,7 +49,7 @@ export async function finishPremarket(
     premarket: premarketAccount.toBase58()
   });
 
-  onChangeState?.(`Waiting to tx ${signature} finalisation. Current status: ${status}}...`);
+  onChangeState?.(`Waiting to tx finalisation. Current status: ${status}...`);
   try {
     await confirmTxFinalised(connection, signature);
   } catch (e) {
@@ -104,7 +104,7 @@ export async function refundPremarket(
   });
 
 
-  onChangeState?.(`Waiting to tx ${signature} finalisation. Current status: ${status}}...`);
+  onChangeState?.(`Waiting to tx finalisation. Current status: ${status}...`);
   try {
     await confirmTxFinalised(connection, signature);
   } catch (e) {

@@ -44,10 +44,11 @@ export async function claimTokens(
     network,
     txBase64: userSignedB64,
     txType: "claim_tokens",
+    premarket: premarketAccount.toBase58(),
   });
 
   
-    onChangeState?.(`Waiting to tx ${signature} finalisation. Current status: ${status}}...`);
+    onChangeState?.(`Waiting to tx finalisation. Current status: ${status}...`);
     try {
       await confirmTxFinalised(connection, signature);
     } catch (e) {

@@ -230,13 +230,13 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
   };
 
   const handleFinish = async () => {
-    const now = Math.floor(Date.now() / 1000);
-    if (tokenMainInfo.premarketDeadline > now) {
-      notify.warning(
-        `Finish will be available in ${getTimeLeftLabel(tokenMainInfo.premarketDeadline)}`
-      );
-      return;
-    }
+    // const now = Math.floor(Date.now() / 1000);
+    // if (tokenMainInfo.premarketDeadline > now) {
+    //   notify.warning(
+    //     `Finish will be available in ${getTimeLeftLabel(tokenMainInfo.premarketDeadline)}`
+    //   );
+    //   return;
+    // }
 
     if (!wallet || !connected) {
       notify.error("Wallet is not connected", {
@@ -351,7 +351,8 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
         <ShareTextButton style={{width:'100%'}} shareMessage={`Join to premarket on: ${currentURL}`}>Share</ShareTextButton>
         <View style={{flexDirection:'row', gap:16, alignItems:'center'}}>
           <SvgIcon name='info-circle' size={24} color={colors.primary} />
-          <Text variant='bodyMedium' selectionColor={colors.onSurfaceVariant} numberOfLines={2}>You can finalize the Premarket in {getTimeLeftLabel(tokenMainInfo.premarketDeadline)}, after deadline passes.</Text>
+          <Text variant='bodyMedium' selectionColor={colors.onSurfaceVariant} numberOfLines={2}>You can finalize the Premarket once the goal is reached.</Text>
+          {/* <Text variant='bodyMedium' selectionColor={colors.onSurfaceVariant} numberOfLines={2}>You can finalize the Premarket in {getTimeLeftLabel(tokenMainInfo.premarketDeadline)}, after deadline passes.</Text> */}
         </View>
     </View>
   );

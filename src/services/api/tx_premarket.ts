@@ -56,7 +56,8 @@ export async function signTransactionWithRevelcyAuth(params: {
   if (
     params.txType === "finish_premarket" ||
     params.txType === "extend_premarket" ||
-    params.txType === "refund_premarket"
+    params.txType === "refund_premarket" ||
+    params.txType === "claim_tokens"
   ) {
     payload.premarket = params.premarket;
   }
