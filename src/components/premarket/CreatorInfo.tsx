@@ -335,7 +335,8 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
     </>
     )
   }
-  if (isDeadLine && isGoalReached) {
+  if (isGoalReached) {
+  // if (isDeadLine && isGoalReached) {
     return (
       <View style={{flexDirection:'row', gap:16, width:'100%'}}>
         <Button leftSvgIconName='pumpfun' style={{flex:3}} variant='primary' 
