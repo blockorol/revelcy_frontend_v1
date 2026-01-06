@@ -47,7 +47,7 @@ export async function claimTokens(
   });
 
   
-    onChangeState?.(`Waiting to tx ${signature} finalisation. Current status: ${status}}...`);
+    onChangeState?.(`Waiting to tx finalisation. Current status: ${status}...`);
     try {
       await confirmTxFinalised(connection, signature);
     } catch (e) {
