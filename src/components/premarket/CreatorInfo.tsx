@@ -1,7 +1,6 @@
-import { extendedPremarket, TokenMainInfo } from "@api/token";
+import { TokenMainInfo, updateTokenAvailbility } from "@api/token";
 import { finishPremarket, refundPremarket } from "@services/blockchain/premarket/finishPremarket";
 import { extendPremarket } from "@services/blockchain/premarket/extendPremarket";
-import { getTimeLeftLabel } from "@utils/premarket";
 import { useAuth } from "@providers/AuthContext";
 import { useWallet } from "@storage/wallet-adapter";
 import { useAnchorWalletSafe } from "@storage/wallet-adapter/useWallet.web";
@@ -11,13 +10,15 @@ import { useNotification } from "@providers/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 
 import { Linking, View } from "react-native";
-import { Text, ActivityIndicator, useTheme } from "react-native-paper";
+import { Text, ActivityIndicator, useTheme, HelperText } from "react-native-paper";
 import {Button} from '@components/ui/Button'
 import { ShareTextButton } from "@components/base/ButtonShare";
 import { SvgIcon } from "@components/base/SvgIcon";
 import { DatePickerMD3FromCalendar } from "@components/base/DatePickerMD3";
 import TimePickerMD3, { TimeValue } from "@components/base/TimePickerMD3";
 import { useState } from "react";
+import { Switch } from "@components/ui/Switch";
+import { AppTheme } from "@theme/types";
 
 
 interface CreatorInfoProps {
@@ -332,6 +333,12 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
         onConfirm={handleTimeConfirm}
         label="Pick time"
       />
+      <VisabilitySwitch
+        isDiscoverablePreset={!tokenMainInfo.isHided}
+        shortLink={tokenMainInfo.shortLinkPrefix?"https://beta.revelcy.com/token/"+tokenMainInfo.shortLinkPrefix:undefined}
+        premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
+        onUpdated={onUpdated}
+      />
     </>
     )
   }
@@ -356,4 +363,53 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
         </View>
     </View>
   );
+}
+
+
+function VisabilitySwitch({isDiscoverablePreset, shortLink, premarketPubkey, onUpdated}: {
+  premarketPubkey: string,
+  isDiscoverablePreset: boolean,
+  shortLink?: string,
+  onUpdated: () => Promise<void>,
+}) {
+  const { colors } = useTheme<AppTheme>();
+  const [isDiscoverable, setIsDiscoverable] = useState<boolean>(isDiscoverablePreset);
+  const notify = useNotification();
+
+
+  const changeAvailability = async () => {
+    const newValue = !isDiscoverable;
+    try {
+      setIsDiscoverable(newValue);
+      await updateTokenAvailbility(premarketPubkey, {
+        isHided: newValue,
+      });
+      onUpdated();
+    } catch (e) {
+      setIsDiscoverable(!newValue)
+      console.error("change availability error:", e);
+      notify.error("Failed to change availability to "+(newValue?"discoverable":"hidden"));
+    }
+  };
+
+
+  return (
+    <View>
+      <View style={{
+        paddingVertical: 16,
+        paddingHorizontal: 12,
+        backgroundColor: colors.surfaceContainerLow,
+        borderRadius: 14,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}>
+        <Text variant='bodyMedium' selectionColor={colors.onSurface}>{isDiscoverable?"Your premarket is discoverable":"Your premarket is hidden"}</Text>
+        <Switch value={isDiscoverable} onValueChange={changeAvailability}/>
+      </View>
+    <HelperText type="info" visible={!isDiscoverable}>
+      Your premarket is hidden from the public list and will not be available via the full address.
+      {shortLink?"Others is able to find it only using a short link("+shortLink+")":null}
+    </HelperText>
+  </View>);
 }

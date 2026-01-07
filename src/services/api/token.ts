@@ -214,6 +214,7 @@ export async function getPremarketInfo({
     finishDate: data.blockchain_info.premarket_finished || undefined,
     isExtended: (data.blockchain_info.premarket_is_extended|| undefined) ?? false,
     tokenMint: data.blockchain_info.mint_address,
+    isHided: data.availability_info?.is_hided ?? false,
   };
 
   const communityInfo: TokenCommunityInfo = {
@@ -373,6 +374,7 @@ export interface TokenInfo {
 export interface TokenMainInfo {
     id: string;
     premarketPubkey: PublicKey,
+    shortLinkPrefix?: string;
     name: string;
     description: string;
     symbol: string;
@@ -386,6 +388,7 @@ export interface TokenMainInfo {
     state: PremarketState;
     finishDate?: number;
     isExtended: boolean;
+    isHided: boolean;
     tokenMint?: string;
 }
 
