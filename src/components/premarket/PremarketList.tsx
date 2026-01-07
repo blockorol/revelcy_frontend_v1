@@ -12,7 +12,6 @@ type OrderValue = "FRESH" | "ACHIEVED" | "TOP_MCAP" | "LOW_MCAP" | "EARLY_DEADLI
 const HidedTokensPubkeys = [
   "Gs4xGhrH1cfFoE5FPVd6DWtTMsrNENLD5Vg2zyQGbcp",
   "5J644u4QgS69SYSu7Cd1UdSPqBqp2U754ZosMRyKsfS",
-  // "iXHUK2U8XPXEDmhGNxZN9Heii3DXe9Wdo2j1JvhmrkD",
 ]
 
 type PremarketListProps = {
@@ -332,7 +331,7 @@ export const PremarketList: React.FC<PremarketListProps> = ({
           ]}
         >
           {sortedAndFilteredItems.map((it) => {
-            const key =
+            const key = "card-" +
               typeof it.premarketPubkey === "string"
                 ? it.premarketPubkey
                 : typeof (it as any).premarketPubkey?.toBase58 === "function"
