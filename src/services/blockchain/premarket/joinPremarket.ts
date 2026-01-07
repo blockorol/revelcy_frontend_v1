@@ -3,6 +3,7 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import { getJoinPremarketTransaction, signTransactionWithRevelcyAuth } from "@api/tx_premarket";
 import { simulateAndSignRawTx, confirmTxFinalised } from "@services/blockchain/signAndSend";
+import { userSetAdditionalInfo } from "@services/fingerprint/sender";
 
 export async function joinToPremarket(
   wallet: AnchorWallet,
@@ -47,6 +48,12 @@ export async function joinToPremarket(
     txBase64: userSignedB64,
     txType: "join_premarket",
   });
+  
+  userSetAdditionalInfo({
+    premarket: premarketAccount.toBase58(),
+    eventType: "join_premarket"
+  })
+  
 
   onChangeState?.(`Waiting to tx finalisation. Current status: ${status}...`);
   try {

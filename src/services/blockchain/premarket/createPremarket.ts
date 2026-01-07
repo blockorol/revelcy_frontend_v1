@@ -10,6 +10,7 @@ import {
   simulateAndSignRawTx,
   confirmTxFinalised,
 } from "@services/blockchain/signAndSend";
+import { userSetAdditionalInfo } from "@services/fingerprint/sender";
 
 const SECONDS_IN_HOUR = 60 * 60;
 
@@ -67,6 +68,11 @@ export async function createPremarket(
     txBase64: userSignedB64,
     txType: "create_premarket"
   });
+  
+  userSetAdditionalInfo({
+    premarket: premarket_account_pda,
+    eventType: "create_premarket"
+  })
 
   onChangeState?.(`Waiting to tx finalisation. Current status: ${status}...`);
   try {
