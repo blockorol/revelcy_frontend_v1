@@ -272,9 +272,8 @@ export async function getPremarketList({
   cursor: number; // offset
   limit: number;  // page size
 }): Promise<{ items: TokenMainInfo[]; total: number }> {
-  const url = `${API_HOST}/premarket/get_list?cursor=${cursor}&limit=${2}&network=${NETWORK}`;
+  const url = `${API_HOST}/premarket/get_list?cursor=${cursor}&limit=${limit}&network=${NETWORK}`;
   const data = await http.get<any>(url, { retry: RETRY_DEFAULT });
-  console.log("premarket_list:", data);
 
   const items: TokenMainInfo[] = (data.premarkets ?? []).map((b: any) => ({
     id: b.blockchain_info.id,
