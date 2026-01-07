@@ -1,11 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { DimensionValue, View, Image as RNImage } from 'react-native';
+import React, {useEffect, useMemo, useState } from 'react';
+import { Platform, DimensionValue, View, Image as RNImage } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import { Svg, Path, Circle, Line, Text as SvgText, Polygon, ForeignObject } from 'react-native-svg';
 import { BN } from '@coral-xyz/anchor';
 import { AppTheme } from '@theme/types';
 import {
-  convertLamportToSmallCount,
   convertSmallCountToLamport,
   PremarketState,
 } from '@utils/premarket';
@@ -122,7 +121,7 @@ const JoinerMarker: React.FC<{
 }> = ({ isCurrentUser, fonts, url, x, y, color, background }) => {
   const exists = useImageExists(url);
 
-  if (url && exists) {
+  if (url && exists && Platform.OS !== "web") {
     return (
       <>  
         {isCurrentUser && <CurrentUserMarker x={x} y={y} color={color} fonts={fonts}/>}

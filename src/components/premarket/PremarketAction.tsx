@@ -1,4 +1,4 @@
-import { TokenDynamicInfo, TokenMainInfo, tokensClaimed } from "@api/token";
+import { TokenDynamicInfo, TokenMainInfo } from "@api/token";
 
 import { PremarketJoin } from "@components/premarket/PremarketJoin";
 import { CreatorInfo } from "@components/premarket/CreatorInfo";
@@ -6,8 +6,6 @@ import { useAuth } from "@providers/AuthContext";
 import { useTheme, Text, ActivityIndicator } from "react-native-paper";
 import { View } from "react-native";
 import { Button } from "@components/ui/Button";
-import OneScreenContainer from "@components/base/container/OneScreenContainer";
-import LoginFlow from "@components/login/LoginFlow";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import { ShareTextButton } from "@components/base/ButtonShare";
 import { openInBrowser } from "@utils/openLinks";

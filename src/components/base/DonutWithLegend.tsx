@@ -67,7 +67,14 @@ export const DonutWithLegend = ({ slices }: DonutWithLegendProp) => {
     <View style={styles.container}>
       <View style={styles.legend}>
         {slices.map((v, idx) =>
-          v.label ? <LabelRow idx={idx} colors={colors} slice={v} /> : null
+          v.label ? (
+            <LabelRow
+              key={`slice-${idx}-${v.label ?? "nolabel"}`}
+              idx={idx}
+              colors={colors}
+              slice={v}
+            />
+          ) : null
         )}
       </View>
       <View style={styles.chartWrapper}>

@@ -93,33 +93,30 @@ export async function updateAboutCommunity(premarketPubkey: string, args: TokenC
   }
 }
 
-export interface TokenClaimedResponse {
-  claimed: boolean;
-  updated_in_db: boolean;
+export interface TokenAvailabilityInfo {
+  isHided?: boolean;
+  tokenShortUrlName?: string;
 }
 
-export async function tokensClaimed(args: {
-  network: "devnet" | "testnet" | "mainnet-beta";
-  userPubkey: string;
-  premarketAccount: string;
-}): Promise<TokenClaimedResponse> {
+
+export async function updateTokenAvailbility(premarketPubkey: string, args: TokenAvailabilityInfo) {
   const payload = {
-    network: args.network,
-    user_pubkey: args.userPubkey,
-    premarket_account: args.premarketAccount,
+    premarket_pubkey: premarketPubkey,
+    availability_info: {
+      is_hided: args.isHided,
+      token_short_url_name: args.tokenShortUrlName, // todo: move to separated value
+    },
   };
 
   try {
-    const response = await http.post<TokenClaimedResponse>(
-      `${API_HOST}/premarket/token_claimed`,
-      { json: payload, retry: RETRY_DEFAULT }
-    );
-    return response;
+    await http.post(`${API_HOST}/premarket/update_availability`, { json: payload, retry: RETRY_DEFAULT });
+    return;
   } catch (e: any) {
     console.log("failed with", payload);
-    throw new Error(`Failed to verify tokens claimed: ${e.message ?? "Unknown error"}`);
+    throw new Error(`Failed to update availability: ${e.message ?? "Unknown error"}`);
   }
 }
+
 
 export async function extendedPremarket(args: {
   premarketPubKey: string;

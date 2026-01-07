@@ -30,6 +30,7 @@ import { convertSmallCountToLamport } from "@utils/premarket";
 import {
   premarketCreated,
   updateAboutCommunity,
+  updateTokenAvailbility,
   userJoinedToPremarket,
 } from "@api/token";
 import { useAuth } from "@providers/AuthContext";
@@ -212,7 +213,7 @@ export default function PremarketCreationFlow() {
     });
   };
 
-  const handleLaunch = async () => {
+  const handleLaunch = async (discoverable: boolean) => {
     try {
       await patch({ step: FLOW_STEP.OVERVIEW });
 
@@ -309,7 +310,7 @@ export default function PremarketCreationFlow() {
           tokenData.tokenomicsData.creatorInitialBuy
         ),
       };
-      setLaunchState("try to create TX...");
+      setLaunchState("Trying to create TX...");
       let resp:
         | undefined
         | {
@@ -355,10 +356,9 @@ export default function PremarketCreationFlow() {
       }
 
       try {
-        // Сразу пишем в черновик PROCESSING (на случай перезагрузки)
         await patch({ step: FLOW_STEP.PROCESSING });
 
-        setLaunchState("Adding to white list to Revelcy...");
+        setLaunchState("Adding info to Revelcy...");
         try {
           if (tokenData.tokenomicsData.creatorInitialBuy > 0) {
             await userJoinedToPremarket({
@@ -438,6 +438,24 @@ export default function PremarketCreationFlow() {
           });
           // no return just notify
         }
+        
+        setLaunchState("Change token params...");
+        try {
+          await updateTokenAvailbility(resp.premarketPDA.toString(), {
+            isHided: !discoverable,
+            tokenShortUrlName: tokenData.premarketSettingsData.short_link_name,
+          });
+        } catch {
+          notify.error("failed to change tokens params", {
+            suggest: "Please, ask admin to change it",
+            duration: 60000,
+            action: {
+              label: "Ok",
+              onAction: () => {},
+            },
+          });
+        }
+
 
         setStep(FLOW_STEP.PROCESSING);
       } catch (error) {

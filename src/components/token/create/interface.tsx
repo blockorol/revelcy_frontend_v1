@@ -1,8 +1,6 @@
-import BN from "bn.js";
-
 export interface TokenCreateFullData {
     mainData: TokenMainData;
-    customData: CustomizeTokenData;
+    customData: CustomizeTokenData; // Community data
     tokenomicsData: TokenomicsData;
     premarket: PremarketSettingData;
 
@@ -25,6 +23,7 @@ export interface TokenomicsData {
     treasuryAllocationPercent?: number;
 };
 
+ // Community data
 export type CustomizeTokenData = {
   description?:string;
   links?: Link[]
@@ -41,5 +40,6 @@ export type Link ={
 
 export type PremarketSettingData = {
     deadline_sec: number,
-    goal_sol: number
+    goal_sol: number,
+    short_link_name?: string,
 }
