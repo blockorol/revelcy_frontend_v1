@@ -68,7 +68,6 @@ function detectWalletWeb(): WalletInfo {
 }
 
 export async function collectClientContextWeb(opts?: {
-  includeGeo?: boolean;   // default false (permission prompt)
   includeUA?: boolean;    // default true
 }): Promise<ClientContext> {
   const { id, source } = getOrCreateInstallIdWeb();

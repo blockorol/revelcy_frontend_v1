@@ -2,6 +2,7 @@ import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { getOutPremarketTransaction, signTransactionWithRevelcyAuth } from "@api/tx_premarket";
 import { simulateAndSignRawTx, confirmTxFinalised } from "@services/blockchain/signAndSend";
+import { userSetAdditionalInfo } from "@services/fingerprint/sender";
 
 export async function outOfPremarket(
   wallet: AnchorWallet,
@@ -41,6 +42,11 @@ export async function outOfPremarket(
     txBase64: userSignedB64,
     txType: 'out_of_premarket',
   });
+  
+  userSetAdditionalInfo({
+    premarket: premarketAccount.toBase58(),
+    eventType: "out_of_premarket"
+  })
 
   onChangeState?.(`Waiting to tx finalisation. Current status: ${status}...`);
   try {

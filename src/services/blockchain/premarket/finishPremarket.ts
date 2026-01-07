@@ -6,6 +6,7 @@ import {
   signTransactionWithRevelcyAuth,
 } from "@api/tx_premarket";
 import { simulateAndSignRawTx, confirmTxFinalised } from "@services/blockchain/signAndSend";
+import { userSetAdditionalInfo } from "@services/fingerprint/sender";
 
 export async function finishPremarket(
   wallet: AnchorWallet,
@@ -48,6 +49,11 @@ export async function finishPremarket(
     txType: "finish_premarket",
     premarket: premarketAccount.toBase58()
   });
+    
+  userSetAdditionalInfo({
+    premarket: premarketAccount.toBase58(),
+    eventType: "finish_premarket"
+  })
 
   onChangeState?.(`Waiting to tx finalisation. Current status: ${status}...`);
   try {

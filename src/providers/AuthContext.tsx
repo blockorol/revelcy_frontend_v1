@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from 'jwt-decode';
 import { setAuthToken } from '@api/http';
 import { getOrCreateInstallIdWeb } from '@services/fingerprint/collector';
+import { userSetAdditionalInfo } from '@services/fingerprint/sender';
 
 const STORAGE_KEY = 'auth-token';
 
@@ -71,6 +72,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    const userPrev = user?.internalId ?? "none"
+    console.log("internalId", user?.internalId ?? "none")
+    userSetAdditionalInfo({
+      eventType: 'logout',
+      userId: userPrev
+    });
     setUser(null);
     AsyncStorage.removeItem(STORAGE_KEY);
     setAuthToken(undefined);     // ⟵ очистим токен в http-клиенте
