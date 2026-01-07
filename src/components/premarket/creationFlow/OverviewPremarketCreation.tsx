@@ -369,6 +369,11 @@ export default function OverviewPremarketCreation({
                 <View
                   style={{
                     width: "100%",
+                    height: "100%",
+                    // @ts-ignore
+                    objectFit: "cover",
+                    // @ts-ignore
+                    objectPosition: "center",
                     aspectRatio: 3,
                     borderRadius: 20,
                     overflow: "hidden",

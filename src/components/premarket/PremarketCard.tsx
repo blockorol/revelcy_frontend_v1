@@ -36,6 +36,7 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
   }, [raisedLamports]);
 
   const pubkeyStr = useMemo(() => {
+    if (!!mainInfo.shortLinkPrefix) return mainInfo.shortLinkPrefix;
     if (!mainInfo.premarketPubkey) return "";
     if (typeof mainInfo.premarketPubkey === "string") return mainInfo.premarketPubkey;
     if (typeof mainInfo.premarketPubkey?.toBase58 === "function") return mainInfo.premarketPubkey.toBase58();
