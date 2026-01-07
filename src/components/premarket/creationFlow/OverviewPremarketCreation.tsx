@@ -32,7 +32,7 @@ type Props = {
 };
 // const PUMP_FEE_PERCENTAGE = 0.015;
 // const REVELCY_FEE_PERCENTAGE = 0.01;
-const SOL_LOCK = 0.059;
+const SOL_LOCK = 0.06918;
 export default function OverviewPremarketCreation({
   data,
   onLaunch,
@@ -555,8 +555,7 @@ export default function OverviewPremarketCreation({
                 <Switch value={isDiscoverable} onValueChange={onChangeDiscoverable}/>
               </View>
               <HelperText type="info" visible={!isDiscoverable}>
-                Your premarket will be hidden from the public list and will not be available via the full address.
-                Others will only be able to find it using a short link ({data.premarket.short_link_name? `https://beta.revelcy.com/token/${data.premarket.short_link_name}`:"You can set a short link in the previous step"}).
+                Token is hidden from Discovery. People can only find it via short link ({data.premarket.short_link_name? `https://beta.revelcy.com/token/${data.premarket.short_link_name}`:"You can set a short link in the previous step"}).
               </HelperText>
           </View>
 
