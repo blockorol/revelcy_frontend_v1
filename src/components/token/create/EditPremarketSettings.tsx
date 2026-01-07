@@ -192,7 +192,7 @@ export default function EditPremarketSettingsForm({
               error={!!shortNameError}
               errorValue={shortNameError}
             />
-            <HelperText type="info">https://revelcy.com/token/{shortName}</HelperText>
+            <HelperText visible={!!shortName} type="info">https://beta.revelcy.com/token/{shortName}</HelperText>
           </View>
 
         </View>

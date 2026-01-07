@@ -24,7 +24,7 @@ export type EditTokenomicsFormProps = {
 const SUFFIX = " SOL";
 const PUMP_FEE_PERCENTAGE = 0.015;
 const REVELCY_FEE_PERCENTAGE = 0.01;
-const SOL_FEE = 0.059;
+const SOL_FEE = 0.06918;
 
 export default function EditTokenomicsForm({
   presetData,

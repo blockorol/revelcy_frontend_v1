@@ -423,8 +423,8 @@ function VisabilitySwitch({isDiscoverablePreset, shortLink, premarketPubkey, onU
         <Switch value={isDiscoverable} onValueChange={changeAvailability}/>
       </View>
     <HelperText type="info" visible={!isDiscoverable}>
-      Your premarket is hidden from the public list and will not be available via the full address.
-      {shortLink?"Others is able to find it only using a short link("+shortLink+")":null}
+      Token is hidden from Discovery.
+      {shortLink?"People can only find it via short link ("+shortLink+")":null}
     </HelperText>
   </View>);
 }
