@@ -331,7 +331,7 @@ export const PremarketList: React.FC<PremarketListProps> = ({
           ]}
         >
           {sortedAndFilteredItems.map((it) => {
-            const key =
+            const key = "card-" +
               typeof it.premarketPubkey === "string"
                 ? it.premarketPubkey
                 : typeof (it as any).premarketPubkey?.toBase58 === "function"

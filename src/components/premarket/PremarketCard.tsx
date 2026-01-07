@@ -230,7 +230,7 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
             {mainInfo.state === "finished" ? (
               <View style={{ alignItems: "flex-start" }}>
                 <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
-                  Current Mcap
+                  Launch Mcap
                 </Text>
                 <Text variant="displaySmall" style={{ color: colors.onSurface }}>
                   {formatNumberCompact(convertDecimalToToken(dynamicInfo.marketCapTokenDec))}

@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from 'jwt-decode';
 import { setAuthToken } from '@api/http';
+import { getOrCreateInstallIdWeb } from '@services/fingerprint/collector';
 
 const STORAGE_KEY = 'auth-token';
 
@@ -17,6 +18,7 @@ interface JwtPayload {
 export interface UserInfo {
   jwt: string;
   userId: string;
+  internalId: string;
   walletAddress: string;
   username: string;
   avatarUrl: string | null;
@@ -86,6 +88,7 @@ export function convertJwtToUser(jwt: string): UserInfo {
   return {
     jwt,
     userId: decoded.sub,
+    internalId: decoded.sub,
     walletAddress: decoded.current_wallet ?? '',
     username: decoded.username ?? '',
     avatarUrl: decoded.avatar_url ?? null,

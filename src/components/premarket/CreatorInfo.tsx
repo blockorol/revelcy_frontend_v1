@@ -345,10 +345,18 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
   if (isGoalReached) {
   // if (isDeadLine && isGoalReached) {
     return (
-      <View style={{flexDirection:'row', gap:16, width:'100%'}}>
-        <Button leftSvgIconName='pumpfun' style={{flex:3}} variant='primary' 
-          onPress={handleFinish}>Launch on Pump</Button>
-        <ShareTextButton style={{flex: 1}} shareMessage={`Join to premarket on: ${currentURL}`}/>
+      <View style={{ gap:16, width:'100%'}}>
+        <View style={{flexDirection:'row'}}>
+          <Button leftSvgIconName='pumpfun' style={{flex:3}} variant='primary' 
+            onPress={handleFinish}>Launch on Pump</Button>
+          <ShareTextButton style={{flex: 1}} shareMessage={`Join to premarket on: ${currentURL}`}/>
+        </View>
+        <VisabilitySwitch
+          isDiscoverablePreset={!tokenMainInfo.isHided}
+          shortLink={tokenMainInfo.shortLinkPrefix?"https://beta.revelcy.com/token/"+tokenMainInfo.shortLinkPrefix:undefined}
+          premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
+          onUpdated={onUpdated}
+        />
       </View>
     )
   }
@@ -361,6 +369,13 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
           <Text variant='bodyMedium' selectionColor={colors.onSurfaceVariant} numberOfLines={2}>You can finalize the Premarket once the goal is reached.</Text>
           {/* <Text variant='bodyMedium' selectionColor={colors.onSurfaceVariant} numberOfLines={2}>You can finalize the Premarket in {getTimeLeftLabel(tokenMainInfo.premarketDeadline)}, after deadline passes.</Text> */}
         </View>
+        
+        <VisabilitySwitch
+          isDiscoverablePreset={!tokenMainInfo.isHided}
+          shortLink={tokenMainInfo.shortLinkPrefix?"https://beta.revelcy.com/token/"+tokenMainInfo.shortLinkPrefix:undefined}
+          premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
+          onUpdated={onUpdated}
+        />
     </View>
   );
 }
@@ -382,7 +397,7 @@ function VisabilitySwitch({isDiscoverablePreset, shortLink, premarketPubkey, onU
     try {
       setIsDiscoverable(newValue);
       await updateTokenAvailbility(premarketPubkey, {
-        isHided: newValue,
+        isHided: !newValue,
       });
       onUpdated();
     } catch (e) {
