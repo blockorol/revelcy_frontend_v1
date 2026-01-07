@@ -196,6 +196,7 @@ export async function getPremarketInfo({
   const mainInfo: TokenMainInfo = {
     id: data.blockchain_info.id,
     premarketPubkey: new PublicKey(tokenPubKey), 
+    shortLinkPrefix: data.availability_info?.token_short_url_name ?? undefined, // tmp solution
     name: data.blockchain_info.name,
     description: data.blockchain_info.description,
     symbol: data.blockchain_info.symbol,
