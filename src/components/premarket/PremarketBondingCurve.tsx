@@ -121,7 +121,7 @@ const JoinerMarker: React.FC<{
 }> = ({ isCurrentUser, fonts, url, x, y, color, background }) => {
   const exists = useImageExists(url);
 
-  if (url && exists && Platform.OS !== "web") {
+  if (url && exists) {
     return (
       <>  
         {isCurrentUser && <CurrentUserMarker x={x} y={y} color={color} fonts={fonts}/>}
