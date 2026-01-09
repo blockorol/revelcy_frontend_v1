@@ -76,13 +76,13 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
 
 
     try {
-      open(renderLoader("Refunding premarket..."));
+      open(renderLoader("Refunding premarket...", colors.primary));
       const res = await refundPremarket(
         wallet,
         connection,
         network,
         tokenMainInfo.premarketPubkey,
-        (text) => {replace(renderLoader(text))}
+        (text) => {replace(renderLoader(text, colors.primary))}
       );
       closeOverlay();
       notify.success("Premarket successfully refunding!", {action: {
@@ -202,14 +202,14 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
     }
 
     try {
-      open(renderLoader("Extending premarket deadline..."));
+      open(renderLoader("Extending premarket deadline...", colors.primary));
       const res = await extendPremarket(
         wallet,
         connection,
         network,
         tokenMainInfo.premarketPubkey,
         newDeadline,
-        (text) => {replace(renderLoader(text))}
+        (text) => {replace(renderLoader(text, colors.primary))}
       );
 
       notify.success("Premarket deadline successfully extended!", {action: {
@@ -264,13 +264,13 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
     }
 
     try {
-      open(renderLoader("Finishing premarket..."));
+      open(renderLoader("Finishing premarket...", colors.primary));
       const res = await finishPremarket(
         wallet,
         connection,
         network,
         tokenMainInfo.premarketPubkey,
-        (text) => {replace(renderLoader(text))}
+        (text) => {replace(renderLoader(text, colors.primary))}
       );
 
       notify.success("Premarket successfully finished!", {action: {
@@ -472,13 +472,14 @@ function EditLinksModal({
 }) {
   const notify = useNotification();
   const { network } = useNetwork();
+  const {colors} = useTheme()
   const connection = getSolanaConnection(network);
   const { connected, connect } = useWallet();
   const wallet = useAnchorWalletSafe();
   const { open, replace, close: closeOverlay } = useOverlay();
 
     const handleUpdateURIConfirm = async (tokenMainInfo: TokenMainData) => {
-    open(renderLoader("Update premarket links..."));
+    open(renderLoader("Update premarket links...", colors.primary));
     if (!wallet || !connected) {
       notify.error("Wallet is not connected", {
         suggest: "Enable Phantom (or compatible) and try again",
@@ -508,7 +509,7 @@ function EditLinksModal({
       return;
 
     }
-    open(renderLoader("Uploading data to IPFS..."));
+    open(renderLoader("Uploading data to IPFS...", colors.primary));
     
     try {
       const ipfsData = await uploadTokenMetadataToIPFS({
@@ -525,7 +526,7 @@ function EditLinksModal({
         },
       });
       if (!ipfsData) {
-        replace(renderLoader("Failed to upload to IPFS..."));
+        replace(renderLoader("Failed to upload to IPFS...", colors.primary));
         notify.error("failed to upload data to IPFS", {
           suggest: "Please, try again later",
         });
@@ -536,7 +537,7 @@ function EditLinksModal({
         wallet, connection, network,
         tokenMainInfoPreset.premarketPubkey,
         ipfsData.metadataUri, 
-        (text) => {replace(renderLoader(text))}
+        (text) => {replace(renderLoader(text, colors.primary))}
       )
     } catch (e) {
       console.error("update links error:", e);
@@ -577,12 +578,11 @@ function EditLinksModal({
   )
 }
 
-function renderLoader (status: string) {
-  const { colors } = useTheme();
+function renderLoader (status: string, color:string) {
   return (
     <View style={{ gap: 20 }}>
       <Text variant="titleMedium">{status}</Text>
-      <ActivityIndicator animating color={colors.primary} size="large" />
+      <ActivityIndicator animating color={color} size="large" />
     </View>
   )
 };
@@ -591,8 +591,8 @@ function renderLoader (status: string) {
 
 const styles = StyleSheet.create({
   modalContainer: { 
-    maxHeight: 300, 
-    maxWidth: 400,
+    maxHeight: 700, 
+    maxWidth: 600,
     padding: 24 
 },
 })
