@@ -36,6 +36,3 @@ export interface UserSetInfoRequestDTO {
   client: ClientContextDTO;
 }
 
-export interface UserSetInfoResponseDTO {
-  ok: boolean;
-}

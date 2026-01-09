@@ -9,8 +9,8 @@ import { getSolanaConnection } from "@services/blockchain/solana";
 import { useNotification } from "@providers/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 
-import { Linking, View } from "react-native";
-import { Text, ActivityIndicator, useTheme, HelperText } from "react-native-paper";
+import { Linking, View, StyleSheet} from "react-native";
+import { Text, ActivityIndicator, useTheme, HelperText, Portal, Modal} from "react-native-paper";
 import {Button} from '@components/ui/Button'
 import { ShareTextButton } from "@components/base/ButtonShare";
 import { SvgIcon } from "@components/base/SvgIcon";
@@ -19,7 +19,10 @@ import TimePickerMD3, { TimeValue } from "@components/base/TimePickerMD3";
 import { useState } from "react";
 import { Switch } from "@components/ui/Switch";
 import { AppTheme } from "@theme/types";
-
+import { uploadTokenMetadataToIPFS } from "@services/files/ipfs/pumpfun";
+import { updateUriPremarket } from "@services/blockchain/premarket/updateUriPremarket";
+import CreateTokenForm from "@components/token/create/CreateTokenForm";
+import { TokenMainData } from "@components/token/create/interface";
 
 interface CreatorInfoProps {
   tokenMainInfo: TokenMainInfo;
@@ -42,13 +45,6 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-
-  const renderLoader = (status: string) => (
-    <View style={{ gap: 20 }}>
-      <Text variant="titleMedium">{status}</Text>
-      <ActivityIndicator animating color={colors.primary} size="large" />
-    </View>
-  );
 
   const handleRefund = async () => {
     if (!wallet || !connected) {
@@ -229,6 +225,7 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
       setSelectedDate(null);
     }
   };
+  
 
   const handleFinish = async () => {
     // const now = Math.floor(Date.now() / 1000);
@@ -428,3 +425,139 @@ function VisabilitySwitch({isDiscoverablePreset, shortLink, premarketPubkey, onU
     </HelperText>
   </View>);
 }
+
+
+function EditLinks({tokenMainInfoPreset, onUpdated}: {
+  tokenMainInfoPreset: TokenMainInfo,
+  onUpdated: () => Promise<void>;
+}) {
+  const notify = useNotification();
+  const { network } = useNetwork();
+  const connection = getSolanaConnection(network);
+  const { connected, connect } = useWallet();
+  const wallet = useAnchorWalletSafe();
+  const { open, replace, close: closeOverlay } = useOverlay();
+  const [visible, setIsVisible] = useState(false)
+  const onDismiss = () => {
+    setIsVisible(false)
+  }
+
+    const handleUpdateURIConfirm = async (tokenMainInfo: TokenMainData) => {
+    open(renderLoader("Update premarket links..."));
+    if (!wallet || !connected) {
+      notify.error("Wallet is not connected", {
+        suggest: "Enable Phantom (or compatible) and try again",
+        action: {
+          label: "Connect",
+          onAction: async () => {
+            try {
+              await connect();
+            } catch (e) {
+              console.log("connect error:", e);
+            }
+          },
+        },
+      });
+      return;
+    }
+    if (wallet.publicKey.toBase58() !== tokenMainInfoPreset.createdByPubkey) {
+      notify.error("Only the creator can finish the premarket");
+      return;
+    }
+    if (network === 'testnet') {
+      notify.error("testnet is not supported");
+      return;
+    }
+    if (tokenMainInfo.avatar === undefined) {
+      notify.error("Please add token avatar");
+      return;
+
+    }
+    open(renderLoader("Uploading data to IPFS..."));
+    
+    try {
+      const ipfsData = await uploadTokenMetadataToIPFS({
+        avatar: tokenMainInfo.avatar,
+        tokenInfo: {
+          name: tokenMainInfo.tokenName,
+          symbol: tokenMainInfo.tokenTicker,
+          description: tokenMainInfo.description,
+          links: {
+            telegram: tokenMainInfo.links.telegram,
+            twitter: tokenMainInfo.links.twitter,
+            website: tokenMainInfo.links.website,
+          },
+        },
+      });
+      if (!ipfsData) {
+        replace(renderLoader("Failed to upload to IPFS..."));
+        notify.error("failed to upload data to IPFS", {
+          suggest: "Please, try again later",
+        });
+        closeOverlay();
+        return;
+      }
+      await updateUriPremarket(
+        wallet, connection, network,
+        tokenMainInfoPreset.premarketPubkey,
+        ipfsData.metadataUri, 
+        (text) => {replace(renderLoader(text))}
+      )
+    } catch (e) {
+      console.error("update links error:", e);
+      notify.error("Failed to update links for premarket");
+    } finally {
+      closeOverlay();
+      onUpdated();
+    }
+  }
+
+  return (
+    <Portal >
+      <Modal
+        style={{alignItems: 'center', justifyContent: 'center',}}
+        visible={visible}
+        onDismiss={onDismiss}
+        contentContainerStyle={[styles.modalContainer]}>     
+          <CreateTokenForm
+            onNext={handleUpdateURIConfirm}
+            onClose={onDismiss}
+            step={1}
+            totalSteps={4}
+            presetData={{
+              tokenName: tokenMainInfoPreset.name,
+              tokenTicker: tokenMainInfoPreset.symbol,
+              description: tokenMainInfoPreset.description,
+              avatar: tokenMainInfoPreset.imageURL??"", 
+              links: {
+                telegram: tokenMainInfoPreset.links.telegram,
+                twitter: tokenMainInfoPreset.links.twitter,
+                website: tokenMainInfoPreset.links.webSite,
+              }
+            }}
+          />
+      </Modal>
+    </Portal>
+    
+  )
+}
+
+function renderLoader (status: string) {
+  const { colors } = useTheme();
+  return (
+    <View style={{ gap: 20 }}>
+      <Text variant="titleMedium">{status}</Text>
+      <ActivityIndicator animating color={colors.primary} size="large" />
+    </View>
+  )
+};
+
+
+
+const styles = StyleSheet.create({
+  modalContainer: { 
+    maxHeight: 300, 
+    maxWidth: 400,
+    padding: 24 
+},
+})
