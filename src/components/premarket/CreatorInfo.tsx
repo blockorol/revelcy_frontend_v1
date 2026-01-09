@@ -45,6 +45,8 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [showEditLink, setShowEditLink] = useState(false);
+  const closEditLinkOpen = () => {setShowEditLink(false)}
 
   const handleRefund = async () => {
     if (!wallet || !connected) {
@@ -299,6 +301,14 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
             mode="contained"
             onPress={handleExtended}>Extend</Button>}
         </View>
+        {(tokenMainInfo.state !== 'finished' && tokenMainInfo.state !== 'canceled') &&
+          <View style={{flexDirection:'row', gap:16, width:'100%'}}>
+            <Button style={{flex:1}} variant='primary' 
+              mode="contained"
+              onPress={()=>setShowEditLink(true)}>Edit links</Button>
+          </View>
+        }
+
         {tokenMainInfo.isExtended ? null :
         <View style={{flexDirection:'row', gap:16, alignContent:'center', justifyContent:'flex-start' }}>
           <SvgIcon name='info-circle' size={24} color={colors.error} />
@@ -330,6 +340,8 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
         onConfirm={handleTimeConfirm}
         label="Pick time"
       />
+      <EditLinksModal visible={showEditLink} onClose={closEditLinkOpen} tokenMainInfoPreset={tokenMainInfo} onUpdated={onUpdated} />
+
       <VisabilitySwitch
         isDiscoverablePreset={!tokenMainInfo.isHided}
         shortLink={tokenMainInfo.shortLinkPrefix?"https://beta.revelcy.com/token/"+tokenMainInfo.shortLinkPrefix:undefined}
@@ -348,6 +360,16 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
             onPress={handleFinish}>Launch on Pump</Button>
           <ShareTextButton style={{flex: 1}} shareMessage={`Join to premarket on: ${currentURL}`}/>
         </View>
+        {(tokenMainInfo.state !== 'finished' && tokenMainInfo.state !== 'canceled') &&
+          <View style={{flexDirection:'row', gap:16, width:'100%'}}>
+            <Button style={{flex:1}} variant='primary' 
+              mode="contained"
+              onPress={()=>setShowEditLink(true)}>Edit links</Button>
+          </View>
+        }
+
+        <EditLinksModal visible={showEditLink} onClose={closEditLinkOpen} tokenMainInfoPreset={tokenMainInfo} onUpdated={onUpdated} />
+
         <VisabilitySwitch
           isDiscoverablePreset={!tokenMainInfo.isHided}
           shortLink={tokenMainInfo.shortLinkPrefix?"https://beta.revelcy.com/token/"+tokenMainInfo.shortLinkPrefix:undefined}
@@ -361,11 +383,23 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
   return (
     <View style={{gap:16, width:'100%'}}>
         <ShareTextButton style={{width:'100%'}} shareMessage={`Join to premarket on: ${currentURL}`}>Share</ShareTextButton>
+        {(tokenMainInfo.state !== 'finished' && tokenMainInfo.state !== 'canceled') &&
+          <View style={{flexDirection:'row', gap:16, width:'100%'}}>
+            <Button style={{flex:1}} variant='primary' 
+              mode="contained"
+              onPress={()=>setShowEditLink(true)}>Edit links</Button>
+          </View>
+        }
         <View style={{flexDirection:'row', gap:16, alignItems:'center'}}>
           <SvgIcon name='info-circle' size={24} color={colors.primary} />
           <Text variant='bodyMedium' selectionColor={colors.onSurfaceVariant} numberOfLines={2}>You can finalize the Premarket once the goal is reached.</Text>
           {/* <Text variant='bodyMedium' selectionColor={colors.onSurfaceVariant} numberOfLines={2}>You can finalize the Premarket in {getTimeLeftLabel(tokenMainInfo.premarketDeadline)}, after deadline passes.</Text> */}
         </View>
+        {(tokenMainInfo.state !== 'finished' && tokenMainInfo.state !== 'canceled') &&
+           <EditLinksModal visible={showEditLink} onClose={closEditLinkOpen} 
+            tokenMainInfoPreset={tokenMainInfo} onUpdated={onUpdated} />
+        }
+
         
         <VisabilitySwitch
           isDiscoverablePreset={!tokenMainInfo.isHided}
@@ -427,7 +461,12 @@ function VisabilitySwitch({isDiscoverablePreset, shortLink, premarketPubkey, onU
 }
 
 
-function EditLinks({tokenMainInfoPreset, onUpdated}: {
+function EditLinksModal({
+  visible,
+  onClose, 
+  tokenMainInfoPreset, onUpdated}: {
+  visible: boolean, 
+  onClose: ()=>void,
   tokenMainInfoPreset: TokenMainInfo,
   onUpdated: () => Promise<void>;
 }) {
@@ -437,10 +476,6 @@ function EditLinks({tokenMainInfoPreset, onUpdated}: {
   const { connected, connect } = useWallet();
   const wallet = useAnchorWalletSafe();
   const { open, replace, close: closeOverlay } = useOverlay();
-  const [visible, setIsVisible] = useState(false)
-  const onDismiss = () => {
-    setIsVisible(false)
-  }
 
     const handleUpdateURIConfirm = async (tokenMainInfo: TokenMainData) => {
     open(renderLoader("Update premarket links..."));
@@ -517,11 +552,11 @@ function EditLinks({tokenMainInfoPreset, onUpdated}: {
       <Modal
         style={{alignItems: 'center', justifyContent: 'center',}}
         visible={visible}
-        onDismiss={onDismiss}
+        onDismiss={onClose}
         contentContainerStyle={[styles.modalContainer]}>     
           <CreateTokenForm
             onNext={handleUpdateURIConfirm}
-            onClose={onDismiss}
+            onClose={onClose}
             step={1}
             totalSteps={4}
             presetData={{
