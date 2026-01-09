@@ -19,8 +19,10 @@ export async function uploadTokenMetadataToIPFS({
   tokenInfo: TokenInfo;
 }) {
   const attemptOnce = async () => {
+    const dataURL = await normalizeAvatarToDataURL(avatar);
+
     // === recreate payload between retry ===
-    const [head, b64] = avatar.split(",");
+    const [head, b64] = dataURL.split(",");
     if (!head || !b64) throw new Error("Invalid avatar data URL");
     const mimeType = head.split(":")[1]?.split(";")[0] || "image/png";
 
@@ -74,4 +76,22 @@ export async function uploadTokenMetadataToIPFS({
     console.error("Failed during upload image to Pump.fun IPFS:", error);
     return null;
   }
+}
+
+async function normalizeAvatarToDataURL(avatar: string): Promise<string> {
+  if (avatar.startsWith("data:")) {
+    return avatar;
+  }
+
+  const res = await fetch(avatar);
+  if (!res.ok) throw new Error("Failed to fetch avatar URL");
+
+  const blob = await res.blob();
+
+  return await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 }

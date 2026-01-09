@@ -38,6 +38,7 @@ type TX_TYPE =
     "out_of_premarket" | 
     "finish_premarket" | 
     "extend_premarket" | 
+    "update_uri" |
     "claim_tokens" | 
     "refund_premarket"
 
@@ -56,6 +57,7 @@ export async function signTransactionWithRevelcyAuth(params: {
   if (
     params.txType === "finish_premarket" ||
     params.txType === "extend_premarket" ||
+    params.txType === "update_uri"       ||
     params.txType === "refund_premarket" ||
     params.txType === "claim_tokens"
   ) {
@@ -230,6 +232,13 @@ export interface ExtendPremarketTxRequest {
   new_deadline: number; // unix sec
 }
 
+export interface UpdateURIPremarketTxRequest {
+  network: "devnet" | "mainnet-beta";
+  user_pubkey: string;
+  premarket_account: string;
+  new_uri: string;
+}
+
 export async function getExtendPremarketTransaction(
   userPubkeyBase58: string,
   premarketAccountBase58: string,
@@ -250,6 +259,30 @@ export async function getExtendPremarketTransaction(
     return data;
   } catch (e: any) {
     throw new Error(`Failed to get extend premarket tx: ${e?.message ?? "Unknown error"}`);
+  }
+}
+
+
+export async function getUpdateURIPremarketTransaction(
+  userPubkeyBase58: string,
+  premarketAccountBase58: string,
+  network: "devnet" | "mainnet-beta",
+  newUri: string
+): Promise<TxOnlyResponse> {
+  const payload: UpdateURIPremarketTxRequest = {
+    network,
+    user_pubkey: userPubkeyBase58,
+    premarket_account: premarketAccountBase58,
+    new_uri: newUri,
+  };
+  try {
+    const data = await http.post<TxOnlyResponse>(
+      `${API_HOST}/premarket/tx/update_uri`,
+      { json: payload, retry: RETRY_TX_GEN }
+    );
+    return data;
+  } catch (e: any) {
+    throw new Error(`Failed to get updateURI premarket tx: ${e?.message ?? "Unknown error"}`);
   }
 }
 
