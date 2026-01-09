@@ -1,8 +1,8 @@
 import type { ClientContext } from "./types";
 import type { ClientContextDTO } from "./dto";
-import { http } from "@services/api/http"; // твой http wrapper (как в userOutOfPremarket)
-import { API_HOST } from "env"; // поправь пути
-import type { UserInfoEventType, UserSetInfoRequestDTO, UserSetInfoResponseDTO } from "./dto";
+import { http } from "@services/api/http";
+import { API_HOST } from "env";
+import type { UserInfoEventType, UserSetInfoRequestDTO } from "./dto";
 import { collectClientContextWeb } from "./collector";
 
 type Args = {
@@ -24,14 +24,7 @@ export async function userSetAdditionalInfo(args: Args): Promise<void> {
         };
 
         await http.post(`${API_HOST}/user/set_additional_info`, {json: payload, retry: 1,});
-    } catch (e: any) {
-        // без UI-нотификаций, просто лог
-        console.log("[fingerprint] failed user_set_additional_info", {
-        eventType: args.eventType,
-        premarket: args.premarket,
-        error: e?.message ?? e,
-        });
-    }
+    } catch (e: any) {}
 }
 
 
