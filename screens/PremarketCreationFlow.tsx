@@ -30,7 +30,6 @@ import { convertSmallCountToLamport } from "@utils/premarket";
 import {
   updateAboutCommunity,
   updateTokenAvailbility,
-  userJoinedToPremarket,
 } from "@api/token";
 import { useAuth } from "@providers/AuthContext";
 import { uploadImage } from "@api/files";
@@ -355,36 +354,6 @@ export default function PremarketCreationFlow() {
 
       try {
         await patch({ step: FLOW_STEP.PROCESSING });
-
-        setLaunchState("Adding info to Revelcy...");
-        try {
-          if (tokenData.tokenomicsData.creatorInitialBuy > 0) {
-            await userJoinedToPremarket({
-              joinAmountInSolLamport: convertSmallCountToLamport(
-                tokenData.tokenomicsData.creatorInitialBuy
-              ),
-              premarketPubKey: resp.premarketPDA.toString(),
-              tx: resp.txId,
-              userWallet: wallet.publicKey.toString(),
-              userId: user.user?.userId,
-            });
-          }
-        } catch (error) {
-          notify.error(
-            "Premarket created, but info about your entry is not added",
-            {
-              suggest:
-                "Please, contact administrator with premarket address:" +
-                resp.premarketPDA.toString(),
-              duration: 60000,
-              action: {
-                label: "Ok",
-                onAction: () => {},
-              },
-            }
-          );
-          return;
-        }
 
         setLaunchState("Adding community info");
         try {

@@ -7,20 +7,8 @@ import shortString from "@utils/address_shorter";
 import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
 import { DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
 import { isSolanaPublicKey } from "@utils/solana";
-import { toDecString } from "@utils/numbers";
 
 const RETRY_DEFAULT = 6;
-
-export interface premerketTransactionArgs {
-  premarketPubKey: string;
-  userWallet: string;
-  userId?: string;
-  tx: string;
-}
-
-export interface userJoinedToPremarketArgs extends premerketTransactionArgs {
-  joinAmountInSolLamport: BN
-}
 
 export async function updateAboutCommunity(premarketPubkey: string, args: TokenCommunityInfo) {
   const payload = {
@@ -49,8 +37,6 @@ export interface TokenAvailabilityInfo {
   isHided?: boolean;
   tokenShortUrlName?: string;
 }
-
-
 export async function updateTokenAvailbility(premarketPubkey: string, args: TokenAvailabilityInfo) {
   const payload = {
     premarket_pubkey: premarketPubkey,
@@ -68,24 +54,6 @@ export async function updateTokenAvailbility(premarketPubkey: string, args: Toke
   }
 }
 
-
-export async function userJoinedToPremarket(args: userJoinedToPremarketArgs) {
-  const payload = {
-    premarket_pub_key: args.premarketPubKey,
-    user_wallet: args.userWallet,
-    user_id: args.userId ?? null,
-    tx: args.tx,
-    join_amount_in_sol_lamport: toDecString(args.joinAmountInSolLamport),
-  };
-
-  try {
-    await http.post(`${API_HOST}/premarket/user_joined`, { json: payload, retry: RETRY_DEFAULT });
-    return;
-  } catch (e: any) {
-    console.log("failed with", payload);
-    throw new Error(`Failed to add user to PM: ${e.message ?? "Unknown error"}`);
-  }
-}
 
 export async function getPremarketInfo({
   tokenPubkeyOrShortUrl,
