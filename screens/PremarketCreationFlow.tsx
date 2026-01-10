@@ -28,7 +28,6 @@ import {
 import EditPremarketSettingsForm from "@components/token/create/EditPremarketSettings";
 import { convertSmallCountToLamport } from "@utils/premarket";
 import {
-  premarketCreated,
   updateAboutCommunity,
   updateTokenAvailbility,
   userJoinedToPremarket,
@@ -42,7 +41,6 @@ import { useNotification } from "@providers/NotificationContext";
 import { validateImageFile, uriToFile, BANNER_MAX_FILE_SIZE_BYTES } from "@utils/imageValidation";
 
 import { usePremarketDraft } from "@hooks/usePremarketDraft";
-import { PublicKey } from "@solana/web3.js";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import TransactionLoadingModal from "@components/modals/TransactionLoadingModal";
 

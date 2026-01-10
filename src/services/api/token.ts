@@ -2,12 +2,12 @@ import { API_HOST, NETWORK } from "env";
 import { BN } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
 import { PremarketState, convertTokenToDecimal } from "@utils/premarket";
-import { toDecString } from "@api/tx_premarket";
 import { http } from "@api/http";
 import shortString from "@utils/address_shorter";
 import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
 import { DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
 import { isSolanaPublicKey } from "@utils/solana";
+import { toDecString } from "@utils/numbers";
 
 const RETRY_DEFAULT = 6;
 
@@ -18,57 +18,8 @@ export interface premerketTransactionArgs {
   tx: string;
 }
 
-export interface premarketCreatedArgs extends premerketTransactionArgs {
-  mainInfo: TokenMainInfo,
-  communityInfo: TokenCommunityInfo,
-}
-
 export interface userJoinedToPremarketArgs extends premerketTransactionArgs {
   joinAmountInSolLamport: BN
-}
-
-export async function premarketCreated(args: premarketCreatedArgs) {
-  console.log("send to BE: premarket Created", args);
-
-  const payload = {
-    blockchain_info: {
-      name: args.mainInfo.name,
-      description: args.mainInfo.description,
-      symbol: args.mainInfo.symbol,
-      image_url: args.mainInfo.imageURL,
-      ipfs_uri: args.mainInfo.ipfsURI,
-      creator_id: args.userId,
-      creator_address: args.userWallet,
-      premarket_address: args.premarketPubKey,
-      links: {
-        telegram: args.mainInfo.links.telegram,
-        twitter: args.mainInfo.links.twitter,
-        web_site: args.mainInfo.links.webSite,
-      },
-      premarket_goal_sol_lamp: toDecString(args.mainInfo.premarketGoalSolLamp),
-      premarket_deadline: args.mainInfo.premarketDeadline,
-      premarket_created: args.mainInfo.premarketCreated,
-      mint_address: args.mainInfo.tokenMint,
-      state: args.mainInfo.state, 
-    },
-    community_info: {
-      description: args.communityInfo.description,
-      token_banner_url: args.communityInfo.tokenBannerURL,
-      links: args.communityInfo.links?.map((link) => ({
-        text: link.text,
-        url: link.url,
-        type: link.type,
-      })),
-    },
-  };
-
-  try {
-    await http.post(`${API_HOST}/premarket/created`, { json: payload, retry: RETRY_DEFAULT });
-    return;
-  } catch (e: any) {
-    console.log("failed with", payload);
-    throw new Error(`Failed to add premarket to whitelist: ${e.message ?? "Unknown error"}`);
-  }
 }
 
 export async function updateAboutCommunity(premarketPubkey: string, args: TokenCommunityInfo) {
@@ -118,34 +69,6 @@ export async function updateTokenAvailbility(premarketPubkey: string, args: Toke
 }
 
 
-export async function extendedPremarket(args: {
-  premarketPubKey: string;
-  userWallet: string;
-  userId: string;
-  tx: string;
-  network: "devnet" | "mainnet-beta";
-  newDeadline: number; // unix timestamp
-}) {
-  const payload = {
-    base: {
-      premarket_pub_key: args.premarketPubKey,
-      user_wallet: args.userWallet,
-      user_id: args.userId,
-      tx: args.tx,
-    },
-    network: args.network,
-    new_deadline: args.newDeadline,
-  };
-  
-  try {
-    await http.post(`${API_HOST}/premarket/extended_premarket`, { json: payload, retry: RETRY_DEFAULT });
-    return;
-  } catch (e: any) {
-    console.log("failed with", payload);
-    throw new Error(`Failed to extend premarket: ${e.message ?? "Unknown error"}`);
-  }
-}
-
 export async function userJoinedToPremarket(args: userJoinedToPremarketArgs) {
   const payload = {
     premarket_pub_key: args.premarketPubKey,
@@ -161,25 +84,6 @@ export async function userJoinedToPremarket(args: userJoinedToPremarketArgs) {
   } catch (e: any) {
     console.log("failed with", payload);
     throw new Error(`Failed to add user to PM: ${e.message ?? "Unknown error"}`);
-  }
-}
-
-export async function userOutOfPremarket(args: premerketTransactionArgs) {
-  console.log("send to BE: user out of premarket", args);
-
-  const payload = {
-    premarket_pub_key: args.premarketPubKey,
-    user_wallet: args.userWallet,
-    user_id: args.userId ?? null,
-    tx: args.tx,
-  };
-
-  try {
-    await http.post(`${API_HOST}/premarket/user_out`, { json: payload, retry: RETRY_DEFAULT });
-    return;
-  } catch (e: any) {
-    console.log("failed with", payload);
-    throw new Error(`Failed to add user out: ${e.message ?? "Unknown error"}`);
   }
 }
 

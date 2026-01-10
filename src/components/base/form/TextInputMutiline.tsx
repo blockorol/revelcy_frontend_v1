@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TextInput as PaperTextInput, HelperText, useTheme, Text } from 'react-native-paper';
 import { View, StyleProp, TextStyle } from 'react-native';
-import { ExtendedMD3Colors, AppTheme } from '@theme/types';
+import { AppTheme } from '@theme/types';
 
 
 type Props = {

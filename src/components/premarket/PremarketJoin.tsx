@@ -1,4 +1,4 @@
-import { TokenDynamicInfo, TokenMainInfo, userJoinedToPremarket } from "@api/token";
+import { TokenDynamicInfo, TokenMainInfo } from "@api/token";
 import { getWalletInfo, WalletInfoResponseDto } from "@api/wallet";
 import { SvgIcon } from "@components/base/SvgIcon";
 import { BN } from "@coral-xyz/anchor";
