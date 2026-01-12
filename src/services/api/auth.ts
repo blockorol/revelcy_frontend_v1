@@ -42,7 +42,24 @@ export async function updateAvatar({
   return res.data as { jwt: string };
 }
 
-
+export async function setInviteCode({
+  inviteCode,
+  jwt
+}: {
+  inviteCode: string,
+  jwt: string;
+}) {
+  
+  const res = await axios.post(`${API_USER_URL}/set_invite_code`, {
+    invite_code: inviteCode,
+  }, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${jwt}`
+    }} 
+);
+  return res.data as { jwt: string };
+}
 
 export async function startSession() {
   const res = await axios.get(`${API_AUTH_URL}/start_session`, {

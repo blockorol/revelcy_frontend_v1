@@ -10,36 +10,20 @@ import { useNotification } from "@providers/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import { joinToPremarket } from "@services/blockchain/premarket/joinPremarket";
 import { convertSmallCountToLamport } from "@utils/premarket";
-import { View } from "react-native";
-import { ActivityIndicator, Text, useTheme } from "react-native-paper";
-import OneScreenContainer from "@components/base/container/OneScreenContainer";
-import LoginFlow from "@components/login/LoginFlow";
+import TextedLoader from "@components/ui/Loader";
+import { useLoginModal } from "@providers/LoginModalContext";
 
 export type JoinOutcome = "ok" | "need-login" | "need-wallet" | "invalid-amount" | "error";
 
 export function useJoinFlow(onUpdated:()=>void) {
   const { user } = useAuth();
+  const { openLogin } = useLoginModal()
   const { connected, connect } = useWallet();
   const wallet = useAnchorWalletSafe();
   const { network } = useNetwork();
   const connection = getSolanaConnection(network);
   const notify = useNotification();
   const { open, replace, close: closeOverlay } = useOverlay();
-  const theme = useTheme();
-
-  const renderLoader = (status: string) => (
-    <View style={{ rowGap: 20 }}>
-      <Text variant="titleMedium">{status}</Text>
-      <ActivityIndicator animating color={theme.colors.primary} size="large" />
-    </View>
-  );
-  
-  const renderLogin = () => (
-    <OneScreenContainer>
-      <LoginFlow onCloseButton={closeOverlay}/>
-    </OneScreenContainer>
-  );
-
 
   const joinPremarketByLamports = async (
     premarketPubkey: PublicKey,
@@ -53,7 +37,7 @@ export function useJoinFlow(onUpdated:()=>void) {
       }
       if (!user) {
         // For unauthenticated users, show login flow directly
-        open(renderLogin());
+        openLogin();
         return "need-login";
       }
       if (!wallet || !connected) {
@@ -80,9 +64,10 @@ export function useJoinFlow(onUpdated:()=>void) {
         return "need-wallet";
       }
 
-      open(renderLoader("join to premarket..."));
+      open(<TextedLoader text={"join to premarket..."} />);
       const res = await joinToPremarket(wallet, connection, network, premarketPubkey, amountLamp, amountLamp,
-        (text) => {replace(renderLoader(text))});
+        (text) => {replace(<TextedLoader text={text} />)
+      });
 
       closeOverlay();
       notify.success("Successfully joined premarket!");
