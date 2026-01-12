@@ -2,6 +2,7 @@
 import { API_HOST } from "env";
 import { BN } from "@coral-xyz/anchor";
 import { http } from "@api/http";
+import { ensureDec, toDecString } from "@utils/numbers";
 
 export type Network = "devnet" | "mainnet-beta";
 
@@ -293,7 +294,7 @@ export interface ClaimTokensTxRequest {
   token_mint: string;        // base58
 }
 
-export async function GetClaimTokensTransaction(
+export async function getClaimTokensTransaction(
   userPubkeyBase58: string,
   premarketAccountBase58: string,
   tokenMint: string,
@@ -316,20 +317,3 @@ export async function GetClaimTokensTransaction(
   }
 }
 
-export function toDecString(x: BN | string | number | bigint): string {
-  if (BN.isBN(x)) return (x as BN).toString(10);
-  if (typeof x === "bigint") return x.toString(10);
-  if (typeof x === "number") return Math.trunc(x).toString(10);
-  if (typeof x === "string") {
-    const s = x.trim();
-    if (/^0x[0-9a-f]+$/i.test(s)) return new BN(s.slice(2), 16).toString(10);
-    if (/^[0-9a-f]+$/i.test(s) && /[a-f]/i.test(s)) return new BN(s, 16).toString(10);
-    if (/^\d+$/.test(s)) return s;
-    throw new Error(`Invalid numeric string: "${x}"`);
-  }
-  throw new Error(`Unsupported type: ${typeof x}`);
-}
-
-export function ensureDec(name: string, v: string) {
-  if (!/^\d+$/.test(v)) throw new Error(`${name} must be a decimal string, got "${v}"`);
-}

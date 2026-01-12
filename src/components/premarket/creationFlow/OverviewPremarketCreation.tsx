@@ -1,5 +1,5 @@
 // components/token/TokenOverviewCreation.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { View, Image, ScrollView } from "react-native";
 import { useTheme, Divider, HelperText } from "react-native-paper";
 import { Button } from "@components/ui/Button";
@@ -20,7 +20,6 @@ import { round, formatNumberNoTrailingZeros } from "@utils/numbers";
 import { convertSolToPercentOnStart } from "@services/pumpfun/adds";
 import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
 import { Switch } from "@components/ui/Switch";
-import { tr } from "react-native-paper-dates";
 
 type Props = {
   data: TokenCreateFullData;

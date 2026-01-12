@@ -9,7 +9,7 @@ import { useNotification } from "@providers/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import { useAnchorWalletSafe } from "@storage/wallet-adapter/useWallet.web";
 import { outOfPremarket } from "@services/blockchain/premarket/outOfPremarket";
-import { userOutOfPremarket, getHolderEntryPrice } from "@services/api/token";
+import { getHolderEntryPrice } from "@services/api/token";
 import { PublicKey } from "@solana/web3.js";
 import { TokenDynamicInfo, TokenMainInfo } from "@api/token";
 import { convertLamportToSmallCount, formatNumberCompact, convertDecimalToToken } from "@utils/premarket";

@@ -9,7 +9,6 @@ import { getSolanaConnection } from "@services/blockchain/solana";
 import { useNotification } from "@providers/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import { joinToPremarket } from "@services/blockchain/premarket/joinPremarket";
-import { userJoinedToPremarket } from "@api/token";
 import { convertSmallCountToLamport } from "@utils/premarket";
 import { View } from "react-native";
 import { ActivityIndicator, Text, useTheme } from "react-native-paper";
