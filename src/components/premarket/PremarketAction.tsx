@@ -3,7 +3,7 @@ import { TokenDynamicInfo, TokenMainInfo } from "@api/token";
 import { PremarketJoin } from "@components/premarket/PremarketJoin";
 import { CreatorInfo } from "@components/premarket/CreatorInfo";
 import { useAuth } from "@providers/AuthContext";
-import { useTheme, Text, ActivityIndicator } from "react-native-paper";
+import { useTheme, Text } from "react-native-paper";
 import { View } from "react-native";
 import { Button } from "@components/ui/Button";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
@@ -16,6 +16,7 @@ import { getSolanaConnection } from "@services/blockchain/solana";
 import { useNotification } from "@providers/NotificationContext";
 import { claimTokens } from "@services/blockchain/premarket/claimTokens";
 import { PublicKey } from "@solana/web3.js";
+import TextedLoader from "@components/ui/Loader";
 
 interface PremarketActionProps {
   tokenMainInfo: TokenMainInfo;
@@ -156,13 +157,6 @@ export function PremarketActionLaunched({
     }
   };
 
-  const renderLoader = (status: string) => (
-    <View style={{ gap: 20 }}>
-      <Text variant="titleMedium">{status}</Text>
-      <ActivityIndicator animating color={colors.primary} size="large" />
-    </View>
-  );
-
   const handleClaimTokens = async () => {
     if (!wallet || !connected) {
       notify.error("Wallet is not connected", {
@@ -192,14 +186,14 @@ export function PremarketActionLaunched({
     }
 
     try {
-      open(renderLoader("Claiming tokens..."));
+      open(<TextedLoader text ={"Claiming tokens..."}/>);
       await claimTokens(
         wallet,
         connection,
         network,
         tokenMainInfo.premarketPubkey,
         new PublicKey(tokenMainInfo.tokenMint),
-        (text) => { replace(renderLoader(text)) }
+        (text) => {<TextedLoader text ={text}/>}
       );
 
       notify.success("Tokens claimed successfully!", {

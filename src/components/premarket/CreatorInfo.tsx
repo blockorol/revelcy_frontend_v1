@@ -10,7 +10,7 @@ import { useNotification } from "@providers/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 
 import { Linking, View, StyleSheet} from "react-native";
-import { Text, ActivityIndicator, useTheme, HelperText, Portal, Modal} from "react-native-paper";
+import { Text, useTheme, HelperText, Portal, Modal} from "react-native-paper";
 import {Button} from '@components/ui/Button'
 import { ShareTextButton } from "@components/base/ButtonShare";
 import { SvgIcon } from "@components/base/SvgIcon";
@@ -23,6 +23,7 @@ import { uploadTokenMetadataToIPFS } from "@services/files/ipfs/pumpfun";
 import { updateUriPremarket } from "@services/blockchain/premarket/updateUriPremarket";
 import CreateTokenForm from "@components/token/create/CreateTokenForm";
 import { TokenMainData } from "@components/token/create/interface";
+import TextedLoader from "@components/ui/Loader";
 
 interface CreatorInfoProps {
   tokenMainInfo: TokenMainInfo;
@@ -76,13 +77,13 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
 
 
     try {
-      open(renderLoader("Refunding premarket...", colors.primary));
+      open(<TextedLoader text ={"Refunding premarket..."}/>);
       const res = await refundPremarket(
         wallet,
         connection,
         network,
         tokenMainInfo.premarketPubkey,
-        (text) => {replace(renderLoader(text, colors.primary))}
+        (text) => {replace(<TextedLoader text ={text}/>)}
       );
       closeOverlay();
       notify.success("Premarket successfully refunding!", {action: {
@@ -202,14 +203,14 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
     }
 
     try {
-      open(renderLoader("Extending premarket deadline...", colors.primary));
+      open(<TextedLoader text ={"Extending premarket deadline..."}/>);
       const res = await extendPremarket(
         wallet,
         connection,
         network,
         tokenMainInfo.premarketPubkey,
         newDeadline,
-        (text) => {replace(renderLoader(text, colors.primary))}
+        (text) => {replace(<TextedLoader text ={text}/>)}
       );
 
       notify.success("Premarket deadline successfully extended!", {action: {
@@ -264,13 +265,13 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
     }
 
     try {
-      open(renderLoader("Finishing premarket...", colors.primary));
+      open(<TextedLoader text ={"Finishing premarket..."}/>);
       const res = await finishPremarket(
         wallet,
         connection,
         network,
         tokenMainInfo.premarketPubkey,
-        (text) => {replace(renderLoader(text, colors.primary))}
+        (text) => {replace(<TextedLoader text ={text}/>)}
       );
 
       notify.success("Premarket successfully finished!", {action: {
@@ -479,7 +480,7 @@ function EditLinksModal({
   const { open, replace, close: closeOverlay } = useOverlay();
 
     const handleUpdateURIConfirm = async (tokenMainInfo: TokenMainData) => {
-    open(renderLoader("Update premarket links...", colors.primary));
+    open(<TextedLoader text ={"Update premarket links..."}/>);
     if (!wallet || !connected) {
       notify.error("Wallet is not connected", {
         suggest: "Enable Phantom (or compatible) and try again",
@@ -509,7 +510,7 @@ function EditLinksModal({
       return;
 
     }
-    open(renderLoader("Uploading data to IPFS...", colors.primary));
+    open(<TextedLoader text ={"Uploading data to IPFS..."}/>);
     
     try {
       const ipfsData = await uploadTokenMetadataToIPFS({
@@ -526,7 +527,7 @@ function EditLinksModal({
         },
       });
       if (!ipfsData) {
-        replace(renderLoader("Failed to upload to IPFS...", colors.primary));
+        replace(<TextedLoader text ={"Failed to upload to IPFS..."}/>);
         notify.error("failed to upload data to IPFS", {
           suggest: "Please, try again later",
         });
@@ -537,7 +538,7 @@ function EditLinksModal({
         wallet, connection, network,
         tokenMainInfoPreset.premarketPubkey,
         ipfsData.metadataUri, 
-        (text) => {replace(renderLoader(text, colors.primary))}
+        (text) => {replace(<TextedLoader text ={text}/>)}
       )
     } catch (e) {
       console.error("update links error:", e);
@@ -577,15 +578,6 @@ function EditLinksModal({
     
   )
 }
-
-function renderLoader (status: string, color:string) {
-  return (
-    <View style={{ gap: 20 }}>
-      <Text variant="titleMedium">{status}</Text>
-      <ActivityIndicator animating color={color} size="large" />
-    </View>
-  )
-};
 
 
 
