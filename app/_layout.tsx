@@ -115,9 +115,10 @@ function InnerLayout() {
   return (
     <PaperProvider theme={theme}>
       <NotificationProvider>
-        <UserModalProvider>
-          <UniversalOverlayProvider>
-            <LoginModalProvider>
+        
+        <LoginModalProvider>
+          <UserModalProvider>
+            <UniversalOverlayProvider>
               <Portal.Host>
                 <LoginAutoOpener />
                 <StatusBar
@@ -147,9 +148,9 @@ function InnerLayout() {
                   <CookiesModal />
                 </View>
               </Portal.Host>
-            </LoginModalProvider>
-          </UniversalOverlayProvider>
-        </UserModalProvider>
+            </UniversalOverlayProvider>
+          </UserModalProvider>
+        </LoginModalProvider>
       </NotificationProvider>
     </PaperProvider>
   );
