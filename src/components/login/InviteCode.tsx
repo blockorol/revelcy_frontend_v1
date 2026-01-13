@@ -94,16 +94,35 @@ export default function InviteCode({
         <GreenButton
           buttonText="Continue"
           onClick={async () => {
-            try {
-              const resp = await setInviteCodeToServer(inviteCode);
-              if (!resp.ok) {
-                const reason = resp.reason ?? "";
-                throw Error(`not ok with unexpected reason: ${reason}`);
-              }
+            // skip if no invite code
+            if (inviteCode === "") {
               toNext();
-            } catch (e) {
-              console.log("error: Some error", e);
-              setError("Something went wrong. Please, try again");
+              return;
+            }
+
+            const resp = await setInviteCodeToServer(inviteCode);
+
+            if (resp.ok) {
+              toNext();
+              return;
+            }
+
+            switch (resp.reason) {
+              case "NOT_FOUND":
+                setError("Invite code not found");
+                return;
+
+              case "ALREADY_APPLIED":
+                // second click - skip the code to avoid blocker
+                if (error === 'Invite code was already applied earlier') {
+                  toNext();
+                  return;
+                }
+                setError("Invite code was already applied earlier");
+                return;
+              default:
+                setError("Something went wrong. Please, try again");
+                return;
             }
           }}
         />

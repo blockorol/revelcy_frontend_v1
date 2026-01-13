@@ -102,22 +102,25 @@ export default function LoginFlow({loginFlowStateOverride, inviteCodeOverride, o
           moveBetweenStateRef.current = true
           setLoginFlowState(LoginState.SET_AVATAR)
         }}
-        setInviteCodeToServer={ async (inviteCode: string) =>{
-          try {
-            const resp = await setInviteCode({
-              inviteCode: inviteCode,
-              jwt: jwtCurrentRef.current
-            })
-            jwtCurrentRef.current = resp.jwt
-          } catch {
-            return {
-              ok: false
-            }
+        setInviteCodeToServer={ async (inviteCode: string) => {
+          const res = await setInviteCode({ inviteCode, jwt: jwtCurrentRef.current });
+
+          if (res.ok) {
+            return { ok: true };
           }
-          return {
-            ok: true
+
+          switch (res.error.kind) {
+            case "invite_code_not_found":
+              return { ok: false, reason: "NOT_FOUND" };
+
+            case "invite_code_already_applied":
+              return { ok: false, reason: "ALREADY_APPLIED" };
+
+            default:
+              return { ok: false, reason: "UNKNOWN" };
           }
         }}
+
       />)
       break;
    /* case LoginState.WALLET_CONNECTING:
@@ -174,6 +177,7 @@ export default function LoginFlow({loginFlowStateOverride, inviteCodeOverride, o
         width={activeProp.width - DEF_PADDINGS.left - DEF_PADDINGS.right}
         toNext={() => {
           login(jwtCurrentRef.current);
+          if (onCloseButton) onCloseButton();
         }}
         setUploadAvatarToServer={async (avatarUri: string) => {
           try {
@@ -208,6 +212,3 @@ export default function LoginFlow({loginFlowStateOverride, inviteCodeOverride, o
   </ImageBackgroundOverlay>
   );
 }
-
-const styles = StyleSheet.create({
-});
