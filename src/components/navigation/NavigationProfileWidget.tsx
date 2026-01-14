@@ -1,6 +1,6 @@
 import { StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
 import {  Text, useTheme, Surface } from "react-native-paper";
-import Login from "@components/login/LoginButton";
+import LoginButton from "@components/login/LoginButton";
 import { useAuth } from "@providers/AuthContext";
 import shortString from "@utils/address_shorter";
 import type { AppTheme, ExtendedMD3Colors } from "@theme/types";
@@ -21,7 +21,7 @@ export function NavigationProfileWidget({
   const mdColors = colors as ExtendedMD3Colors;
 
   if (!user) {
-    return <Login style={style} />;
+    return <LoginButton style={style} />;
   }
 
   return (

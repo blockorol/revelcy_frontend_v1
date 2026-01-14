@@ -19,6 +19,7 @@ import { MD3Colors, MD3Typescale } from "react-native-paper/lib/typescript/types
 import { SvgIcon } from "@components/base/SvgIcon";
 import { convertSolanaToTokenWithFee, splitInput  } from "@services/pumpfun/convertors";
 import { convertTokenToPersent, DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
+import TextedLoader from "@components/ui/Loader";
 
 
 interface YourEntryProps {
@@ -207,14 +208,6 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
             tokenMainInfo.state !== 'times_up';
     }, [tokenMainInfo.state]);
 
-
-    const renderLoader = (status: string) => (
-        <View style={{ gap: 20 }}>
-            <Text variant="titleMedium">{status}</Text>
-            <ActivityIndicator animating color={theme.colors.primary} size="large" />
-        </View>
-    );
-
     const handleOut = async () => {
         if (!wallet || !connected) {
             notify.error("Wallet is not connected", {
@@ -242,9 +235,9 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
         }
 
         try {
-            open(renderLoader("out of premarket..."));
+            open(<TextedLoader text={"out of premarket..."}/>);
             await outOfPremarket(wallet, connection, network, premarketPubkey,
-                (text) => { replace(renderLoader(text)) }
+                (text) => { <TextedLoader text={text} /> }
             );
 
             notify.success("Successfully left premarket!");

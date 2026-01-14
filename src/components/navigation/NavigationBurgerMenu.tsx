@@ -139,12 +139,6 @@ function NavigationBurgerMenuItemsList({ onClose }: NavProps) {
           </View>
         </View>
       </View>
-    <TouchableRipple
-      onPress={onClose}
-      style={{backgroundColor: undefined, width: "100%", height: "100%" }}
-    >
-      <View></View>
-    </TouchableRipple>
     </View>
   );
 }
