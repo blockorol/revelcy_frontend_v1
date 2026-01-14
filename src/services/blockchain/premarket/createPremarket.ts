@@ -3,6 +3,7 @@ import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { Connection } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import {
+  CreatePremarketReq,
   getCreatePremarketTransaction,
   signTransactionWithRevelcyAuth,
 } from "@api/tx_premarket";
@@ -80,13 +81,17 @@ export async function createPremarket(
 
   // 3) Отправляем на бекенд для подписи Revelcy
   onChangeState?.("Send transaction to blockchain...");
-  const { signature, status } = await signTransactionWithRevelcyAuth({
-    CreatePremarket: {
-      network: network,
-      unsigned_tx: userSignedB64,
-      about_community: community,
+  const req: CreatePremarketReq = {
+    tx_type: "create_premarket",
+    network: network,
+    unsigned_tx: userSignedB64,
+    about_community: {
+      description: community.description,
+      links: community.links,
+      token_banner_url: community.banner?.url
     },
-  });
+  }
+  const { signature, status } = await signTransactionWithRevelcyAuth(req);
   
   userSetAdditionalInfo({
     premarket: premarket_account_pda,

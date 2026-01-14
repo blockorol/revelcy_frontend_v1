@@ -1,6 +1,6 @@
 import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey } from "@solana/web3.js";
-import { getExtendPremarketTransaction, signTransactionWithRevelcyAuth } from "@api/tx_premarket";
+import { ExtendPremarketReq, getExtendPremarketTransaction, signTransactionWithRevelcyAuth } from "@api/tx_premarket";
 import { simulateAndSignRawTx, confirmTxFinalised } from "@services/blockchain/signAndSend";
 
 export async function extendPremarket(
@@ -42,13 +42,13 @@ export async function extendPremarket(
 
   // 2) Подпись на бэкенде и отправка
   onChangeState?.("Send transaction to blockchain...");
-  const { signature, status } = await signTransactionWithRevelcyAuth({
-    ExtendPremarket: {
+  const req: ExtendPremarketReq = {
+      tx_type: "extend_premarket",
       network,
       unsigned_tx: userSignedB64,
       premarket: premarketAccount.toBase58(),
-    }
-  });
+  }
+  const { signature, status } = await signTransactionWithRevelcyAuth(req);
 
   onChangeState?.(`Waiting to tx finalisation. Current status: ${status}...`);
   try {

@@ -1,8 +1,10 @@
 import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import {
+  FinishPremarketReq,
   getFinishPremarketTransaction,
   getRefundPremarketTransaction,
+  RefundPremarketReq,
   signTransactionWithRevelcyAuth,
 } from "@api/tx_premarket";
 import { simulateAndSignRawTx, confirmTxFinalised } from "@services/blockchain/signAndSend";
@@ -43,13 +45,13 @@ export async function finishPremarket(
 
   // 2) Подпись на бэкенде и отправка в сеть
   onChangeState?.("Sending transaction to blockchain...");
-  const {signature, status } = await signTransactionWithRevelcyAuth({
-    FinishPremarket: {
-      network,
-      unsigned_tx: userSignedB64,
-      premarket: premarketAccount.toBase58()
-    }
-  });
+  const req: FinishPremarketReq = {
+    tx_type: "finish_premarket",
+    network,
+    unsigned_tx: userSignedB64,
+    premarket: premarketAccount.toBase58()
+  }
+  const { signature, status } = await signTransactionWithRevelcyAuth(req);
     
   userSetAdditionalInfo({
     premarket: premarketAccount.toBase58(),
@@ -103,14 +105,13 @@ export async function refundPremarket(
 
   // 2) Подпись на бэкенде
   onChangeState?.("Signing transaction on backend...");
-  const {signature, status } = await signTransactionWithRevelcyAuth({
-    RefundPremarket:{
-      network,
-      unsigned_tx: userSignedB64,
-      premarket: premarketAccount.toBase58(), // double check is it expected format or not?
-    }
-  });
-
+  const req: RefundPremarketReq = {
+    tx_type: "refund_premarket",
+    network,
+    unsigned_tx: userSignedB64,
+    premarket: premarketAccount.toBase58()
+  }
+  const { signature, status } = await signTransactionWithRevelcyAuth(req);
 
   onChangeState?.(`Waiting to tx finalisation. Current status: ${status}...`);
   try {

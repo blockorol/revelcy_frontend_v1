@@ -39,16 +39,18 @@ export interface CreatePremarketTxRequest {
   creator_allocate_lamp: string;  // u64 as string
 }
 
-export interface CommonTxFields {
+interface CommonTxFields {
+  tx_type: TX_TYPE;
   network: Network;
   unsigned_tx: string; // base64
 }
 
-export interface OldTxFields extends CommonTxFields{
+interface OldTxFields extends CommonTxFields{
   premarket: string;    // base58
 }
 
 export interface CreatePremarketReq extends CommonTxFields {
+  tx_type: "create_premarket";
   about_community: {
     description?: string | null;
     token_banner_url?: string | null;
@@ -61,17 +63,50 @@ export interface CreatePremarketReq extends CommonTxFields {
   //   whitelisting_addresses?: []string // userId or wallet
   // }
 }
+export type JoinPremarketReq = CommonTxFields & {
+  tx_type: "join_premarket";
+};
+
+export type OutOfPremarketReq = CommonTxFields & {
+  tx_type: "out_of_premarket";
+};
+
+export type FinishPremarketReq = OldTxFields & {
+  tx_type: "finish_premarket";
+};
+
+export type ExtendPremarketReq = OldTxFields & {
+  tx_type: "extend_premarket";
+};
+
+export type UpdateUriReq = OldTxFields & {
+  tx_type: "update_uri";
+};
+
+export type ClaimTokensReq = OldTxFields & {
+  tx_type: "claim_tokens";
+};
+
+export type RefundPremarketReq = OldTxFields & {
+  tx_type: "refund_premarket";
+};
+
+export type WithdrawVestingReq = CommonTxFields & {
+  tx_type: "withdraw_vesting";
+};
+
 
 export type TxToSignRequest =
-  | { CreatePremarket: CreatePremarketReq }
-  | { JoinPremarket: CommonTxFields }
-  | { OutOfPremarket: CommonTxFields }
-  | { ExtendPremarket: OldTxFields }
-  | { UpdateUri: OldTxFields }
-  | { ClaimTokens: OldTxFields }
-  | { FinishPremarket: OldTxFields }
-  | { RefundPremarket: OldTxFields }
-  | { WithdrawVesting: CommonTxFields };
+  | CreatePremarketReq
+  | JoinPremarketReq
+  | OutOfPremarketReq
+  | FinishPremarketReq
+  | ExtendPremarketReq
+  | UpdateUriReq
+  | ClaimTokensReq
+  | RefundPremarketReq
+  | WithdrawVestingReq;
+
 
 export interface SignTxResponse {
   signature: string;

@@ -1,7 +1,7 @@
 import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
-import { getJoinPremarketTransaction, signTransactionWithRevelcyAuth } from "@api/tx_premarket";
+import { getJoinPremarketTransaction, JoinPremarketReq, signTransactionWithRevelcyAuth } from "@api/tx_premarket";
 import { simulateAndSignRawTx, confirmTxFinalised } from "@services/blockchain/signAndSend";
 import { userSetAdditionalInfo } from "@services/fingerprint/sender";
 
@@ -43,12 +43,12 @@ export async function joinToPremarket(
   console.log("Join transaction signed by wallet, sending to BE for Revelcy signature...");
 
   onChangeState?.("Send transaction to blockchain...");
-  const { signature, status } = await signTransactionWithRevelcyAuth({
-    JoinPremarket: {
-      network,
-      unsigned_tx: userSignedB64,
-    }
-  });
+  const req: JoinPremarketReq = {
+    tx_type: "join_premarket",
+    network, 
+    unsigned_tx: userSignedB64
+  }  
+  const { signature, status } = await signTransactionWithRevelcyAuth(req);
   
   userSetAdditionalInfo({
     premarket: premarketAccount.toBase58(),
