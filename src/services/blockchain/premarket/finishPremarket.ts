@@ -44,10 +44,11 @@ export async function finishPremarket(
   // 2) Подпись на бэкенде и отправка в сеть
   onChangeState?.("Sending transaction to blockchain...");
   const {signature, status } = await signTransactionWithRevelcyAuth({
-    network,
-    txBase64: userSignedB64,
-    txType: "finish_premarket",
-    premarket: premarketAccount.toBase58()
+    FinishPremarket: {
+      network,
+      unsigned_tx: userSignedB64,
+      premarket: premarketAccount.toBase58()
+    }
   });
     
   userSetAdditionalInfo({
@@ -103,10 +104,11 @@ export async function refundPremarket(
   // 2) Подпись на бэкенде
   onChangeState?.("Signing transaction on backend...");
   const {signature, status } = await signTransactionWithRevelcyAuth({
-    network,
-    txBase64: userSignedB64,
-    txType: "refund_premarket",
-    premarket: premarketAccount.toBase58(), // double check is it expected format or not?
+    RefundPremarket:{
+      network,
+      unsigned_tx: userSignedB64,
+      premarket: premarketAccount.toBase58(), // double check is it expected format or not?
+    }
   });
 
 

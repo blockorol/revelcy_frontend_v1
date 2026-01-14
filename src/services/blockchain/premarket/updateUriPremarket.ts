@@ -43,10 +43,11 @@ export async function updateUriPremarket(
   // 2) Подпись на бэкенде и отправка
   onChangeState?.("Send transaction to blockchain...");
   const { signature, status } = await signTransactionWithRevelcyAuth({
-    network,
-    txBase64: userSignedB64,
-    txType: "update_uri",
-    premarket: premarketAccount.toBase58(),
+    UpdateUri: {
+      network,
+      unsigned_tx: userSignedB64,
+      premarket: premarketAccount.toBase58(),
+    }
   });
 
   onChangeState?.(`Waiting to tx finalisation. Current status: ${status}...`);

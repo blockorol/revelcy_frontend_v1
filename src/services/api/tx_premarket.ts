@@ -7,6 +7,17 @@ import { ensureDec, toDecString } from "@utils/numbers";
 export type Network = "devnet" | "mainnet-beta";
 
 const RETRY_TX_GEN = 3;
+const RETRY_TX_SEND = 3;
+
+type TX_TYPE = 
+  "create_premarket" | 
+  "join_premarket" | 
+  "out_of_premarket" | 
+  "finish_premarket" | 
+  "extend_premarket" | 
+  "update_uri" |
+  "claim_tokens" | 
+  "refund_premarket"
 
 /* ===== Create Premarket ===== */
 
@@ -28,55 +39,51 @@ export interface CreatePremarketTxRequest {
   creator_allocate_lamp: string;  // u64 as string
 }
 
-export interface SignTxResponse {
-  signature: string;
-  status: 'pending' | 'confirmed' | 'finalized' |'failed';
+export interface CommonTxFields {
+  network: Network;
+  unsigned_tx: string; // base64
 }
 
-type TX_TYPE = 
-    "create_premarket" | 
-    "join_premarket" | 
-    "out_of_premarket" | 
-    "finish_premarket" | 
-    "extend_premarket" | 
-    "update_uri" |
-    "claim_tokens" | 
-    "refund_premarket"
+export interface OldTxFields extends CommonTxFields{
+  premarket: string;    // base58
+}
 
-export async function signTransactionWithRevelcyAuth(params: {
-  network: "devnet" | "mainnet-beta";
-  txBase64: string;
-  txType: TX_TYPE;
-  premarket?: string;
-}) {
-  const payload: any = {
-    network: params.network,
-    unsigned_tx: params.txBase64,
-    tx_type: params.txType,
+export interface CreatePremarketReq extends CommonTxFields {
+  about_community: {
+    description?: string | null;
+    token_banner_url?: string | null;
+    links?: Array<{ text: string; url: string; type: "x" | "tg" | "other" }> | null;
   };
 
-  if (
-    params.txType === "finish_premarket" ||
-    params.txType === "extend_premarket" ||
-    params.txType === "update_uri"       ||
-    params.txType === "refund_premarket" ||
-    params.txType === "claim_tokens"
-  ) {
-    payload.premarket = params.premarket;
-  }
+  // availibility: {
+  //   is_hidden?: string | null;
+  //   short_url_name?: strign | null;
+  //   whitelisting_addresses?: []string // userId or wallet
+  // }
+}
 
+export type TxToSignRequest =
+  | { CreatePremarket: CreatePremarketReq }
+  | { JoinPremarket: CommonTxFields }
+  | { OutOfPremarket: CommonTxFields }
+  | { ExtendPremarket: OldTxFields }
+  | { UpdateUri: OldTxFields }
+  | { ClaimTokens: OldTxFields }
+  | { FinishPremarket: OldTxFields }
+  | { RefundPremarket: OldTxFields }
+  | { WithdrawVesting: CommonTxFields };
+
+export interface SignTxResponse {
+  signature: string;
+  status: "Confirmed" | "Finalized" | "Failed" | "Pending" | string; // у тебя TransactionStatus enum, сейчас отдаёшь Confirmed
+}
+
+export async function signTransactionWithRevelcyAuth(req: TxToSignRequest) {
   const data = await http.post<SignTxResponse>(
-    `${API_HOST}/premarket/tx/sign_create_transaction`,
-    {
-      json: payload,
-      retry: RETRY_TX_GEN,
-    }
+    `${API_HOST}/premarket/tx/sign_and_send_transaction`,
+    { json: req, retry: RETRY_TX_SEND }
   );
-
-  return data as {
-    signature: string;
-    status: string;
-  };
+  return data;
 }
 
 

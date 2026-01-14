@@ -47,10 +47,11 @@ export async function claimTokens(
 
   onChangeState?.("Send transaction to blockchain...");
   const { signature, status } = await signTransactionWithRevelcyAuth({
-    network,
-    txBase64: userSignedB64,
-    txType: "claim_tokens",
-    premarket: premarketAccount.toBase58(),
+    ClaimTokens: {
+      network,
+      unsigned_tx: userSignedB64,
+      premarket: premarketAccount.toBase58(),
+    }
   });
 
   

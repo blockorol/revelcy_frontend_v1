@@ -11,6 +11,9 @@ import {
   confirmTxFinalised,
 } from "@services/blockchain/signAndSend";
 import { userSetAdditionalInfo } from "@services/fingerprint/sender";
+import { CustomizeTokenData } from "@components/token/create/interface";
+import { uriToFile } from "@utils/imageValidation";
+import { uploadImage } from "@api/files";
 
 const SECONDS_IN_HOUR = 60 * 60;
 
@@ -29,7 +32,10 @@ export async function createPremarket(
   wallet: AnchorWallet,
   connection: Connection,
   args: CreatePremarketArgs,
-  onChangeState?: (state: string) => void
+  community: CustomizeTokenData, // todo: move this interfase to shared field
+  onChangeState?: (state: string) => void, 
+  notifyError?: (message: string) => void
+
 ) {
   onChangeState?.("Creating transaction...");
   console.log("Creating premarket with args:", args);
@@ -46,6 +52,17 @@ export async function createPremarket(
     wallet.publicKey.toBase58(),
     network
   );
+
+  try {
+    if (community.banner?.data) {
+      const fileName = `${premarket_account_pda.toString()}_banner`;
+      const file = await uriToFile(community.banner.data, fileName);
+      community.banner.url = await uploadImage(file, fileName);
+    }
+  } catch {
+    notifyError?.("Failed to upload community banner. Please, add it again from premarket page");
+    community.banner = undefined;
+  }
 
   console.log("Unsigned transaction created by BE:", {
     ...args,
@@ -64,9 +81,11 @@ export async function createPremarket(
   // 3) Отправляем на бекенд для подписи Revelcy
   onChangeState?.("Send transaction to blockchain...");
   const { signature, status } = await signTransactionWithRevelcyAuth({
-    network,
-    txBase64: userSignedB64,
-    txType: "create_premarket"
+    CreatePremarket: {
+      network: network,
+      unsigned_tx: userSignedB64,
+      about_community: community,
+    },
   });
   
   userSetAdditionalInfo({

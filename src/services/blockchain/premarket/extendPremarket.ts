@@ -43,10 +43,11 @@ export async function extendPremarket(
   // 2) Подпись на бэкенде и отправка
   onChangeState?.("Send transaction to blockchain...");
   const { signature, status } = await signTransactionWithRevelcyAuth({
-    network,
-    txBase64: userSignedB64,
-    txType: "extend_premarket",
-    premarket: premarketAccount.toBase58(),
+    ExtendPremarket: {
+      network,
+      unsigned_tx: userSignedB64,
+      premarket: premarketAccount.toBase58(),
+    }
   });
 
   onChangeState?.(`Waiting to tx finalisation. Current status: ${status}...`);

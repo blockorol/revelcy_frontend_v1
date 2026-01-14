@@ -242,13 +242,29 @@ export default function PremarketCreationFlow() {
         });
         return;
       }
-
+      
       const tokenData = {
         mainData: tokenMainData,
         customData: customizeTokenData,
         tokenomicsData: tokenomicsData,
         premarketSettingsData: premarketSettingsData,
       };
+
+      if (tokenData.customData.banner?.data !==undefined) {
+        const validationError = await validateImageFile(tokenData.customData.banner.data, { maxSizeBytes: BANNER_MAX_FILE_SIZE_BYTES });
+        if (validationError) {
+          notify.error(validationError.message, {
+            suggest: "Please, select a PNG or JPEG image under 5 MB",
+            duration: 60000,
+            action: {
+              label: "Ok",
+              onAction: () => {},
+            },
+          });
+          tokenData.customData.banner = undefined;
+          return;
+        }
+      }
 
       setLaunchState("Connecting wallet...");
       if (wallet === undefined || !connected) {
@@ -305,7 +321,7 @@ export default function PremarketCreationFlow() {
         max_sol_lamp: convertSmallCountToLamport(tokenData.premarketSettingsData.goal_sol+0.5),
         creator_allocate_lamp: convertSmallCountToLamport(
           tokenData.tokenomicsData.creatorInitialBuy
-        ),
+        )
       };
       setLaunchState("Trying to create TX...");
       let resp:
@@ -321,9 +337,11 @@ export default function PremarketCreationFlow() {
           wallet,
           currentConnection,
           createPremarketArgs,
+          customizeTokenData,
           (text) => {
             setLaunchState(text);
-          }
+          },
+          notify.error
         );
         setLaunchState("Premarket created...");
         setPremarketPDA(resp.premarketPDA.toString());
@@ -354,57 +372,6 @@ export default function PremarketCreationFlow() {
 
       try {
         await patch({ step: FLOW_STEP.PROCESSING });
-
-        setLaunchState("Adding community info");
-        try {
-          try {
-            if (tokenData.customData.banner?.data) {
-              const validationError = await validateImageFile(tokenData.customData.banner.data, { maxSizeBytes: BANNER_MAX_FILE_SIZE_BYTES });
-              if (validationError) {
-                notify.error(validationError.message, {
-                  suggest: "Please, select a PNG or JPEG image under 5 MB",
-                  duration: 60000,
-                  action: {
-                    label: "Ok",
-                    onAction: () => {},
-                  },
-                });
-                tokenData.customData.banner = undefined;
-                return;
-              }
-              
-              const fileName = `${resp.premarketPDA.toString()}_banner`;
-              const file = await uriToFile(tokenData.customData.banner.data, fileName);
-              tokenData.customData.banner.url = await uploadImage(file, fileName);
-            }
-          } catch {
-            notify.error("Failed to upload community banner", {
-              suggest: "Please, add it again from premarket page",
-              duration: 60000,
-              action: {
-                label: "Ok",
-                onAction: () => {},
-              },
-            });
-            tokenData.customData.banner = undefined;
-          }
-
-          await updateAboutCommunity(resp.premarketPDA.toString(), {
-            description: tokenData.customData.description ?? "",
-            tokenBannerURL: tokenData.customData.banner?.url,
-            links: tokenData.customData.links,
-          });
-        } catch {
-          notify.error("failed to add community info", {
-            suggest: "Please, add it again from premarket page",
-            duration: 60000,
-            action: {
-              label: "Ok",
-              onAction: () => {},
-            },
-          });
-          // no return just notify
-        }
         
         setLaunchState("Change token params...");
         try {

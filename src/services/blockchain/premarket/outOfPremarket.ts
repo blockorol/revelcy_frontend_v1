@@ -38,9 +38,10 @@ export async function outOfPremarket(
 
   onChangeState?.("Send transaction to blockchain...");
   const { signature, status } = await signTransactionWithRevelcyAuth({
-    network,
-    txBase64: userSignedB64,
-    txType: 'out_of_premarket',
+    OutOfPremarket: {
+      network,
+      unsigned_tx: userSignedB64,
+    }
   });
   
   userSetAdditionalInfo({

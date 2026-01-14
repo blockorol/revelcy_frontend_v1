@@ -44,9 +44,10 @@ export async function joinToPremarket(
 
   onChangeState?.("Send transaction to blockchain...");
   const { signature, status } = await signTransactionWithRevelcyAuth({
-    network,
-    txBase64: userSignedB64,
-    txType: "join_premarket",
+    JoinPremarket: {
+      network,
+      unsigned_tx: userSignedB64,
+    }
   });
   
   userSetAdditionalInfo({
