@@ -7,7 +7,7 @@ import { http } from "@api/http";
 import shortString from "@utils/address_shorter";
 import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
 import { DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
-import { VestingApiResponse } from "@utils/vesting";
+import { VestingVM } from "@utils/vesting";
 
 const RETRY_DEFAULT = 6;
 
@@ -373,6 +373,20 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
       cumulativeSolLamp = cumulativeSolLamp.add(holder.amountSolLamp);
     });
 
+  const vestingRaw = raw.vesting;
+  const vesting = vestingRaw
+    ? {
+        starttime_ms: Number(vestingRaw.starttime_ms ?? 0),
+        endtime_ms: Number(vestingRaw.endtime_ms ?? 0),
+        total_amount:
+          vestingRaw.total_amount != null ? new BN(String(vestingRaw.total_amount)) : undefined,
+        total_vested:
+          vestingRaw.total_vested != null ? new BN(String(vestingRaw.total_vested)) : undefined,
+        total_claimed:
+          vestingRaw.total_claimed != null ? new BN(String(vestingRaw.total_claimed)) : undefined,
+      }
+    : undefined;
+
 
   return {
     holdersCount: raw.holders_count,
@@ -395,6 +409,7 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
     reservedSolLamp: reservedSolLamp,
     change24h: raw.change_24h,
     holders: holders,
+    vesting,
   };
 }
 
@@ -449,6 +464,14 @@ export interface TokenDynamicInfo {
   reservedTokenLamp: BN;
   reservedSolLamp: BN;
   change24h: number;
+  
+  vesting?: {
+    starttime_ms: number;
+    endtime_ms: number;
+    total_amount?: BN;
+    total_vested?: BN;
+    total_claimed?: BN;
+  };
 }
 
 export interface HoldersInfo {
@@ -478,20 +501,16 @@ export async function getHolderEntryPrice({
     return data;
 }
 
+export type UserEntryResponse = {
+  amount_sol: string | number; 
+  token: {
+    total_dec: string;   
+    vested_dec?: string; 
+    claimed_dec?: string;
+  };
+};
 
-export async function getHolderVesting(params: {
-  premarketId: string;
-  holderWallet: string;
-}): Promise<VestingApiResponse | null> {
-  try {
-    // имитация задержки API
-    await new Promise((r) => setTimeout(r, 300));
-
-    return {
-      vested_percent: 80,
-      claimed_percent: 65,
-    };
-  } catch {
-    return null;
-  }
+export async function fetchUserEntry(premarketId: string, userId: string): Promise<UserEntryResponse> {
+  const url = `${API_HOST}/premarket/get_user_entry?premarket_id=${premarketId}&userId=${userId}`;
+  return await http.get<UserEntryResponse>(url, { retry: RETRY_DEFAULT });
 }

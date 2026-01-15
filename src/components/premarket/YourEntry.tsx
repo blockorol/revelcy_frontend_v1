@@ -9,7 +9,7 @@ import { useNotification } from "@providers/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import { useAnchorWalletSafe } from "@storage/wallet-adapter/useWallet.web";
 import { outOfPremarket } from "@services/blockchain/premarket/outOfPremarket";
-import { userOutOfPremarket, getHolderEntryPrice } from "@services/api/token";
+import { userOutOfPremarket, getHolderEntryPrice, fetchUserEntry } from "@services/api/token";
 import { PublicKey } from "@solana/web3.js";
 import { TokenDynamicInfo, TokenMainInfo } from "@api/token";
 import { convertLamportToSmallCount, formatNumberCompact, convertDecimalToToken } from "@utils/premarket";
@@ -19,8 +19,8 @@ import { MD3Colors, MD3Typescale } from "react-native-paper/lib/typescript/types
 import { SvgIcon } from "@components/base/SvgIcon";
 import { convertSolanaToTokenWithFee, splitInput  } from "@services/pumpfun/convertors";
 import { convertTokenToPersent, DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
-import { getHolderVesting } from "@services/api/token";
-import { toVestingVM, type VestingApiResponse } from "@utils/vesting";
+import { toVestingVMFromDec, type VestingVM } from "@utils/vesting";
+import { hexToRgba } from "@utils/colors";
 
 
 interface YourEntryProps {
@@ -42,8 +42,15 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
     const { open, replace, close } = useOverlay();
     const [entryPrice, setEntryPrice] = useState<number>(0);
     const [loadingEntryPrice, setLoadingEntryPrice] = useState(true);
-    const [vestingApi, setVestingApi] = useState<VestingApiResponse | null>(null);
-    const [loadingVesting, setLoadingVesting] = useState(true);
+    const [vestingVM, setVestingVM] = useState<VestingVM>({
+        totalAmount: 0,
+        vestedAmount: 0,
+        claimedAmount: 0,
+        vestedPct: 0,
+        claimedPct: 0,
+    });
+    const [loadingUserEntry, setLoadingUserEntry] = useState(true);
+
 
 
     // Find user's entry data
@@ -102,26 +109,6 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
         fetchEntryPrice();
     }, [premarketPubkey, userEntry?.walletAddress]);
 
-    useEffect(() => {
-        const fetchVesting = async () => {
-        if (!userEntry) return;
-
-            try {
-                setLoadingVesting(true);
-                const res = await getHolderVesting({
-                premarketId: premarketPubkey.toString(),
-                holderWallet: userEntry.walletAddress,
-            });
-            setVestingApi(res);
-            } catch {
-            setVestingApi(null);
-            } finally {
-            setLoadingVesting(false);
-            }
-        };
-
-        fetchVesting();
-        }, [premarketPubkey, userEntry?.walletAddress]);
 
     // Calculate real values
     const solValue = convertLamportToSmallCount(userEntry.amountSolLamp);
@@ -183,11 +170,43 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
     // todo: check and fix
     const tokens = convertDecimalToToken(tokensBN);
     const supplyPercent = convertTokenToPersent(tokensBN);
+   
+   useEffect(() => {
+   const run = async () => {
+    try {
+      setLoadingUserEntry(true);
 
-    const vestingVM = useMemo(() => {
-        return toVestingVM(vestingApi, typeof tokens === "number" ? tokens : 0);
-    }, [vestingApi, tokens]);
+      const entry = await fetchUserEntry(premarketPubkey.toString(), user.userId);
 
+      setVestingVM(
+        toVestingVMFromDec({
+          totalDec: entry.token.total_dec,
+          vestedDec: entry.token.vested_dec,
+          claimedDec: entry.token.claimed_dec,
+        })
+      );
+
+    
+
+    } catch (e) {
+      console.error("[YourEntry] fetchUserEntry failed:", e);
+      setVestingVM({
+        totalAmount: 0,
+        vestedAmount: 0,
+        claimedAmount: 0,
+        vestedPct: 0,
+        claimedPct: 0,
+      });
+    } finally {
+      setLoadingUserEntry(false);
+    }
+  };
+
+  run();
+}, [premarketPubkey, user.userId]);
+
+
+   
     // Determine if premarket is expired and user is not creator
     const isExpiredAndNotCreator = useMemo(() => {
         const now = Math.floor(Date.now() / 1000);
@@ -442,9 +461,9 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
 
                 <VestingRow
                     label="Vested"
-                    dotColor={withAlpha(theme.colors.primary, 0.2)} // темнее
+                    dotColor={hexToRgba(theme.colors.primary, 0.2)} // темнее
                     percent={vestingVM.vestedPct}
-                    amount={vestingVM.vestedTokens}
+                    amount={vestingVM.vestedAmount}
                     symbol={tokenMainInfo.symbol}
                     colors={theme.colors}
                 />
@@ -453,7 +472,7 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
                     label="Claimed"
                     dotColor={theme.colors.primary} // светлее
                     percent={vestingVM.claimedPct}
-                    amount={vestingVM.claimedTokens}
+                    amount={vestingVM.claimedAmount}   
                     symbol={tokenMainInfo.symbol}
                     colors={theme.colors}
                 />
@@ -461,9 +480,9 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
                 <VestingBar
                     vestedPercent={vestingVM.vestedPct}
                     claimedPercent={vestingVM.claimedPct}
-                    vestedColor={withAlpha(theme.colors.primary, 0.2)} 
+                    vestedColor={hexToRgba(theme.colors.primary, 0.2)} 
                     claimedColor={theme.colors.primary}             
-                    trackColor={withAlpha(theme.colors.onSurface, 0.12)}
+                    trackColor={hexToRgba(theme.colors.onSurface, 0.12)}
                 />
 
             </View>
@@ -682,23 +701,6 @@ function clamp(n: number, min: number, max: number) {
   return Math.min(max, Math.max(min, n));
 }
 
-function withAlpha(color: string, alpha: number) {
-  // поддержка #RRGGBB и #RRGGBBAA
-  if (typeof color !== "string") return color as any;
-  if (!color.startsWith("#")) return color;
-
-  const hex = color.replace("#", "");
-  const a = clamp(alpha, 0, 1);
-
-  if (hex.length === 6 || hex.length === 8) {
-    const r = parseInt(hex.slice(0, 2), 16);
-    const g = parseInt(hex.slice(2, 4), 16);
-    const b = parseInt(hex.slice(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${a})`;
-  }
-
-  return color;
-}
 
 function VestingRow({
   label,

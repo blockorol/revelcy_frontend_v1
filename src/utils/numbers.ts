@@ -10,3 +10,20 @@ export function formatNumberNoTrailingZeros(num: number): string {
   // Remove trailing zeros and decimal point if needed
   return str.replace(/\.?0+$/, '');
 }
+
+export function toNumberSafe(v: unknown, fallback = 0): number {
+  if (v == null) return fallback;
+
+  if (typeof v === "number") {
+    return Number.isFinite(v) ? v : fallback;
+  }
+
+  if (typeof v === "string") {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  const n = Number(v as any);
+  return Number.isFinite(n) ? n : fallback;
+}
+
