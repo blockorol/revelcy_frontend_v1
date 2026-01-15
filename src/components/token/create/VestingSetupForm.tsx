@@ -8,13 +8,11 @@ import { CustomSlider } from "@components/base/CustomSlider";
 import { useIsMobileWithDemention } from "@hooks/useIsMobile";
 import { ExtendedMD3Colors } from "@theme/types";
 
-export type VestingPeriodKey = "1w" | "1m" | "3m" | "6m" | "1y";
 
 export type VestingData = {
     enabled: boolean;
-    unlockAtLaunchPercent: number; // 0..50
-    vestingPeriod: VestingPeriodKey;
-    vestingPeriodSec: number; // FE-only placeholder
+    unlockAtLaunchPercent: number;
+    vestingPeriodSec: number;
 };
 
 type Props = {
@@ -31,16 +29,15 @@ const UNLOCK_MIN = 0;
 const UNLOCK_MAX = 50;
 
 const PERIODS: Array<{
-    key: VestingPeriodKey;
     label: string;
     pill: string;
     sec: number;
 }> = [
-        { key: "1w", label: "1w", pill: "1 week vesting", sec: 7 * 24 * 3600 },
-        { key: "1m", label: "1m", pill: "1 month vesting", sec: 30 * 24 * 3600 },
-        { key: "3m", label: "3m", pill: "3 month vesting", sec: 90 * 24 * 3600 },
-        { key: "6m", label: "6m", pill: "6 month vesting", sec: 180 * 24 * 3600 },
-        { key: "1y", label: "1y", pill: "1 year vesting", sec: 365 * 24 * 3600 },
+        { label: "1w", pill: "1 week vesting", sec: 7 * 24 * 3600 },
+        { label: "1m", pill: "1 month vesting", sec: 30 * 24 * 3600 },
+        { label: "3m", pill: "3 month vesting", sec: 90 * 24 * 3600 },
+        { label: "6m", pill: "6 month vesting", sec: 180 * 24 * 3600 },
+        { label: "1y", pill: "1 year vesting", sec: 365 * 24 * 3600 },
     ];
 
 function clampInt(v: number, min: number, max: number) {
@@ -87,10 +84,12 @@ export default function VestingSetupForm({
     const colors = theme.colors as ExtendedMD3Colors;
 
     const presetPeriodIndex = useMemo(() => {
-        const key = presetData?.vestingPeriod ?? "3m";
-        const idx = PERIODS.findIndex((p) => p.key === key);
+        const sec = presetData?.vestingPeriodSec;
+        const idx = sec != null ? PERIODS.findIndex((p) => p.sec === sec) : -1;
         return idx >= 0 ? idx : 2;
-    }, [presetData?.vestingPeriod]);
+    }, [presetData?.vestingPeriodSec]);
+
+
 
     const [enabled, setEnabled] = useState(presetData?.enabled ?? true);
     const [unlockPercent, setUnlockPercent] = useState(
@@ -105,13 +104,11 @@ export default function VestingSetupForm({
     const unlockPoints = [0, 12.5, 25, 37.5, 50];
 
     const periodPoints = [0, 1, 2, 3, 4];
-    const periodLabels = [0, 2, 4];
 
     const handleSubmit = () => {
         onNext({
             enabled,
             unlockAtLaunchPercent: enabled ? unlockPercent : 0,
-            vestingPeriod: period.key,
             vestingPeriodSec: enabled ? period.sec : 0,
         });
     };

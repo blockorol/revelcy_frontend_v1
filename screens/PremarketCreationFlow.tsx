@@ -434,11 +434,9 @@ export default function PremarketCreationFlow() {
         }
         // Send vesting info 
         try {
-          if (IsVestingEnable && vestingData) {
+          if (IsVestingEnable && vestingData?.enabled) {
             await updateVestingInfo(resp.premarketPDA.toString(), {
-              enabled: vestingData.enabled,
               unlock_at_launch_percent: vestingData.unlockAtLaunchPercent,
-              vesting_period: vestingData.vestingPeriod,
               vesting_period_sec: vestingData.vestingPeriodSec,
             });
           }
