@@ -1,75 +1,15 @@
-import { API_HOST } from "env";
+import { API_HOST, NETWORK } from "env";
 import { BN } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
 import { PremarketState, convertTokenToDecimal } from "@utils/premarket";
-import { toDecString } from "@api/tx_premarket";
 import { http } from "@api/http";
 import shortString from "@utils/address_shorter";
 import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
 import { DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
 import { VestingVM } from "@utils/vesting";
+import { isSolanaPublicKey } from "@utils/solana";
 
 const RETRY_DEFAULT = 6;
-
-export interface premerketTransactionArgs {
-  premarketPubKey: string;
-  userWallet: string;
-  userId?: string;
-  tx: string;
-}
-
-export interface premarketCreatedArgs extends premerketTransactionArgs {
-  mainInfo: TokenMainInfo,
-  communityInfo: TokenCommunityInfo,
-}
-
-export interface userJoinedToPremarketArgs extends premerketTransactionArgs {
-  joinAmountInSolLamport: BN
-}
-
-export async function premarketCreated(args: premarketCreatedArgs) {
-  console.log("send to BE: premarket Created", args);
-
-  const payload = {
-    blockchain_info: {
-      name: args.mainInfo.name,
-      description: args.mainInfo.description,
-      symbol: args.mainInfo.symbol,
-      image_url: args.mainInfo.imageURL,
-      ipfs_uri: args.mainInfo.ipfsURI,
-      creator_id: args.userId,
-      creator_address: args.userWallet,
-      premarket_address: args.premarketPubKey,
-      links: {
-        telegram: args.mainInfo.links.telegram,
-        twitter: args.mainInfo.links.twitter,
-        web_site: args.mainInfo.links.webSite,
-      },
-      premarket_goal_sol_lamp: toDecString(args.mainInfo.premarketGoalSolLamp),
-      premarket_deadline: args.mainInfo.premarketDeadline,
-      premarket_created: args.mainInfo.premarketCreated,
-      mint_address: args.mainInfo.tokenMint,
-      state: args.mainInfo.state, 
-    },
-    community_info: {
-      description: args.communityInfo.description,
-      token_banner_url: args.communityInfo.tokenBannerURL,
-      links: args.communityInfo.links?.map((link) => ({
-        text: link.text,
-        url: link.url,
-        type: link.type,
-      })),
-    },
-  };
-
-  try {
-    await http.post(`${API_HOST}/premarket/created`, { json: payload, retry: RETRY_DEFAULT });
-    return;
-  } catch (e: any) {
-    console.log("failed with", payload);
-    throw new Error(`Failed to add premarket to whitelist: ${e.message ?? "Unknown error"}`);
-  }
-}
 
 export async function updateAboutCommunity(premarketPubkey: string, args: TokenCommunityInfo) {
   const payload = {
@@ -94,142 +34,49 @@ export async function updateAboutCommunity(premarketPubkey: string, args: TokenC
   }
 }
 
-export async function premarketFinished(args: {
-  premarketPubKey: string;
-  userWallet: string;
-  userId?: string | null;
-  tx: string;
-  isKilled: boolean;
-  network: "devnet" | "testnet"| "mainnet-beta";
-}) {
+export interface TokenAvailabilityInfo {
+  isHided?: boolean;
+  tokenShortUrlName?: string;
+}
+export async function updateTokenAvailbility(premarketPubkey: string, args: TokenAvailabilityInfo) {
   const payload = {
-    base: {
-      premarket_pub_key: args.premarketPubKey,
-      user_wallet: args.userWallet,
-      user_id: args.userId ?? null,
-      tx: args.tx,
-    },
-    network: args.network
+    premarket_pubkey: premarketPubkey,
+    network: NETWORK, // todo: remove me
+    is_hided: args.isHided,
+    token_short_url_name: args.tokenShortUrlName, // todo: move to separated value
   };
-  
+
   try {
-    await http.post(
-      args.isKilled ? `${API_HOST}/premarket/killed` : `${API_HOST}/premarket/finished`,
-      { json: payload, retry: RETRY_DEFAULT }
-    );
+    await http.post(`${API_HOST}/premarket/update_availability`, { json: payload, retry: RETRY_DEFAULT });
     return;
   } catch (e: any) {
     console.log("failed with", payload);
-    throw new Error(`Failed to finish PM: ${e.message ?? "Unknown error"}`);
+    throw new Error(`Failed to update availability: ${e.message ?? "Unknown error"}`);
   }
 }
 
-export interface TokenClaimedResponse {
-  claimed: boolean;
-  updated_in_db: boolean;
-}
-
-export async function tokensClaimed(args: {
-  network: "devnet" | "testnet" | "mainnet-beta";
-  userPubkey: string;
-  premarketAccount: string;
-}): Promise<TokenClaimedResponse> {
-  const payload = {
-    network: args.network,
-    user_pubkey: args.userPubkey,
-    premarket_account: args.premarketAccount,
-  };
-
-  try {
-    const response = await http.post<TokenClaimedResponse>(
-      `${API_HOST}/premarket/token_claimed`,
-      { json: payload, retry: RETRY_DEFAULT }
-    );
-    return response;
-  } catch (e: any) {
-    console.log("failed with", payload);
-    throw new Error(`Failed to verify tokens claimed: ${e.message ?? "Unknown error"}`);
-  }
-}
-
-export async function extendedPremarket(args: {
-  premarketPubKey: string;
-  userWallet: string;
-  userId: string;
-  tx: string;
-  network: "devnet" | "mainnet-beta";
-  newDeadline: number; // unix timestamp
-}) {
-  const payload = {
-    base: {
-      premarket_pub_key: args.premarketPubKey,
-      user_wallet: args.userWallet,
-      user_id: args.userId,
-      tx: args.tx,
-    },
-    network: args.network,
-    new_deadline: args.newDeadline,
-  };
-  
-  try {
-    await http.post(`${API_HOST}/premarket/extended_premarket`, { json: payload, retry: RETRY_DEFAULT });
-    return;
-  } catch (e: any) {
-    console.log("failed with", payload);
-    throw new Error(`Failed to extend premarket: ${e.message ?? "Unknown error"}`);
-  }
-}
-
-export async function userJoinedToPremarket(args: userJoinedToPremarketArgs) {
-  const payload = {
-    premarket_pub_key: args.premarketPubKey,
-    user_wallet: args.userWallet,
-    user_id: args.userId ?? null,
-    tx: args.tx,
-    join_amount_in_sol_lamport: toDecString(args.joinAmountInSolLamport),
-  };
-
-  try {
-    await http.post(`${API_HOST}/premarket/user_joined`, { json: payload, retry: RETRY_DEFAULT });
-    return;
-  } catch (e: any) {
-    console.log("failed with", payload);
-    throw new Error(`Failed to add user to PM: ${e.message ?? "Unknown error"}`);
-  }
-}
-
-export async function userOutOfPremarket(args: premerketTransactionArgs) {
-  console.log("send to BE: user out of premarket", args);
-
-  const payload = {
-    premarket_pub_key: args.premarketPubKey,
-    user_wallet: args.userWallet,
-    user_id: args.userId ?? null,
-    tx: args.tx,
-  };
-
-  try {
-    await http.post(`${API_HOST}/premarket/user_out`, { json: payload, retry: RETRY_DEFAULT });
-    return;
-  } catch (e: any) {
-    console.log("failed with", payload);
-    throw new Error(`Failed to add user out: ${e.message ?? "Unknown error"}`);
-  }
-}
 
 export async function getPremarketInfo({
-  tokenPubKey,
+  tokenPubkeyOrShortUrl,
 }: {
-  tokenPubKey: string;
+  tokenPubkeyOrShortUrl: string;
 }): Promise<TokenInfo> {
-  const url = `${API_HOST}/premarket/get_main_info?premarket_id=${tokenPubKey}`;
+  const params = new URLSearchParams({
+    network: NETWORK,
+  });
 
+  if (isSolanaPublicKey(tokenPubkeyOrShortUrl)) {
+    params.set("premarket_id", tokenPubkeyOrShortUrl);
+  } else {    
+    params.set("premarket_name", tokenPubkeyOrShortUrl);
+  }
+  const url = `${API_HOST}/premarket/get_main_info?${params.toString()}`;
   const data = await http.get<any>(url, { retry: RETRY_DEFAULT });
-  console.log("premarket_info:", data);
 
   const mainInfo: TokenMainInfo = {
     id: data.blockchain_info.id,
-    premarketPubkey: new PublicKey(tokenPubKey), 
+    premarketPubkey: new PublicKey(data.blockchain_info.premarket_address), 
+    shortLinkPrefix: data.availability_info?.token_short_url_name ?? undefined, // tmp solution
     name: data.blockchain_info.name,
     description: data.blockchain_info.description,
     symbol: data.blockchain_info.symbol,
@@ -248,6 +95,7 @@ export async function getPremarketInfo({
     finishDate: data.blockchain_info.premarket_finished || undefined,
     isExtended: (data.blockchain_info.premarket_is_extended|| undefined) ?? false,
     tokenMint: data.blockchain_info.mint_address,
+    isHided: data.availability_info?.is_hided ?? false,
   };
 
   const communityInfo: TokenCommunityInfo = {
@@ -259,7 +107,7 @@ export async function getPremarketInfo({
       type: link.type,
     })) || [],
   };
-  const dynamicInfo = await fetchTokenDynamicInfo(tokenPubKey);
+  const dynamicInfo = await fetchTokenDynamicInfo(data.blockchain_info.premarket_address);
   
   // Determine the effective state based on conditions
   const convertState = () => {
@@ -297,27 +145,29 @@ export async function getPremarketList({
   cursor: number; // offset
   limit: number;  // page size
 }): Promise<{ items: TokenMainInfo[]; total: number }> {
-  const url = `${API_HOST}/premarket/get_list?cursor=${cursor}&limit=${limit}`;
+  const url = `${API_HOST}/premarket/get_list?cursor=${cursor}&limit=${limit}&network=${NETWORK}`;
   const data = await http.get<any>(url, { retry: RETRY_DEFAULT });
 
   const items: TokenMainInfo[] = (data.premarkets ?? []).map((b: any) => ({
-    id: b.id,
-    premarketPubkey: new PublicKey(b.premarket_address),
-    name: b.name,
-    description: b.description,
-    symbol: b.symbol,
-    imageURL: b.image_url || undefined,
-    ipfsURI: b.ipfs_uri,
+    id: b.blockchain_info.id,
+    premarketPubkey: new PublicKey(b.blockchain_info.premarket_address),
+    shortLinkPrefix: b.availability_info?.token_short_url_name || undefined,
+    name: b.blockchain_info.name,
+    description: b.blockchain_info.description,
+    symbol: b.blockchain_info.symbol,
+    imageURL: b.blockchain_info.image_url || undefined,
+    ipfsURI: b.blockchain_info.ipfs_uri,
     links: {
-      telegram: b.links?.telegram || undefined,
-      twitter:  b.links?.twitter  || undefined,
-      webSite:  b.links?.web_site || undefined,
+      telegram: b.blockchain_info.links?.telegram || undefined,
+      twitter:  b.blockchain_info.links?.twitter  || undefined,
+      webSite:  b.blockchain_info.links?.web_site || undefined,
     },
-    premarketGoalSolLamp: new BN(b.premarket_goal_sol_lamp), 
-    premarketDeadline: b.premarket_deadline,
-    premarketCreated:  b.premarket_created,
-    createdByPubkey: b.creator_address,
-    state: typeof b.state === "string" ? (b.state.toLowerCase() as any) : b.state,
+    premarketGoalSolLamp: new BN(b.blockchain_info.premarket_goal_sol_lamp), 
+    premarketDeadline: b.blockchain_info.premarket_deadline,
+    premarketCreated:  b.blockchain_info.premarket_created,
+    createdByPubkey: b.blockchain_info.creator_address,
+    isHided: b.availability_info?.is_hided ?? false,
+    state: typeof b.blockchain_info.state === "string" ? (b.blockchain_info.state.toLowerCase() as any) : b.blockchain_info.state,
   }));
 
   const total = Number(data.total ?? items.length);
@@ -422,6 +272,7 @@ export interface TokenInfo {
 export interface TokenMainInfo {
     id: string;
     premarketPubkey: PublicKey,
+    shortLinkPrefix?: string;
     name: string;
     description: string;
     symbol: string;
@@ -435,6 +286,7 @@ export interface TokenMainInfo {
     state: PremarketState;
     finishDate?: number;
     isExtended: boolean;
+    isHided: boolean;
     tokenMint?: string;
 }
 

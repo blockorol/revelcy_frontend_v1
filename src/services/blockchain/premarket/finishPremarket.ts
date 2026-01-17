@@ -5,7 +5,8 @@ import {
   getRefundPremarketTransaction,
   signTransactionWithRevelcyAuth,
 } from "@api/tx_premarket";
-import { simulateAndSignRawTx, sendRawTx } from "@services/blockchain/signAndSend";
+import { simulateAndSignRawTx, confirmTxFinalised } from "@services/blockchain/signAndSend";
+import { userSetAdditionalInfo } from "@services/fingerprint/sender";
 
 export async function finishPremarket(
   wallet: AnchorWallet,
@@ -40,24 +41,30 @@ export async function finishPremarket(
 
   console.log("Finish transaction signed by wallet, sending to BE for Revelcy signature...");
 
-  // 2) Подпись на бэкенде
-  onChangeState?.("Signing transaction on backend...");
-  const { transaction: backendSignedB64 } = await signTransactionWithRevelcyAuth({
+  // 2) Подпись на бэкенде и отправка в сеть
+  onChangeState?.("Sending transaction to blockchain...");
+  const {signature, status } = await signTransactionWithRevelcyAuth({
     network,
     txBase64: userSignedB64,
     txType: "finish_premarket",
     premarket: premarketAccount.toBase58()
   });
+    
+  userSetAdditionalInfo({
+    premarket: premarketAccount.toBase58(),
+    eventType: "finish_premarket"
+  })
 
-  console.log("Finish transaction signed by backend. Sending to blockchain...");
+  onChangeState?.(`Waiting to tx finalisation. Current status: ${status}...`);
+  try {
+    await confirmTxFinalised(connection, signature);
+  } catch (e) {
+    console.error("transation is not finalised!", e)
+    throw e
+  }
 
-  // 3) Отправка в сеть
-  onChangeState?.("Sending transaction to blockchain...");
-  const txSig = await sendRawTx(backendSignedB64, connection);
-
-  console.log("Finish transaction sent and confirmed. Signature:", txSig);
-
-  return { txId: txSig };
+  console.log("transaction finalised!");
+  return { txId: signature }
 }
 
 export async function refundPremarket(
@@ -95,19 +102,22 @@ export async function refundPremarket(
 
   // 2) Подпись на бэкенде
   onChangeState?.("Signing transaction on backend...");
-  const { transaction: backendSignedB64 } = await signTransactionWithRevelcyAuth({
+  const {signature, status } = await signTransactionWithRevelcyAuth({
     network,
     txBase64: userSignedB64,
     txType: "refund_premarket",
+    premarket: premarketAccount.toBase58(), // double check is it expected format or not?
   });
 
-  console.log("Refund transaction signed by backend. Sending to blockchain...");
 
-  // 3) Отправка в сеть
-  onChangeState?.("Sending transaction to blockchain...");
-  const txSig = await sendRawTx(backendSignedB64, connection);
+  onChangeState?.(`Waiting to tx finalisation. Current status: ${status}...`);
+  try {
+    await confirmTxFinalised(connection, signature);
+  } catch (e) {
+    console.error("transation is not finalised!", e)
+    throw e
+  }
 
-  console.log("Refund transaction sent and confirmed. Signature:", txSig);
-
-  return { txId: txSig };
+  console.log("transaction finalised!");
+  return { txId: signature }
 }

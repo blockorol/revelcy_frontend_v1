@@ -2,7 +2,8 @@ import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import { getJoinPremarketTransaction, signTransactionWithRevelcyAuth } from "@api/tx_premarket";
-import { simulateAndSignRawTx, sendRawTx } from "@services/blockchain/signAndSend";
+import { simulateAndSignRawTx, confirmTxFinalised } from "@services/blockchain/signAndSend";
+import { userSetAdditionalInfo } from "@services/fingerprint/sender";
 
 export async function joinToPremarket(
   wallet: AnchorWallet,
@@ -41,19 +42,27 @@ export async function joinToPremarket(
 
   console.log("Join transaction signed by wallet, sending to BE for Revelcy signature...");
 
-  onChangeState?.("Signing transaction on backend...");
-  const { transaction: backendSignedB64 } = await signTransactionWithRevelcyAuth({
+  onChangeState?.("Send transaction to blockchain...");
+  const { signature, status } = await signTransactionWithRevelcyAuth({
     network,
     txBase64: userSignedB64,
     txType: "join_premarket",
   });
+  
+  userSetAdditionalInfo({
+    premarket: premarketAccount.toBase58(),
+    eventType: "join_premarket"
+  })
+  
 
-  console.log("Join transaction signed by backend. Sending to blockchain...");
+  onChangeState?.(`Waiting to tx finalisation. Current status: ${status}...`);
+  try {
+    await confirmTxFinalised(connection, signature);
+  } catch (e) {
+    console.error("transation is not finalised!", e)
+    throw e
+  }
 
-  onChangeState?.("Sending transaction to blockchain...");
-  const txSig = await sendRawTx(backendSignedB64, connection);
-
-  console.log("Join transaction sent and confirmed. Signature:", txSig);
-
-  return { txId: txSig };
+  console.log("transaction finalised!");
+  return { txId: signature }
 }

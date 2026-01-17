@@ -8,18 +8,21 @@ import useIsMobile from '@hooks/useIsMobile';
 import WalletConnectionChecker from '@components/login/WalletConnectionCheckerArea';
 import UserAvatar from '@components/login/UserAvatar';
 import { useAuth } from '@providers/AuthContext';
-import { updateAvatar, updateUsername } from '@api/auth';
+import { setInviteCode, updateAvatar, updateUsername } from '@api/auth';
 import UserName from '@components/login/UserName';
 import { ExtendedMD3Colors } from '@theme/types';
+import InviteCode from '@components/login/InviteCode';
 
 interface LoginFlowProps {
   loginFlowStateOverride?: LoginState;
+  inviteCodeOverride?: string
   onCloseButton?: () => void;
 }
 
 export enum LoginState {
   FIRST = "FIRST",
   //WALLET_CONNECTING = "WALLET_CONNECTING",
+  SET_INVITE_CODE = "SET_INVITE_CODE",
   SET_USER_NAME = "SET_USER_NAME",
   SET_AVATAR = "SET_AVATAR",
 }
@@ -37,7 +40,7 @@ const DEF_PADDINGS: Paddings = {
   bottom: 48,
 }
 
-export default function LoginFlow({loginFlowStateOverride, onCloseButton}:LoginFlowProps) {
+export default function LoginFlow({loginFlowStateOverride, inviteCodeOverride, onCloseButton}:LoginFlowProps) {
   const colors  = useTheme().colors as ExtendedMD3Colors;
   const isMobile = useIsMobile();
   const {height, width} = useWindowDimensions();
@@ -78,7 +81,7 @@ export default function LoginFlow({loginFlowStateOverride, onCloseButton}:LoginF
         width={activeProp.width - DEF_PADDINGS.left - DEF_PADDINGS.right}
         toNext={() => {
           moveBetweenStateRef.current = true
-          setLoginFlowState(LoginState.SET_USER_NAME)
+          setLoginFlowState(LoginState.SET_INVITE_CODE)
         }}
         overrideSaveJwt={ (jwt: string, isNewUser: boolean) => {
           jwtCurrentRef.current = jwt
@@ -90,6 +93,36 @@ export default function LoginFlow({loginFlowStateOverride, onCloseButton}:LoginF
         onClose={onCloseButton}
        />)
        break;
+    case LoginState.SET_INVITE_CODE:
+      currentArea = (<InviteCode 
+        height={"100%" }
+        width={activeProp.width - DEF_PADDINGS.left - DEF_PADDINGS.right}
+        inviteCodeOverride={inviteCodeOverride}
+        toNext={() => {          
+          moveBetweenStateRef.current = true
+          setLoginFlowState(LoginState.SET_AVATAR)
+        }}
+        setInviteCodeToServer={ async (inviteCode: string) => {
+          const res = await setInviteCode({ inviteCode, jwt: jwtCurrentRef.current });
+
+          if (res.ok) {
+            return { ok: true };
+          }
+
+          switch (res.error.kind) {
+            case "invite_code_not_found":
+              return { ok: false, reason: "NOT_FOUND" };
+
+            case "invite_code_already_applied":
+              return { ok: false, reason: "ALREADY_APPLIED" };
+
+            default:
+              return { ok: false, reason: "UNKNOWN" };
+          }
+        }}
+
+      />)
+      break;
    /* case LoginState.WALLET_CONNECTING:
       currentArea = (<WalletConnectionChecker 
         height={"100%" }
@@ -137,13 +170,14 @@ export default function LoginFlow({loginFlowStateOverride, onCloseButton}:LoginF
           }
         }}
       />)
-       break;
+      break;
     case LoginState.SET_AVATAR:
       currentArea = (<UserAvatar 
         height={"100%" }
         width={activeProp.width - DEF_PADDINGS.left - DEF_PADDINGS.right}
         toNext={() => {
           login(jwtCurrentRef.current);
+          if (onCloseButton) onCloseButton();
         }}
         setUploadAvatarToServer={async (avatarUri: string) => {
           try {
@@ -160,9 +194,9 @@ export default function LoginFlow({loginFlowStateOverride, onCloseButton}:LoginF
           }
         }}
       />);
-       break;
-      default:
-        currentArea =  <Text>Invalid login state {loginFlowState}</Text>; // <- защита от undefined
+      break;
+    default:
+      currentArea =  <Text>Invalid login state {loginFlowState}</Text>; // <- защита от undefined
   }
 
   return (
@@ -178,6 +212,3 @@ export default function LoginFlow({loginFlowStateOverride, onCloseButton}:LoginF
   </ImageBackgroundOverlay>
   );
 }
-
-const styles = StyleSheet.create({
-});

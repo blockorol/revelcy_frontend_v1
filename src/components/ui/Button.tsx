@@ -291,14 +291,14 @@ export function Button({
         {!!(leftIcon || leftSvgIconName) && (
           <View style={{ marginRight: children ? iconGap:0 }}>{renderIcon()}</View>
         )}
-        {typeof children === "string" ? (
+        {typeof children === "string" || typeof children === "number" ? (
           <Text
             variant={textVariant}
             prominent={prominentText}
-            style={{ color: textColor, textAlign: 'center'}}
+            style={{ color: textColor, textAlign: "center" }}
             numberOfLines={1}
           >
-            {children}
+            {String(children)}
           </Text>
         ) : (
           children

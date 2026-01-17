@@ -3,6 +3,7 @@ import * as React from "react";
 import { useWallet } from "@storage/wallet-adapter";
 import { startSession, confirmLogin } from "@api/auth";
 import { useAuth } from "@providers/AuthContext";
+import { userSetAdditionalInfo } from "@services/fingerprint/sender";
 
 type RunOptions = { forceReconnect?: boolean };
 
@@ -39,9 +40,7 @@ export function useWalletLoginFlow(
   const signatureRef = React.useRef<Uint8Array<ArrayBufferLike> | null>(null);
   const finishingRef = React.useRef(false);
 
-  // 🔧 вот это – источник правды для UI
   const [busy, setBusy] = React.useState(false);
-  // 🔒 замок от повторного запуска
   const inflightRef = React.useRef(false);
 
   const resetFlow = React.useCallback(() => {
@@ -52,6 +51,8 @@ export function useWalletLoginFlow(
 
   const run = React.useCallback(
     async ({ forceReconnect }: RunOptions = {}) => {
+      let isNewUser: any = undefined;
+
       if (inflightRef.current) return;
       inflightRef.current = true;
       setBusy(true);
@@ -96,10 +97,11 @@ export function useWalletLoginFlow(
         });
         if (!confirmLoginResp) return;
 
-        const { jwt, isNewUser } = confirmLoginResp;
+        const { jwt, isNewUser:isNewUserSetted } = confirmLoginResp;
+        isNewUser = isNewUserSetted
         if (!finishingRef.current) {
           finishingRef.current = true;
-          opts?.overrideSaveJwt ? opts.overrideSaveJwt(jwt, isNewUser) : login(jwt);
+          opts?.overrideSaveJwt ? opts.overrideSaveJwt(jwt, isNewUserSetted) : login(jwt);
           resetFlow();
           opts?.onSuccess?.();
         }
@@ -107,6 +109,10 @@ export function useWalletLoginFlow(
         console.error("Wallet login flow error:", e);
         resetFlow();
       } finally {
+        userSetAdditionalInfo({
+          userId: publicKeyRef.current? publicKeyRef.current.toString(): undefined,
+          eventType: isNewUser ? 'register' : 'login' 
+        });
         inflightRef.current = false;
         setBusy(false);
       }

@@ -7,14 +7,11 @@ import { HelperText, useTheme } from "react-native-paper";
 import { Text } from "@components/ui/Text";
 import { DateTimeEditField } from "@components/base/DateTimeEditField";
 import { CustomSlider } from "@components/base/CustomSlider";
-import BN from "bn.js";
 import { useIsMobileWithDemention } from "@hooks/useIsMobile";
 import { ExtendedMD3Colors } from "@theme/types";
-import { convertSolToPercentOnStart } from "@services/pumpfun/adds";
-import { round } from "@utils/numbers";
-import { convertSmallCountToLamport } from "@utils/premarket";
 import { TOKEN_CONVERTOR_SETTINGS } from "env";
-
+import TextInput from "@components/ui/TextInput";
+import { sanitizeShortPath } from "@utils/url";
 const DEFAULT_PREMARKET_GOAL_SOL = 5;
 
 export type EditPremarketSettingsFormProps = {
@@ -45,7 +42,9 @@ export default function EditPremarketSettingsForm({
     presetData?.goal_sol ??minPremarketSol
     );
   const [goalError, setGoalError] = useState<string | null>(null);
-
+  
+  const [shortName, setShortName] = useState<string | null>(presetData?.short_link_name ?? null);
+  const [shortNameError, _setShortNameError] = useState<string | null>(null); // in future use it for validation
 
   const [deadlineDateTimeSec, setDeadlineDateTimeSec] = useState<number | undefined>(
     presetData?.deadline_sec
@@ -78,6 +77,7 @@ export default function EditPremarketSettingsForm({
     onNext({
       deadline_sec: deadlineDateTimeSec,
       goal_sol: premarketGoalSol,
+      short_link_name: shortName?.length ? shortName : undefined,
     });
   };
   const isFilledAll = (): boolean => {
@@ -177,6 +177,24 @@ export default function EditPremarketSettingsForm({
               </HelperText>
             </View>
           </View>
+
+          {/* Short Name */}
+          <View style={{ marginTop: 64 }}>
+            <TextInput
+              label="Premarket short link"
+              placeholder="eg. project_name"
+              value={shortName??undefined}
+              onChangeText={(text: string) => {
+                setShortName(sanitizeShortPath(text))
+              }}
+              alwaysLabelOnTop={true}
+              overrideRemoveBtn={() => setShortName("")}
+              error={!!shortNameError}
+              errorValue={shortNameError}
+            />
+            <HelperText visible={!!shortName} type="info">https://beta.revelcy.com/token/{shortName}</HelperText>
+          </View>
+
         </View>
         <View style={{ marginTop: 16, paddingBottom: isMobile ? 8 : 16 }}>
           <ContinueButtonWithProgressBar
