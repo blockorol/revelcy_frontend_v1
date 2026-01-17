@@ -26,7 +26,7 @@ type Props = {
 };
 
 const UNLOCK_MIN = 0;
-const UNLOCK_MAX = 50;
+const UNLOCK_MAX = 100;
 
 const PERIODS: Array<{
     label: string;
