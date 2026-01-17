@@ -17,7 +17,7 @@ export function usePremarketInfo(tokenId: string) {
     setLoading(true);
     setError(null);
     try {
-      const data = await getPremarketInfo({ tokenPubKey: tokenId });
+      const data = await getPremarketInfo({ tokenPubkeyOrShortUrl: tokenId });
       if (!data) throw new Error("No data");
       if (alive.current) setToken(data);
     } catch (e) {

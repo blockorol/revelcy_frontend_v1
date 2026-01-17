@@ -7,6 +7,7 @@ import {Text} from '@components/ui/Text'
 import React, { useMemo, useState } from "react";
 import { Menu, useTheme, TouchableRipple, Divider } from "react-native-paper";
 import { SvgIcon } from "@components/base/SvgIcon";
+import { convertTokenToPersent } from "@services/pumpfun/adds";
 
 interface Props {
   tokenData: TokenInfo;
@@ -14,14 +15,13 @@ interface Props {
   isMobile: boolean;
   limited: boolean;
 }
-const DEFAULT_SHOW_COUNT = 2;
-const STEP_SHOW_COUNT = 2;
+const DEFAULT_SHOW_COUNT = 10;
+const STEP_SHOW_COUNT = 10;
 export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Props) {
   const [showCount, setShowCount] = useState(DEFAULT_SHOW_COUNT)
   const [order, setOrder] = useState<OrderValue>("SUPPLY")
   const { colors } = useTheme() as AppTheme;
   const holders = tokenData.dynamicInfo.holders
-  const totalRaised = convertLamportToSmallCount(tokenData.dynamicInfo.reservedSolLamp)
   const sortedHolders = useMemo(() => {
   if (!holders) return [];
 
@@ -67,8 +67,7 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 20, rowGap: 16 }}>
         {sortedHolders.map((holder, ) => {
           const amount = convertLamportToSmallCount(holder.amountSolLamp)
-          const MAX_SOL = 85 // TODO: find real max sol
-          const percentOfMax = (amount / MAX_SOL) * 100
+          const percent = convertTokenToPersent(holder.amountTokenDec)
           return (
             <View key={holder.walletAddress} style={{}}>
               <UserCard 
@@ -81,7 +80,7 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
                 tokenInfo={{
                   userJoined: holder.joinTimestamp,
                   amount: amount,
-                  amountProcent: Number(percentOfMax.toFixed(2)),
+                  amountProcent: Number(percent.toFixed(2)),
                   isCreator: tokenData.mainInfo.createdByPubkey === holder?.walletAddress
                 }}
               />

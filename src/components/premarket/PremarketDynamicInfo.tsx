@@ -40,7 +40,7 @@ export function PremarketDynamicInfo({
       {tokenMainInfo.state === "finished" ? (
         <View style={{alignItems: "flex-start" }}>
           <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-            Current Mcap
+            Launch Mcap
           </Text>
           <Text variant="displaySmall" style={{ color: theme.colors.onSurface }}>
             {formatNumberCompact(convertDecimalToToken(tokenDynamicInfo.marketCapTokenDec))}

@@ -1,13 +1,11 @@
-import { TokenDynamicInfo, TokenMainInfo, tokensClaimed } from "@api/token";
+import { TokenDynamicInfo, TokenMainInfo } from "@api/token";
 
 import { PremarketJoin } from "@components/premarket/PremarketJoin";
 import { CreatorInfo } from "@components/premarket/CreatorInfo";
 import { useAuth } from "@providers/AuthContext";
-import { useTheme, Text, ActivityIndicator } from "react-native-paper";
+import { useTheme, Text } from "react-native-paper";
 import { View } from "react-native";
 import { Button } from "@components/ui/Button";
-import OneScreenContainer from "@components/base/container/OneScreenContainer";
-import LoginFlow from "@components/login/LoginFlow";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import { ShareTextButton } from "@components/base/ButtonShare";
 import { openInBrowser } from "@utils/openLinks";
@@ -18,6 +16,7 @@ import { getSolanaConnection } from "@services/blockchain/solana";
 import { useNotification } from "@providers/NotificationContext";
 import { claimTokens } from "@services/blockchain/premarket/claimTokens";
 import { PublicKey } from "@solana/web3.js";
+import TextedLoader from "@components/ui/Loader";
 
 interface PremarketActionProps {
   tokenMainInfo: TokenMainInfo;
@@ -158,13 +157,6 @@ export function PremarketActionLaunched({
     }
   };
 
-  const renderLoader = (status: string) => (
-    <View style={{ gap: 20 }}>
-      <Text variant="titleMedium">{status}</Text>
-      <ActivityIndicator animating color={colors.primary} size="large" />
-    </View>
-  );
-
   const handleClaimTokens = async () => {
     if (!wallet || !connected) {
       notify.error("Wallet is not connected", {
@@ -194,27 +186,15 @@ export function PremarketActionLaunched({
     }
 
     try {
-      open(renderLoader("Claiming tokens..."));
-      const res = await claimTokens(
+      open(<TextedLoader text ={"Claiming tokens..."}/>);
+      await claimTokens(
         wallet,
         connection,
         network,
         tokenMainInfo.premarketPubkey,
         new PublicKey(tokenMainInfo.tokenMint),
-        (text) => { replace(renderLoader(text)) }
+        (text) => {<TextedLoader text ={text}/>}
       );
-
-      // Notify backend about successful claim
-      try {
-        await tokensClaimed({
-          network,
-          userPubkey: wallet.publicKey.toBase58(),
-          premarketAccount: tokenMainInfo.premarketPubkey.toBase58(),
-        });
-      } catch (e: any) {
-        console.error("Failed to notify backend about token claim:", e);
-        // Don't fail the whole operation if backend notification fails
-      }
 
       notify.success("Tokens claimed successfully!", {
         action: {
@@ -270,7 +250,7 @@ export function PremarketActionLaunched({
             style={{ width: 170, height: 40 }}
             onPress={handleClaimTokens}
           >
-            Claim Token
+            Claim
           </Button>
           <Button
             mode="contained"

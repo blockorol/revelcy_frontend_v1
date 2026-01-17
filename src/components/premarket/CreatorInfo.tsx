@@ -1,8 +1,7 @@
-import { premarketFinished, extendedPremarket, TokenMainInfo } from "@api/token";
+import { TokenMainInfo, updateTokenAvailbility } from "@api/token";
 import { finishPremarket, refundPremarket } from "@services/blockchain/premarket/finishPremarket";
 import { extendPremarket } from "@services/blockchain/premarket/extendPremarket";
-import { getTimeLeftLabel } from "@utils/premarket";
-import { useAuth, UserInfo } from "@providers/AuthContext";
+import { useAuth } from "@providers/AuthContext";
 import { useWallet } from "@storage/wallet-adapter";
 import { useAnchorWalletSafe } from "@storage/wallet-adapter/useWallet.web";
 import { useNetwork } from "@providers/NetworkContext";
@@ -10,15 +9,21 @@ import { getSolanaConnection } from "@services/blockchain/solana";
 import { useNotification } from "@providers/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 
-import { Linking, View } from "react-native";
-import { Text, ActivityIndicator, useTheme } from "react-native-paper";
+import { Linking, View, StyleSheet} from "react-native";
+import { Text, useTheme, HelperText, Portal, Modal} from "react-native-paper";
 import {Button} from '@components/ui/Button'
 import { ShareTextButton } from "@components/base/ButtonShare";
 import { SvgIcon } from "@components/base/SvgIcon";
 import { DatePickerMD3FromCalendar } from "@components/base/DatePickerMD3";
 import TimePickerMD3, { TimeValue } from "@components/base/TimePickerMD3";
 import { useState } from "react";
-
+import { Switch } from "@components/ui/Switch";
+import { AppTheme } from "@theme/types";
+import { uploadTokenMetadataToIPFS } from "@services/files/ipfs/pumpfun";
+import { updateUriPremarket } from "@services/blockchain/premarket/updateUriPremarket";
+import CreateTokenForm from "@components/token/create/CreateTokenForm";
+import { TokenMainData } from "@components/token/create/interface";
+import TextedLoader from "@components/ui/Loader";
 
 interface CreatorInfoProps {
   tokenMainInfo: TokenMainInfo;
@@ -41,13 +46,8 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-
-  const renderLoader = (status: string) => (
-    <View style={{ gap: 20 }}>
-      <Text variant="titleMedium">{status}</Text>
-      <ActivityIndicator animating color={colors.primary} size="large" />
-    </View>
-  );
+  const [showEditLink, setShowEditLink] = useState(false);
+  const closEditLinkOpen = () => {setShowEditLink(false)}
 
   const handleRefund = async () => {
     if (!wallet || !connected) {
@@ -77,31 +77,21 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
 
 
     try {
-      open(renderLoader("Refunding premarket..."));
+      open(<TextedLoader text ={"Refunding premarket..."}/>);
       const res = await refundPremarket(
         wallet,
         connection,
         network,
         tokenMainInfo.premarketPubkey,
-        (text) => {replace(renderLoader(text))}
+        (text) => {replace(<TextedLoader text ={text}/>)}
       );
-      open(renderLoader("link data to Revelcy..."));
-      await premarketFinished({
-        premarketPubKey: tokenMainInfo.premarketPubkey.toString(),
-        userWallet: wallet.publicKey.toString(),
-        tx: res.txId,
-        isKilled: true,
-        network: network
-      })
-
-
+      closeOverlay();
       notify.success("Premarket successfully refunding!", {action: {
         label: "check",
         onAction: ()=> {
           Linking.openURL(`https://solscan.io/tx/${res.txId}${network === 'devnet' ? '?cluster=devnet' : ''}`)
         }
       }});
-      closeOverlay();
       onUpdated();
     } catch (e) {
       console.error("refund premarket error:", e);
@@ -213,24 +203,15 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
     }
 
     try {
-      open(renderLoader("Extending premarket deadline..."));
+      open(<TextedLoader text ={"Extending premarket deadline..."}/>);
       const res = await extendPremarket(
         wallet,
         connection,
         network,
         tokenMainInfo.premarketPubkey,
         newDeadline,
-        (text) => {replace(renderLoader(text))}
+        (text) => {replace(<TextedLoader text ={text}/>)}
       );
-      replace(renderLoader("Linking data to Revelcy..."));
-      await extendedPremarket({
-        premarketPubKey: tokenMainInfo.premarketPubkey.toString(),
-        userWallet: wallet.publicKey.toString(),
-        userId: user.userId,
-        tx: res.txId,
-        network: network,
-        newDeadline: newDeadline,
-      });
 
       notify.success("Premarket deadline successfully extended!", {action: {
         label: "check",
@@ -247,15 +228,16 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
       setSelectedDate(null);
     }
   };
+  
 
   const handleFinish = async () => {
-    const now = Math.floor(Date.now() / 1000);
-    if (tokenMainInfo.premarketDeadline > now) {
-      notify.warning(
-        `Finish will be available in ${getTimeLeftLabel(tokenMainInfo.premarketDeadline)}`
-      );
-      return;
-    }
+    // const now = Math.floor(Date.now() / 1000);
+    // if (tokenMainInfo.premarketDeadline > now) {
+    //   notify.warning(
+    //     `Finish will be available in ${getTimeLeftLabel(tokenMainInfo.premarketDeadline)}`
+    //   );
+    //   return;
+    // }
 
     if (!wallet || !connected) {
       notify.error("Wallet is not connected", {
@@ -283,21 +265,14 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
     }
 
     try {
-      open(renderLoader("Finishing premarket..."));
+      open(<TextedLoader text ={"Finishing premarket..."}/>);
       const res = await finishPremarket(
         wallet,
         connection,
         network,
         tokenMainInfo.premarketPubkey,
-        (text) => {replace(renderLoader(text))}
+        (text) => {replace(<TextedLoader text ={text}/>)}
       );
-      premarketFinished({
-        premarketPubKey: tokenMainInfo.premarketPubkey.toString(),
-        userWallet: wallet.publicKey.toString(),
-        tx: res.txId,
-        isKilled: false,
-        network: network
-      });
 
       notify.success("Premarket successfully finished!", {action: {
         label: "check",
@@ -327,6 +302,14 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
             mode="contained"
             onPress={handleExtended}>Extend</Button>}
         </View>
+        {(tokenMainInfo.state !== 'finished' && tokenMainInfo.state !== 'canceled') &&
+          <View style={{flexDirection:'row', gap:16, width:'100%'}}>
+            <Button style={{flex:1}} variant='primary' 
+              mode="contained"
+              onPress={()=>setShowEditLink(true)}>Edit links</Button>
+          </View>
+        }
+
         {tokenMainInfo.isExtended ? null :
         <View style={{flexDirection:'row', gap:16, alignContent:'center', justifyContent:'flex-start' }}>
           <SvgIcon name='info-circle' size={24} color={colors.error} />
@@ -358,15 +341,42 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
         onConfirm={handleTimeConfirm}
         label="Pick time"
       />
+      <EditLinksModal visible={showEditLink} onClose={closEditLinkOpen} tokenMainInfoPreset={tokenMainInfo} onUpdated={onUpdated} />
+
+      <VisabilitySwitch
+        isDiscoverablePreset={!tokenMainInfo.isHided}
+        shortLink={tokenMainInfo.shortLinkPrefix?"https://beta.revelcy.com/token/"+tokenMainInfo.shortLinkPrefix:undefined}
+        premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
+        onUpdated={onUpdated}
+      />
     </>
     )
   }
-  if (isDeadLine && isGoalReached) {
+  if (isGoalReached) {
+  // if (isDeadLine && isGoalReached) {
     return (
-      <View style={{flexDirection:'row', gap:16, width:'100%'}}>
-        <Button leftSvgIconName='pumpfun' style={{flex:3}} variant='primary' 
-          onPress={handleFinish}>Launch on Pump</Button>
-        <ShareTextButton style={{flex: 1}} shareMessage={`Join to premarket on: ${currentURL}`}/>
+      <View style={{ gap:16, width:'100%'}}>
+        <View style={{flexDirection:'row'}}>
+          <Button leftSvgIconName='pumpfun' style={{flex:3}} variant='primary' 
+            onPress={handleFinish}>Launch on Pump</Button>
+          <ShareTextButton style={{flex: 1}} shareMessage={`Join to premarket on: ${currentURL}`}/>
+        </View>
+        {(tokenMainInfo.state !== 'finished' && tokenMainInfo.state !== 'canceled') &&
+          <View style={{flexDirection:'row', gap:16, width:'100%'}}>
+            <Button style={{flex:1}} variant='primary' 
+              mode="contained"
+              onPress={()=>setShowEditLink(true)}>Edit links</Button>
+          </View>
+        }
+
+        <EditLinksModal visible={showEditLink} onClose={closEditLinkOpen} tokenMainInfoPreset={tokenMainInfo} onUpdated={onUpdated} />
+
+        <VisabilitySwitch
+          isDiscoverablePreset={!tokenMainInfo.isHided}
+          shortLink={tokenMainInfo.shortLinkPrefix?"https://beta.revelcy.com/token/"+tokenMainInfo.shortLinkPrefix:undefined}
+          premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
+          onUpdated={onUpdated}
+        />
       </View>
     )
   }
@@ -374,10 +384,207 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
   return (
     <View style={{gap:16, width:'100%'}}>
         <ShareTextButton style={{width:'100%'}} shareMessage={`Join to premarket on: ${currentURL}`}>Share</ShareTextButton>
+        {(tokenMainInfo.state !== 'finished' && tokenMainInfo.state !== 'canceled') &&
+          <View style={{flexDirection:'row', gap:16, width:'100%'}}>
+            <Button style={{flex:1}} variant='primary' 
+              mode="contained"
+              onPress={()=>setShowEditLink(true)}>Edit links</Button>
+          </View>
+        }
         <View style={{flexDirection:'row', gap:16, alignItems:'center'}}>
           <SvgIcon name='info-circle' size={24} color={colors.primary} />
-          <Text variant='bodyMedium' selectionColor={colors.onSurfaceVariant} numberOfLines={2}>You can finalize the Premarket in {getTimeLeftLabel(tokenMainInfo.premarketDeadline)}, after deadline passes.</Text>
+          <Text variant='bodyMedium' selectionColor={colors.onSurfaceVariant} numberOfLines={2}>You can finalize the Premarket once the goal is reached.</Text>
+          {/* <Text variant='bodyMedium' selectionColor={colors.onSurfaceVariant} numberOfLines={2}>You can finalize the Premarket in {getTimeLeftLabel(tokenMainInfo.premarketDeadline)}, after deadline passes.</Text> */}
         </View>
+        {(tokenMainInfo.state !== 'finished' && tokenMainInfo.state !== 'canceled') &&
+           <EditLinksModal visible={showEditLink} onClose={closEditLinkOpen} 
+            tokenMainInfoPreset={tokenMainInfo} onUpdated={onUpdated} />
+        }
+
+        
+        <VisabilitySwitch
+          isDiscoverablePreset={!tokenMainInfo.isHided}
+          shortLink={tokenMainInfo.shortLinkPrefix?"https://beta.revelcy.com/token/"+tokenMainInfo.shortLinkPrefix:undefined}
+          premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
+          onUpdated={onUpdated}
+        />
     </View>
   );
 }
+
+
+function VisabilitySwitch({isDiscoverablePreset, shortLink, premarketPubkey, onUpdated}: {
+  premarketPubkey: string,
+  isDiscoverablePreset: boolean,
+  shortLink?: string,
+  onUpdated: () => Promise<void>,
+}) {
+  const { colors } = useTheme<AppTheme>();
+  const [isDiscoverable, setIsDiscoverable] = useState<boolean>(isDiscoverablePreset);
+  const notify = useNotification();
+
+
+  const changeAvailability = async () => {
+    const newValue = !isDiscoverable;
+    try {
+      setIsDiscoverable(newValue);
+      await updateTokenAvailbility(premarketPubkey, {
+        isHided: !newValue,
+      });
+      onUpdated();
+    } catch (e) {
+      setIsDiscoverable(!newValue)
+      console.error("change availability error:", e);
+      notify.error("Failed to change availability to "+(newValue?"discoverable":"hidden"));
+    }
+  };
+
+
+  return (
+    <View>
+      <View style={{
+        paddingVertical: 16,
+        paddingHorizontal: 12,
+        backgroundColor: colors.surfaceContainerLow,
+        borderRadius: 14,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}>
+        <Text variant='bodyMedium' selectionColor={colors.onSurface}>{isDiscoverable?"Your premarket is discoverable":"Your premarket is hidden"}</Text>
+        <Switch value={isDiscoverable} onValueChange={changeAvailability}/>
+      </View>
+    <HelperText type="info" visible={!isDiscoverable}>
+      Token is hidden from Discovery.
+      {shortLink?"People can only find it via short link ("+shortLink+")":null}
+    </HelperText>
+  </View>);
+}
+
+
+function EditLinksModal({
+  visible,
+  onClose, 
+  tokenMainInfoPreset, onUpdated}: {
+  visible: boolean, 
+  onClose: ()=>void,
+  tokenMainInfoPreset: TokenMainInfo,
+  onUpdated: () => Promise<void>;
+}) {
+  const notify = useNotification();
+  const { network } = useNetwork();
+  const {colors} = useTheme()
+  const connection = getSolanaConnection(network);
+  const { connected, connect } = useWallet();
+  const wallet = useAnchorWalletSafe();
+  const { open, replace, close: closeOverlay } = useOverlay();
+
+    const handleUpdateURIConfirm = async (tokenMainInfo: TokenMainData) => {
+    open(<TextedLoader text ={"Update premarket links..."}/>);
+    if (!wallet || !connected) {
+      notify.error("Wallet is not connected", {
+        suggest: "Enable Phantom (or compatible) and try again",
+        action: {
+          label: "Connect",
+          onAction: async () => {
+            try {
+              await connect();
+            } catch (e) {
+              console.log("connect error:", e);
+            }
+          },
+        },
+      });
+      return;
+    }
+    if (wallet.publicKey.toBase58() !== tokenMainInfoPreset.createdByPubkey) {
+      notify.error("Only the creator can finish the premarket");
+      return;
+    }
+    if (network === 'testnet') {
+      notify.error("testnet is not supported");
+      return;
+    }
+    if (tokenMainInfo.avatar === undefined) {
+      notify.error("Please add token avatar");
+      return;
+
+    }
+    open(<TextedLoader text ={"Uploading data to IPFS..."}/>);
+    
+    try {
+      const ipfsData = await uploadTokenMetadataToIPFS({
+        avatar: tokenMainInfo.avatar,
+        tokenInfo: {
+          name: tokenMainInfo.tokenName,
+          symbol: tokenMainInfo.tokenTicker,
+          description: tokenMainInfo.description,
+          links: {
+            telegram: tokenMainInfo.links.telegram,
+            twitter: tokenMainInfo.links.twitter,
+            website: tokenMainInfo.links.website,
+          },
+        },
+      });
+      if (!ipfsData) {
+        replace(<TextedLoader text ={"Failed to upload to IPFS..."}/>);
+        notify.error("failed to upload data to IPFS", {
+          suggest: "Please, try again later",
+        });
+        closeOverlay();
+        return;
+      }
+      await updateUriPremarket(
+        wallet, connection, network,
+        tokenMainInfoPreset.premarketPubkey,
+        ipfsData.metadataUri, 
+        (text) => {replace(<TextedLoader text ={text}/>)}
+      )
+    } catch (e) {
+      console.error("update links error:", e);
+      notify.error("Failed to update links for premarket");
+    } finally {
+      closeOverlay();
+      onUpdated();
+    }
+  }
+
+  return (
+    <Portal >
+      <Modal
+        style={{alignItems: 'center', justifyContent: 'center',}}
+        visible={visible}
+        onDismiss={onClose}
+        contentContainerStyle={[styles.modalContainer]}>     
+          <CreateTokenForm
+            onNext={handleUpdateURIConfirm}
+            onClose={onClose}
+            step={1}
+            totalSteps={4}
+            presetData={{
+              tokenName: tokenMainInfoPreset.name,
+              tokenTicker: tokenMainInfoPreset.symbol,
+              description: tokenMainInfoPreset.description,
+              avatar: tokenMainInfoPreset.imageURL??"", 
+              links: {
+                telegram: tokenMainInfoPreset.links.telegram,
+                twitter: tokenMainInfoPreset.links.twitter,
+                website: tokenMainInfoPreset.links.webSite,
+              }
+            }}
+          />
+      </Modal>
+    </Portal>
+    
+  )
+}
+
+
+
+const styles = StyleSheet.create({
+  modalContainer: { 
+    maxHeight: 700, 
+    maxWidth: 600,
+    padding: 24 
+},
+})

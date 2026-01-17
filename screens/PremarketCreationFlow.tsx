@@ -29,10 +29,9 @@ import {
 import EditPremarketSettingsForm from "@components/token/create/EditPremarketSettings";
 import { convertSmallCountToLamport } from "@utils/premarket";
 import {
-  premarketCreated,
   updateAboutCommunity,
   updateVestingInfo,
-  userJoinedToPremarket,
+  updateTokenAvailbility,
 } from "@api/token";
 import { useAuth } from "@providers/AuthContext";
 import { uploadImage } from "@api/files";
@@ -222,7 +221,7 @@ export default function PremarketCreationFlow() {
     });
   };
 
-  const handleLaunch = async () => {
+  const handleLaunch = async (discoverable: boolean) => {
     try {
       await patch({ step: FLOW_STEP.OVERVIEW });
 
@@ -319,14 +318,12 @@ export default function PremarketCreationFlow() {
           tokenData.tokenomicsData.creatorInitialBuy
         ),
       };
-      setLaunchState("try to create TX...");
+      setLaunchState("Trying to create TX...");
       let resp:
         | undefined
         | {
             txId: string;
-            premarketPDA: PublicKey;
-            report: string;
-            mintAddress: string;
+            premarketPDA: string;
           };
 
       try {
@@ -339,7 +336,7 @@ export default function PremarketCreationFlow() {
             setLaunchState(text);
           }
         );
-        setLaunchState("Transaction created...");
+        setLaunchState("Premarket created...");
         setPremarketPDA(resp.premarketPDA.toString());
         setTxId(resp.txId);
       } catch (error) {
@@ -367,86 +364,7 @@ export default function PremarketCreationFlow() {
       }
 
       try {
-        // Сразу пишем в черновик PROCESSING (на случай перезагрузки)
         await patch({ step: FLOW_STEP.PROCESSING });
-
-        setLaunchState("Adding to white list to Revelcy...");
-        try {
-          await premarketCreated({
-            tx: resp.txId,
-            premarketPubKey: resp.premarketPDA.toString(),
-            userWallet: wallet.publicKey.toString(),
-            userId: user.user?.userId,
-            mainInfo: {
-              id: "",
-              premarketPubkey: resp.premarketPDA,
-              name: tokenData.mainData.tokenName,
-              description: tokenData.mainData.description,
-              symbol: tokenData.mainData.tokenTicker,
-              imageURL: ipfsData.avatarUri,
-              ipfsURI: ipfsData.metadataUri,
-              links: {
-                telegram: tokenData.mainData.links.telegram,
-                twitter: tokenData.mainData.links.twitter,
-                webSite: tokenData.mainData.links.website,
-              },
-              premarketGoalSolLamp: convertSmallCountToLamport(tokenData.premarketSettingsData.goal_sol),
-              premarketDeadline: tokenData.premarketSettingsData.deadline_sec,
-              premarketCreated: Math.floor(Date.now() / 1000),
-              createdByPubkey: wallet.publicKey.toString(),
-              state: "premarket",
-              finishDate: undefined, // will be set when premarket finished
-              tokenMint: resp.mintAddress,
-              isExtended: false,
-            },
-            communityInfo: {
-              description: "",
-            },
-          });
-
-          setLaunchState("Adding to white list to Revelcy step2...");
-          if (tokenData.tokenomicsData.creatorInitialBuy > 0) {
-            await userJoinedToPremarket({
-              joinAmountInSolLamport: convertSmallCountToLamport(
-                tokenData.tokenomicsData.creatorInitialBuy
-              ),
-              premarketPubKey: resp.premarketPDA.toString(),
-              tx: resp.txId,
-              userWallet: wallet.publicKey.toString(),
-              userId: user.user?.userId,
-            });
-          }
-        } catch (error) {
-          notify.error(
-            "Premarket created, but didn't added to whitelist in the website",
-            {
-              suggest:
-                "Please, contact administrator with premarket address:" +
-                resp.premarketPDA.toString(),
-              duration: 60000,
-              action: {
-                label: "Ok",
-                onAction: () => {},
-              },
-            }
-          );
-          return;
-        }
-        // Send vesting info 
-        try {
-          if (IsVestingEnable && vestingData?.enabled) {
-            await updateVestingInfo(resp.premarketPDA.toString(), {
-              unlock_at_launch_percent: vestingData.unlockAtLaunchPercent,
-              vesting_period_sec: vestingData.vestingPeriodSec,
-            });
-          }
-        } catch (e) {
-          notify.error("Failed to add vesting info", {
-            suggest: "You can update it later from premarket page",
-            duration: 60000,
-            action: { label: "Ok", onAction: () => { } },
-          });
-        }
 
         setLaunchState("Adding community info");
         try {
@@ -498,6 +416,24 @@ export default function PremarketCreationFlow() {
           });
           // no return just notify
         }
+        
+        setLaunchState("Change token params...");
+        try {
+          await updateTokenAvailbility(resp.premarketPDA.toString(), {
+            isHided: !discoverable,
+            tokenShortUrlName: tokenData.premarketSettingsData.short_link_name,
+          });
+        } catch {
+          notify.error("failed to change tokens params", {
+            suggest: "Please, ask admin to change it",
+            duration: 60000,
+            action: {
+              label: "Ok",
+              onAction: () => {},
+            },
+          });
+        }
+
 
         setStep(FLOW_STEP.PROCESSING);
       } catch (error) {

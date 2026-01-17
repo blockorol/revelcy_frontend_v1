@@ -1,7 +1,7 @@
 // components/token/TokenOverviewCreation.tsx
-import { useEffect, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { View, Image, ScrollView } from "react-native";
-import { useTheme, Divider } from "react-native-paper";
+import { useTheme, Divider, HelperText } from "react-native-paper";
 import { Button } from "@components/ui/Button";
 import { Text } from "@components/ui/Text";
 import { format } from "date-fns";
@@ -17,13 +17,13 @@ import { convertDecimalToToken, convertSmallCountToLamport, formatNumberCompact 
 import LoginButton from "@components/login/LoginButton";
 import { DonutWithLegend } from "@components/base/DonutWithLegend";
 import { round, formatNumberNoTrailingZeros } from "@utils/numbers";
-import { makeTransparent } from "@utils/colors";
 import { convertSolToPercentOnStart } from "@services/pumpfun/adds";
 import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
+import { Switch } from "@components/ui/Switch";
 
 type Props = {
   data: TokenCreateFullData;
-  onLaunch: () => void;
+  onLaunch: (discoverable: boolean) => void;
   launchState: string | undefined;
   removeAll: () => void;
   onClose?: () => void;
@@ -31,7 +31,7 @@ type Props = {
 };
 // const PUMP_FEE_PERCENTAGE = 0.015;
 // const REVELCY_FEE_PERCENTAGE = 0.01;
-const SOL_LOCK = 0.059;
+const SOL_LOCK = 0.06918;
 export default function OverviewPremarketCreation({
   data,
   onLaunch,
@@ -45,6 +45,10 @@ export default function OverviewPremarketCreation({
   const { isMobile, width,height } = useIsMobileWithDemention();
   const { publicKey, connected, connect, disconnect } = useWallet();
   const { user, logout } = useAuth();
+  
+  const [isDiscoverable, setIsDiscoverable] = useState(true);
+  const onChangeDiscoverable = () => setIsDiscoverable(!isDiscoverable);
+
   const errorMapper = {
     user: {
       text: "Please login",
@@ -349,38 +353,19 @@ export default function OverviewPremarketCreation({
             />
           </View>
 
-          {(bannerSrc||descriptionCommunity) && (<View
-            // sections community
-            style={{
-              backgroundColor: colors.surfaceContainerLowest,
-              gap: 16,
-            }}
-          >
-            (<Text
-              variant="labelLarge"
-              prominent
-              style={{ color: colors.onSurface }}
+          {(!!bannerSrc || !!descriptionCommunity) && (
+            <View
+              style={{
+                backgroundColor: colors.surfaceContainerLowest,
+                gap: 16,
+              }}
             >
-              About Community
-            </Text>
+              <Text variant="labelLarge" prominent style={{ color: colors.onSurface }}>
+                About Community
+              </Text>
 
-            {/* Banner */}
-            {bannerSrc && (
-              <View
-                style={{
-                  width: "100%",
-                  aspectRatio: 3,
-                  borderRadius: 20,
-                  overflow: "hidden",
-                  backgroundColor: colors.surfaceContainerLowest,
-                }}
-              >
-                <Image
-                  source={
-                    typeof bannerSrc === "string"
-                      ? { uri: bannerSrc }
-                      : (bannerSrc as any)
-                  }
+              {!!bannerSrc && (
+                <View
                   style={{
                     width: "100%",
                     height: "100%",
@@ -388,52 +373,60 @@ export default function OverviewPremarketCreation({
                     objectFit: "cover",
                     // @ts-ignore
                     objectPosition: "center",
+                    aspectRatio: 3,
+                    borderRadius: 20,
+                    overflow: "hidden",
+                    backgroundColor: colors.surfaceContainerLowest,
                   }}
-                  resizeMode="cover"
-                />
-              </View>
-            )}
+                >
+                  <Image
+                    source={typeof bannerSrc === "string" ? { uri: bannerSrc } : (bannerSrc as any)}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      // @ts-ignore
+                      objectFit: "cover",
+                      // @ts-ignore
+                      objectPosition: "center",
+                    }}
+                    resizeMode="cover"
+                  />
+                </View>
+              )}
 
-            {/* Description */}
-            {descriptionCommunity &&(
-              <Text
-                variant="bodyMedium"
-                style={{ color: colors.onSurfaceVariant }}
-              >
-                {descriptionCommunity}
-              </Text>
-            )}
+              {!!descriptionCommunity && (
+                <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant }}>
+                  {descriptionCommunity}
+                </Text>
+              )}
 
             {/* Links detail (main + custom) */}
-            {customLinks.length > 0 && (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={{ gap: 16, width: isMobile ? width - 16 * 2 : 448 }}
-              >
-                <View style={{ flexDirection: "row", gap: 16 }}>
-                  {customLinks.map((l, i) => (
-                    <Button
-                      key={`commbtn-${l.text}`}
-                      size="small"
-                      variant="primary"
-                      mode="outlined"
-                      leftSvgIconName={
-                        l.type === "x"
-                          ? "x-logo"
-                          : l.type === "tg"
-                          ? "tg-logo"
-                          : "world-outlined"
-                      }
-                      onPress={() => open(l.url)}
-                    >
-                      {l.text}
-                    </Button>
-                  ))}
-                </View>
-              </ScrollView>
-            )}
-          </View>)}
+              {customLinks.length > 0 && (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={{ width: isMobile ? width - 16 * 2 : 448 }}
+                >
+                  <View style={{ flexDirection: "row", gap: 16 }}>
+                    {customLinks.map((l) => (
+                      <Button
+                        key={`commbtn-${l.text}`}
+                        size="small"
+                        variant="primary"
+                        mode="outlined"
+                        leftSvgIconName={
+                          l.type === "x" ? "x-logo" : l.type === "tg" ? "tg-logo" : "world-outlined"
+                        }
+                        onPress={() => open(l.url)}
+                      >
+                        {l.text}
+                      </Button>
+                    ))}
+                  </View>
+                </ScrollView>
+              )}
+            </View>
+          )}
 
           {/* Tokenomics */}
           <View
@@ -450,28 +443,33 @@ export default function OverviewPremarketCreation({
             >
               Tokenomics
             </Text>
-
-            {/* todo: add circle */}
-            <DonutWithLegend
-              slices={[
-                {
-                  value: round(percentGoal, 1),
-                  additional: goalSol.toFixed(2),
-                  label: "Premarket",
-                  color: theme.colors.primary,
-                },
-                {
-                  value: 20,
-                  label: "Pumpswap pool",
-                  color: theme.colors.secondary,
-                },
-                {
-                  value: round(80 - percentGoal, 1),
-                  label: "Bonding curve",
-                  color: theme.colors.onSurface,
-                },
-              ]}
-            />
+            <View style={{
+              backgroundColor: colors.surfaceContainerLow,
+              borderRadius:20,
+              paddingHorizontal: 20,
+              paddingVertical: 16,
+            }}>
+              <DonutWithLegend
+                slices={[
+                  {
+                    value: round(percentGoal, 1),
+                    additional: goalSol.toFixed(2),
+                    label: "Premarket",
+                    color: theme.colors.primary,
+                  },
+                  {
+                    value: 20,
+                    label: "Pumpswap pool",
+                    color: theme.colors.secondary,
+                  },
+                  {
+                    value: round(80 - percentGoal, 1),
+                    label: "Bonding curve",
+                    color: theme.colors.onSurface,
+                  },
+                ]}
+              />
+            </View>
             
             <View style={{ gap: 8 }}>
 
@@ -540,6 +538,26 @@ export default function OverviewPremarketCreation({
             /> */}
           </View>
 
+          {/* Launch options (hide) */}
+          <View style={{
+            }}>
+              <View style={{
+                paddingVertical: 16,
+                paddingHorizontal: 12,
+                backgroundColor: colors.surfaceContainerLow,
+                borderRadius: 14,
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}>
+                <Text variant='bodyMedium' selectionColor={colors.onSurface}>Make premarket discoverable</Text>
+                <Switch value={isDiscoverable} onValueChange={onChangeDiscoverable}/>
+              </View>
+              <HelperText type="info" visible={!isDiscoverable}>
+                Token is hidden from Discovery. People can only find it via short link ({data.premarket.short_link_name? `https://beta.revelcy.com/token/${data.premarket.short_link_name}`:"You can set a short link in the previous step"}).
+              </HelperText>
+          </View>
+
           {!!error && (
             <View style={{ flexDirection: "row", gap: 16 }}>
               <SvgIcon name="info-circle" color={colors.error} size={24} />
@@ -571,7 +589,7 @@ export default function OverviewPremarketCreation({
               />
             )}
             {!error ? (
-              <Button disabled={launchState!==undefined} mode="contained" onPress={onLaunch}>
+              <Button disabled={launchState!==undefined} mode="contained" onPress={() => onLaunch(isDiscoverable)} variant="primary" size="normal" style={{ flex: 1 }}>
                 {`Start premarket with ${shortAddress}`}
               </Button>
             ) : (
