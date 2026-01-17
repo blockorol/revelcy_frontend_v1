@@ -362,6 +362,21 @@ export default function PremarketCreationFlow() {
         });
         return;
       }
+       // Send vesting info 
+        try {
+          if (IsVestingEnable && vestingData?.enabled) {
+            await updateVestingInfo(resp.premarketPDA.toString(), {
+              unlock_at_launch_percent: vestingData.unlockAtLaunchPercent,
+              vesting_period_sec: vestingData.vestingPeriodSec,
+            });
+          }
+        } catch (e) {
+          notify.error("Failed to add vesting info", {
+            suggest: "You can update it later from premarket page",
+            duration: 60000,
+            action: { label: "Ok", onAction: () => { } },
+          });
+        }
 
       try {
         await patch({ step: FLOW_STEP.PROCESSING });

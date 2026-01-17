@@ -38,6 +38,7 @@ export interface TokenAvailabilityInfo {
   isHided?: boolean;
   tokenShortUrlName?: string;
 }
+
 export async function updateTokenAvailbility(premarketPubkey: string, args: TokenAvailabilityInfo) {
   const payload = {
     premarket_pubkey: premarketPubkey,
@@ -365,4 +366,28 @@ export type UserEntryResponse = {
 export async function fetchUserEntry(premarketId: string, userId: string): Promise<UserEntryResponse> {
   const url = `${API_HOST}/premarket/get_user_entry?premarket_id=${premarketId}&userId=${userId}`;
   return await http.get<UserEntryResponse>(url, { retry: RETRY_DEFAULT });
+}
+
+export interface VestingInfoDTO {
+  unlock_at_launch_percent: number; 
+  vesting_period_sec: number; 
+}
+
+export async function updateVestingInfo(premarketId: string, args: VestingInfoDTO) {
+  const payload = {
+    premarket_id: premarketId,
+    vesting_period_sec: args.vesting_period_sec,
+    unlock_at_launch_percent: args.unlock_at_launch_percent,
+  };
+
+  try {
+    await http.post(`${API_HOST}/premarket/add_vesting`, {
+      json: payload,
+      retry: RETRY_DEFAULT,
+    });
+    return;
+  } catch (e: any) {
+    console.error("[updateVestingInfo] failed", { payload, error: e });
+    throw new Error(`Failed to update vesting: ${e?.message ?? "Unknown error"}`);
+  }
 }
