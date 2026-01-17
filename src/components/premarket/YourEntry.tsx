@@ -9,16 +9,18 @@ import { useNotification } from "@providers/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import { useAnchorWalletSafe } from "@storage/wallet-adapter/useWallet.web";
 import { outOfPremarket } from "@services/blockchain/premarket/outOfPremarket";
-import { getHolderEntryPrice } from "@services/api/token";
+import { getHolderEntryPrice, fetchUserEntry } from "@services/api/token";
 import { PublicKey } from "@solana/web3.js";
 import { TokenDynamicInfo, TokenMainInfo } from "@api/token";
 import { convertLamportToSmallCount, formatNumberCompact, convertDecimalToToken } from "@utils/premarket";
 import BN from "bn.js";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback  } from "react";
 import { MD3Colors, MD3Typescale } from "react-native-paper/lib/typescript/types";
 import { SvgIcon } from "@components/base/SvgIcon";
 import { convertSolanaToTokenWithFee, splitInput  } from "@services/pumpfun/convertors";
 import { convertTokenToPersent, DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
+import { toVestingVMFromDec, type VestingVM } from "@utils/vesting";
+import { hexToRgba } from "@utils/colors";
 import TextedLoader from "@components/ui/Loader";
 
 
@@ -41,6 +43,16 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
     const { open, replace, close: closeOverlay} = useOverlay();
     const [entryPrice, setEntryPrice] = useState<number>(0);
     const [loadingEntryPrice, setLoadingEntryPrice] = useState(true);
+    const [vestingVM, setVestingVM] = useState<VestingVM>({
+        totalAmount: 0,
+        vestedAmount: 0,
+        claimedAmount: 0,
+        vestedPct: 0,
+        claimedPct: 0,
+    });
+    const [loadingUserEntry, setLoadingUserEntry] = useState(true);
+
+
 
     // Find user's entry data
     const userEntry = tokenDynamicInfo.holders.find((holder) => holder.id === user.userId);
@@ -97,7 +109,8 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
 
         fetchEntryPrice();
     }, [premarketPubkey, userEntry?.walletAddress]);
-    
+
+
     // Calculate real values
     const solValue = convertLamportToSmallCount(userEntry.amountSolLamp);
     const { inCurve, pumpFee } = splitInput(userEntry.amountSolLamp);
@@ -158,7 +171,43 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
     // todo: check and fix
     const tokens = convertDecimalToToken(tokensBN);
     const supplyPercent = convertTokenToPersent(tokensBN);
+   
+   useEffect(() => {
+   const run = async () => {
+    try {
+      setLoadingUserEntry(true);
 
+      const entry = await fetchUserEntry(premarketPubkey.toString(), user.userId);
+
+      setVestingVM(
+        toVestingVMFromDec({
+          totalDec: entry.token.total_dec,
+          vestedDec: entry.token.vested_dec,
+          claimedDec: entry.token.claimed_dec,
+        })
+      );
+
+    
+
+    } catch (e) {
+      console.error("[YourEntry] fetchUserEntry failed:", e);
+      setVestingVM({
+        totalAmount: 0,
+        vestedAmount: 0,
+        claimedAmount: 0,
+        vestedPct: 0,
+        claimedPct: 0,
+      });
+    } finally {
+      setLoadingUserEntry(false);
+    }
+  };
+
+  run();
+}, [premarketPubkey, user.userId]);
+
+
+   
     // Determine if premarket is expired and user is not creator
     const isExpiredAndNotCreator = useMemo(() => {
         const now = Math.floor(Date.now() / 1000);
@@ -385,6 +434,41 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
                         {parseFloat(supplyPercent.toFixed(2))}%
                     </Text>
                 </View>
+                {/* Separator line */}
+                <View
+                    style={{
+                        height: 0.5,
+                        backgroundColor: theme.colors.outline,
+                        marginVertical: 8,
+                    }}
+                />
+
+                <VestingRow
+                    label="Vested"
+                    dotColor={hexToRgba(theme.colors.primary, 0.2)} // темнее
+                    percent={vestingVM.vestedPct}
+                    amount={vestingVM.vestedAmount}
+                    symbol={tokenMainInfo.symbol}
+                    colors={theme.colors}
+                />
+
+                <VestingRow
+                    label="Claimed"
+                    dotColor={theme.colors.primary} // светлее
+                    percent={vestingVM.claimedPct}
+                    amount={vestingVM.claimedAmount}   
+                    symbol={tokenMainInfo.symbol}
+                    colors={theme.colors}
+                />
+
+                <VestingBar
+                    vestedPercent={vestingVM.vestedPct}
+                    claimedPercent={vestingVM.claimedPct}
+                    vestedColor={hexToRgba(theme.colors.primary, 0.2)} 
+                    claimedColor={theme.colors.primary}             
+                    trackColor={hexToRgba(theme.colors.onSurface, 0.12)}
+                />
+
             </View>
 
             {isExpiredAndNotCreator && (
@@ -594,4 +678,152 @@ function convertNumberWithNull(num: number): { zeros: number; val: number } {
     const truncatedRest = rest.substring(0, 2);
     
     return { zeros: leadingZeros, val: parseInt(truncatedRest) };
+}
+
+
+function clamp(n: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, n));
+}
+
+
+function VestingRow({
+  label,
+  dotColor,
+  percent,
+  amount,
+  symbol,
+  colors,
+}: {
+  label: string;
+  dotColor: string;
+  percent: number;
+  amount: number;
+  symbol: string;
+  colors: MD3Colors;
+}) {
+  const pctText = `${Math.round(clamp(percent, 0, 100))}%`;
+
+  return (
+    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+      <Text variant="labelMedium" style={{ color: colors.onSurface }}>
+        {label}
+      </Text>
+
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+        <View
+          style={{
+            width: 10,
+            height: 10,
+            borderRadius: 999,
+            backgroundColor: dotColor,
+          }}
+        />
+        <Text
+          variant="labelMedium"
+          style={{ color: colors.onSurface, fontWeight: "700" }}
+        >
+          {pctText}
+        </Text>
+        <Text variant="labelMedium" style={{ color: colors.onSurfaceVariant }}>
+          {formatNumberCompact(amount)} {symbol}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function VestingBar({
+  vestedPercent,
+  claimedPercent,
+  vestedColor,
+  claimedColor,
+  trackColor,
+}: {
+  vestedPercent: number;
+  claimedPercent: number;
+  vestedColor: string;
+  claimedColor: string;
+  trackColor: string;
+}) {
+  const BAR_HEIGHT = 4;
+  const R = BAR_HEIGHT / 2;
+
+  const vested = clamp(vestedPercent, 0, 100);
+  const claimed = clamp(claimedPercent, 0, vested);
+  const claimedInsideVested = vested > 0 ? claimed / vested : 0; // 0..1
+
+  const GAP_PX = 4;
+
+  const [trackW, setTrackW] = useState(0);
+
+  const onLayout = useCallback((e: any) => {
+    const w = e?.nativeEvent?.layout?.width ?? 0;
+    if (typeof w === "number" && w > 0) setTrackW(w);
+  }, []);
+
+  const { vestedW, gapW, restW, claimedW } = useMemo(() => {
+    if (trackW <= 0) {
+      return { vestedW: 0, gapW: 0, restW: 0, claimedW: 0 };
+    }
+
+    const rawVestedW = (trackW * vested) / 100;
+
+    // gap нужен только когда есть и зелёный, и серый сегменты
+    const hasGreen = vested > 0;
+    const hasGrey = vested < 100;
+    const gW = hasGreen && hasGrey ? GAP_PX : 0;
+
+    const vW = Math.max(0, rawVestedW - (hasGrey ? gW : 0));
+    const rW = Math.max(0, trackW - rawVestedW - gW);
+
+    const cW = vW > 0 ? vW * claimedInsideVested : 0;
+
+    return { vestedW: vW, gapW: gW, restW: rW, claimedW: cW };
+  }, [trackW, vested, claimedInsideVested]);
+
+  return (
+    <View style={{ height: BAR_HEIGHT, marginTop: 6 }} onLayout={onLayout}>
+      <View style={{ flexDirection: "row", height: "100%", alignItems: "center" }}>
+        {/* Зеленая капсула (Vested) */}
+        {vestedW > 0 && (
+          <View
+            style={{
+              width: vestedW,
+              height: "100%",
+              backgroundColor: vestedColor,
+              borderRadius: R,
+              overflow: "hidden",
+            }}
+          >
+            {/* Светло-зелёная внутри (Claimed) */}
+            {claimedW > 0 && (
+              <View
+                style={{
+                  width: claimedW,
+                  height: "100%",
+                  backgroundColor: claimedColor,
+                  borderRadius: R,
+                }}
+              />
+            )}
+          </View>
+        )}
+
+        {/* Разрыв (фон карточки) */}
+        {gapW > 0 && <View style={{ width: gapW, height: "100%" }} />}
+
+        {/* Серая капсула (остаток) */}
+        {restW > 0 && (
+          <View
+            style={{
+              width: restW,
+              height: "100%",
+              backgroundColor: trackColor,
+              borderRadius: R,
+            }}
+          />
+        )}
+      </View>
+    </View>
+  );
 }
