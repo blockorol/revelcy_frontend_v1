@@ -45,3 +45,7 @@ export function toDecString(x: BN | string | number | bigint): string {
 export function ensureDec(name: string, v: string) {
   if (!/^\d+$/.test(v)) throw new Error(`${name} must be a decimal string, got "${v}"`);
 }
+
+export function clamp(n: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, n));
+}

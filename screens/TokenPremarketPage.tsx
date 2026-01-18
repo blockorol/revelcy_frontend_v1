@@ -17,6 +17,7 @@ import { TokenInfo } from "@api/token";
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import React from "react";
 import { Button } from "@components/ui/Button";
+import { VestingCard } from "@components/premarket/VestingCard";
 
 const SLIDER_HEIGHT = 48
 
@@ -179,6 +180,10 @@ export function TokenPremarketPageNormal({
               isMobile={false}
               width={rigth.width}
             />
+            <VestingCard
+              vesting={token.dynamicInfo.vesting}
+              isMobile={false}
+            />
             <PremarketInfo
               currentUserId={user?.userId}
               width={rigth.width}
@@ -330,6 +335,10 @@ function BriefMobile({
           communityInfo={token.communityInfo}
           isMobile={true}
           width={screenDem.width}
+        />
+        <VestingCard
+          vesting={token.dynamicInfo.vesting}
+          isMobile={true}
         />
         <PremarketInfo
           currentUserId={user?.userId}

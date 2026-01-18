@@ -22,7 +22,7 @@ import { convertTokenToPersent, DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pu
 import { toVestingVMFromDec, type VestingVM } from "@utils/vesting";
 import { hexToRgba } from "@utils/colors";
 import TextedLoader from "@components/ui/Loader";
-
+import { clamp } from "@utils/numbers";
 
 interface YourEntryProps {
   premarketPubkey: PublicKey;
@@ -679,12 +679,6 @@ function convertNumberWithNull(num: number): { zeros: number; val: number } {
     
     return { zeros: leadingZeros, val: parseInt(truncatedRest) };
 }
-
-
-function clamp(n: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, n));
-}
-
 
 function VestingRow({
   label,
