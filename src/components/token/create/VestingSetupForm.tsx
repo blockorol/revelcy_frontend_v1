@@ -100,8 +100,8 @@ export default function VestingSetupForm({
     const period = PERIODS[periodIndex];
     const disabledOpacity = enabled ? 1 : 0.35;
 
-    const unlockLabels = [0, 25, 50];
-    const unlockPoints = [0, 12.5, 25, 37.5, 50];
+    const unlockLabels = [0, 25, 50, 75, 100];
+    const unlockPoints = [0, 12.5, 25, 37.5, 50, 62.5, 75, 87.5, 100];
 
     const periodPoints = [0, 1, 2, 3, 4];
 
