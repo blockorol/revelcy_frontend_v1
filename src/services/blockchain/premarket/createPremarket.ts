@@ -12,16 +12,11 @@ import {
 } from "@services/blockchain/signAndSend";
 import { userSetAdditionalInfo } from "@services/fingerprint/sender";
 
-const SECONDS_IN_HOUR = 60 * 60;
-
 export interface CreatePremarketArgs {
-  name: string;
-  symbol: string;
-  uri: string;
-  deadline: number;
-  goal_sol_lamp: BN;
-  max_sol_lamp: BN;
-  creator_allocate_lamp: BN;
+  metadataUri: string;
+  avatarUrl: string;
+  premarketAccountPda: string;
+  creatorAllocateLamp: BN;
 }
 
 export async function createPremarket(
@@ -31,18 +26,15 @@ export async function createPremarket(
   args: CreatePremarketArgs,
   onChangeState?: (state: string) => void
 ) {
-  onChangeState?.("Creating transaction...");
-  console.log("Creating premarket with args:", args);
-
-  const nowSec = Math.floor(Date.now() / 1000);
-  if (args.deadline < nowSec + SECONDS_IN_HOUR - 1) {
-    throw new Error(
-      `deadline should be more than 1 h after current. now: ${nowSec}, deadline: ${args.deadline}`
-    );
-  }
-
+  
+  onChangeState?.("Create transaction...");
   const { transaction, premarket_account_pda } = await getCreatePremarketTransaction(
-    args,
+    {
+      premarket_pubkey: args.premarketAccountPda,
+      uri: args.metadataUri,
+      image_url: args.avatarUrl,
+      creator_allocate_lamp: args.creatorAllocateLamp
+    },
     wallet.publicKey.toBase58(),
     network
   );
@@ -75,14 +67,6 @@ export async function createPremarket(
   })
 
   onChangeState?.(`Waiting to tx finalisation. Current status: ${status}...`);
-  try {
-    await confirmTxFinalised(connection, signature);
-  } catch (e) {
-    console.error("transation is not finalised!", e)
-    throw e
-  }
-
-  console.log("transaction finalised!");
   return {
     txId: signature,
     premarketPDA: premarket_account_pda,

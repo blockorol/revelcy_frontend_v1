@@ -12,9 +12,11 @@ type TokenInfo = {
 };
 
 export async function uploadTokenMetadataToIPFS({
+  premarketPDA,
   avatar,
   tokenInfo,
 }: {
+  premarketPDA: string;
   avatar: string; // dataURL: "data:image/png;base64,...."
   tokenInfo: TokenInfo;
 }) {
@@ -32,7 +34,7 @@ export async function uploadTokenMetadataToIPFS({
     const blob = new Blob([byteArray], { type: mimeType });
 
     // Append Revelcy info after the description
-    const revelcyText = "Premarket done with Revelcy; initial buy distributed to the community. More: beta.revelcy.com";
+    const revelcyText = `Premarket done with Revelcy; initial buy distributed to the community. More: https://beta.revelcy.com/${premarketPDA}`;
     const descriptionUpdated = tokenInfo.description 
       ? `${tokenInfo.description}\n\n${revelcyText}`
       : revelcyText;
