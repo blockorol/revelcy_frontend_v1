@@ -1,6 +1,6 @@
 import { ScrollView } from "react-native";
 import { List, Text,  Divider, useTheme } from "react-native-paper";
-import { useRouter } from "expo-router";
+import { useRouter } from "@hooks/useSafeRouter";
 import { getAllRoutes } from "./routes";
 import { useNetwork } from "@providers/NetworkContext";
 

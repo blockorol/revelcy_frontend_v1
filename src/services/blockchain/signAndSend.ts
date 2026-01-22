@@ -63,6 +63,7 @@ export async function confirmTxFinalised(connection: Connection, sig: string) {
     const res = await connection.confirmTransaction(sig, "finalized");
     if (res.value.err !== null) {
       console.error("[sendRawTx] Error confirming transaction with finalized state:", res.value.err)
+      throw Error(res.value.err.toString())
     }
   } catch (e) {
     console.error("[sendRawTx] Error confirming transaction:", e);
