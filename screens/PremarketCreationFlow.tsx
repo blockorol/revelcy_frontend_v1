@@ -26,9 +26,6 @@ import {
 } from "@services/premarket/create";
 import EditPremarketSettingsForm from "@components/token/create/EditPremarketSettings";
 import { convertSmallCountToLamport } from "@utils/premarket";
-import {
-  updateTokenAvailbility,
-} from "@api/token";
 import useIsMobile from "@hooks/useIsMobile";
 import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
@@ -315,7 +312,6 @@ export default function PremarketCreationFlow() {
           },
           notify.error
         );
-        setLaunchState("Premarket created...");
         setPremarketPDA(resp.premarketPDA.toString());
         setTxId(resp.txId);
       } catch (error) {
@@ -342,6 +338,7 @@ export default function PremarketCreationFlow() {
         return;
       }
       await patch({ step: FLOW_STEP.PROCESSING });
+      setStep(FLOW_STEP.PROCESSING);
     } finally {
       closeOverlay();
       setLaunchState(undefined);
