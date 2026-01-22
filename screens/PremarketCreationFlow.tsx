@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { useTheme } from "react-native-paper";
-import { useRouter } from "expo-router";
+import { useRouter } from "@hooks/useSafeRouter";
 
 import CreateTokenForm from "@components/token/create/CreateTokenForm";
 import CustomizeTokenForm from "@components/token/create/CustomizeTokenForm";

@@ -3,8 +3,6 @@ import { View, StyleSheet, useWindowDimensions } from "react-native";
 import { useTheme, Menu, TouchableRipple, Divider } from "react-native-paper";
 import { useIsMobileForTwoScreenWithDemention } from "@hooks/useIsMobile";
 import { PremarketList } from "@components/premarket/PremarketList";
-import { useRouter } from "expo-router";
-import { PublicKey } from "@solana/web3.js";
 import RevelcySegmentedButtons from "@components/ui/SegmentedButton";
 import { SvgIcon } from "@components/base/SvgIcon";
 import { AppTheme } from "@theme/types";
