@@ -6,7 +6,8 @@ import { TokenDynamicInfo } from "@api/token";
 import { toVestingVMFromTokenDecBN } from "@utils/vesting";
 import { SvgIcon } from "@components/base/SvgIcon";
 import { clamp } from "@utils/numbers";
-import { convertTimeStampToDataMonth } from "@utils/premarket";
+import { hexToRgba } from "@utils/colors";
+import { formatDateTime } from "@utils/premarket";
 
 export function VestingCard({
   vesting,
@@ -31,54 +32,57 @@ export function VestingCard({
 
   const start = Number(vesting.starttime_ms ?? 0);
   const end = Number(vesting.endtime_ms ?? 0);
+  const showTimeline = start > 0 && end > start;
 
-  const GAP_Y = 14; 
-  const GAP_BEFORE_BAR = 8; 
+  const GAP_Y = 14;
+  const GAP_BEFORE_BAR = 8;
   const BAR_H = 4;
   const R = BAR_H / 2;
-  const SEGMENT_GAP_PX = 6;
+  const SEGMENT_GAP_PX = 4;
 
   const vestedPct = clamp(vm.vestedPct, 0, 100);
   const claimedPct = clamp(vm.claimedPct, 0, vestedPct);
 
-  // "Today" = конец зелёного сегмента 
-  const todayPct = vestedPct;
+  const vestedColor = hexToRgba(theme.colors.primary, 0.2); 
+  const claimedColor = theme.colors.primary; 
+  const trackColor = colors.outlineVariant;
 
   const [trackW, setTrackW] = useState(0);
-  const onTrackLayout = useCallback((e: any) => {
+  const onBarLayout = useCallback((e: any) => {
     const w = e?.nativeEvent?.layout?.width ?? 0;
     if (typeof w === "number" && w > 0) setTrackW(w);
   }, []);
 
-  const { vestedW, restW, gapW } = useMemo(() => {
-    if (trackW <= 0) return { vestedW: 0, restW: 0, gapW: 0 };
+  const { vestedW, restW, gapW, claimedW, markerX } = useMemo(() => {
+    if (trackW <= 0) return { vestedW: 0, restW: 0, gapW: 0, claimedW: 0, markerX: 0 };
 
-    const rawVestedW = (trackW * vestedPct) / 100;
+    const vested = clamp(vestedPct, 0, 100);
+    const claimed = clamp(claimedPct, 0, vested);
+    const claimedInsideVested = vested > 0 ? claimed / vested : 0;
 
     const hasGreen = vestedPct > 0;
     const hasGrey = vestedPct < 100;
+    const rawVestedW = (trackW * vested) / 100;
 
     const gW = hasGreen && hasGrey ? SEGMENT_GAP_PX : 0;
 
     const vW = Math.max(0, rawVestedW - (hasGrey ? gW : 0));
     const rW = Math.max(0, trackW - rawVestedW - gW);
 
-    return { vestedW: vW, restW: rW, gapW: gW };
-  }, [trackW, vestedPct]);
+    const cW = vW > 0 ? vW * claimedInsideVested : 0;
 
-  const todayX = useMemo(() => {
-    if (trackW <= 0) return 0;
-    return vestedW;
-  }, [trackW, vestedW]);
 
-  const showTimeline = start > 0 && end > start;
+    const mX = clamp(vW, 0, trackW);
+
+    return { vestedW: vW, gapW: gW, restW: rW, claimedW: cW, markerX: mX };
+  }, [trackW, vestedPct, claimedPct]);
 
   return (
     <View
       style={[
         styles.card,
         {
-          width: "100%", 
+          width: "100%",
           backgroundColor: isMobile ? "transparent" : colors.surfaceContainerLowest,
           borderRadius: isMobile ? 0 : 20,
           padding: isMobile ? 16 : 24,
@@ -103,68 +107,99 @@ export function VestingCard({
 
       {/* 2) Percent row */}
       <View style={styles.percentRow}>
-        <Text style={{ color: colors.onSurface, fontWeight: "700" }}>
-          {Math.round(vestedPct)}%{" "}
-          <Text style={{ color: colors.onSurfaceVariant, fontWeight: "500" }}>Vested</Text>
-        </Text>
-        <Text style={{ color: colors.onSurface, fontWeight: "700" }}>
-          {Math.round(claimedPct)}%{" "}
-          <Text style={{ color: colors.onSurfaceVariant, fontWeight: "500" }}>Claimed</Text>
-        </Text>
+        <View style={styles.pill}>
+          <View style={[styles.dot, { backgroundColor: vestedColor }]} />
+          <Text style={{ color: colors.onSurface, fontWeight: "700" }}>
+            {Math.round(vestedPct)}%
+          </Text>
+          <Text style={{ color: colors.onSurfaceVariant, fontWeight: "500" }}>
+            Vested
+          </Text>
+        </View>
+
+        <View style={styles.pill}>
+          <View style={[styles.dot, { backgroundColor: claimedColor }]} />
+          <Text style={{ color: colors.onSurface, fontWeight: "700" }}>
+            {Math.round(claimedPct)}%
+          </Text>
+          <Text style={{ color: colors.onSurfaceVariant, fontWeight: "500" }}>
+            Claimed
+          </Text>
+        </View>
       </View>
 
       <View style={{ height: GAP_Y + GAP_BEFORE_BAR }} />
 
       {/* 3) Bar + Today marker */}
-      <View onLayout={onTrackLayout}>
-        {/* Marker layer (absolute) */}
-        <View style={{ position: "relative" }}>
-          {/* стрелочка + Today */}
-          <View style={[styles.todayWrap, { left: todayX }]}>
-            {/* Triangle UP */}
-            <View style={[styles.triangleUp, { borderBottomColor: theme.colors.primary }]} />
-
+      <View style={{ position: "relative" }} onLayout={onBarLayout}>
+        {/* Marker (Now) below the bar, triangle points UP */}
+        {trackW > 0 && (
+          <View style={[styles.nowWrap, { left: markerX }]}>
+            <View
+              style={[
+                styles.triangleUp,
+                { borderBottomColor: theme.colors.primary },
+              ]}
+            />
             <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: "700", marginTop: 2 }}>
-              Today
+              Now
             </Text>
           </View>
-          {/* Track */}
-          <View style={{ height: BAR_H }}>
-            <View style={{ flexDirection: "row", height: "100%", alignItems: "center" }}>
-              {/* Зеленый сегмент */}
-              {vestedW > 0 && (
-                <View
-                  style={{
-                    width: vestedW,
-                    height: "100%",
-                    backgroundColor: theme.colors.primary,
-                    borderRadius: R,
-                  }}
-                />
-              )}
+        )}
+
+        {/* Track */}
+        <View style={{ height: BAR_H }}>
+          <View style={{ flexDirection: "row", height: "100%", alignItems: "center" }}>
+            {/* Vested capsule */}
+            {vestedW > 0 && (
+              <View
+                style={{
+                  width: vestedW,
+                  height: "100%",
+                  backgroundColor: vestedColor,
+                  borderRadius: R,
+                  overflow: "hidden",
+                }}
+              >
+                {/* Claimed inside vested */}
+                {claimedW > 0 && (
+                  <View
+                    style={{
+                      width: claimedW,
+                      height: "100%",
+                      backgroundColor: claimedColor,
+                      borderRadius: R,
+                    }}
+                  />
+                )}
+              </View>
+            )}
 
               {/* GAP */}
-              {gapW > 0 && <View style={{ width: gapW, height: "100%" }} />}
+            {gapW > 0 && <View style={{ width: gapW, height: "100%" }} />}
 
               {/* Серый сегмент */}
-              {restW > 0 && (
-                <View
-                  style={{
-                    width: restW,
-                    height: "100%",
-                    backgroundColor: colors.outlineVariant,
-                    borderRadius: R,
-                  }}
-                />
-              )}
-            </View>
+            {restW > 0 && (
+              <View
+                style={{
+                  width: restW,
+                  height: "100%",
+                  backgroundColor: trackColor,
+                  borderRadius: R,
+                }}
+              />
+            )}
           </View>
         </View>
 
         {showTimeline && (
           <View style={styles.datesRow}>
-            <Text style={{ color: colors.onSurfaceVariant, fontSize: 12 }}>{convertTimeStampToDataMonth(start)}</Text>
-            <Text style={{ color: colors.onSurfaceVariant, fontSize: 12 }}>{convertTimeStampToDataMonth(end)}</Text>
+            <Text style={{ color: colors.onSurfaceVariant, fontSize: 12 }}>
+              {formatDateTime(start)}
+            </Text>
+            <Text style={{ color: colors.onSurfaceVariant, fontSize: 12 }}>
+              {formatDateTime(end)}
+            </Text>
           </View>
         )}
       </View>
@@ -184,7 +219,7 @@ export function VestingCard({
 
 const styles = StyleSheet.create({
   card: {
-    overflow: "visible", 
+    overflow: "visible",
   },
   headerRow: {
     flexDirection: "row",
@@ -196,6 +231,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 18,
   },
+  pill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 999,
+  },
   datesRow: {
     marginTop: 10,
     flexDirection: "row",
@@ -206,25 +251,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
   },
-  hintDot: {
-    width: 18,
-    height: 18,
-    borderRadius: 999,
-  },
-  todayWrap: {
+  nowWrap: {
     position: "absolute",
-    bottom: -28,             
-    transform: [{ translateX: -15 }],
+    bottom: -3,
+    transform: [{ translateX: -11 }], 
     alignItems: "center",
   },
   triangleUp: {
-  width: 0,
-  height: 0,
-  borderLeftWidth: 4,
-  borderRightWidth: 4,
-  borderBottomWidth: 6,          
-  borderLeftColor: "transparent",
-  borderRightColor: "transparent",
-  borderBottomColor: "transparent", 
-},
+    width: 0,
+    height: 0,
+    borderLeftWidth: 4,
+    borderRightWidth: 4,
+    borderBottomWidth: 6,
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
+    borderBottomColor: "transparent",
+  },
 });
