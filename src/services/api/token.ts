@@ -392,6 +392,7 @@ export async function fetchUserEntry(premarketId: string, userId: string): Promi
 export interface VestingInfoDTO {
   unlock_at_launch_percent: number; 
   vesting_period_sec: number; 
+  enabled: boolean;
 }
 
 export async function updateVestingInfo(premarketId: string, args: VestingInfoDTO) {
@@ -399,6 +400,7 @@ export async function updateVestingInfo(premarketId: string, args: VestingInfoDT
     premarket_id: premarketId,
     vesting_period_sec: args.vesting_period_sec,
     unlock_at_launch_percent: args.unlock_at_launch_percent,
+    enabled: args.enabled,
   };
 
   try {

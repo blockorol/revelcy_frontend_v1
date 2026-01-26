@@ -33,7 +33,6 @@ import { getSolanaConnection } from "@services/blockchain/solana";
 import { useNotification } from "@providers/NotificationContext";
 
 import { usePremarketDraft, type FlowStep } from "@hooks/usePremarketDraft";
-import { PublicKey } from "@solana/web3.js";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import TransactionLoadingModal from "@components/modals/TransactionLoadingModal";
 import { AddCommunityInfoParams } from "@services/premarket/addCommunityInfo";
@@ -313,6 +312,7 @@ export default function PremarketCreationFlow() {
           currentConnection,
           createPremarketArgs,
           communityInfo,
+          vestingData,
           {
             isHided: !discoverable,
             tokenShortUrlName: tokenData.premarketSettingsData.short_link_name,
@@ -374,6 +374,11 @@ export default function PremarketCreationFlow() {
     router.push(`/token/${premarketPDA}`);
   };
 
+  const onButtonClose = async () => {
+    await clear();
+    router.push("/discover");
+  }
+
   const getTokenData = (): TokenCreateFullData | undefined => {
     if (
       tokenMainData === undefined ||
@@ -414,8 +419,6 @@ export default function PremarketCreationFlow() {
           <CreateTokenForm
             onNext={handleAfterSetTokenBaseInfo}
             onClose={async () => {
-              await clear();
-              router.push("/discover");
             }}
             step={1}
             totalSteps={totalSteps}
@@ -427,10 +430,7 @@ export default function PremarketCreationFlow() {
           <EditTokenomicsForm
             onBack={() => setStep(FLOW_STEP.TOKEN_BASE_INFO)}
             onNext={handleAfterTokenomics}
-            onClose={async () => {
-              await clear();
-              router.push("/discover");
-            }}
+            onClose={onButtonClose}
             step={2}
             totalSteps={totalSteps}
             presetData={tokenomicsData}
@@ -452,17 +452,13 @@ export default function PremarketCreationFlow() {
                 step: nextStep,
               });
             }}
-            onClose={async () => {
-              await clear();
-              router.push("/discover");
-            }}
+            onClose={onButtonClose}
             step={3}
             totalSteps={totalSteps}
             presetData={premarketSettingsData}
             tokenomicsData={tokenomicsData}
           />
         )}
-
 
         {IsVestingEnable && step === FLOW_STEP.VESTING && (
           <VestingSetupForm
@@ -473,10 +469,7 @@ export default function PremarketCreationFlow() {
               setStep(FLOW_STEP.CUSTOMIZE_TOKEN);
             }}
             onSaveDraft={() => patch({ vestingData, step })}
-            onClose={async () => {
-              await clear();
-              router.push("/discover");
-            }}
+            onClose={onButtonClose}
             step={4}
             totalSteps={totalSteps}
             presetData={vestingData}
@@ -489,10 +482,7 @@ export default function PremarketCreationFlow() {
               setStep(IsVestingEnable ? FLOW_STEP.VESTING : FLOW_STEP.PREMARKET_SETTINGS)
             }
             onNext={handleAfterCunstomizeToken}
-            onClose={async () => {
-              await clear();
-              router.push("/discover");
-            }}
+            onClose={onButtonClose}
             steps={{ current: IsVestingEnable ? 5 : 4, total: totalSteps }}
             presetData={customizeTokenData}
           />
@@ -505,10 +495,7 @@ export default function PremarketCreationFlow() {
               await clear();
               setStep(FLOW_STEP.TOKEN_BASE_INFO);
             }}
-            onClose={async () => {
-              await clear();
-              router.push("/discover");
-            }}
+            onClose={onButtonClose}
             launchState={launchState}
             onLaunch={handleLaunch}
             data={getTokenData()!}

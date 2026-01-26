@@ -5,8 +5,9 @@ import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { Connection } from "@solana/web3.js";
 import BN from "bn.js";
 import { addCommunityInfo, AddCommunityInfoParams } from "@services/premarket/addCommunityInfo";
-import { updateTokenAvailbility } from "@api/token";
+import { updateTokenAvailbility, updateVestingInfo } from "@api/token";
 import { NoticeOptions } from "@providers/NotificationContext";
+import { VestingData } from "@components/token/create/VestingSetupForm";
 
 const SECONDS_IN_HOUR = 60 * 60;
 
@@ -34,6 +35,7 @@ export async function createPremarket(
   connection: Connection,
   args: CreatePremarketArgs,
   communityInfo: AddCommunityInfoParams,
+  vestingData: VestingData | undefined,
   visabilityInfo: {
     isHided: boolean;
     tokenShortUrlName?: string;
@@ -51,6 +53,11 @@ export async function createPremarket(
             isHided: visabilityInfo.isHided,
             tokenShortUrlName: visabilityInfo.tokenShortUrlName,
         }),
+        vestingData?updateVestingInfo(conceptResp.premarket_account_pda, {
+          unlock_at_launch_percent: vestingData.unlockAtLaunchPercent,
+          vesting_period_sec: vestingData.vestingPeriodSec,
+          enabled: vestingData.enabled
+        }):Promise.resolve()
     ]);
 
       // todo: set here 
