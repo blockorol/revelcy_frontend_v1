@@ -61,7 +61,6 @@ export async function createPremarket(
     ]);
 
       // todo: set here 
-      // 3. vesting info
       // 4. whitelisting info
       
       onChangeState?.("Uploading data to IPFS...");
