@@ -354,18 +354,39 @@ export async function getHolderEntryPrice({
     return data;
 }
 
-export type UserEntryResponse = {
-  amount_sol: string | number; 
+type UserEntryResponse = {
+  amount_sol_lamp: string | number; 
   token: {
     total_dec: string;   
-    vested_dec?: string; 
-    claimed_dec?: string;
+    vested_dec: string; 
+    claimed_dec: string;
   };
+  rank: number;
 };
 
-export async function fetchUserEntry(premarketId: string, userId: string): Promise<UserEntryResponse> {
-  const url = `${API_HOST}/premarket/get_user_entry?premarket_id=${premarketId}&userId=${userId}`;
-  return await http.get<UserEntryResponse>(url, { retry: RETRY_DEFAULT });
+export type UserEntry = {
+  amountSol: BN; 
+  token: {
+    totalDec: BN;   
+    claimedDec: BN;
+    vestedDec: BN; 
+  };
+  rankInPremarket: number;
+};
+
+export async function fetchUserEntry(premarketId: string, userId: string): Promise<UserEntry> {
+  const url = `${API_HOST}/premarket/get_user_entry?premarket_id=${premarketId}&holder_wallet=${userId}`;
+  const resp = await http.get<UserEntryResponse>(url, { retry: RETRY_DEFAULT });
+
+  return {
+    amountSol: new BN(resp.amount_sol_lamp),
+    token: {
+      totalDec: new BN(resp.token.total_dec),
+      vestedDec: new BN(resp.token.vested_dec),
+      claimedDec: new BN(resp.token.claimed_dec),
+    },
+    rankInPremarket: resp.rank,
+  }
 }
 
 export interface VestingInfoDTO {

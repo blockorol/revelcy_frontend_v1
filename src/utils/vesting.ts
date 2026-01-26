@@ -1,4 +1,3 @@
-import { toNumberSafe } from "@utils/numbers";
 import BN from "bn.js";
 import { convertDecimalToToken } from "@utils/premarket"; 
 
@@ -15,13 +14,13 @@ function clamp(n: number, min: number, max: number) {
 }
 
 export function toVestingVMFromDec(opts: {
-  totalDec: string;
-  vestedDec?: string;
-  claimedDec?: string;
+  totalDec: BN;
+  vestedDec: BN;
+  claimedDec: BN;
 }): VestingVM {
-  const total = convertDecimalToToken(new BN(opts.totalDec ?? "0"));
-  const vested = convertDecimalToToken(new BN(opts.vestedDec ?? "0"));
-  const claimed = convertDecimalToToken(new BN(opts.claimedDec ?? "0"));
+  const total = convertDecimalToToken(opts.totalDec);
+  const vested = convertDecimalToToken(opts.vestedDec);
+  const claimed = convertDecimalToToken(opts.claimedDec);
 
   const t = Math.max(0, total);
   const v = clamp(Math.max(0, vested), 0, t);
