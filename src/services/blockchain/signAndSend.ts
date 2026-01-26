@@ -65,6 +65,7 @@ export async function confirmTxFinalised(connection: Connection, sig: string) {
       console.error("[sendRawTx] Error confirming transaction with finalized state:", res.value.err)
       throw Error(res.value.err.toString())
     }
+    await sleep(10*1000);// to be sure, that BE is ready
   } catch (e) {
     console.error("[sendRawTx] Error confirming transaction:", e);
     if ((e as any)?.logs) console.error("[sendRawTx] confirm logs:", (e as any).logs);
@@ -82,4 +83,8 @@ function bytesToBase64(bytes: Uint8Array): string {
     binary += String.fromCharCode(bytes[i]);
   }
   return btoa(binary);
+}
+
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

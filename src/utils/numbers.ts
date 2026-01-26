@@ -12,6 +12,22 @@ export function formatNumberNoTrailingZeros(num: number): string {
   return str.replace(/\.?0+$/, '');
 }
 
+export function toNumberSafe(v: unknown, fallback = 0): number {
+  if (v == null) return fallback;
+
+  if (typeof v === "number") {
+    return Number.isFinite(v) ? v : fallback;
+  }
+
+  if (typeof v === "string") {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  const n = Number(v as any);
+  return Number.isFinite(n) ? n : fallback;
+}
+
 export function toDecString(x: BN | string | number | bigint): string {
   if (BN.isBN(x)) return (x as BN).toString(10);
   if (typeof x === "bigint") return x.toString(10);

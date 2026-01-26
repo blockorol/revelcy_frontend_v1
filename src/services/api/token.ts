@@ -6,6 +6,7 @@ import { http } from "@api/http";
 import shortString from "@utils/address_shorter";
 import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
 import { DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
+import { VestingVM } from "@utils/vesting";
 import { isSolanaPublicKey } from "@utils/solana";
 
 const RETRY_DEFAULT = 6;
@@ -222,6 +223,20 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
       cumulativeSolLamp = cumulativeSolLamp.add(holder.amountSolLamp);
     });
 
+  const vestingRaw = raw.vesting;
+  const vesting = vestingRaw
+    ? {
+        starttime_ms: Number(vestingRaw.starttime_ms ?? 0),
+        endtime_ms: Number(vestingRaw.endtime_ms ?? 0),
+        total_amount:
+          vestingRaw.total_amount != null ? new BN(String(vestingRaw.total_amount)) : undefined,
+        total_vested:
+          vestingRaw.total_vested != null ? new BN(String(vestingRaw.total_vested)) : undefined,
+        total_claimed:
+          vestingRaw.total_claimed != null ? new BN(String(vestingRaw.total_claimed)) : undefined,
+      }
+    : undefined;
+
 
   return {
     holdersCount: raw.holders_count,
@@ -244,6 +259,7 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
     reservedSolLamp: reservedSolLamp,
     change24h: raw.change_24h,
     holders: holders,
+    vesting,
   };
 }
 
@@ -300,6 +316,14 @@ export interface TokenDynamicInfo {
   reservedTokenLamp: BN;
   reservedSolLamp: BN;
   change24h: number;
+  
+  vesting?: {
+    starttime_ms: number;
+    endtime_ms: number;
+    total_amount?: BN;
+    total_vested?: BN;
+    total_claimed?: BN;
+  };
 }
 
 export interface HoldersInfo {
@@ -329,3 +353,37 @@ export async function getHolderEntryPrice({
     return data;
 }
 
+type UserEntryResponse = {
+  amount_sol_lamp: string | number; 
+  token: {
+    total_dec: string;   
+    vested_dec: string; 
+    claimed_dec: string;
+  };
+  rank: number;
+};
+
+export type UserEntry = {
+  amountSol: BN; 
+  token: {
+    totalDec: BN;   
+    claimedDec: BN;
+    vestedDec: BN; 
+  };
+  rankInPremarket: number;
+};
+
+export async function fetchUserEntry(premarketId: string, userId: string): Promise<UserEntry> {
+  const url = `${API_HOST}/premarket/get_user_entry?premarket_id=${premarketId}&holder_wallet=${userId}`;
+  const resp = await http.get<UserEntryResponse>(url, { retry: RETRY_DEFAULT });
+
+  return {
+    amountSol: new BN(resp.amount_sol_lamp),
+    token: {
+      totalDec: new BN(resp.token.total_dec),
+      vestedDec: new BN(resp.token.vested_dec),
+      claimedDec: new BN(resp.token.claimed_dec),
+    },
+    rankInPremarket: resp.rank,
+  }
+}
