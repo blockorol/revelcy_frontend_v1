@@ -3,6 +3,7 @@ import { API_HOST } from "env";
 import { BN } from "@coral-xyz/anchor";
 import { http } from "@api/http";
 import { ensureDec, toDecString } from "@utils/numbers";
+import { UUID } from "crypto";
 
 export type Network = "devnet" | "mainnet-beta";
 
@@ -18,13 +19,10 @@ export interface CreatePremarketTxResponse {
 
 export interface CreatePremarketTxRequest {
   network: Network;
-  user_pubkey: string; // base58
-  name: string;
-  symbol: string;
+  user_pubkey: string;            // base58
+  premarket_pubkey: string;
   uri: string;
-  deadline: number;               // unix sec
-  goal_sol_lamp: string;          // u64 as string
-  max_sol_lamp: string;           // u64 as string
+  image_url: string;
   creator_allocate_lamp: string;  // u64 as string
 }
 
@@ -66,7 +64,7 @@ export async function signTransactionWithRevelcyAuth(params: {
   }
 
   const data = await http.post<SignTxResponse>(
-    `${API_HOST}/premarket/tx/sign_create_transaction`,
+    `${API_HOST}/premarket/tx/sign_and_send_transaction`,
     {
       json: payload,
       retry: RETRY_TX_GEN,
@@ -79,14 +77,92 @@ export async function signTransactionWithRevelcyAuth(params: {
   };
 }
 
+export interface CreatePremarketConcept_TokenLinks_Request {
+  telegram?: string;
+  twitter?: string;
+  web_site?: string;
+}
 
-export interface CreatePremarketArgs {
+interface CreatePremarketConcept_TokenInfo_Request {
+  name: string
+  description: string
+  symbol: string
+  uri: string
+  image_url: string
+  links: CreatePremarketConcept_TokenLinks_Request;
+  deadline: Number;
+  goal_sol_lamp: string;
+  max_sol_lamp: string;
+  creator_allocate_lamp: string;
+}
+
+interface CreatePremarketConcept_Request {
+  network: Network;
+  user_pubkey: string;
+  token_info: CreatePremarketConcept_TokenInfo_Request;
+}
+export interface CreatePremaketConceptArgs {
   name: string;
   symbol: string;
-  uri: string;
-  deadline: number;               // unix sec
+  description: string;
+  links: {
+    twitter?: string;
+    telegram?: string;
+    website?: string;
+  }
+  deadline: number;
   goal_sol_lamp: BN;
   max_sol_lamp: BN;
+  creator_allocate_lamp: BN;
+}
+export interface CreatePremarketConcept_Response {
+  premarket_account_pda: string
+  premarket_id: UUID
+}
+export async function createConcept(
+  params:CreatePremaketConceptArgs,
+  userPubkeyBase58: string,
+  network: Network
+) {
+  const tokenInfo: CreatePremarketConcept_TokenInfo_Request =  {
+    name: params.name, 
+    description: params.description, 
+    symbol: params.symbol,
+    uri: "", // will be uploaded late (when IPFS info will be created)
+    image_url: "", // will be uploaded late (when IPFS info will be created)
+    links: {
+      telegram: params.links.telegram,
+      twitter: params.links.twitter,
+      web_site: params.links.website,
+    },
+    deadline: params.deadline,
+    goal_sol_lamp: toDecString(params.goal_sol_lamp),
+    max_sol_lamp: toDecString(params.max_sol_lamp),
+    creator_allocate_lamp: toDecString(params.creator_allocate_lamp),
+
+  }
+  const payload: CreatePremarketConcept_Request = {
+    network: network, 
+    user_pubkey: userPubkeyBase58,
+    token_info: tokenInfo
+  }
+  try {
+    const data = await http.post<CreatePremarketConcept_Response>(
+      `${API_HOST}/premarket/concept/create`,
+      { json: payload, retry: RETRY_TX_GEN }
+    );
+    return data;
+  } catch (e: any) {
+    console.log("failed with", payload);
+    throw new Error(`Failed to get create_premarket tx: ${e.message ?? "Unknown error"}`);
+  }
+}
+
+
+export interface CreatePremarketArgs {
+  premarket_pubkey: string;
+  uri: string;
+  image_url: string;
   creator_allocate_lamp: BN;
 }
 
@@ -98,18 +174,13 @@ export async function getCreatePremarketTransaction(
   const payload: CreatePremarketTxRequest = {
     network,
     user_pubkey: userPubkeyBase58,
-    name: argsPremarket.name,
-    symbol: argsPremarket.symbol,
+    premarket_pubkey: argsPremarket.premarket_pubkey,
     uri: argsPremarket.uri,
-    deadline: argsPremarket.deadline,
-    goal_sol_lamp: toDecString(argsPremarket.goal_sol_lamp),
-    max_sol_lamp: toDecString(argsPremarket.max_sol_lamp),
+    image_url: argsPremarket.image_url,
     creator_allocate_lamp: toDecString(argsPremarket.creator_allocate_lamp),
   };
   console.log("payload", payload);
 
-  ensureDec("goal_sol_lamp", payload.goal_sol_lamp);
-  ensureDec("max_sol_lamp", payload.max_sol_lamp);
   ensureDec("creator_allocate_lamp", payload.creator_allocate_lamp);
   try {
     const data = await http.post<CreatePremarketTxResponse>(

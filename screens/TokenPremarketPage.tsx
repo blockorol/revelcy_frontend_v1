@@ -1,6 +1,6 @@
 import { MAX_WIDTH_MOBILE, useIsMobileForTwoScreenWithDemention } from "@hooks/useIsMobile";
 import { useAuth } from "@providers/AuthContext";
-import { useRouter } from "expo-router";
+import { useRouter } from "@hooks/useSafeRouter";
 import { useEffect } from "react";
 import { View, ScrollView, useWindowDimensions, StyleSheet } from "react-native";
 import { ActivityIndicator, useTheme, Text } from "react-native-paper";
