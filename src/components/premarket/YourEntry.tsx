@@ -20,7 +20,8 @@ import { convertTokenToPersent } from "@services/pumpfun/adds";
 import { toVestingVMFromDec, type VestingVM } from "@utils/vesting";
 import { hexToRgba } from "@utils/colors";
 import TextedLoader from "@components/ui/Loader";
-import { clamp } from "@utils/numbers";import { splitInput } from "@services/pumpfun/convertors";
+import { clamp } from "@utils/numbers";
+import { splitInput } from "@services/pumpfun/convertors";
 import BN from "bn.js";
 
 
@@ -546,10 +547,6 @@ function convertNumberWithNull(num: number): { zeros: number; val: number } {
     return { zeros: leadingZeros, val: parseInt(truncatedRest) };
 }
 
-
-function clamp(n: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, n));
-}
 
 function VestingInfo({vestingVM, symbol}: {vestingVM: VestingVM, symbol: string}) {
 const {colors} = useTheme()
