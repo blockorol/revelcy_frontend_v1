@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Linking, TouchableOpacity, StyleSheet } from "react-native";
-import { Modal, Portal, Text, useTheme } from "react-native-paper";
+import { Modal, Portal, Text, useTheme, HelperText, TextInput as PaperTextInput  } from "react-native-paper";
 import { Avatar } from "@components/ui/Avatar";
 import { Button } from "@components/ui/Button";
 import { SvgIconButton, SvgIcon, IconName } from "@components/base/SvgIcon";
@@ -12,6 +12,8 @@ import shortString from "@utils/address_shorter";
 import * as ImagePicker from "expo-image-picker";
 import { AppTheme } from "@theme/types";
 import { MobileBottomSheet } from "@components/ui/MobileBottomSheet";
+import { useAuth } from "@providers/AuthContext";
+import { updateUsername } from "@api/auth";
 
 interface UserModalProps {
   user: {
@@ -74,6 +76,90 @@ export const UserModalInternal: React.FC<UserModalProps> = ({
   onClose,
 }) => {
   const { colors } = useTheme() as AppTheme;
+  const { user: authUser, login } = useAuth();
+
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [rawUserName, setRawUserName] = useState<string>(user.username ?? "");
+  const [validUserName, setValidUserName] = useState<string>("");
+  const [nameError, setNameError] = useState<string>("");
+  const [savingName, setSavingName] = useState(false);
+  // синхронизация если username обновился извне
+  useEffect(() => {
+    if (!isEditingName) {
+      setRawUserName(user.username ?? "");
+      setValidUserName("");
+      setNameError("");
+      setSavingName(false);
+    }
+  }, [user.username, isEditingName]);
+
+  function startEditName() {
+    setIsEditingName(true);
+    setRawUserName(user.username ?? "");
+    setValidUserName("");
+    setNameError("");
+  }
+
+  function cancelEditName() {
+    setIsEditingName(false);
+  }
+
+  function onChangeUsername(text: string) {
+    const cleanText = text.replace(/[^a-zA-Z0-9-_]/g, "");
+    setRawUserName(cleanText);
+
+    if (cleanText.length === 0) {
+      setNameError("");
+      setValidUserName("");
+      return;
+    }
+
+    const trimmed = cleanText.trimEnd();
+
+    if (trimmed.length < 5) {
+      setNameError("Username must be at least 5 characters long");
+      setValidUserName("");
+      return;
+    }
+    if (trimmed.length > 20) {
+      setNameError("Username can't exceed 20 characters");
+      setValidUserName("");
+      return;
+    }
+    if (trimmed === (user.username ?? "")) {
+      setNameError("");
+      setValidUserName("");
+      return;
+    }
+
+    setNameError("");
+    setValidUserName(trimmed);
+  }
+
+  async function saveName() {
+    if (!validUserName || savingName) return;
+    const jwt = authUser?.jwt;
+    if (!jwt) {
+      setNameError("Not authenticated");
+      return;
+    }
+
+    try {
+      setSavingName(true);
+      setNameError("");
+
+      const resp = await updateUsername({ username: validUserName, jwt });
+      login(resp.jwt);
+      user.username = validUserName;
+
+      setIsEditingName(false);
+    } catch {
+      setNameError("Something went wrong. Please, try again");
+    } finally {
+      setSavingName(false);
+    }
+  }
+
   const { isMobile, width } = useIsMobileForOneScreenWithDemention();
   const pickAvatar = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -156,10 +242,85 @@ export const UserModalInternal: React.FC<UserModalProps> = ({
               alignItems: "center",
             }}
           >
-            <Text variant="titleLarge">
+       {!isEditingName ? (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Text variant="titleLarge" style={{ color: colors.onSurface }}>
               {user.username ?? shortString(user.walletAddress, 3)}
             </Text>
+            {isPersonal && (
+              <SvgIconButton
+                name={"edit-simple" as IconName}
+                size={18}
+                color={colors.onSurface}
+                onPress={startEditName}
+                containerStyle={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  backgroundColor: "transparent",
+                  opacity: 0.9,
+                }}
+                style={{ opacity: 1 }}
+              />
+            )}
+          </View>
+        ) : (
+          <View style={{ width: "100%" }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <View style={{ width: 120 }}>
+                <PaperTextInput
+                  mode="flat"
+                  value={rawUserName}
+                  onChangeText={onChangeUsername}
+                  autoFocus
+                  dense
+                  placeholder="Username"
+                  maxLength={20}
 
+                  style={{ backgroundColor: "transparent", paddingHorizontal: 0 }}
+                  contentStyle={{ paddingLeft: 0, paddingRight: 0 }}
+
+                  underlineColor="transparent"
+                  activeUnderlineColor="transparent"
+                  selectionColor={colors.onSurface}
+
+                  textColor={colors.onSurface}
+                  placeholderTextColor={colors.onSurface + "99"}
+                />
+              </View>
+
+              <Button
+                size="small"
+                mode="text"
+                disabled={!validUserName || savingName}
+                onPress={saveName}
+                compact
+                textColor={colors.onSurface}
+              >
+                {savingName ? "Saving..." : "Save"}
+              </Button>
+
+              <Button
+                size="small"
+                mode="text"
+                disabled={savingName}
+                onPress={cancelEditName}
+                compact
+                textColor={colors.onSurface}
+              >
+                Cancel
+              </Button>
+            </View>
+
+            <View style={{ minHeight: 18, marginTop: 2, width: 240 }}>
+              <HelperText type="error" visible={!!nameError} style={{ margin: 0, padding: 0 }}>
+                {nameError}
+              </HelperText>
+            </View>
+          </View>
+        )}
             <View
               style={{
                 flexDirection: "row",
