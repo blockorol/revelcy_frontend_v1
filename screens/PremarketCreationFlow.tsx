@@ -8,6 +8,7 @@ import CreateTokenForm from "@components/token/create/CreateTokenForm";
 import CustomizeTokenForm from "@components/token/create/CustomizeTokenForm";
 import OverviewPremarketCreation from "@components/premarket/creationFlow/OverviewPremarketCreation";
 import TokenCreationProcess from "@components/token/create/TokenCreationProcess";
+import VestingSetupForm, { VestingData } from "@components/token/create/VestingSetupForm";
 import {
   TokenMainData,
   TokenomicsData,
@@ -31,17 +32,19 @@ import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
 import { useNotification } from "@providers/NotificationContext";
 
-import { usePremarketDraft } from "@hooks/usePremarketDraft";
+import { usePremarketDraft, type FlowStep } from "@hooks/usePremarketDraft";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import TransactionLoadingModal from "@components/modals/TransactionLoadingModal";
 import { AddCommunityInfoParams } from "@services/premarket/addCommunityInfo";
 import { confirmTxFinalised } from "@services/blockchain/signAndSend";
+import { IsVestingEnable } from "env";
 
 enum FLOW_STEP {
   TOKEN_BASE_INFO = 1,
   TOKENOMICS = 2,
   PREMARKET_SETTINGS = 3,
-  CUSTOMIZE_TOKEN = 4,
+  VESTING = 4,
+  CUSTOMIZE_TOKEN = 5,
   OVERVIEW = 6,
   PROCESSING = 7,
 }
@@ -51,7 +54,7 @@ export default function PremarketCreationFlow() {
   const isMobile = useIsMobile();
   const wallet = useAnchorWalletSafe();
   const { connected, connect } = useWallet();
-  const {open: openOverlay, replace: replaceOverlay, isOpen: isOverlayOpen, close: closeOverlay} = useOverlay();
+  const { open: openOverlay, replace: replaceOverlay, isOpen: isOverlayOpen, close: closeOverlay } = useOverlay();
 
 
   const router = useRouter();
@@ -76,6 +79,8 @@ export default function PremarketCreationFlow() {
     undefined
   );
   const [txId, setTxId] = useState<string | undefined>(undefined);
+  const [vestingData, setVestingData] = useState<VestingData | undefined>(undefined);
+  const totalSteps = IsVestingEnable ? 5 : 4;
 
   const theme = useTheme();
   const [launchState, setLaunchState] = useState<string | undefined>(undefined);
@@ -104,12 +109,15 @@ export default function PremarketCreationFlow() {
     if (d.premarketSettingsData)
       setPremarketSettingsData(d.premarketSettingsData);
     if (d.customizeTokenData) setCustomizeTokenData(d.customizeTokenData);
+    if (d.vestingData) setVestingData(d.vestingData);
     setStep((d.step as FLOW_STEP) ?? FLOW_STEP.TOKEN_BASE_INFO);
   }, []);
 
   const normalizeStep = React.useCallback(
-    (s: number) =>
-      (s === FLOW_STEP.PROCESSING ? FLOW_STEP.OVERVIEW : s) as FLOW_STEP,
+    (s: FlowStep): FlowStep => {
+      if (!IsVestingEnable && s === FLOW_STEP.VESTING) return FLOW_STEP.CUSTOMIZE_TOKEN;
+      return s === FLOW_STEP.PROCESSING ? FLOW_STEP.OVERVIEW : s;
+    },
     []
   );
 
@@ -174,10 +182,11 @@ export default function PremarketCreationFlow() {
       return;
     }
     setPremarketSettingsData(data);
-    setStep(FLOW_STEP.CUSTOMIZE_TOKEN);
+    const nextStep = IsVestingEnable ? FLOW_STEP.VESTING : FLOW_STEP.CUSTOMIZE_TOKEN;
+    setStep(nextStep);
     await patch({
       premarketSettingsData: data,
-      step: FLOW_STEP.CUSTOMIZE_TOKEN,
+      step: nextStep,
     });
   };
 
@@ -303,6 +312,7 @@ export default function PremarketCreationFlow() {
           currentConnection,
           createPremarketArgs,
           communityInfo,
+          vestingData,
           {
             isHided: !discoverable,
             tokenShortUrlName: tokenData.premarketSettingsData.short_link_name,
@@ -364,6 +374,11 @@ export default function PremarketCreationFlow() {
     router.push(`/token/${premarketPDA}`);
   };
 
+  const onButtonClose = async () => {
+    await clear();
+    router.push("/discover");
+  }
+
   const getTokenData = (): TokenCreateFullData | undefined => {
     if (
       tokenMainData === undefined ||
@@ -404,11 +419,9 @@ export default function PremarketCreationFlow() {
           <CreateTokenForm
             onNext={handleAfterSetTokenBaseInfo}
             onClose={async () => {
-              await clear();
-              router.push("/discover");
             }}
             step={1}
-            totalSteps={4}
+            totalSteps={totalSteps}
             presetData={tokenMainData}
           />
         )}
@@ -417,40 +430,60 @@ export default function PremarketCreationFlow() {
           <EditTokenomicsForm
             onBack={() => setStep(FLOW_STEP.TOKEN_BASE_INFO)}
             onNext={handleAfterTokenomics}
-            onClose={async () => {
-              await clear();
-              router.push("/discover");
-            }}
+            onClose={onButtonClose}
             step={2}
-            totalSteps={4}
+            totalSteps={totalSteps}
             presetData={tokenomicsData}
           />
         )}
-
         {step === FLOW_STEP.PREMARKET_SETTINGS && (
           <EditPremarketSettingsForm
             onBack={() => setStep(FLOW_STEP.TOKENOMICS)}
-            onNext={handleAfterPremarketSettings}
-            onClose={async () => {
-              await clear();
-              router.push("/discover");
+            onNext={async (d) => {
+              const nextStep = IsVestingEnable
+                ? FLOW_STEP.VESTING
+                : FLOW_STEP.CUSTOMIZE_TOKEN;
+
+              setPremarketSettingsData(d);
+              setStep(nextStep);
+
+              await patch({
+                premarketSettingsData: d,
+                step: nextStep,
+              });
             }}
+            onClose={onButtonClose}
             step={3}
-            totalSteps={4}
+            totalSteps={totalSteps}
             presetData={premarketSettingsData}
             tokenomicsData={tokenomicsData}
           />
         )}
 
+        {IsVestingEnable && step === FLOW_STEP.VESTING && (
+          <VestingSetupForm
+            onBack={() => setStep(FLOW_STEP.PREMARKET_SETTINGS)}
+            onNext={(d) => {
+              setVestingData(d);
+              patch({ vestingData: d, step: FLOW_STEP.CUSTOMIZE_TOKEN });
+              setStep(FLOW_STEP.CUSTOMIZE_TOKEN);
+            }}
+            onSaveDraft={() => patch({ vestingData, step })}
+            onClose={onButtonClose}
+            step={4}
+            totalSteps={totalSteps}
+            presetData={vestingData}
+          />
+        )}
+
         {step === FLOW_STEP.CUSTOMIZE_TOKEN && (
           <CustomizeTokenForm
-            onBack={() => setStep(FLOW_STEP.PREMARKET_SETTINGS)}
+            onBack={() =>
+              setStep(IsVestingEnable ? FLOW_STEP.VESTING : FLOW_STEP.PREMARKET_SETTINGS)
+            }
             onNext={handleAfterCunstomizeToken}
-            onClose={async () => {
-              await clear();
-              router.push("/discover");
-            }}
-            steps={{ current: 4, total: 4 }}
+            onClose={onButtonClose}
+            steps={{ current: IsVestingEnable ? 5 : 4, total: totalSteps }}
             presetData={customizeTokenData}
           />
         )}
@@ -462,10 +495,7 @@ export default function PremarketCreationFlow() {
               await clear();
               setStep(FLOW_STEP.TOKEN_BASE_INFO);
             }}
-            onClose={async () => {
-              await clear();
-              router.push("/discover");
-            }}
+            onClose={onButtonClose}
             launchState={launchState}
             onLaunch={handleLaunch}
             data={getTokenData()!}

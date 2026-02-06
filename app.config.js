@@ -9,6 +9,7 @@ export default {
       NETWORK: process.env.NETWORK,
       TRITON_URL: process.env.TRITON_URL,
       IS_DISCOVERY_FILTER_ENABLED: process.env.IS_DISCOVERY_FILTER_ENABLED,
+      IS_VESTING_ENABLE: process.env.IS_VESTING_ENABLE
     }
   }
 };

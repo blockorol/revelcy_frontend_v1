@@ -17,6 +17,11 @@ interface CustomSliderProps {
   labels?: number[]; // e.g., [20, 40, 60, 79.3]
   points?: number[]; // e.g., [20, 40, 60, 79.3]
   isMobile: boolean;
+  step?: number;
+  bubbleWidth?: number;
+  formatBubbleText?: (value: number) => string;
+  formatLabel?: (label: number, index: number) => string;
+  edgeLabelInset?: number; // px, move first/last label toward center
 }
 
 export const CustomSlider: React.FC<CustomSliderProps> = ({
@@ -27,13 +32,17 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
   labels = [20, 40, 60, 79],
   points = [20, 30, 40, 50, 60, 70, 79],
   isMobile,
+  step = 0.1,
+  bubbleWidth = 110,
+  formatBubbleText,
+  formatLabel,
+  edgeLabelInset = 0,
 }) => {
   const theme = useTheme();
   const [sliderWidth, setSliderWidth] = useState(0);
-  const [sliderValue, setSliderValue] = useState(initValue??min);
-  const bubleWidth = 110;
+  const [sliderValue, setSliderValue] = useState(initValue ?? min);
   const treangleSize = 8;
-  const maxOffset = (bubleWidth-treangleSize-20)/2
+  const maxOffset = (bubbleWidth-treangleSize-20)/2;
 
   return (
     <View style={{ marginVertical: 32 }}>
@@ -45,7 +54,7 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
           style={{ width: "100%", height: 40 }}
           minimumValue={min}
           maximumValue={max}
-          step={0.1}
+          step={step}
           value={sliderValue}
           onValueChange={(val: number) => {
             setSliderValue(val);
@@ -95,7 +104,7 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
                         top: -30,
                         alignSelf: "center",
                         backgroundColor: theme.colors.primary,
-                        width: 110,
+                        width: bubbleWidth,
                         height: 25,
                         paddingHorizontal: 2,
                         borderRadius: 8,
@@ -110,7 +119,7 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
                         variant="labelMedium"
                         style={{ color: theme.colors.onPrimary }}
                       >
-                        {percent}% {value.toFixed(1)} SOL
+                        {formatBubbleText ? formatBubbleText(value) : `${percent}% ${value.toFixed(1)} SOL`}
                       </TextProminent>
                     </View>
 
@@ -155,11 +164,21 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
         })}
 
         {/* Labels */}
-        {labels.map((label) => {
-          const left = ((label - min) / (max - min)) * sliderWidth;
+        {labels.map((label, idx) => {
+          const leftBase = ((label - min) / (max - min)) * sliderWidth;
+
+          const left =
+            idx === 0
+              ? leftBase + edgeLabelInset
+              : idx === labels.length - 1
+              ? leftBase - edgeLabelInset
+              : leftBase;
+
+          const labelText = formatLabel ? formatLabel(label, idx) : String(label);
+
           return (
             <View
-              key={`label-${label}`}
+              key={`label-${label}-${idx}`}
               style={{
                 position: "absolute",
                 top: 33,
@@ -169,7 +188,7 @@ export const CustomSlider: React.FC<CustomSliderProps> = ({
               }}
             >
               <Text style={{ fontSize: 10, color: theme.colors.onSurfaceVariant }}>
-                {label} 
+                {labelText}
               </Text>
             </View>
           );

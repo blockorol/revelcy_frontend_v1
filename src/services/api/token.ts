@@ -6,7 +6,6 @@ import { http } from "@api/http";
 import shortString from "@utils/address_shorter";
 import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
 import { DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
-import { VestingVM } from "@utils/vesting";
 import { isSolanaPublicKey } from "@utils/solana";
 
 const RETRY_DEFAULT = 6;
@@ -38,6 +37,7 @@ export interface TokenAvailabilityInfo {
   isHided?: boolean;
   tokenShortUrlName?: string;
 }
+
 export async function updateTokenAvailbility(premarketPubkey: string, args: TokenAvailabilityInfo) {
   const payload = {
     premarket_pubkey: premarketPubkey,
@@ -385,5 +385,33 @@ export async function fetchUserEntry(premarketId: string, userId: string): Promi
       claimedDec: new BN(resp.token.claimed_dec),
     },
     rankInPremarket: resp.rank,
+  }
+}
+
+export interface VestingInfoDTO {
+  unlock_at_launch_percent: number; 
+  vesting_period_sec: number; 
+  enabled: boolean;
+}
+
+export async function updateVestingInfo(premarketPubkey: string, userPubkey: string, args: VestingInfoDTO) {
+  const payload = {
+    network: NETWORK,
+    user_pubkey: userPubkey,
+    premarket_pubkey: premarketPubkey,
+    vesting_period_sec: args.vesting_period_sec,
+    unlock_at_launch_percent: args.unlock_at_launch_percent,
+    enabled: args.enabled,
+  };
+
+  try {
+    await http.post(`${API_HOST}/premarket/vesting/update_info`, {
+      json: payload,
+      retry: RETRY_DEFAULT,
+    });
+    return;
+  } catch (e: any) {
+    console.error("[updateVestingInfo] failed", { payload, error: e });
+    throw new Error(`Failed to update vesting: ${e?.message ?? "Unknown error"}`);
   }
 }
