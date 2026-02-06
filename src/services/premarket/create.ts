@@ -53,10 +53,12 @@ export async function createPremarket(
             isHided: visabilityInfo.isHided,
             tokenShortUrlName: visabilityInfo.tokenShortUrlName,
         }),
-        vestingData?updateVestingInfo(conceptResp.premarket_id, {
-          unlock_at_launch_percent: vestingData.unlockAtLaunchPercent,
-          vesting_period_sec: vestingData.vestingPeriodSec,
-          enabled: vestingData.enabled
+        vestingData?updateVestingInfo(
+          conceptResp.premarket_account_pda, wallet.publicKey.toBase58(),
+          {
+            unlock_at_launch_percent: vestingData.unlockAtLaunchPercent,
+            vesting_period_sec: vestingData.vestingPeriodSec,
+            enabled: vestingData.enabled
         }):Promise.resolve()
     ]);
 

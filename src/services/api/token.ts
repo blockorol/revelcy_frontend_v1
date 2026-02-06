@@ -6,7 +6,6 @@ import { http } from "@api/http";
 import shortString from "@utils/address_shorter";
 import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
 import { DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
-import { VestingVM } from "@utils/vesting";
 import { isSolanaPublicKey } from "@utils/solana";
 
 const RETRY_DEFAULT = 6;
@@ -395,8 +394,10 @@ export interface VestingInfoDTO {
   enabled: boolean;
 }
 
-export async function updateVestingInfo(premarketPubkey: string, args: VestingInfoDTO) {
+export async function updateVestingInfo(premarketPubkey: string, userPubkey: string, args: VestingInfoDTO) {
   const payload = {
+    network: NETWORK,
+    user_pubkey: userPubkey,
     premarket_pubkey: premarketPubkey,
     vesting_period_sec: args.vesting_period_sec,
     unlock_at_launch_percent: args.unlock_at_launch_percent,
