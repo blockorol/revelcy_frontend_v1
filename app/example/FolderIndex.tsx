@@ -1,7 +1,7 @@
 import React from "react";
 import { ScrollView } from "react-native";
 import { List, useTheme } from "react-native-paper";
-import { useRouter } from "expo-router";
+import { useRouter } from "@hooks/useSafeRouter";
 import type { RouteItem } from "./routes";
 
 export default function FolderIndex({ title, items }: { title: string; items: RouteItem[] }) {

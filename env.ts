@@ -42,8 +42,12 @@ function getEnv(platform: PlatformOSType): EnvVars {
     throw new Error("@env is not available on native");
   }
 }
-export const IsVestingEnable = getRequired("IS_VESTING_ENABLE", ENV.IS_VESTING_ENABLE) ;
-// ---- Exported constants ----
+export const IsVestingEnable: boolean  = true
+  // ENV.IS_VESTING_ENABLE === undefined
+  //   ? true
+  //   : ENV.IS_VESTING_ENABLE === "true";
+
+    // ---- Exported constants ----
 export const PINATA_JWT = getRequired("PINATA_JWT", ENV.PINATA_JWT);
 export const PINATA_API_KEY = getRequired("PINATA_API_KEY", ENV.PINATA_API_KEY);
 export const PINATA_SECRET_KEY = getRequired(

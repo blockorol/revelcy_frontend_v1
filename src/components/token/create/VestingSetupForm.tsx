@@ -26,19 +26,16 @@ type Props = {
 };
 
 const UNLOCK_MIN = 0;
-const UNLOCK_MAX = 100;
+const UNLOCK_MAX = 50;
 
-const PERIODS: Array<{
-    label: string;
-    pill: string;
-    sec: number;
-}> = [
-        { label: "1w", pill: "1 week vesting", sec: 7 * 24 * 3600 },
-        { label: "1m", pill: "1 month vesting", sec: 30 * 24 * 3600 },
-        { label: "3m", pill: "3 month vesting", sec: 90 * 24 * 3600 },
-        { label: "6m", pill: "6 month vesting", sec: 180 * 24 * 3600 },
-        { label: "1y", pill: "1 year vesting", sec: 365 * 24 * 3600 },
-    ];
+const PERIODS: Array<{ label: string; pill: string; sec: number }> = [
+    { label: "1h", pill: "1 hour vesting", sec: 1 * 3600 },
+    { label: "3h", pill: "3 hour vesting", sec: 3 * 3600 },
+    { label: "1d", pill: "1 day vesting", sec: 1 * 24 * 3600 },
+    { label: "1w", pill: "1 week vesting", sec: 7 * 24 * 3600 },
+    { label: "1m", pill: "1 month vesting", sec: 30 * 24 * 3600 },
+    { label: "3m", pill: "3 month vesting", sec: 90 * 24 * 3600 },
+];
 
 function clampInt(v: number, min: number, max: number) {
     const n = Math.round(v);
@@ -86,7 +83,7 @@ export default function VestingSetupForm({
     const presetPeriodIndex = useMemo(() => {
         const sec = presetData?.vestingPeriodSec;
         const idx = sec != null ? PERIODS.findIndex((p) => p.sec === sec) : -1;
-        return idx >= 0 ? idx : 2;
+        return idx >= 0 ? idx : 3;
     }, [presetData?.vestingPeriodSec]);
 
 
@@ -100,10 +97,11 @@ export default function VestingSetupForm({
     const period = PERIODS[periodIndex];
     const disabledOpacity = enabled ? 1 : 0.35;
 
-    const unlockLabels = [0, 25, 50, 75, 100];
-    const unlockPoints = [0, 12.5, 25, 37.5, 50, 62.5, 75, 87.5, 100];
+    const unlockLabels = [0, 25, 50];
+    const unlockPoints = [0, 12.5, 25, 37.5, 50];
 
-    const periodPoints = [0, 1, 2, 3, 4];
+    const periodPoints = [0, 1, 2, 3, 4, 5];
+
 
     const handleSubmit = () => {
         onNext({
@@ -166,7 +164,7 @@ export default function VestingSetupForm({
                             <InfoBadge />
                         </View>
 
-                     
+
 
                         <View style={{ marginTop: 12, pointerEvents: enabled ? "auto" : "none" }}>
                             <CustomSlider
@@ -202,26 +200,27 @@ export default function VestingSetupForm({
                             <InfoBadge />
                         </View>
 
-                    
+
 
                         <View style={{ marginTop: 12, pointerEvents: enabled ? "auto" : "none" }}>
                             <CustomSlider
                                 initValue={periodIndex}
                                 min={0}
-                                max={4}
+                                max={PERIODS.length - 1}
                                 step={1}
                                 bubbleWidth={140}
                                 formatBubbleText={(v) => {
-                                    const idx = clampInt(v, 0, 4);
+                                    const idx = clampInt(v, 0, PERIODS.length - 1);
                                     return PERIODS[idx].pill;
                                 }}
-                                labels={[0, 1, 2, 3, 4]}
-                                formatLabel={(_, idx) => PERIODS[idx]?.label ?? ""} 
-                                edgeLabelInset={8}                                  
+                                labels={PERIODS.map((_, i) => i)}
+                                formatLabel={(_, idx) => PERIODS[idx]?.label ?? ""}
+                                edgeLabelInset={8}
                                 points={periodPoints}
-                                onValueChange={(v) => setPeriodIndex(clampInt(v, 0, 4))}
+                                onValueChange={(v) => setPeriodIndex(clampInt(v, 0, PERIODS.length - 1))}
                                 isMobile={isMobile}
                             />
+
                         </View>
                     </View>
                 </View>

@@ -2,7 +2,8 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, TouchableRipple, useTheme } from 'react-native-paper';
-import { usePathname, useRouter } from 'expo-router';
+import { useRouter } from "@hooks/useSafeRouter";
+import { usePathname } from 'expo-router';
 import { SvgIcon, IconName } from '@components/base/SvgIcon';
 
 interface NavigationItemProps {

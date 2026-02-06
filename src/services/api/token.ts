@@ -6,7 +6,6 @@ import { http } from "@api/http";
 import shortString from "@utils/address_shorter";
 import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
 import { DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
-import { VestingVM } from "@utils/vesting";
 import { isSolanaPublicKey } from "@utils/solana";
 
 const RETRY_DEFAULT = 6;
@@ -354,34 +353,59 @@ export async function getHolderEntryPrice({
     return data;
 }
 
-export type UserEntryResponse = {
-  amount_sol: string | number; 
+type UserEntryResponse = {
+  amount_sol_lamp: string | number; 
   token: {
     total_dec: string;   
-    vested_dec?: string; 
-    claimed_dec?: string;
+    vested_dec: string; 
+    claimed_dec: string;
   };
+  rank: number;
 };
 
-export async function fetchUserEntry(premarketId: string, userId: string): Promise<UserEntryResponse> {
-  const url = `${API_HOST}/premarket/get_user_entry?premarket_id=${premarketId}&userId=${userId}`;
-  return await http.get<UserEntryResponse>(url, { retry: RETRY_DEFAULT });
+export type UserEntry = {
+  amountSol: BN; 
+  token: {
+    totalDec: BN;   
+    claimedDec: BN;
+    vestedDec: BN; 
+  };
+  rankInPremarket: number;
+};
+
+export async function fetchUserEntry(premarketId: string, userId: string): Promise<UserEntry> {
+  const url = `${API_HOST}/premarket/get_user_entry?premarket_id=${premarketId}&holder_wallet=${userId}`;
+  const resp = await http.get<UserEntryResponse>(url, { retry: RETRY_DEFAULT });
+
+  return {
+    amountSol: new BN(resp.amount_sol_lamp),
+    token: {
+      totalDec: new BN(resp.token.total_dec),
+      vestedDec: new BN(resp.token.vested_dec),
+      claimedDec: new BN(resp.token.claimed_dec),
+    },
+    rankInPremarket: resp.rank,
+  }
 }
 
 export interface VestingInfoDTO {
   unlock_at_launch_percent: number; 
   vesting_period_sec: number; 
+  enabled: boolean;
 }
 
-export async function updateVestingInfo(premarketId: string, args: VestingInfoDTO) {
+export async function updateVestingInfo(premarketPubkey: string, userPubkey: string, args: VestingInfoDTO) {
   const payload = {
-    premarket_id: premarketId,
+    network: NETWORK,
+    user_pubkey: userPubkey,
+    premarket_pubkey: premarketPubkey,
     vesting_period_sec: args.vesting_period_sec,
     unlock_at_launch_percent: args.unlock_at_launch_percent,
+    enabled: args.enabled,
   };
 
   try {
-    await http.post(`${API_HOST}/premarket/add_vesting`, {
+    await http.post(`${API_HOST}/premarket/vesting/update_info`, {
       json: payload,
       retry: RETRY_DEFAULT,
     });

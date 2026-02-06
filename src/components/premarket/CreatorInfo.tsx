@@ -341,7 +341,11 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
         onConfirm={handleTimeConfirm}
         label="Pick time"
       />
-      <EditLinksModal visible={showEditLink} onClose={closEditLinkOpen} tokenMainInfoPreset={tokenMainInfo} onUpdated={onUpdated} />
+      <EditLinksModal 
+        visible={showEditLink} onClose={closEditLinkOpen}
+        premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
+        tokenMainInfoPreset={tokenMainInfo} onUpdated={onUpdated}
+        />
 
       <VisabilitySwitch
         isDiscoverablePreset={!tokenMainInfo.isHided}
@@ -369,7 +373,11 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
           </View>
         }
 
-        <EditLinksModal visible={showEditLink} onClose={closEditLinkOpen} tokenMainInfoPreset={tokenMainInfo} onUpdated={onUpdated} />
+        <EditLinksModal 
+          visible={showEditLink} onClose={closEditLinkOpen}
+          premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
+          tokenMainInfoPreset={tokenMainInfo} onUpdated={onUpdated} 
+        />
 
         <VisabilitySwitch
           isDiscoverablePreset={!tokenMainInfo.isHided}
@@ -398,6 +406,7 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
         </View>
         {(tokenMainInfo.state !== 'finished' && tokenMainInfo.state !== 'canceled') &&
            <EditLinksModal visible={showEditLink} onClose={closEditLinkOpen} 
+            premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
             tokenMainInfoPreset={tokenMainInfo} onUpdated={onUpdated} />
         }
 
@@ -465,15 +474,17 @@ function VisabilitySwitch({isDiscoverablePreset, shortLink, premarketPubkey, onU
 function EditLinksModal({
   visible,
   onClose, 
-  tokenMainInfoPreset, onUpdated}: {
+  tokenMainInfoPreset,
+  premarketPubkey,
+  onUpdated}: {
   visible: boolean, 
   onClose: ()=>void,
+  premarketPubkey: string,
   tokenMainInfoPreset: TokenMainInfo,
   onUpdated: () => Promise<void>;
 }) {
   const notify = useNotification();
   const { network } = useNetwork();
-  const {colors} = useTheme()
   const connection = getSolanaConnection(network);
   const { connected, connect } = useWallet();
   const wallet = useAnchorWalletSafe();
@@ -514,6 +525,7 @@ function EditLinksModal({
     
     try {
       const ipfsData = await uploadTokenMetadataToIPFS({
+        premarketPDA:premarketPubkey,
         avatar: tokenMainInfo.avatar,
         tokenInfo: {
           name: tokenMainInfo.tokenName,

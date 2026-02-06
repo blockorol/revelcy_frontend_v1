@@ -1,6 +1,6 @@
 import { MAX_WIDTH_MOBILE, useIsMobileForTwoScreenWithDemention } from "@hooks/useIsMobile";
 import { useAuth } from "@providers/AuthContext";
-import { useRouter } from "expo-router";
+import { useRouter } from "@hooks/useSafeRouter";
 import { useEffect } from "react";
 import { View, ScrollView, useWindowDimensions, StyleSheet } from "react-native";
 import { ActivityIndicator, useTheme, Text } from "react-native-paper";
@@ -13,10 +13,11 @@ import { PremarketAction } from "@components/premarket/PremarketAction";
 import { YourEntry } from "@components/premarket/YourEntry";
 import { usePremarketInfo } from "@hooks/usePremarketInfo";
 import { HoldersInfo } from "@components/premarket/HoldersInfo";
-import { TokenInfo } from "@api/token";
+import { TokenInfo, UserEntry } from "@api/token";
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import React from "react";
 import { Button } from "@components/ui/Button";
+import { useHolderEntryInfo } from "@hooks/useHolderEntryInfo";
 import { VestingCard } from "@components/premarket/VestingCard";
 
 const SLIDER_HEIGHT = 48
@@ -31,9 +32,14 @@ export default function TokenPremarketPage({
   const { isMobile, left, right, screen } = useIsMobileForTwoScreenWithDemention();
   const router = useRouter();
 
-  const { token, loading, error, refetch } = usePremarketInfo(tokenId);
+  const { token, loading, error, refetch: refetchPremarketInfo } = usePremarketInfo(tokenId);
+  const {user} = useAuth();
+  const {holderEntryInfo, refetch: refetchHolder} = useHolderEntryInfo(token?.mainInfo.premarketPubkey.toBase58(), user?.walletAddress)
 
-
+  const refetch = async () => {
+    await refetchPremarketInfo();
+    await refetchHolder();
+  }
 
   useEffect(() => {
     if (error) router.replace("/discover");
@@ -57,12 +63,14 @@ export default function TokenPremarketPage({
   return isMobile ? (
     <TokenPremarketPageMobile
       token={token}
+      holderEntryInfo={holderEntryInfo}
       refetchTokenInfo={refetch}
       screenDem={screen}
     />
   ) : (
     <TokenPremarketPageNormal
       token={token}
+      holderEntryInfo={holderEntryInfo}
       refetchTokenInfo={refetch}
       left={left}
       rigth={right}
@@ -74,11 +82,13 @@ export default function TokenPremarketPage({
 export function TokenPremarketPageNormal({
   token,
   refetchTokenInfo,
+  holderEntryInfo,
   left,
   rigth,
   screenDem,
 }: {
   token: TokenInfo;
+  holderEntryInfo: UserEntry | null;
   refetchTokenInfo: () => Promise<void>;
   left: {
     width: number;
@@ -148,16 +158,18 @@ export function TokenPremarketPageNormal({
                 <PremarketAction
                   tokenMainInfo={token.mainInfo}
                   tokenDynamicInfo={token.dynamicInfo}
+                  holderEntryInfo={holderEntryInfo}
                   onUpdated={refetchTokenInfo}
                   isMobile={false}
                 />
               </View>
             </View>
           </View>
-          {user && token.dynamicInfo.holders.find((h) => h.id === user.userId) !== undefined && (
+          {user && holderEntryInfo && (
             <YourEntry 
               premarketPubkey={token.mainInfo.premarketPubkey}
               user={user}
+              userEntry={holderEntryInfo}
               tokenDynamicInfo={token.dynamicInfo}
               tokenMainInfo={token.mainInfo}
               onUpdated={refetchTokenInfo}
@@ -190,9 +202,7 @@ export function TokenPremarketPageNormal({
               tokenInfo={token}
               isMobile={false}
               withJoinButton={
-                (user === null ||
-                token.dynamicInfo.holders.find((h) => h.id === user.userId) ===
-                  undefined) && token.mainInfo.premarketDeadline > Math.floor(Date.now() / 1000)
+                (user === null || holderEntryInfo === null) && token.mainInfo.premarketDeadline > Math.floor(Date.now() / 1000)
               }
               onUpdated={refetchTokenInfo}
             />
@@ -210,11 +220,12 @@ export function TokenPremarketPageNormal({
 }
 
 export function TokenPremarketPageMobile({
-  token,
+  token,holderEntryInfo,
   refetchTokenInfo,
   screenDem,
 }: {
   token: TokenInfo;
+  holderEntryInfo: UserEntry | null;
   refetchTokenInfo: () => Promise<void>;
   screenDem: {
     width: number;
@@ -227,7 +238,7 @@ export function TokenPremarketPageMobile({
   const [index, setIndex] = React.useState(0);
   const toPeopleSection = ()=>{setIndex(1)}
   const renderScene = SceneMap({
-    first: ()=>BriefMobile({token, refetchTokenInfo, screenDem, toPeopleSection}),
+    first: ()=>BriefMobile({token, holderEntryInfo, refetchTokenInfo, screenDem, toPeopleSection}),
     second:()=> PeopleMobile({token, refetchTokenInfo, screenDem}),
   });
   const layout = useWindowDimensions();
@@ -272,11 +283,13 @@ export function TokenPremarketPageMobile({
 
 function BriefMobile({
   token,
+  holderEntryInfo,
   refetchTokenInfo,
   screenDem,
   toPeopleSection
 }: {
   token: TokenInfo;
+  holderEntryInfo: UserEntry | null;
   refetchTokenInfo: () => Promise<void>;
   screenDem: {
     width: number;
@@ -319,9 +332,10 @@ function BriefMobile({
           tokenDynamicInfo={token.dynamicInfo}
           isMobile={true}
         />
-        {user && token.dynamicInfo.holders.find((h) => h.id === user.userId) !== undefined && (
+        {user && holderEntryInfo && (
           <YourEntry 
             user={user}
+            userEntry={holderEntryInfo}
             premarketPubkey={token.mainInfo.premarketPubkey}
             tokenDynamicInfo={token.dynamicInfo}
             tokenMainInfo={token.mainInfo}
@@ -346,9 +360,7 @@ function BriefMobile({
           tokenInfo={token}
           isMobile={true}
           withJoinButton={
-            (user === null ||
-            token.dynamicInfo.holders.find((h) => h.id === user.userId) ===
-              undefined) && token.mainInfo.premarketDeadline > Math.floor(Date.now() / 1000)
+            (user === null || holderEntryInfo === null) && token.mainInfo.premarketDeadline > Math.floor(Date.now() / 1000)
           }
           onUpdated={refetchTokenInfo}
         />
@@ -369,7 +381,8 @@ function BriefMobile({
         }}>
         <PremarketAction
           tokenMainInfo={token.mainInfo}
-          tokenDynamicInfo={token.dynamicInfo}
+          tokenDynamicInfo={token.dynamicInfo}                 
+          holderEntryInfo={holderEntryInfo}
           onUpdated={refetchTokenInfo}
           isMobile={true}
         />
@@ -390,6 +403,7 @@ function BriefMobile({
         <PremarketAction
           tokenMainInfo={token.mainInfo}
           tokenDynamicInfo={token.dynamicInfo}
+          holderEntryInfo={holderEntryInfo}
           onUpdated={refetchTokenInfo}
           isMobile={true}
         />

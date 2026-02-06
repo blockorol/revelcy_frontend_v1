@@ -9,31 +9,38 @@ import { useNotification } from "@providers/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import { useAnchorWalletSafe } from "@storage/wallet-adapter/useWallet.web";
 import { outOfPremarket } from "@services/blockchain/premarket/outOfPremarket";
-import { getHolderEntryPrice, fetchUserEntry } from "@services/api/token";
+import { getHolderEntryPrice, fetchUserEntry, UserEntry } from "@services/api/token";
 import { PublicKey } from "@solana/web3.js";
 import { TokenDynamicInfo, TokenMainInfo } from "@api/token";
 import { convertLamportToSmallCount, formatNumberCompact, convertDecimalToToken } from "@utils/premarket";
-import BN from "bn.js";
 import { useEffect, useState, useMemo, useCallback  } from "react";
 import { MD3Colors, MD3Typescale } from "react-native-paper/lib/typescript/types";
 import { SvgIcon } from "@components/base/SvgIcon";
-import { convertSolanaToTokenWithFee, splitInput  } from "@services/pumpfun/convertors";
-import { convertTokenToPersent, DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
+import { convertTokenToPersent } from "@services/pumpfun/adds";
 import { toVestingVMFromDec, type VestingVM } from "@utils/vesting";
 import { hexToRgba } from "@utils/colors";
 import TextedLoader from "@components/ui/Loader";
-import { clamp } from "@utils/numbers";
+import { clamp } from "@utils/numbers";import { splitInput } from "@services/pumpfun/convertors";
+import BN from "bn.js";
+
 
 interface YourEntryProps {
   premarketPubkey: PublicKey;
   tokenDynamicInfo: TokenDynamicInfo;
   tokenMainInfo: TokenMainInfo;
+  userEntry: UserEntry;
   onUpdated: () => void;
   user: UserInfo; 
   isMobile: boolean;
 }
 
-export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInfo, onUpdated, isMobile }: YourEntryProps) {
+export function YourEntry({
+    user,
+    userEntry,
+    premarketPubkey,
+    tokenDynamicInfo, tokenMainInfo,
+    onUpdated,
+    isMobile}: YourEntryProps) {
     const theme = useTheme() as AppTheme;
     const { network } = useNetwork();
     const connection = getSolanaConnection(network);
@@ -43,28 +50,20 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
     const { open, replace, close: closeOverlay} = useOverlay();
     const [entryPrice, setEntryPrice] = useState<number>(0);
     const [loadingEntryPrice, setLoadingEntryPrice] = useState(true);
-    const [vestingVM, setVestingVM] = useState<VestingVM>({
-        totalAmount: 0,
-        vestedAmount: 0,
-        claimedAmount: 0,
-        vestedPct: 0,
-        claimedPct: 0,
+    const isVestingEnabled = tokenDynamicInfo.vesting !== undefined;
+
+    const { inCurve, pumpFee } = splitInput(userEntry.amountSol);
+    const refundAmount = Number(convertLamportToSmallCount(inCurve.add(pumpFee)).toFixed(4)).toString();
+    const vesting = toVestingVMFromDec({
+        totalDec: userEntry.token.totalDec,
+        vestedDec: userEntry.token.vestedDec,
+        claimedDec: userEntry.token.claimedDec,
     });
-    const [loadingUserEntry, setLoadingUserEntry] = useState(true);
+    const amountSol = convertLamportToSmallCount(userEntry.amountSol);
+    const tokenAmount = convertLamportToSmallCount(userEntry.token.totalDec);
+    const supplyPercent = convertTokenToPersent(userEntry.token.totalDec);
+    console.log(userEntry.amountSol.toString(), "->",amountSol, )
 
-
-
-    // Find user's entry data
-    const userEntry = tokenDynamicInfo.holders.find((holder) => holder.id === user.userId);
-    if (!userEntry) {
-        return null;
-    }
-    
-    // Calculate user's rank/place in premarket
-    const sortedHolders = tokenDynamicInfo.holders
-        .slice()
-        .sort((a, b) => a.joinTimestamp - b.joinTimestamp);
-    const userRank = sortedHolders.findIndex(holder => holder.id === userEntry.id) + 1;
     
     // Fetch entry price from backend
     useEffect(() => {
@@ -75,7 +74,7 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
                 setLoadingEntryPrice(true);
                 const response = await getHolderEntryPrice({
                     premarketId: premarketPubkey.toString(),
-                    holderWallet: userEntry.walletAddress,
+                    holderWallet: user.walletAddress,
                 });
                 
                 // Backend returns entry_price_lamp, but it appears to be already in SOL format (decimal)
@@ -108,105 +107,7 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
         };
 
         fetchEntryPrice();
-    }, [premarketPubkey, userEntry?.walletAddress]);
-
-
-    // Calculate real values
-    const solValue = convertLamportToSmallCount(userEntry.amountSolLamp);
-    const { inCurve, pumpFee } = splitInput(userEntry.amountSolLamp);
-    const refundLamports = inCurve.add(pumpFee);
-    const refundAmount = Number(convertLamportToSmallCount(refundLamports).toFixed(4)).toString();
-    
-    // Calculate reserves at entry time (cumulative from all holders who joined strictly before user)
-    const entryReserves = useMemo(() => {
-        // Get all holders who joined strictly before the user (or at same time but different id, sorted by timestamp then id)
-        const holdersBeforeUser = tokenDynamicInfo.holders
-            .filter(holder => 
-                holder.joinTimestamp < userEntry.joinTimestamp || 
-                (holder.joinTimestamp === userEntry.joinTimestamp && holder.id !== userEntry.id)
-            )
-            .sort((a, b) => {
-                if (a.joinTimestamp !== b.joinTimestamp) {
-                    return a.joinTimestamp - b.joinTimestamp;
-                }
-                // If same timestamp, sort by id for consistency
-                return a.id.localeCompare(b.id);
-            });
-        
-        // Calculate cumulative SOL reserves at entry time
-        let cumulativeSolLamp = new BN(0);
-        let remainingTokensDec = DEFAULT_TOKEN_COUNT_DECIMAL;
-        
-        // For each holder before the user, calculate their tokens and update reserves
-        for (const holder of holdersBeforeUser) {
-            // Calculate tokens this holder got
-            const holderTokens = convertSolanaToTokenWithFee({
-                input_sol_lamp: holder.amountSolLamp,
-                before_lamp: cumulativeSolLamp,
-            });
-            
-            // Update cumulative reserves for next holder
-            cumulativeSolLamp = cumulativeSolLamp.add(holder.amountSolLamp);
-            remainingTokensDec = remainingTokensDec.sub(holderTokens);
-        }
-        
-        return {
-            reserves_sol: cumulativeSolLamp,
-            reserves_token: remainingTokensDec,
-        };
-    }, [tokenDynamicInfo.holders, userEntry.joinTimestamp, userEntry.id]);
-    
-    // Calculate tokens using bonding curve formula (same as join section)
-    const tokensBN = useMemo(() => {
-        if (loadingEntryPrice) {
-            return new BN(0);
-        }
-        // Always use bonding curve formula with calculated reserves at entry time
-        return convertSolanaToTokenWithFee({
-            input_sol_lamp: userEntry.amountSolLamp,
-            before_lamp: entryReserves.reserves_sol,
-        });
-    }, [userEntry.amountSolLamp, entryReserves, loadingEntryPrice]);
-    
-    // todo: check and fix
-    const tokens = convertDecimalToToken(tokensBN);
-    const supplyPercent = convertTokenToPersent(tokensBN);
-   
-   useEffect(() => {
-   const run = async () => {
-    try {
-      setLoadingUserEntry(true);
-
-      const entry = await fetchUserEntry(premarketPubkey.toString(), user.userId);
-
-      setVestingVM(
-        toVestingVMFromDec({
-          totalDec: entry.token.total_dec,
-          vestedDec: entry.token.vested_dec,
-          claimedDec: entry.token.claimed_dec,
-        })
-      );
-
-    
-
-    } catch (e) {
-      console.error("[YourEntry] fetchUserEntry failed:", e);
-      setVestingVM({
-        totalAmount: 0,
-        vestedAmount: 0,
-        claimedAmount: 0,
-        vestedPct: 0,
-        claimedPct: 0,
-      });
-    } finally {
-      setLoadingUserEntry(false);
-    }
-  };
-
-  run();
-}, [premarketPubkey, user.userId]);
-
-
+    }, [premarketPubkey, user.walletAddress]);
    
     // Determine if premarket is expired and user is not creator
     const isExpiredAndNotCreator = useMemo(() => {
@@ -234,7 +135,6 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
                 isGoalNotReached,
                 isExpired,
                 userWalletFromAuth: user?.walletAddress?.toLowerCase(),
-                userWalletFromEntry: userEntry.walletAddress?.toLowerCase(),
                 userWallet,
                 creatorWallet,
                 isNotCreator,
@@ -243,7 +143,7 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
         }
         
         return isExpired && isNotCreator;
-    }, [tokenMainInfo.state, tokenMainInfo.premarketDeadline, tokenMainInfo.createdByPubkey, tokenDynamicInfo.reservedSolLamp, user?.walletAddress, userEntry.walletAddress]);
+    }, [tokenMainInfo.state, tokenMainInfo.premarketDeadline, tokenDynamicInfo.reservedSolLamp, user?.walletAddress]);
 
     // Check if premarket is canceled (refunded)
     const isRefunded = useMemo(() => {
@@ -330,9 +230,9 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
                     <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>
                         Your Entry
                     </Text>
-                    {userRank > 0 && (
+                    {userEntry.rankInPremarket > 0 && (
                         <Text variant="labelLarge" style={{ color: theme.colors.onSurfaceVariant }}>
-                            #{userRank}
+                            #{userEntry.rankInPremarket}
                         </Text>
                     )}
                 </View>
@@ -375,7 +275,7 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
                         SOL value
                     </Text>
                     <Text variant="labelMedium" style={{ color: theme.colors.onSurface }}>
-                        {parseFloat(solValue.toFixed(4))} SOL
+                        {parseFloat(amountSol.toFixed(4))} SOL
                     </Text>
                 </View>
                 
@@ -417,7 +317,7 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
                         <ActivityIndicator size="small" color={theme.colors.primary} />
                     ) : (
                         <Text variant="labelMedium" style={{ color: theme.colors.onSurface }}>
-                            {formatNumberCompact(tokens)} {tokenMainInfo.symbol}
+                            {formatNumberCompact(tokenAmount)} {tokenMainInfo.symbol}
                         </Text>
                     )}
                 </View>
@@ -434,41 +334,7 @@ export function YourEntry({user, premarketPubkey, tokenDynamicInfo, tokenMainInf
                         {parseFloat(supplyPercent.toFixed(2))}%
                     </Text>
                 </View>
-                {/* Separator line */}
-                <View
-                    style={{
-                        height: 0.5,
-                        backgroundColor: theme.colors.outline,
-                        marginVertical: 8,
-                    }}
-                />
-
-                <VestingRow
-                    label="Vested"
-                    dotColor={hexToRgba(theme.colors.primary, 0.2)} // темнее
-                    percent={vestingVM.vestedPct}
-                    amount={vestingVM.vestedAmount}
-                    symbol={tokenMainInfo.symbol}
-                    colors={theme.colors}
-                />
-
-                <VestingRow
-                    label="Claimed"
-                    dotColor={theme.colors.primary} // светлее
-                    percent={vestingVM.claimedPct}
-                    amount={vestingVM.claimedAmount}   
-                    symbol={tokenMainInfo.symbol}
-                    colors={theme.colors}
-                />
-
-                <VestingBar
-                    vestedPercent={vestingVM.vestedPct}
-                    claimedPercent={vestingVM.claimedPct}
-                    vestedColor={hexToRgba(theme.colors.primary, 0.2)} 
-                    claimedColor={theme.colors.primary}             
-                    trackColor={hexToRgba(theme.colors.onSurface, 0.12)}
-                />
-
+                {isVestingEnabled &&<VestingInfo vestingVM={vesting} symbol={tokenMainInfo.symbol}/>}
             </View>
 
             {isExpiredAndNotCreator && (
@@ -678,6 +544,53 @@ function convertNumberWithNull(num: number): { zeros: number; val: number } {
     const truncatedRest = rest.substring(0, 2);
     
     return { zeros: leadingZeros, val: parseInt(truncatedRest) };
+}
+
+
+function clamp(n: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, n));
+}
+
+function VestingInfo({vestingVM, symbol}: {vestingVM: VestingVM, symbol: string}) {
+const {colors} = useTheme()
+return (
+    <View style={{ gap: 12 }}>
+        {/* Separator line */}
+        <View
+            style={{
+                height: 0.5,
+                backgroundColor: colors.outline,
+                marginVertical: 8,
+            }}
+        />
+
+        <VestingRow
+            label="Vested"
+            dotColor={hexToRgba(colors.primary, 0.2)}
+            percent={vestingVM.vestedPct}
+            amount={vestingVM.vestedAmount}
+            symbol={symbol}
+            colors={colors}
+        />
+
+        <VestingRow
+            label="Claimed"
+            dotColor={colors.primary}
+            percent={vestingVM.claimedPct}
+            amount={vestingVM.claimedAmount}   
+            symbol={symbol}
+            colors={colors}
+        />
+
+        <VestingBar
+            vestedPercent={vestingVM.vestedPct}
+            claimedPercent={vestingVM.claimedPct}
+            vestedColor={hexToRgba(colors.primary, 0.2)} 
+            claimedColor={colors.primary}             
+            trackColor={hexToRgba(colors.onSurface, 0.12)}
+        />
+    </View>
+)
 }
 
 function VestingRow({

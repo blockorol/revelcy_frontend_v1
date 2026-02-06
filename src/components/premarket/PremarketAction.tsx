@@ -1,4 +1,4 @@
-import { TokenDynamicInfo, TokenMainInfo } from "@api/token";
+import { TokenDynamicInfo, TokenMainInfo, UserEntry } from "@api/token";
 
 import { PremarketJoin } from "@components/premarket/PremarketJoin";
 import { CreatorInfo } from "@components/premarket/CreatorInfo";
@@ -21,6 +21,7 @@ import TextedLoader from "@components/ui/Loader";
 interface PremarketActionProps {
   tokenMainInfo: TokenMainInfo;
   tokenDynamicInfo: TokenDynamicInfo;
+  holderEntryInfo: UserEntry | null;
   onUpdated: () => Promise<void>;
   isMobile: boolean;
 }
@@ -28,6 +29,7 @@ interface PremarketActionProps {
 export function PremarketAction({
   tokenMainInfo,
   tokenDynamicInfo,
+  holderEntryInfo,
   onUpdated,
   isMobile,
 }: PremarketActionProps) {
@@ -39,6 +41,7 @@ export function PremarketAction({
       return <PremarketActionPremarket
         tokenMainInfo={tokenMainInfo}
         tokenDynamicInfo={tokenDynamicInfo}
+        isUserJoined={holderEntryInfo!==null}
         onUpdated={onUpdated}
         isMobile={isMobile}
       />
@@ -47,7 +50,7 @@ export function PremarketAction({
     case "finished":
       return <PremarketActionLaunched 
         tokenMainInfo={tokenMainInfo} 
-        tokenDynamicInfo={tokenDynamicInfo}
+        holderEntryInfo={holderEntryInfo}
         onUpdated={onUpdated}
       />;
   }
@@ -56,6 +59,7 @@ export function PremarketAction({
 interface PremarketActionLaunchedProps {
   tokenMainInfo: TokenMainInfo;
   tokenDynamicInfo: TokenDynamicInfo;
+  isUserJoined: boolean;
   onUpdated: () => Promise<void>;
   isMobile: boolean;
 }
@@ -63,6 +67,7 @@ interface PremarketActionLaunchedProps {
 export function PremarketActionPremarket({
   tokenMainInfo,
   tokenDynamicInfo,
+  isUserJoined,
   onUpdated,
   isMobile
 }: PremarketActionLaunchedProps) {
@@ -72,9 +77,6 @@ export function PremarketActionPremarket({
 
 
   const isCreator = tokenMainInfo.createdByPubkey === user?.walletAddress;
-  const userJoined =
-  tokenDynamicInfo.holders.find((holder) => holder.id === user?.userId) !==
-  undefined;
 
   const now = Math.floor(Date.now() / 1000);
   const isDeadline = tokenMainInfo.premarketDeadline < now;
@@ -102,7 +104,7 @@ export function PremarketActionPremarket({
         <Text variant="labelSmall" style={{ color: colors.onSurfaceVariant }}>
           Waiting for creator action: {isTimesUp ? "Finish premarket" : isExtended ? "refund": "extend or refund"}
         </Text>
-      ) : userJoined ? (
+      ) : isUserJoined ? (
         <ShareTextButton style={{width: "100%"}} shareMessage={`Join to premarket on: ${currentURL}`}>Share</ShareTextButton>
       ) : (
         <PremarketJoin
@@ -124,32 +126,26 @@ export function PremarketActionCanceled() {
 
 interface PremarketActionLaunchedComponentProps {
   tokenMainInfo: TokenMainInfo;
-  tokenDynamicInfo: TokenDynamicInfo;
+  holderEntryInfo: UserEntry | null;
   onUpdated: () => Promise<void>;
 }
 
 export function PremarketActionLaunched({ 
   tokenMainInfo, 
-  tokenDynamicInfo,
+  holderEntryInfo,
   onUpdated 
 }: PremarketActionLaunchedComponentProps) {
   const { colors } = useTheme();
-  const { user } = useAuth();
   const notify = useNotification();
   const { network } = useNetwork();
   const connection = getSolanaConnection(network);
   const { connected, connect } = useWallet();
   const wallet = useAnchorWalletSafe();
-  const { open, replace, close: closeOverlay } = useOverlay();
+  const { open, close: closeOverlay } = useOverlay();
 
-  // Check if the current user has joined the premarket
-  const userHolder = tokenDynamicInfo.holders.find(
-    (holder) => holder.id === user?.userId
-  );
-
-  // Check if the user has claimed their tokens
-  const userHasClaimed = userHolder?.claimed ?? true;
-  console.log("userHasClaimed", userHasClaimed);
+  // Check if the user can claim their tokens
+  const userCanClaim = holderEntryInfo ? holderEntryInfo.token.claimedDec !== holderEntryInfo.token.totalDec: false;
+  console.log("userCanClaim", userCanClaim);
 
   const handleBuyPress = () => {
     if (tokenMainInfo.tokenMint) {
@@ -206,21 +202,20 @@ export function PremarketActionLaunched({
           }
         }
       });
-
-      closeOverlay();
-      await onUpdated();
     } catch (e: any) {
       console.error("Claim tokens error:", e);
       notify.error("Failed to claim tokens", {
         suggest: e?.message ?? "Please try again",
       });
+    } finally {
       closeOverlay();
+      await onUpdated();
     }
   };
 
   return (
     <View style={{ flexDirection: "row", gap: 16, alignSelf: "center" }}>
-      {userHasClaimed ? (
+      {!userCanClaim ? (
         <>
           <Button
             mode="contained"

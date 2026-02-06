@@ -145,7 +145,7 @@ export function usePremarketDraft<TMain, TTok, TPrem, TCustom, TVesting = unknow
 
   const reset = useCallback(async () => {
     const base: PremarketDraft<TMain, TTok, TPrem, TCustom, TVesting> = {
-      step: ((initialDraftRef.current?.step ?? 1) as FlowStep) ?? 1,
+      step: ((initialDraftRef.current?.step ?? 1) as FlowStep),
       tokenMainData: initialDraftRef.current?.tokenMainData,
       tokenomicsData: initialDraftRef.current?.tokenomicsData,
       premarketSettingsData: initialDraftRef.current?.premarketSettingsData,
@@ -208,7 +208,7 @@ export function usePremarketDraft<TMain, TTok, TPrem, TCustom, TVesting = unknow
         } else {
           if (initialDraftRef.current) {
             const base: PremarketDraft<TMain, TTok, TPrem, TCustom, TVesting> = {
-              step: ((initialDraftRef.current.step ?? 1) as FlowStep) ?? 1,
+              step: ((initialDraftRef.current.step ?? 1) as FlowStep),
               tokenMainData: initialDraftRef.current.tokenMainData,
               tokenomicsData: initialDraftRef.current.tokenomicsData,
               premarketSettingsData:
