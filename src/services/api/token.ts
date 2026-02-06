@@ -395,16 +395,16 @@ export interface VestingInfoDTO {
   enabled: boolean;
 }
 
-export async function updateVestingInfo(premarketId: string, args: VestingInfoDTO) {
+export async function updateVestingInfo(premarketPubkey: string, args: VestingInfoDTO) {
   const payload = {
-    premarket_id: premarketId,
+    premarket_pubkey: premarketPubkey,
     vesting_period_sec: args.vesting_period_sec,
     unlock_at_launch_percent: args.unlock_at_launch_percent,
     enabled: args.enabled,
   };
 
   try {
-    await http.post(`${API_HOST}/premarket/add_vesting`, {
+    await http.post(`${API_HOST}/premarket/vesting/update_info`, {
       json: payload,
       retry: RETRY_DEFAULT,
     });
