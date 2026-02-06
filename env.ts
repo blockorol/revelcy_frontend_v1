@@ -42,10 +42,10 @@ function getEnv(platform: PlatformOSType): EnvVars {
     throw new Error("@env is not available on native");
   }
 }
-export const IsVestingEnable: boolean  =
-  ENV.IS_VESTING_ENABLE === undefined
-    ? true
-    : ENV.IS_VESTING_ENABLE === "true";
+export const IsVestingEnable: boolean  = true
+  // ENV.IS_VESTING_ENABLE === undefined
+  //   ? true
+  //   : ENV.IS_VESTING_ENABLE === "true";
 
     // ---- Exported constants ----
 export const PINATA_JWT = getRequired("PINATA_JWT", ENV.PINATA_JWT);
