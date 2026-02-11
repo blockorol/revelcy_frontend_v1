@@ -1,7 +1,7 @@
 import { View, ActivityIndicator } from "react-native";
 import { useTheme, Text, Button } from "react-native-paper";
 import { ExtendedMD3Colors, AppTheme } from "@theme/types";
-import { useAuth, UserInfo } from "@providers/AuthContext";
+import { UserInfo } from "@providers/AuthContext";
 import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
 import { useWallet } from "@storage/wallet-adapter";
@@ -9,10 +9,10 @@ import { useNotification } from "@providers/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import { useAnchorWalletSafe } from "@storage/wallet-adapter/useWallet.web";
 import { outOfPremarket } from "@services/blockchain/premarket/outOfPremarket";
-import { getHolderEntryPrice, fetchUserEntry, UserEntry } from "@services/api/token";
+import { getHolderEntryPrice, UserEntry } from "@services/api/token";
 import { PublicKey } from "@solana/web3.js";
 import { TokenDynamicInfo, TokenMainInfo } from "@api/token";
-import { convertLamportToSmallCount, formatNumberCompact, convertDecimalToToken } from "@utils/premarket";
+import { convertLamportToSmallCount, formatNumberCompact } from "@utils/premarket";
 import { useEffect, useState, useMemo, useCallback  } from "react";
 import { MD3Colors, MD3Typescale } from "react-native-paper/lib/typescript/types";
 import { SvgIcon } from "@components/base/SvgIcon";
@@ -23,6 +23,7 @@ import TextedLoader from "@components/ui/Loader";
 import { clamp } from "@utils/numbers";
 import { splitInput } from "@services/pumpfun/convertors";
 import BN from "bn.js";
+import SeparatorLine from "@components/premarket/SeparatorLine";
 
 
 interface YourEntryProps {
@@ -299,12 +300,7 @@ export function YourEntry({
                     )}
                 </View>
                 
-                {/* Separator line */}
-                <View style={{
-                    height: 1,
-                    backgroundColor: theme.colors.outline,
-                    marginVertical: 8
-                }} />
+                <SeparatorLine />
                 
                 <View style={{ 
                     flexDirection: "row", 
@@ -547,19 +543,88 @@ function convertNumberWithNull(num: number): { zeros: number; val: number } {
     return { zeros: leadingZeros, val: parseInt(truncatedRest) };
 }
 
+function convertSecondToNumber(numSecond: number) {
+    if (numSecond < 60) {
+        return {amount: numSecond,symbol: "s"}
+    }
+    if (numSecond < 60*60) {
+        return {amount: numSecond/60, symbol:"min"}
+    }
+    if (numSecond < 60*60*24) {
+        return {amount: numSecond/60*60, symbol:"h"}
+    }
+    if (numSecond < 60*60*24*7) {
+        return {amount: numSecond/60*60*24, symbol:"d"}
+    }
+    if (numSecond < 60*60*24*30*3) {
+        if (numSecond === 60*60*24*30) {
+            return {amount: 1, symbol:"m"}
+        }
+        if (numSecond === 60*60*24*30*2) {
+            return {amount: 2, symbol:"m"}
+        }
+        return {amount: numSecond/60*60*24*7, symbol:"w"}
+    }
+    return {amount: numSecond/60*60*24*30, symbol:"m"}
+}
+
+
+
+function VestingSetting({periodSec, percentInit}: {periodSec: number, percentInit: number}) {
+const {colors} = useTheme();
+const {amount, symbol} = convertSecondToNumber(periodSec)
+
+return (
+    <View style={{ gap: 12 }}>
+        <SeparatorLine />
+
+        <VestingInfoRow
+            label="Period"
+            amount={amount}
+            symbol={symbol}
+            colors={colors}
+        />
+        
+        <VestingInfoRow
+            label="Init"
+            amount={percentInit}
+            symbol={"%"}
+            colors={colors}
+        />
+    </View>
+)
+}
+
+
+function VestingInfoRow({
+  label,
+  amount,
+  symbol,
+  colors, 
+}: {
+  label: string;
+  amount: number;
+  symbol: string;
+  colors: MD3Colors;
+}) {
+  return (
+    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+      <Text variant="labelMedium" style={{ color: colors.onSurface }}>
+        {label}
+      </Text>
+      
+      <Text variant="labelMedium" style={{ color: colors.onSurface }}>
+        {amount.toFixed(0)} {symbol}
+      </Text>
+    </View>
+  );
+}
 
 function VestingInfo({vestingVM, symbol}: {vestingVM: VestingVM, symbol: string}) {
 const {colors} = useTheme()
 return (
     <View style={{ gap: 12 }}>
-        {/* Separator line */}
-        <View
-            style={{
-                height: 0.5,
-                backgroundColor: colors.outline,
-                marginVertical: 8,
-            }}
-        />
+        <SeparatorLine />
 
         <VestingRow
             label="Vested"
