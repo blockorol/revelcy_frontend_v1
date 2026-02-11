@@ -282,8 +282,8 @@ export const UserModalInternal: React.FC<UserModalProps> = ({
                   style={{ backgroundColor: "transparent", paddingHorizontal: 0 }}
                   contentStyle={{ paddingLeft: 0, paddingRight: 0 }}
 
-                  underlineColor="transparent"
-                  activeUnderlineColor="transparent"
+                  // underlineColor="transparent"
+                  // activeUnderlineColor="transparent"
                   selectionColor={colors.onSurface}
 
                   textColor={colors.onSurface}
@@ -293,25 +293,26 @@ export const UserModalInternal: React.FC<UserModalProps> = ({
 
               <Button
                 size="small"
-                mode="text"
+                leftSvgIconName="check"
+                mode={!validUserName || savingName ? "text" : "contained"}
                 disabled={!validUserName || savingName}
                 onPress={saveName}
                 compact
-                textColor={colors.onSurface}
+                textColor={colors.primary}
               >
-                {savingName ? "Saving..." : "Save"}
+                {savingName ? "Saving..." : ""}
               </Button>
 
               <Button
+                variant="error"
+                leftSvgIconName="x-base"
                 size="small"
                 mode="text"
                 disabled={savingName}
                 onPress={cancelEditName}
                 compact
                 textColor={colors.onSurface}
-              >
-                Cancel
-              </Button>
+              />
             </View>
 
             <View style={{ minHeight: 18, marginTop: 2, width: 240 }}>
