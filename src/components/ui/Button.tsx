@@ -125,6 +125,17 @@ const RULES: RulesByMode = {
   elevated: ELEVATED,
 };
 
+function resolveRule(
+  baseRule: VisualRule,
+  variant: ButtonVariant,
+  state: ButtonState
+): VisualRule {
+  if (variant === "error" && state === "hovered") {
+    return { ...baseRule, bg: "main", text: "onMain" };
+  }
+  return baseRule;
+}
+
 function materialize(
   rule: VisualRule,
   variant: ButtonVariant,
@@ -204,7 +215,7 @@ export function Button({
     ? "hovered"
     : "enabled";
 
-  const rule = RULES[mode][state];
+  const rule = resolveRule(RULES[mode][state], variant, state);
   const { backgroundColor, textColor, borderColor, hasBorder, main } = materialize(
     rule,
     variant,
