@@ -8,7 +8,6 @@ import {
 } from "@api/tx_premarket";
 import {
   simulateAndSignRawTx,
-  confirmTxFinalised,
 } from "@services/blockchain/signAndSend";
 import { userSetAdditionalInfo } from "@services/fingerprint/sender";
 

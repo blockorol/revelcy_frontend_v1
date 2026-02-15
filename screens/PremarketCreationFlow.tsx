@@ -34,10 +34,10 @@ import { useNotification } from "@providers/NotificationContext";
 
 import { usePremarketDraft, type FlowStep } from "@hooks/usePremarketDraft";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
-import TransactionLoadingModal from "@components/modals/TransactionLoadingModal";
 import { AddCommunityInfoParams } from "@services/premarket/addCommunityInfo";
 import { confirmTxFinalised } from "@services/blockchain/signAndSend";
 import { IsVestingEnable } from "env";
+import { TextedLoader } from "@components/ui/Loader";
 
 enum FLOW_STEP {
   TOKEN_BASE_INFO = 1,
@@ -91,10 +91,7 @@ export default function PremarketCreationFlow() {
       }
       return
     }
-    const stateDisplay = (
-    <View>
-      <TransactionLoadingModal launchState={launchState} />
-    </View>)
+    const stateDisplay = (<TextedLoader text={launchState} />)
     if (isOverlayOpen) {
         replaceOverlay(stateDisplay)
     } else {
