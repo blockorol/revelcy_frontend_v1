@@ -111,13 +111,6 @@ export function TokenPremarketPageNormal({
   const { user } = useAuth();
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
-  const isVestingEnabled = !!token.mainInfo.vestingInfo?.enabled;
-  const isVested =
-    isVestingEnabled &&
-    token.mainInfo.state !== "finished" &&
-    token.dynamicInfo.vesting !== undefined;
-  const shouldShowVestingSetting =
-    isVestingEnabled && ((!user || !!holderEntryInfo) || !isVested);
 
   return (
     <ScrollView
@@ -175,7 +168,7 @@ export function TokenPremarketPageNormal({
                   isMobile={false}
                 />
                 
-                {shouldShowVestingSetting && (
+                {(!(user && holderEntryInfo)) && !!token.mainInfo.vestingInfo?.enabled && (
                   <VestingSetting
                     periodSec={token.mainInfo.vestingInfo?.vestingPeriodSec ?? 0}
                     percentInit={token.mainInfo.vestingInfo?.unlockAtLaunchPercent ?? 0}
@@ -318,13 +311,6 @@ function BriefMobile({
 }) {
   const { user } = useAuth();
   const theme = useTheme();
-  const isVestingEnabled = !!token.mainInfo.vestingInfo?.enabled;
-  const isVested =
-    isVestingEnabled &&
-    token.mainInfo.state !== "finished" &&
-    token.dynamicInfo.vesting !== undefined;
-  const shouldShowVestingSetting =
-    isVestingEnabled && ((!user || !!holderEntryInfo) || !isVested);
 
   return (
     
@@ -358,7 +344,7 @@ function BriefMobile({
           tokenDynamicInfo={token.dynamicInfo}
           isMobile={true}
         />
-        {user && holderEntryInfo && (
+        {user && holderEntryInfo ?
           <YourEntry 
             user={user}
             userEntry={holderEntryInfo}
@@ -367,14 +353,11 @@ function BriefMobile({
             tokenMainInfo={token.mainInfo}
             onUpdated={refetchTokenInfo}
             isMobile={true}
-          />
-        )}
-        {shouldShowVestingSetting && (
-          <VestingSetting
+          /> : !!token.mainInfo.vestingInfo?.enabled && <VestingSetting
             periodSec={token.mainInfo.vestingInfo?.vestingPeriodSec ?? 0}
             percentInit={token.mainInfo.vestingInfo?.unlockAtLaunchPercent ?? 0}
           />
-        )}
+        }
         <AboutCommunity
           isEditable={(token.mainInfo.createdByPubkey === user?.walletAddress) && (token.mainInfo.state === 'premarket' || token.mainInfo.state === 'expired')}
           premarketPubkey={token.mainInfo.premarketPubkey.toString()}

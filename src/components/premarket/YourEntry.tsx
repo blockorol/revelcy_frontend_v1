@@ -24,6 +24,7 @@ import { clamp, convertNumberWithNull } from "@utils/numbers";
 import { splitInput } from "@services/pumpfun/convertors";
 import BN from "bn.js";
 import SeparatorLine from "@components/premarket/SeparatorLine";
+import { VestingSetting } from "@components/premarket/VestingSetting";
 
 
 interface YourEntryProps {
@@ -55,6 +56,8 @@ export function YourEntry({
     const [loadingEntryPrice, setLoadingEntryPrice] = useState(true);
     const isVestingEnabled = tokenMainInfo.vestingInfo?.enabled;
     const isVested = isVestingEnabled && tokenMainInfo.state !== 'finished' && tokenDynamicInfo.vesting !== undefined;
+    const shouldShowVestingSetting =
+      !!isVestingEnabled && !isVested;
 
     const { inCurve, pumpFee } = splitInput(userEntry.amountSol);
     const refundAmount = Number(convertLamportToSmallCount(inCurve.add(pumpFee)).toFixed(4)).toString();
@@ -332,7 +335,19 @@ export function YourEntry({
                     </Text>
                 </View>
                 
-                {isVested && <VestingProgressInfo vestingVM={vesting} symbol={tokenMainInfo.symbol} />}
+                {isVestingEnabled && (
+                    <View style={{ gap: 12 }}>
+                        <SeparatorLine />
+                        {
+                            isVested ? <VestingProgressInfo vestingVM={vesting} symbol={tokenMainInfo.symbol} /> : 
+                            <VestingSetting
+                                periodSec={tokenMainInfo.vestingInfo?.vestingPeriodSec ?? 0}
+                                percentInit={tokenMainInfo.vestingInfo?.unlockAtLaunchPercent ?? 0}
+                            />
+                        }
+
+                    </View>
+                    )}
             </View>
 
             {isExpiredAndNotCreator && (
@@ -535,8 +550,6 @@ function VestingProgressInfo({vestingVM, symbol}: {vestingVM: VestingVM, symbol:
     const {colors} = useTheme()
     return (
         <View style={{ gap: 12 }}>
-            <SeparatorLine />
-
             <VestingProgressInfoRow
                 label="Vested"
                 dotColor={hexToRgba(colors.primary, 0.2)}
