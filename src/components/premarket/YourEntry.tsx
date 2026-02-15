@@ -20,7 +20,7 @@ import { convertTokenToPersent } from "@services/pumpfun/adds";
 import { toVestingVMFromDec, type VestingVM } from "@utils/vesting";
 import { hexToRgba } from "@utils/colors";
 import TextedLoader from "@components/ui/Loader";
-import { clamp } from "@utils/numbers";
+import { clamp, convertNumberWithNull } from "@utils/numbers";
 import { splitInput } from "@services/pumpfun/convertors";
 import BN from "bn.js";
 import SeparatorLine from "@components/premarket/SeparatorLine";
@@ -42,7 +42,8 @@ export function YourEntry({
     premarketPubkey,
     tokenDynamicInfo, tokenMainInfo,
     onUpdated,
-    isMobile}: YourEntryProps) {
+    isMobile
+}: YourEntryProps){
     const theme = useTheme() as AppTheme;
     const { network } = useNetwork();
     const connection = getSolanaConnection(network);
@@ -52,7 +53,8 @@ export function YourEntry({
     const { open, replace, close: closeOverlay} = useOverlay();
     const [entryPrice, setEntryPrice] = useState<number>(0);
     const [loadingEntryPrice, setLoadingEntryPrice] = useState(true);
-    const isVestingEnabled = tokenDynamicInfo.vesting !== undefined;
+    const isVestingEnabled = tokenMainInfo.vestingInfo?.enabled;
+    const isVested = isVestingEnabled && tokenMainInfo.state !== 'finished' && tokenDynamicInfo.vesting !== undefined;
 
     const { inCurve, pumpFee } = splitInput(userEntry.amountSol);
     const refundAmount = Number(convertLamportToSmallCount(inCurve.add(pumpFee)).toFixed(4)).toString();
@@ -64,8 +66,6 @@ export function YourEntry({
     const amountSol = convertLamportToSmallCount(userEntry.amountSol);
     const tokenAmount = convertLamportToSmallCount(userEntry.token.totalDec);
     const supplyPercent = convertTokenToPersent(userEntry.token.totalDec);
-    console.log(userEntry.amountSol.toString(), "->",amountSol, )
-
     
     // Fetch entry price from backend
     useEffect(() => {
@@ -331,7 +331,8 @@ export function YourEntry({
                         {parseFloat(supplyPercent.toFixed(2))}%
                     </Text>
                 </View>
-                {isVestingEnabled &&<VestingInfo vestingVM={vesting} symbol={tokenMainInfo.symbol}/>}
+                
+                {isVested && <VestingProgressInfo vestingVM={vesting} symbol={tokenMainInfo.symbol} />}
             </View>
 
             {isExpiredAndNotCreator && (
@@ -529,133 +530,43 @@ function formatMax5Significant(n: number): string {
     return n.toString();
 }
 
-function convertNumberWithNull(num: number): { zeros: number; val: number } {
-    if (num === 0) return { zeros: 0, val: 0 };
-    
-    // Use decimal string approach for more accurate counting
-    const decimalStr = num.toString().split('.')[1] || '';
-    const leadingZeros = decimalStr.match(/^0*/)?.[0].length || 0;
-    const rest = decimalStr.slice(leadingZeros);
-    
-    // Limit val to maximum 2 decimal places
-    const truncatedRest = rest.substring(0, 2);
-    
-    return { zeros: leadingZeros, val: parseInt(truncatedRest) };
+
+function VestingProgressInfo({vestingVM, symbol}: {vestingVM: VestingVM, symbol: string}) {
+    const {colors} = useTheme()
+    return (
+        <View style={{ gap: 12 }}>
+            <SeparatorLine />
+
+            <VestingProgressInfoRow
+                label="Vested"
+                dotColor={hexToRgba(colors.primary, 0.2)}
+                percent={vestingVM.vestedPct}
+                amount={vestingVM.vestedAmount}
+                symbol={symbol}
+                colors={colors}
+            />
+
+            <VestingProgressInfoRow
+                label="Claimed"
+                dotColor={colors.primary}
+                percent={vestingVM.claimedPct}
+                amount={vestingVM.claimedAmount}   
+                symbol={symbol}
+                colors={colors}
+            />
+
+            <VestingBar
+                vestedPercent={vestingVM.vestedPct}
+                claimedPercent={vestingVM.claimedPct}
+                vestedColor={hexToRgba(colors.primary, 0.2)} 
+                claimedColor={colors.primary}             
+                trackColor={hexToRgba(colors.onSurface, 0.12)}
+            />
+        </View>
+    )
 }
 
-function convertSecondToNumber(numSecond: number) {
-    if (numSecond < 60) {
-        return {amount: numSecond,symbol: "s"}
-    }
-    if (numSecond < 60*60) {
-        return {amount: numSecond/60, symbol:"min"}
-    }
-    if (numSecond < 60*60*24) {
-        return {amount: numSecond/60*60, symbol:"h"}
-    }
-    if (numSecond < 60*60*24*7) {
-        return {amount: numSecond/60*60*24, symbol:"d"}
-    }
-    if (numSecond < 60*60*24*30*3) {
-        if (numSecond === 60*60*24*30) {
-            return {amount: 1, symbol:"m"}
-        }
-        if (numSecond === 60*60*24*30*2) {
-            return {amount: 2, symbol:"m"}
-        }
-        return {amount: numSecond/60*60*24*7, symbol:"w"}
-    }
-    return {amount: numSecond/60*60*24*30, symbol:"m"}
-}
-
-
-
-function VestingSetting({periodSec, percentInit}: {periodSec: number, percentInit: number}) {
-const {colors} = useTheme();
-const {amount, symbol} = convertSecondToNumber(periodSec)
-
-return (
-    <View style={{ gap: 12 }}>
-        <SeparatorLine />
-
-        <VestingInfoRow
-            label="Period"
-            amount={amount}
-            symbol={symbol}
-            colors={colors}
-        />
-        
-        <VestingInfoRow
-            label="Init"
-            amount={percentInit}
-            symbol={"%"}
-            colors={colors}
-        />
-    </View>
-)
-}
-
-
-function VestingInfoRow({
-  label,
-  amount,
-  symbol,
-  colors, 
-}: {
-  label: string;
-  amount: number;
-  symbol: string;
-  colors: MD3Colors;
-}) {
-  return (
-    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-      <Text variant="labelMedium" style={{ color: colors.onSurface }}>
-        {label}
-      </Text>
-      
-      <Text variant="labelMedium" style={{ color: colors.onSurface }}>
-        {amount.toFixed(0)} {symbol}
-      </Text>
-    </View>
-  );
-}
-
-function VestingInfo({vestingVM, symbol}: {vestingVM: VestingVM, symbol: string}) {
-const {colors} = useTheme()
-return (
-    <View style={{ gap: 12 }}>
-        <SeparatorLine />
-
-        <VestingRow
-            label="Vested"
-            dotColor={hexToRgba(colors.primary, 0.2)}
-            percent={vestingVM.vestedPct}
-            amount={vestingVM.vestedAmount}
-            symbol={symbol}
-            colors={colors}
-        />
-
-        <VestingRow
-            label="Claimed"
-            dotColor={colors.primary}
-            percent={vestingVM.claimedPct}
-            amount={vestingVM.claimedAmount}   
-            symbol={symbol}
-            colors={colors}
-        />
-
-        <VestingBar
-            vestedPercent={vestingVM.vestedPct}
-            claimedPercent={vestingVM.claimedPct}
-            vestedColor={hexToRgba(colors.primary, 0.2)} 
-            claimedColor={colors.primary}             
-            trackColor={hexToRgba(colors.onSurface, 0.12)}
-        />
-    </View>
-)
-}
-
-function VestingRow({
+function VestingProgressInfoRow({
   label,
   dotColor,
   percent,

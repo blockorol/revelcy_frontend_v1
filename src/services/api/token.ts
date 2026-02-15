@@ -73,6 +73,14 @@ export async function getPremarketInfo({
   const url = `${API_HOST}/premarket/get_main_info?${params.toString()}`;
   const data = await http.get<any>(url, { retry: RETRY_DEFAULT });
 
+  console.log("[API] [MAIN_INFO] Premarket main info raw data:", data);
+
+  const vestingInfo: VestingBaseSettings | undefined = data.vesting_info ? {
+    unlockAtLaunchPercent: data.vesting_info.unlock_at_launch_percent,
+    vestingPeriodSec: data.vesting_info.vesting_period_sec,
+    enabled: data.vesting_info.enabled,
+  }: undefined;
+
   const mainInfo: TokenMainInfo = {
     id: data.blockchain_info.id,
     premarketPubkey: new PublicKey(data.blockchain_info.premarket_address), 
@@ -96,6 +104,7 @@ export async function getPremarketInfo({
     isExtended: (data.blockchain_info.premarket_is_extended|| undefined) ?? false,
     tokenMint: data.blockchain_info.mint_address,
     isHided: data.availability_info?.is_hided ?? false,
+    vestingInfo: vestingInfo,
   };
 
   const communityInfo: TokenCommunityInfo = {
@@ -129,7 +138,8 @@ export async function getPremarketInfo({
   mainInfo.state = convertState();
 
   
-  console.log("Premarket dynamicInfo:", dynamicInfo);
+  console.log("[API] [MAIN_INFO] Premarket dynamicInfo:", dynamicInfo);
+  console.log("[API] [MAIN_INFO] Premarket mainInfo:", mainInfo);
 
   return {
     mainInfo,
@@ -288,6 +298,13 @@ export interface TokenMainInfo {
     isExtended: boolean;
     isHided: boolean;
     tokenMint?: string;
+    vestingInfo?: VestingBaseSettings
+}
+
+export interface VestingBaseSettings {
+  unlockAtLaunchPercent: number;
+  vestingPeriodSec: number;
+  enabled: boolean;
 }
 
 export interface TokenLinks {

@@ -19,6 +19,7 @@ import React from "react";
 import { Button } from "@components/ui/Button";
 import { useHolderEntryInfo } from "@hooks/useHolderEntryInfo";
 import { VestingCard } from "@components/premarket/VestingCard";
+import { VestingSetting } from "@components/premarket/VestingSetting";
 
 const SLIDER_HEIGHT = 48
 
@@ -37,9 +38,13 @@ export default function TokenPremarketPage({
   const {holderEntryInfo, refetch: refetchHolder} = useHolderEntryInfo(token?.mainInfo.premarketPubkey.toBase58(), user?.walletAddress)
 
   const refetch = async () => {
-    await refetchPremarketInfo();
-    await refetchHolder();
-  }
+    console.log("Refetching premarket and holder info...");
+    await Promise.all([
+      refetchPremarketInfo(),
+      refetchHolder(),
+    ]);
+    console.log("Refetched premarket and holder info");
+  };
 
   useEffect(() => {
     if (error) router.replace("/discover");
@@ -106,6 +111,13 @@ export function TokenPremarketPageNormal({
   const { user } = useAuth();
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
+  const isVestingEnabled = !!token.mainInfo.vestingInfo?.enabled;
+  const isVested =
+    isVestingEnabled &&
+    token.mainInfo.state !== "finished" &&
+    token.dynamicInfo.vesting !== undefined;
+  const shouldShowVestingSetting =
+    isVestingEnabled && ((!user || !!holderEntryInfo) || !isVested);
 
   return (
     <ScrollView
@@ -162,6 +174,13 @@ export function TokenPremarketPageNormal({
                   onUpdated={refetchTokenInfo}
                   isMobile={false}
                 />
+                
+                {shouldShowVestingSetting && (
+                  <VestingSetting
+                    periodSec={token.mainInfo.vestingInfo?.vestingPeriodSec ?? 0}
+                    percentInit={token.mainInfo.vestingInfo?.unlockAtLaunchPercent ?? 0}
+                  />
+                )}
               </View>
             </View>
           </View>
@@ -299,6 +318,13 @@ function BriefMobile({
 }) {
   const { user } = useAuth();
   const theme = useTheme();
+  const isVestingEnabled = !!token.mainInfo.vestingInfo?.enabled;
+  const isVested =
+    isVestingEnabled &&
+    token.mainInfo.state !== "finished" &&
+    token.dynamicInfo.vesting !== undefined;
+  const shouldShowVestingSetting =
+    isVestingEnabled && ((!user || !!holderEntryInfo) || !isVested);
 
   return (
     
@@ -341,6 +367,12 @@ function BriefMobile({
             tokenMainInfo={token.mainInfo}
             onUpdated={refetchTokenInfo}
             isMobile={true}
+          />
+        )}
+        {shouldShowVestingSetting && (
+          <VestingSetting
+            periodSec={token.mainInfo.vestingInfo?.vestingPeriodSec ?? 0}
+            percentInit={token.mainInfo.vestingInfo?.unlockAtLaunchPercent ?? 0}
           />
         )}
         <AboutCommunity
