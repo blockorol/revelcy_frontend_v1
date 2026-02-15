@@ -56,9 +56,6 @@ export function YourEntry({
     const [loadingEntryPrice, setLoadingEntryPrice] = useState(true);
     const isVestingEnabled = tokenMainInfo.vestingInfo?.enabled;
     const isVested = isVestingEnabled && tokenMainInfo.state !== 'finished' && tokenDynamicInfo.vesting !== undefined;
-    const shouldShowVestingSetting =
-      !!isVestingEnabled && !isVested;
-
     const { inCurve, pumpFee } = splitInput(userEntry.amountSol);
     const refundAmount = Number(convertLamportToSmallCount(inCurve.add(pumpFee)).toFixed(4)).toString();
     const vesting = toVestingVMFromDec({
