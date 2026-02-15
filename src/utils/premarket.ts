@@ -148,3 +148,14 @@ export type PremarketState =
   'times_up' | // deadline reached and goal reached
   'expired'    // deadline reached and goal not reached
 ;
+export function formatDateTime(ms: number) {
+  if (!ms) return "";
+  const d = new Date(ms);
+  // "22 Mar, 14:30"
+  return d.toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}

@@ -45,3 +45,42 @@ export function toDecString(x: BN | string | number | bigint): string {
 export function ensureDec(name: string, v: string) {
   if (!/^\d+$/.test(v)) throw new Error(`${name} must be a decimal string, got "${v}"`);
 }
+
+export function clamp(n: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, n));
+}
+
+type Unit = "s" | "min" | "h" | "d" | "w" | "m";
+
+export function convertSecondToNumber(numSecond: number): { amount: number; symbol: string } {
+  const s = Math.max(0, Math.floor(numSecond)); // защита от отрицательных и дробных
+
+  const units: Array<{ symbol: string; seconds: number }> = [
+    { symbol: "month", seconds: 60 * 60 * 24 * 30 }, // условный месяц = 30 дней
+    { symbol: "week", seconds: 60 * 60 * 24 * 7 },
+    { symbol: "day", seconds: 60 * 60 * 24 },
+    { symbol: "hour", seconds: 60 * 60 },
+    { symbol: "minute", seconds: 60 },
+    { symbol: "second", seconds: 1 },
+  ];
+
+  const unit = units.find(u => s >= u.seconds) ?? units[units.length - 1];
+  const amount = s / unit.seconds;
+
+  return { amount: amount, symbol: amount === 0 || amount === 1 ? unit.symbol : `${unit.symbol}s` };
+}
+
+
+export function convertNumberWithNull(num: number): { zeros: number; val: number } {
+    if (num === 0) return { zeros: 0, val: 0 };
+    
+    // Use decimal string approach for more accurate counting
+    const decimalStr = num.toString().split('.')[1] || '';
+    const leadingZeros = decimalStr.match(/^0*/)?.[0].length || 0;
+    const rest = decimalStr.slice(leadingZeros);
+    
+    // Limit val to maximum 2 decimal places
+    const truncatedRest = rest.substring(0, 2);
+    
+    return { zeros: leadingZeros, val: parseInt(truncatedRest) };
+}
