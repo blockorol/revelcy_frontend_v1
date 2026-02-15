@@ -36,6 +36,7 @@ export async function updateAboutCommunity(premarketPubkey: string, args: TokenC
 export interface TokenAvailabilityInfo {
   isHided?: boolean;
   tokenShortUrlName?: string;
+  isWhitelistEnabled?: boolean;
 }
 
 export async function updateTokenAvailbility(premarketPubkey: string, args: TokenAvailabilityInfo) {
@@ -43,6 +44,7 @@ export async function updateTokenAvailbility(premarketPubkey: string, args: Toke
     premarket_pubkey: premarketPubkey,
     network: NETWORK, // todo: remove me
     is_hided: args.isHided,
+    is_whitelist_enabled: args.isWhitelistEnabled,
     token_short_url_name: args.tokenShortUrlName, // todo: move to separated value
   };
 
@@ -430,5 +432,29 @@ export async function updateVestingInfo(premarketPubkey: string, userPubkey: str
   } catch (e: any) {
     console.error("[updateVestingInfo] failed", { payload, error: e });
     throw new Error(`Failed to update vesting: ${e?.message ?? "Unknown error"}`);
+  }
+}
+
+export interface AddWhitelistUserListDTO {
+  premarket_id: string;
+  user_pubkeys: string[];
+}
+
+export async function addWhitelistUserList(args: AddWhitelistUserListDTO) {
+  const payload = {
+    network: NETWORK,
+    premarket_id: args.premarket_id,
+    user_pubkeys: args.user_pubkeys,
+  };
+
+  try {
+    await http.post(`${API_HOST}/premarket/whitelist/add_user_list`, {
+      json: payload,
+      retry: RETRY_DEFAULT,
+    });
+    return;
+  } catch (e: any) {
+    console.error("[addWhitelistUserList] failed", { payload, error: e });
+    throw new Error(`Failed to add whitelist users: ${e?.message ?? "Unknown error"}`);
   }
 }

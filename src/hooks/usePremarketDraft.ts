@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { kvStorage } from "@storage/kvStorage";
 
 /** Шаги мастера */
-export type FlowStep = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export type FlowStep = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 /** Структура черновика */
 export interface PremarketDraft<TMain, TTok, TPrem, TCustom, TVesting = unknown> {
@@ -12,12 +12,13 @@ export interface PremarketDraft<TMain, TTok, TPrem, TCustom, TVesting = unknown>
   tokenomicsData?: TTok;
   premarketSettingsData?: TPrem;
   customizeTokenData?: TCustom;
+  whitelistData?: unknown;
   vestingData?: TVesting;
   updatedAt: number;
   __v?: number;
 }
 
-const VERSION = 3;
+const VERSION = 4;
 
 /** Device-scoped ключ без привязки к пользователю/сети */
 export function draftKey() {
@@ -66,6 +67,7 @@ async function saveDraft<TMain, TTok, TPrem, TCustom, TVesting>(
     tokenomicsData: current?.tokenomicsData,
     premarketSettingsData: current?.premarketSettingsData,
     customizeTokenData: current?.customizeTokenData,
+    whitelistData: current?.whitelistData,
     vestingData: current?.vestingData,
     updatedAt: Date.now(),
     __v: VERSION,
@@ -150,6 +152,7 @@ export function usePremarketDraft<TMain, TTok, TPrem, TCustom, TVesting = unknow
       tokenomicsData: initialDraftRef.current?.tokenomicsData,
       premarketSettingsData: initialDraftRef.current?.premarketSettingsData,
       customizeTokenData: initialDraftRef.current?.customizeTokenData,
+      whitelistData: initialDraftRef.current?.whitelistData,
       vestingData: initialDraftRef.current?.vestingData,
       updatedAt: Date.now(),
       __v: VERSION,
@@ -214,6 +217,7 @@ export function usePremarketDraft<TMain, TTok, TPrem, TCustom, TVesting = unknow
               premarketSettingsData:
                 initialDraftRef.current.premarketSettingsData,
               customizeTokenData: initialDraftRef.current.customizeTokenData,
+              whitelistData: initialDraftRef.current.whitelistData,
               vestingData: initialDraftRef.current.vestingData,
               updatedAt: Date.now(),
               __v: VERSION,
