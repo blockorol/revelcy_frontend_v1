@@ -7,22 +7,21 @@ import { convertSecondToNumber } from "@utils/numbers";
 interface VestingSettingProps {
   periodSec: number;
   percentInit: number;
+  paddingHorisontal?: number;
 }
 
-export function VestingSetting({ periodSec, percentInit }: VestingSettingProps) {
+export function VestingSetting({ periodSec, percentInit, paddingHorisontal}: VestingSettingProps) {
   const { colors } = useTheme() as AppTheme;
   const { amount, symbol } = convertSecondToNumber(periodSec);
 
   return (
     <View
       style={{
-        paddingHorizontal: 24,
+        paddingHorizontal: paddingHorisontal ?? 0,
         gap: 12,
         width: "100%",
       }}
     >
-      {/* <SeparatorLine /> */}
-
       <VestingInfoRow label="Unlock at launch" amount={percentInit} symbol="%" textColor={colors.onSurface} amountColor={colors.primary} />
       <VestingInfoRow label="Vesting Period" amount={amount} symbol={symbol} textColor={colors.onSurface} amountColor={colors.primary} />
     </View>
