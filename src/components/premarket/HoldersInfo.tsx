@@ -6,6 +6,7 @@ import { View } from "react-native";
 import {Text} from '@components/ui/Text'
 import React, { useMemo, useState } from "react";
 import { Menu, useTheme, TouchableRipple, Divider } from "react-native-paper";
+import RevelcySegmentedButtons from "@components/ui/SegmentedButton";
 import { SvgIcon } from "@components/base/SvgIcon";
 import { convertTokenToPersent } from "@services/pumpfun/adds";
 
@@ -21,6 +22,7 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
   const [showCount, setShowCount] = useState(DEFAULT_SHOW_COUNT)
   const [order, setOrder] = useState<OrderValue>("SUPPLY")
   const { colors } = useTheme() as AppTheme;
+  const [sectionType, setSectionType] = useState("Applied")
   const holders = tokenData.dynamicInfo.holders
   const sortedHolders = useMemo(() => {
   if (!holders) return [];
@@ -60,7 +62,13 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
         <View style={{flexDirection: 'row', gap: 8, marginTop: -25}}>
           <Text variant="titleLarge"  selectionColor={colors.onSurface}>People</Text>
           <Text variant="titleLarge" style={{color:colors.onSurfaceVariant}}>{holdersAmount}</Text>
+          {tokenData.mainInfo.isWhitelistEnabled && <RevelcySegmentedButtons value={sectionType} onValueChange={setSectionType} buttons={[
+          { value: 'Applied', label: 'Applied', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
+          { value: 'Accepted', label: 'Accepted', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
+          { value: 'Joined', label: 'Joined', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
+        ]} />}
         </View>
+        
         <OrderMenu value={order} onChange={setOrder}/>
       </View>
      

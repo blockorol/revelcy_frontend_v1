@@ -106,6 +106,8 @@ export async function getPremarketInfo({
     isExtended: (data.blockchain_info.premarket_is_extended|| undefined) ?? false,
     tokenMint: data.blockchain_info.mint_address,
     isHided: data.availability_info?.is_hided ?? false,
+    // isWhitelistEnabled: data.availability_info?.is_whitelist_enabled ?? false,
+    isWhitelistEnabled: true,
     vestingInfo: vestingInfo,
   };
 
@@ -299,6 +301,7 @@ export interface TokenMainInfo {
     finishDate?: number;
     isExtended: boolean;
     isHided: boolean;
+    isWhitelistEnabled: boolean;
     tokenMint?: string;
     vestingInfo?: VestingBaseSettings
 }
