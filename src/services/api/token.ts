@@ -233,17 +233,18 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
       cumulativeSolLamp = cumulativeSolLamp.add(holder.amountSolLamp);
     });
 
-  const vestingRaw = raw.vesting;
-  const vesting = vestingRaw
+  const vestingRaw = raw.vesting_info;
+  const vestingEntry = raw.vesting_info.entry;
+  const vesting = vestingRaw && vestingEntry
     ? {
         starttime_ms: Number(vestingRaw.starttime_ms ?? 0),
         endtime_ms: Number(vestingRaw.endtime_ms ?? 0),
         total_amount:
-          vestingRaw.total_amount != null ? new BN(String(vestingRaw.total_amount)) : undefined,
+          vestingEntry.total_dec != null ? new BN(String(vestingEntry.total_dec)) : undefined,
         total_vested:
-          vestingRaw.total_vested != null ? new BN(String(vestingRaw.total_vested)) : undefined,
+          vestingEntry.vested_dec != null ? new BN(String(vestingEntry.vested_dec)) : undefined,
         total_claimed:
-          vestingRaw.total_claimed != null ? new BN(String(vestingRaw.total_claimed)) : undefined,
+          vestingEntry.claimed_dec != null ? new BN(String(vestingEntry.claimed_dec)) : undefined,
       }
     : undefined;
 
