@@ -1,6 +1,6 @@
 import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey } from "@solana/web3.js";
-import { getClaimTokensTransaction, signTransactionWithRevelcyAuth } from "@api/tx_premarket";
+import { getClaimTokensTransaction, getWithdrawVestingTransaction, signTransactionWithRevelcyAuth } from "@api/tx_premarket";
 import { simulateAndSignRawTx, confirmTxFinalised } from "@services/blockchain/signAndSend";
 import { userSetAdditionalInfo } from "@services/fingerprint/sender";
 
@@ -20,9 +20,8 @@ export async function claimTokens(
     network,
   });
 
-  const { transaction } = await getClaimTokensTransaction(
+  const { transaction } = await getWithdrawVestingTransaction(
     wallet.publicKey.toBase58(),
-    premarketAccount.toBase58(),
     tokenMint.toBase58(),
     network
   );
