@@ -144,6 +144,7 @@ export function PremarketActionLaunched({
   const { open, close: closeOverlay } = useOverlay();
 
   const userCanClaim = holderEntryInfo ? holderEntryInfo.token.claimedDec !== holderEntryInfo.token.totalDec: false;
+
   console.log("holderEntryInfo:", holderEntryInfo, "userCanClaim:", userCanClaim);
 
   const handleBuyPress = () => {

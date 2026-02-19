@@ -247,6 +247,12 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
           vestingEntry.claimed_dec != null ? new BN(String(vestingEntry.claimed_dec)) : undefined,
       }
     : undefined;
+  
+    console.log("Vesting info calculation:", {
+      vestingRaw,
+      vestingEntry,
+      vesting,
+    });
 
 
   return {
