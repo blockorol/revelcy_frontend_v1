@@ -143,9 +143,8 @@ export function PremarketActionLaunched({
   const wallet = useAnchorWalletSafe();
   const { open, close: closeOverlay } = useOverlay();
 
-  // Check if the user can claim their tokens
   const userCanClaim = holderEntryInfo ? holderEntryInfo.token.claimedDec !== holderEntryInfo.token.totalDec: false;
-  console.log("userCanClaim", userCanClaim);
+  console.log("holderEntryInfo:", holderEntryInfo, "userCanClaim:", userCanClaim);
 
   const handleBuyPress = () => {
     if (tokenMainInfo.tokenMint) {
