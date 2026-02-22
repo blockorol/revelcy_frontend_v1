@@ -55,7 +55,7 @@ export function YourEntry({
     const [entryPrice, setEntryPrice] = useState<number>(0);
     const [loadingEntryPrice, setLoadingEntryPrice] = useState(true);
     const isVestingEnabled = tokenMainInfo.vestingInfo?.enabled;
-    const isVested = isVestingEnabled && tokenMainInfo.state !== 'finished';
+    const isVested = isVestingEnabled && tokenMainInfo.state === 'finished';
     console.log("Rendering YourEntry with props:", {
         premarketPubkey: premarketPubkey.toBase58(),
         tokenDynamicInfo,
