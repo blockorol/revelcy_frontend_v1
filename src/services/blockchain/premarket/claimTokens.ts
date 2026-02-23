@@ -48,7 +48,7 @@ export async function claimTokens(
   const { signature, status } = await signTransactionWithRevelcyAuth({
     network,
     txBase64: userSignedB64,
-    txType: "claim_tokens",
+    txType: "withdraw_vesting",
     premarket: premarketAccount.toBase58(),
   });
 

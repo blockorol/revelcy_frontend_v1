@@ -39,6 +39,7 @@ type TX_TYPE =
     "extend_premarket" | 
     "update_uri" |
     "claim_tokens" | 
+    "withdraw_vesting" |
     "refund_premarket"
 
 export async function signTransactionWithRevelcyAuth(params: {
