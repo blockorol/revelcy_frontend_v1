@@ -72,12 +72,11 @@ export function VestingCard({
 
     const cW = vW > 0 ? vW * claimedInsideVested : 0;
 
-    const now = Date.now();
-    const timelineProgress = showTimeline ? (now - start) / (end - start) : vested / 100;
-    const mX = clamp(trackW * timelineProgress, 0, trackW);
+    const vestedProgress = vested / 100;
+    const mX = clamp(trackW * vestedProgress, 0, trackW);
 
     return { vestedW: vW, gapW: gW, restW: rW, claimedW: cW, markerX: mX };
-  }, [trackW, vestedPct, claimedPct, showTimeline, start, end]);
+  }, [trackW, vestedPct, claimedPct]);
 
   return (
     <View
