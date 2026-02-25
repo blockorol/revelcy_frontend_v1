@@ -39,6 +39,7 @@ type TX_TYPE =
     "extend_premarket" | 
     "update_uri" |
     "claim_tokens" | 
+    "withdraw_vesting" |
     "refund_premarket"
 
 export async function signTransactionWithRevelcyAuth(params: {
@@ -385,6 +386,34 @@ export async function getClaimTokensTransaction(
     return data;
   } catch (e: any) {
     throw new Error(`Failed to get claim tokens tx: ${e?.message ?? "Unknown error"}`);
+  }
+}
+
+
+export interface WithdrawVestingTxRequest {
+  network: Network;
+  user_pubkey: string;       // base58
+  token_mint: string;        // base58
+}
+
+export async function getWithdrawVestingTransaction(
+  userPubkeyBase58: string,
+  tokenMint: string,
+  network: Network
+): Promise<TxOnlyResponse> {
+  const payload: WithdrawVestingTxRequest = {
+    network,
+    user_pubkey: userPubkeyBase58,
+    token_mint: tokenMint,
+  };
+  try {
+    const data = await http.post<TxOnlyResponse>(
+      `${API_HOST}/premarket/tx/withdraw_vesting`,
+      { json: payload, retry: RETRY_TX_GEN }
+    );
+    return data;
+  } catch (e: any) {
+    throw new Error(`Failed to get withdraw vesting tx: ${e?.message ?? "Unknown error"}`);
   }
 }
 

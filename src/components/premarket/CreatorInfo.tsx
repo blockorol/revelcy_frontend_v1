@@ -360,7 +360,7 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
   // if (isDeadLine && isGoalReached) {
     return (
       <View style={{ gap:16, width:'100%'}}>
-        <View style={{flexDirection:'row'}}>
+        <View style={{flexDirection:'row', gap:8}}>
           <Button leftSvgIconName='pumpfun' style={{flex:3}} variant='primary' 
             onPress={handleFinish}>Launch on Pump</Button>
           <ShareTextButton style={{flex: 1}} shareMessage={`Join to premarket on: ${currentURL}`}/>

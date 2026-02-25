@@ -170,6 +170,7 @@ export function TokenPremarketPageNormal({
                 
                 {(!(user && holderEntryInfo)) && !!token.mainInfo.vestingInfo?.enabled && (
                   <VestingSetting
+                    paddingHorisontal={24}
                     periodSec={token.mainInfo.vestingInfo?.vestingPeriodSec ?? 0}
                     percentInit={token.mainInfo.vestingInfo?.unlockAtLaunchPercent ?? 0}
                     paddingHorisontal={24}
@@ -355,6 +356,7 @@ function BriefMobile({
             onUpdated={refetchTokenInfo}
             isMobile={true}
           /> : !!token.mainInfo.vestingInfo?.enabled && <VestingSetting
+            paddingHorisontal={16}
             periodSec={token.mainInfo.vestingInfo?.vestingPeriodSec ?? 0}
             percentInit={token.mainInfo.vestingInfo?.unlockAtLaunchPercent ?? 0}
             paddingHorisontal={24}

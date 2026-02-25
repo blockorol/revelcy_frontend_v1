@@ -55,7 +55,17 @@ export function YourEntry({
     const [entryPrice, setEntryPrice] = useState<number>(0);
     const [loadingEntryPrice, setLoadingEntryPrice] = useState(true);
     const isVestingEnabled = tokenMainInfo.vestingInfo?.enabled;
-    const isVested = isVestingEnabled && tokenMainInfo.state !== 'finished' && tokenDynamicInfo.vesting !== undefined;
+    const isVested = isVestingEnabled && tokenMainInfo.state === 'finished';
+    console.log("Rendering YourEntry with props:", {
+        premarketPubkey: premarketPubkey.toBase58(),
+        tokenDynamicInfo,
+        tokenMainInfo,
+        userEntry,
+        network,
+        walletPublicKey: wallet?.publicKey.toBase58(),
+        isVestingEnabled,
+        isVested
+    });
     const { inCurve, pumpFee } = splitInput(userEntry.amountSol);
     const refundAmount = Number(convertLamportToSmallCount(inCurve.add(pumpFee)).toFixed(4)).toString();
     const vesting = toVestingVMFromDec({

@@ -229,27 +229,42 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
       claimed: h.claimed ?? false,
     }))
     .sort((a: { joinTimestamp: number; }, b: { joinTimestamp: number; }) => a.joinTimestamp - b.joinTimestamp);
-  holders.forEach((holder: HoldersInfo) => {
-      holder.amountTokenDec = convertSolanaToTokenWithFee({
-        input_sol_lamp: holder.amountSolLamp,
-        before_lamp: cumulativeSolLamp,
+    holders.forEach((holder: HoldersInfo) => {
+        holder.amountTokenDec = convertSolanaToTokenWithFee({
+          input_sol_lamp: holder.amountSolLamp,
+          before_lamp: cumulativeSolLamp,
+        });
+        cumulativeSolLamp = cumulativeSolLamp.add(holder.amountSolLamp);
       });
-      cumulativeSolLamp = cumulativeSolLamp.add(holder.amountSolLamp);
-    });
 
-  const vestingRaw = raw.vesting;
-  const vesting = vestingRaw
-    ? {
-        starttime_ms: Number(vestingRaw.starttime_ms ?? 0),
-        endtime_ms: Number(vestingRaw.endtime_ms ?? 0),
-        total_amount:
-          vestingRaw.total_amount != null ? new BN(String(vestingRaw.total_amount)) : undefined,
-        total_vested:
-          vestingRaw.total_vested != null ? new BN(String(vestingRaw.total_vested)) : undefined,
-        total_claimed:
-          vestingRaw.total_claimed != null ? new BN(String(vestingRaw.total_claimed)) : undefined,
-      }
-    : undefined;
+    const vestingRaw = raw.vesting_info ?? null;
+    const vestingEntry = vestingRaw?.entry ?? null;
+
+    const vesting =
+      vestingRaw && vestingEntry
+        ? {
+            starttime_ms: Number(vestingRaw.starttime_ms ?? 0),
+            endtime_ms: Number(vestingRaw.endtime_ms ?? 0),
+            total_amount:
+              vestingEntry.total_dec != null
+                ? new BN(String(vestingEntry.total_dec))
+                : undefined,
+            total_vested:
+              vestingEntry.vested_dec != null
+                ? new BN(String(vestingEntry.vested_dec))
+                : undefined,
+            total_claimed:
+              vestingEntry.claimed_dec != null
+                ? new BN(String(vestingEntry.claimed_dec))
+                : undefined,
+          }
+        : undefined;
+  
+    console.log("Vesting info calculation:", {
+      vestingRaw,
+      vestingEntry,
+      vesting,
+    });
 
 
   return {
