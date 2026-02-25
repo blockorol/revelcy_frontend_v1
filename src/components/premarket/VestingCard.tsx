@@ -40,6 +40,7 @@ export function VestingCard({
   const R = BAR_H / 2;
   const SEGMENT_GAP_PX = 4;
   const NOW_WRAP_HALF_W = 12;
+  const DATE_LABEL_SAFE_PX = 86;
 
   const vestedPct = clamp(vm.vestedPct, 0, 100);
   const claimedPct = clamp(vm.claimedPct, 0, vestedPct);
@@ -77,6 +78,11 @@ export function VestingCard({
 
     return { vestedW: vW, gapW: gW, restW: rW, claimedW: cW, markerX: mX };
   }, [trackW, vestedPct, claimedPct]);
+
+  const showNowMarker =
+    trackW > 0 &&
+    (!showTimeline ||
+      (markerX > DATE_LABEL_SAFE_PX && markerX < trackW - DATE_LABEL_SAFE_PX));
 
   return (
     <View
@@ -134,7 +140,7 @@ export function VestingCard({
       {/* 3) Bar + Today marker */}
       <View style={{ position: "relative" }} onLayout={onBarLayout}>
         {/* Marker (Now) below the bar, triangle points UP */}
-        {trackW > 0 && (
+        {showNowMarker && (
           <View style={[styles.nowWrap, { left: clamp(markerX, NOW_WRAP_HALF_W, Math.max(NOW_WRAP_HALF_W, trackW - NOW_WRAP_HALF_W)) }]}>
             <View
               style={[
