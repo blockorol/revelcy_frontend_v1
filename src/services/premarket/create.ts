@@ -5,9 +5,10 @@ import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { Connection } from "@solana/web3.js";
 import BN from "bn.js";
 import { addCommunityInfo, AddCommunityInfoParams } from "@services/premarket/addCommunityInfo";
-import { updateTokenAvailbility, updateVestingInfo } from "@api/token";
+import { addWhitelistUserList, updateTokenAvailbility, updateVestingInfo } from "@api/token";
 import { NoticeOptions } from "@providers/NotificationContext";
 import { VestingData } from "@components/token/create/VestingSetupForm";
+import { WhitelistData } from "@components/token/create/interface";
 
 const SECONDS_IN_HOUR = 60 * 60;
 
@@ -36,6 +37,7 @@ export async function createPremarket(
   args: CreatePremarketArgs,
   communityInfo: AddCommunityInfoParams,
   vestingData: VestingData | undefined,
+  whitelistData: WhitelistData | undefined,
   visabilityInfo: {
     isHided: boolean;
     tokenShortUrlName?: string;
@@ -47,10 +49,16 @@ export async function createPremarket(
       const conceptResp = await createConcept(args, wallet.publicKey.toBase58(), network)
 
       onChangeState?.("Adding rest info...");
+      const effectiveWhitelist: WhitelistData = whitelistData ?? {
+        state: "disabled",
+        items: [],
+      };
+
       await Promise.all([
         addCommunityInfo(conceptResp.premarket_account_pda, communityInfo, notifyError),
         updateTokenAvailbility(conceptResp.premarket_account_pda, {
             isHided: visabilityInfo.isHided,
+            isWhitelistEnabled: effectiveWhitelist.state === "enabled",
             tokenShortUrlName: visabilityInfo.tokenShortUrlName,
         }),
         vestingData?updateVestingInfo(
@@ -59,11 +67,17 @@ export async function createPremarket(
             unlock_at_launch_percent: vestingData.unlockAtLaunchPercent,
             vesting_period_sec: vestingData.vestingPeriodSec,
             enabled: vestingData.enabled
-        }):Promise.resolve()
+        }):Promise.resolve(),
+        effectiveWhitelist.state === "enabled" && effectiveWhitelist.items.length > 0?
+        addWhitelistUserList({
+          premarket_id: String(conceptResp.premarket_id),
+          user_pubkeys: effectiveWhitelist.items.map((item) => item.pubkey),
+        }):Promise.resolve(),
     ]);
-
-      // todo: set here 
-      // 4. whitelisting info
+    console.log("[createPremarket] whitelist payload", {
+      state: effectiveWhitelist.state,
+      size: effectiveWhitelist.items.length,
+    });
       
       onChangeState?.("Uploading data to IPFS...");
       const ipfsData = await uploadTokenMetadataToIPFS({

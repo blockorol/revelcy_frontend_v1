@@ -4,6 +4,7 @@ import { fetchUserEntry, UserEntry } from "@api/token";
 
 export function useHolderEntryInfo(premarketPubkey?: string, userWallet?: string) {
   const [holderEntryInfo, setHolderEntryInfo] = useState<UserEntry | null>(null);
+  const [whitelistStatus, setWhitelistStatus] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError]   = useState<unknown>(null);
 
@@ -13,18 +14,36 @@ export function useHolderEntryInfo(premarketPubkey?: string, userWallet?: string
     return () => { alive.current = false; };
   }, []);
 
+  useEffect(() => {
+    setHolderEntryInfo(null);
+    setWhitelistStatus(undefined);
+    setError(null);
+    if (!premarketPubkey || !userWallet) setLoading(false);
+  }, [premarketPubkey, userWallet]);
+
   const fetchOnce = useCallback(async () => {
     if (!premarketPubkey || !userWallet) {
-        return
+      if (alive.current) {
+        setHolderEntryInfo(null);
+        setWhitelistStatus(undefined);
+        setError(null);
+        setLoading(false);
+      }
+      return;
     }
     setLoading(true);
     setError(null);
     try {
       const data = await fetchUserEntry(premarketPubkey, userWallet);
-      if (!data) throw new Error("No data");
-      if (alive.current) setHolderEntryInfo(data);
+      if (!alive.current) return;
+      setHolderEntryInfo(data.entry);
+      setWhitelistStatus(data.whitelistStatus);
     } catch (e) {
-      if (alive.current) setError(e);
+      if (alive.current) {
+        setHolderEntryInfo(null);
+        setWhitelistStatus(undefined);
+        setError(e);
+      }
     } finally {
       if (alive.current) setLoading(false);
     }
@@ -34,5 +53,5 @@ export function useHolderEntryInfo(premarketPubkey?: string, userWallet?: string
 
   const refetch = fetchOnce;
 
-  return { holderEntryInfo, loading, error, refetch, setHolderEntryInfo };
+  return { holderEntryInfo, whitelistStatus, loading, error, refetch, setHolderEntryInfo };
 }

@@ -15,6 +15,7 @@ import {
   CustomizeTokenData,
   TokenCreateFullData,
   PremarketSettingData,
+  WhitelistData,
 } from "@components/token/create/interface";
 import EditTokenomicsForm from "@components/token/create/EditTokenomicsForm";
 import {
@@ -26,6 +27,7 @@ import {
   CreatePremarketArgs,
 } from "@services/premarket/create";
 import EditPremarketSettingsForm from "@components/token/create/EditPremarketSettings";
+import EditWhitelistForm from "@components/token/create/EditWhitelistForm";
 import { convertSmallCountToLamport } from "@utils/premarket";
 import useIsMobile from "@hooks/useIsMobile";
 import { useNetwork } from "@providers/NetworkContext";
@@ -43,10 +45,11 @@ enum FLOW_STEP {
   TOKEN_BASE_INFO = 1,
   TOKENOMICS = 2,
   PREMARKET_SETTINGS = 3,
-  VESTING = 4,
-  CUSTOMIZE_TOKEN = 5,
-  OVERVIEW = 6,
-  PROCESSING = 7,
+  WHITELIST = 4,
+  VESTING = 5,
+  CUSTOMIZE_TOKEN = 6,
+  OVERVIEW = 7,
+  PROCESSING = 8,
 }
 
 export default function PremarketCreationFlow() {
@@ -74,13 +77,17 @@ export default function PremarketCreationFlow() {
   const [premarketSettingsData, setPremarketSettingsData] = useState<
     PremarketSettingData | undefined
   >(undefined);
+  const [whitelistData, setWhitelistData] = useState<WhitelistData>({
+    state: "disabled",
+    items: [],
+  });
 
   const [premarketPDA, setPremarketPDA] = useState<string | undefined>(
     undefined
   );
   const [txId, setTxId] = useState<string | undefined>(undefined);
   const [vestingData, setVestingData] = useState<VestingData | undefined>(undefined);
-  const totalSteps = IsVestingEnable ? 5 : 4;
+  const totalSteps = IsVestingEnable ? 6 : 5;
 
   const theme = useTheme();
   const [launchState, setLaunchState] = useState<string | undefined>(undefined);
@@ -105,6 +112,7 @@ export default function PremarketCreationFlow() {
     if (d.tokenomicsData) setTokenomicsData(d.tokenomicsData);
     if (d.premarketSettingsData)
       setPremarketSettingsData(d.premarketSettingsData);
+    if (d.whitelistData) setWhitelistData(d.whitelistData as WhitelistData);
     if (d.customizeTokenData) setCustomizeTokenData(d.customizeTokenData);
     if (d.vestingData) setVestingData(d.vestingData);
     setStep((d.step as FLOW_STEP) ?? FLOW_STEP.TOKEN_BASE_INFO);
@@ -179,10 +187,20 @@ export default function PremarketCreationFlow() {
       return;
     }
     setPremarketSettingsData(data);
-    const nextStep = IsVestingEnable ? FLOW_STEP.VESTING : FLOW_STEP.CUSTOMIZE_TOKEN;
+    const nextStep = FLOW_STEP.WHITELIST;
     setStep(nextStep);
     await patch({
       premarketSettingsData: data,
+      step: nextStep,
+    });
+  };
+
+  const handleAfterWhitelist = async (data: WhitelistData) => {
+    setWhitelistData(data);
+    const nextStep = IsVestingEnable ? FLOW_STEP.VESTING : FLOW_STEP.CUSTOMIZE_TOKEN;
+    setStep(nextStep);
+    await patch({
+      whitelistData: data,
       step: nextStep,
     });
   };
@@ -294,6 +312,10 @@ export default function PremarketCreationFlow() {
         description: tokenData.customData.description, 
         links: tokenData.customData.links
       }
+      const effectiveWhitelist: WhitelistData = {
+        state: whitelistData?.state ?? "disabled",
+        items: whitelistData?.items ?? [],
+      };
       setLaunchState("Started premarket creation...");
       let resp:
         | undefined
@@ -310,6 +332,7 @@ export default function PremarketCreationFlow() {
           createPremarketArgs,
           communityInfo,
           vestingData,
+          effectiveWhitelist,
           {
             isHided: !discoverable,
             tokenShortUrlName: tokenData.premarketSettingsData.short_link_name,
@@ -436,19 +459,7 @@ export default function PremarketCreationFlow() {
         {step === FLOW_STEP.PREMARKET_SETTINGS && (
           <EditPremarketSettingsForm
             onBack={() => setStep(FLOW_STEP.TOKENOMICS)}
-            onNext={async (d) => {
-              const nextStep = IsVestingEnable
-                ? FLOW_STEP.VESTING
-                : FLOW_STEP.CUSTOMIZE_TOKEN;
-
-              setPremarketSettingsData(d);
-              setStep(nextStep);
-
-              await patch({
-                premarketSettingsData: d,
-                step: nextStep,
-              });
-            }}
+            onNext={handleAfterPremarketSettings}
             onClose={onButtonClose}
             step={3}
             totalSteps={totalSteps}
@@ -456,10 +467,20 @@ export default function PremarketCreationFlow() {
             tokenomicsData={tokenomicsData}
           />
         )}
+        {step === FLOW_STEP.WHITELIST && (
+          <EditWhitelistForm
+            onBack={() => setStep(FLOW_STEP.PREMARKET_SETTINGS)}
+            onNext={handleAfterWhitelist}
+            onClose={onButtonClose}
+            step={4}
+            totalSteps={totalSteps}
+            presetData={whitelistData}
+          />
+        )}
 
         {IsVestingEnable && step === FLOW_STEP.VESTING && (
           <VestingSetupForm
-            onBack={() => setStep(FLOW_STEP.PREMARKET_SETTINGS)}
+            onBack={() => setStep(FLOW_STEP.WHITELIST)}
             onNext={(d) => {
               setVestingData(d);
               patch({ vestingData: d, step: FLOW_STEP.CUSTOMIZE_TOKEN });
@@ -467,7 +488,7 @@ export default function PremarketCreationFlow() {
             }}
             onSaveDraft={() => patch({ vestingData, step })}
             onClose={onButtonClose}
-            step={4}
+            step={5}
             totalSteps={totalSteps}
             presetData={vestingData}
           />
@@ -476,11 +497,11 @@ export default function PremarketCreationFlow() {
         {step === FLOW_STEP.CUSTOMIZE_TOKEN && (
           <CustomizeTokenForm
             onBack={() =>
-              setStep(IsVestingEnable ? FLOW_STEP.VESTING : FLOW_STEP.PREMARKET_SETTINGS)
+              setStep(IsVestingEnable ? FLOW_STEP.VESTING : FLOW_STEP.WHITELIST)
             }
             onNext={handleAfterCunstomizeToken}
             onClose={onButtonClose}
-            steps={{ current: IsVestingEnable ? 5 : 4, total: totalSteps }}
+            steps={{ current: IsVestingEnable ? 6 : 5, total: totalSteps }}
             presetData={customizeTokenData}
           />
         )}

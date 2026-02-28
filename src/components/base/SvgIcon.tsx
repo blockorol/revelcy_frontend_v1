@@ -15,6 +15,7 @@ import Buy from "@assets/basic_icon/buy.svg";
 import CaretDown from "@assets/basic_icon/caret-down.svg";
 import CaretLeft from '@assets/basic_icon/caret-left.svg';
 import Check from "@assets/basic_icon/check.svg";
+import Clip from "@assets/basic_icon/clip.svg";
 import CopyIcon from "@assets/basic_icon/copy_icon.svg";
 import HeartOutlined from "@assets/basic_icon/heart-outlined.svg";
 import Heart from "@assets/basic_icon/heart.svg";
@@ -79,6 +80,7 @@ export const icons = {
   "caret-down": CaretDown,
   'caret-left':CaretLeft,
   check: Check,
+  clip: Clip,
   "copy-icon": CopyIcon,
   "heart-outlined": HeartOutlined,
   heart: Heart,

@@ -36,6 +36,7 @@ export async function updateAboutCommunity(premarketPubkey: string, args: TokenC
 export interface TokenAvailabilityInfo {
   isHided?: boolean;
   tokenShortUrlName?: string;
+  isWhitelistEnabled?: boolean;
 }
 
 export async function updateTokenAvailbility(premarketPubkey: string, args: TokenAvailabilityInfo) {
@@ -43,6 +44,7 @@ export async function updateTokenAvailbility(premarketPubkey: string, args: Toke
     premarket_pubkey: premarketPubkey,
     network: NETWORK, // todo: remove me
     is_hided: args.isHided,
+    is_whitelist_enabled: args.isWhitelistEnabled,
     token_short_url_name: args.tokenShortUrlName, // todo: move to separated value
   };
 
@@ -104,6 +106,7 @@ export async function getPremarketInfo({
     isExtended: (data.blockchain_info.premarket_is_extended|| undefined) ?? false,
     tokenMint: data.blockchain_info.mint_address,
     isHided: data.availability_info?.is_hided ?? false,
+    isWhitelistEnabled: data.availability_info?.is_whitelist_enabled ?? false,
     vestingInfo: vestingInfo,
   };
 
@@ -312,6 +315,7 @@ export interface TokenMainInfo {
     finishDate?: number;
     isExtended: boolean;
     isHided: boolean;
+    isWhitelistEnabled: boolean;
     tokenMint?: string;
     vestingInfo?: VestingBaseSettings
 }
@@ -385,14 +389,24 @@ export async function getHolderEntryPrice({
     return data;
 }
 
-type UserEntryResponse = {
-  amount_sol_lamp: string | number; 
+type UserEntryDataResponse = {
+  amount_sol_lamp: string | number;
   token: {
-    total_dec: string;   
-    vested_dec: string; 
+    total_dec: string;
+    vested_dec: string;
     claimed_dec: string;
   };
   rank: number;
+};
+
+type UserEntryResponse = {
+  entry?: UserEntryDataResponse | null;
+  whitelist?: {
+    status: string;
+    updated_at: number;
+  } | null;
+  // backward compatibility with old API format
+  whitelist_status?: string | null;
 };
 
 export type UserEntry = {
@@ -405,18 +419,42 @@ export type UserEntry = {
   rankInPremarket: number;
 };
 
-export async function fetchUserEntry(premarketId: string, userId: string): Promise<UserEntry> {
+export type UserEntryInfo = {
+  entry: UserEntry | null;
+  whitelistStatus?: string;
+  whitelistUpdatedAt?: number;
+};
+
+export async function fetchUserEntry(premarketId: string, userId: string): Promise<UserEntryInfo> {
   const url = `${API_HOST}/premarket/get_user_entry?premarket_id=${premarketId}&holder_wallet=${userId}`;
   const resp = await http.get<UserEntryResponse>(url, { retry: RETRY_DEFAULT });
+  const entry = resp?.entry;
+  if (!entry) {
+    return {
+      entry: null,
+      whitelistStatus: resp.whitelist?.status ?? resp.whitelist_status ?? undefined,
+      whitelistUpdatedAt:
+        resp.whitelist?.updated_at === null || resp.whitelist?.updated_at === undefined
+          ? undefined
+          : Number(resp.whitelist.updated_at),
+    };
+  }
 
   return {
-    amountSol: new BN(resp.amount_sol_lamp),
-    token: {
-      totalDec: new BN(resp.token.total_dec),
-      vestedDec: new BN(resp.token.vested_dec),
-      claimedDec: new BN(resp.token.claimed_dec),
+    entry: {
+      amountSol: new BN(entry.amount_sol_lamp),
+      token: {
+        totalDec: new BN(entry.token.total_dec),
+        vestedDec: new BN(entry.token.vested_dec),
+        claimedDec: new BN(entry.token.claimed_dec),
+      },
+      rankInPremarket: entry.rank,
     },
-    rankInPremarket: resp.rank,
+    whitelistStatus: resp.whitelist?.status ?? resp.whitelist_status ?? undefined,
+    whitelistUpdatedAt:
+      resp.whitelist?.updated_at === null || resp.whitelist?.updated_at === undefined
+        ? undefined
+        : Number(resp.whitelist.updated_at),
   }
 }
 
@@ -446,4 +484,107 @@ export async function updateVestingInfo(premarketPubkey: string, userPubkey: str
     console.error("[updateVestingInfo] failed", { payload, error: e });
     throw new Error(`Failed to update vesting: ${e?.message ?? "Unknown error"}`);
   }
+}
+
+export interface AddWhitelistUserListDTO {
+  premarket_id: string;
+  user_pubkeys: string[];
+}
+
+export async function addWhitelistUserList(args: AddWhitelistUserListDTO) {
+  const payload = {
+    network: NETWORK,
+    premarket_id: args.premarket_id,
+    user_pubkeys: args.user_pubkeys,
+  };
+
+  try {
+    await http.post(`${API_HOST}/premarket/whitelist/add_user_list`, {
+      json: payload,
+      retry: RETRY_DEFAULT,
+    });
+    return;
+  } catch (e: any) {
+    console.error("[addWhitelistUserList] failed", { payload, error: e });
+    throw new Error(`Failed to add whitelist users: ${e?.message ?? "Unknown error"}`);
+  }
+}
+
+export interface GetWhitelistRequestDTO {
+  network?: string;
+  premarket_id: string;
+  status?: string;
+  cursor: number;
+  limit: number;
+}
+
+export interface WhitelistUserDTO {
+  id: string;
+  username?: string;
+  avatar_url?: string;
+  wallets: string[];
+}
+
+export interface WhitelistUsersResultDTO {
+  items: WhitelistUserDTO[];
+  total?: number;
+}
+
+export async function getWhitelistUsers(args: GetWhitelistRequestDTO): Promise<WhitelistUsersResultDTO> {
+  const payload = {
+    network: args.network ?? NETWORK,
+    premarket_id: args.premarket_id,
+    status: args.status,
+    cursor: args.cursor,
+    limit: args.limit,
+  };
+
+  const data = await http.post<any>(`${API_HOST}/premarket/whitelist/get`, {
+    json: payload,
+    retry: RETRY_DEFAULT,
+  });
+
+  const rawItems: any[] = Array.isArray(data?.items)
+    ? data.items
+    : Array.isArray(data?.users)
+    ? data.users
+    : Array.isArray(data?.entries)
+    ? data.entries
+    : Array.isArray(data)
+    ? data
+    : [];
+
+  const parseWallets = (item: any): string[] => {
+    const walletsFromArray =
+      item?.wallets ?? item?.wallet_addresses ?? item?.user_pubkeys ?? item?.addresses;
+
+    if (Array.isArray(walletsFromArray)) {
+      return walletsFromArray
+        .map((wallet: any) => String(wallet))
+        .filter((wallet: string) => wallet.length > 0);
+    }
+
+    const singleWallet =
+      item?.wallet_address ?? item?.wallet ?? item?.user_pubkey ?? item?.pubkey ?? item?.address;
+
+    return singleWallet ? [String(singleWallet)] : [];
+  };
+
+  return {
+    items: rawItems.map((item: any) => {
+      const wallets = parseWallets(item);
+      return {
+        id: String(item?.id ?? item?.user_id ?? wallets[0] ?? ""),
+        username: item?.username ?? item?.name ?? undefined,
+        avatar_url: item?.avatar_url ?? item?.icon_url ?? item?.url ?? undefined,
+        wallets,
+      };
+    }),
+    total:
+      data?.total === null || data?.total === undefined
+        ? data?.count === null || data?.count === undefined
+          ? undefined
+          : Number(data.count)
+        : Number(data.total),
+  };
 }
