@@ -22,6 +22,13 @@ import { VestingCard } from "@components/premarket/VestingCard";
 import { VestingSetting } from "@components/premarket/VestingSetting";
 
 const SLIDER_HEIGHT = 48
+const ALLOWED_WHITELIST_STATUSES = new Set(["accepted", "approved", "whitelisted", "in_whitelist", "in-whitelist"]);
+
+function canJoinByWhitelist(isWhitelistEnabled: boolean, whitelistStatus?: string): boolean {
+  if (!isWhitelistEnabled) return true;
+  const normalized = whitelistStatus?.toLowerCase().trim();
+  return !!normalized && ALLOWED_WHITELIST_STATUSES.has(normalized);
+}
 
 interface TokenPremarketPageProps {
   tokenId: string;
@@ -35,7 +42,7 @@ export default function TokenPremarketPage({
 
   const { token, loading, error, refetch: refetchPremarketInfo } = usePremarketInfo(tokenId);
   const {user} = useAuth();
-  const {holderEntryInfo, refetch: refetchHolder} = useHolderEntryInfo(token?.mainInfo.premarketPubkey.toBase58(), user?.walletAddress)
+  const {holderEntryInfo, whitelistStatus, refetch: refetchHolder} = useHolderEntryInfo(token?.mainInfo.premarketPubkey.toBase58(), user?.walletAddress)
 
   const refetch = async () => {
     console.log("Refetching premarket and holder info...");
@@ -69,6 +76,7 @@ export default function TokenPremarketPage({
     <TokenPremarketPageMobile
       token={token}
       holderEntryInfo={holderEntryInfo}
+      whitelistStatus={whitelistStatus}
       refetchTokenInfo={refetch}
       screenDem={screen}
     />
@@ -76,6 +84,7 @@ export default function TokenPremarketPage({
     <TokenPremarketPageNormal
       token={token}
       holderEntryInfo={holderEntryInfo}
+      whitelistStatus={whitelistStatus}
       refetchTokenInfo={refetch}
       left={left}
       rigth={right}
@@ -88,12 +97,14 @@ export function TokenPremarketPageNormal({
   token,
   refetchTokenInfo,
   holderEntryInfo,
+  whitelistStatus,
   left,
   rigth,
   screenDem,
 }: {
   token: TokenInfo;
   holderEntryInfo: UserEntry | null;
+  whitelistStatus?: string;
   refetchTokenInfo: () => Promise<void>;
   left: {
     width: number;
@@ -111,6 +122,7 @@ export function TokenPremarketPageNormal({
   const { user } = useAuth();
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
+  const canJoinWhitelist = canJoinByWhitelist(token.mainInfo.isWhitelistEnabled, whitelistStatus);
 
   return (
     <ScrollView
@@ -164,6 +176,7 @@ export function TokenPremarketPageNormal({
                   tokenMainInfo={token.mainInfo}
                   tokenDynamicInfo={token.dynamicInfo}
                   holderEntryInfo={holderEntryInfo}
+                  whitelistStatus={whitelistStatus}
                   onUpdated={refetchTokenInfo}
                   isMobile={false}
                 />
@@ -173,7 +186,6 @@ export function TokenPremarketPageNormal({
                     paddingHorisontal={24}
                     periodSec={token.mainInfo.vestingInfo?.vestingPeriodSec ?? 0}
                     percentInit={token.mainInfo.vestingInfo?.unlockAtLaunchPercent ?? 0}
-                    paddingHorisontal={24}
                   />
                 )}
               </View>
@@ -216,7 +228,9 @@ export function TokenPremarketPageNormal({
               tokenInfo={token}
               isMobile={false}
               withJoinButton={
-                (user === null || holderEntryInfo === null) && token.mainInfo.premarketDeadline > Math.floor(Date.now() / 1000)
+                canJoinWhitelist &&
+                (user === null || holderEntryInfo === null) &&
+                token.mainInfo.premarketDeadline > Math.floor(Date.now() / 1000)
               }
               onUpdated={refetchTokenInfo}
             />
@@ -234,12 +248,13 @@ export function TokenPremarketPageNormal({
 }
 
 export function TokenPremarketPageMobile({
-  token,holderEntryInfo,
+  token,holderEntryInfo, whitelistStatus,
   refetchTokenInfo,
   screenDem,
 }: {
   token: TokenInfo;
   holderEntryInfo: UserEntry | null;
+  whitelistStatus?: string;
   refetchTokenInfo: () => Promise<void>;
   screenDem: {
     width: number;
@@ -252,7 +267,7 @@ export function TokenPremarketPageMobile({
   const [index, setIndex] = React.useState(0);
   const toPeopleSection = ()=>{setIndex(1)}
   const renderScene = SceneMap({
-    first: ()=>BriefMobile({token, holderEntryInfo, refetchTokenInfo, screenDem, toPeopleSection}),
+    first: ()=>BriefMobile({token, holderEntryInfo, whitelistStatus, refetchTokenInfo, screenDem, toPeopleSection}),
     second:()=> PeopleMobile({token, refetchTokenInfo, screenDem}),
   });
   const layout = useWindowDimensions();
@@ -298,12 +313,14 @@ export function TokenPremarketPageMobile({
 function BriefMobile({
   token,
   holderEntryInfo,
+  whitelistStatus,
   refetchTokenInfo,
   screenDem,
   toPeopleSection
 }: {
   token: TokenInfo;
   holderEntryInfo: UserEntry | null;
+  whitelistStatus?: string;
   refetchTokenInfo: () => Promise<void>;
   screenDem: {
     width: number;
@@ -313,6 +330,7 @@ function BriefMobile({
 }) {
   const { user } = useAuth();
   const theme = useTheme();
+  const canJoinWhitelist = canJoinByWhitelist(token.mainInfo.isWhitelistEnabled, whitelistStatus);
 
   return (
     
@@ -359,7 +377,6 @@ function BriefMobile({
             paddingHorisontal={16}
             periodSec={token.mainInfo.vestingInfo?.vestingPeriodSec ?? 0}
             percentInit={token.mainInfo.vestingInfo?.unlockAtLaunchPercent ?? 0}
-            paddingHorisontal={24}
           />
         }
         <AboutCommunity
@@ -379,7 +396,9 @@ function BriefMobile({
           tokenInfo={token}
           isMobile={true}
           withJoinButton={
-            (user === null || holderEntryInfo === null) && token.mainInfo.premarketDeadline > Math.floor(Date.now() / 1000)
+            canJoinWhitelist &&
+            (user === null || holderEntryInfo === null) &&
+            token.mainInfo.premarketDeadline > Math.floor(Date.now() / 1000)
           }
           onUpdated={refetchTokenInfo}
         />
@@ -402,6 +421,7 @@ function BriefMobile({
           tokenMainInfo={token.mainInfo}
           tokenDynamicInfo={token.dynamicInfo}                 
           holderEntryInfo={holderEntryInfo}
+          whitelistStatus={whitelistStatus}
           onUpdated={refetchTokenInfo}
           isMobile={true}
         />
@@ -423,6 +443,7 @@ function BriefMobile({
           tokenMainInfo={token.mainInfo}
           tokenDynamicInfo={token.dynamicInfo}
           holderEntryInfo={holderEntryInfo}
+          whitelistStatus={whitelistStatus}
           onUpdated={refetchTokenInfo}
           isMobile={true}
         />

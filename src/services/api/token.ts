@@ -389,14 +389,24 @@ export async function getHolderEntryPrice({
     return data;
 }
 
-type UserEntryResponse = {
-  amount_sol_lamp: string | number; 
+type UserEntryDataResponse = {
+  amount_sol_lamp: string | number;
   token: {
-    total_dec: string;   
-    vested_dec: string; 
+    total_dec: string;
+    vested_dec: string;
     claimed_dec: string;
   };
   rank: number;
+};
+
+type UserEntryResponse = {
+  entry?: UserEntryDataResponse | null;
+  whitelist?: {
+    status: string;
+    updated_at: number;
+  } | null;
+  // backward compatibility with old API format
+  whitelist_status?: string | null;
 };
 
 export type UserEntry = {
@@ -409,18 +419,42 @@ export type UserEntry = {
   rankInPremarket: number;
 };
 
-export async function fetchUserEntry(premarketId: string, userId: string): Promise<UserEntry> {
+export type UserEntryInfo = {
+  entry: UserEntry | null;
+  whitelistStatus?: string;
+  whitelistUpdatedAt?: number;
+};
+
+export async function fetchUserEntry(premarketId: string, userId: string): Promise<UserEntryInfo> {
   const url = `${API_HOST}/premarket/get_user_entry?premarket_id=${premarketId}&holder_wallet=${userId}`;
   const resp = await http.get<UserEntryResponse>(url, { retry: RETRY_DEFAULT });
+  const entry = resp?.entry;
+  if (!entry) {
+    return {
+      entry: null,
+      whitelistStatus: resp.whitelist?.status ?? resp.whitelist_status ?? undefined,
+      whitelistUpdatedAt:
+        resp.whitelist?.updated_at === null || resp.whitelist?.updated_at === undefined
+          ? undefined
+          : Number(resp.whitelist.updated_at),
+    };
+  }
 
   return {
-    amountSol: new BN(resp.amount_sol_lamp),
-    token: {
-      totalDec: new BN(resp.token.total_dec),
-      vestedDec: new BN(resp.token.vested_dec),
-      claimedDec: new BN(resp.token.claimed_dec),
+    entry: {
+      amountSol: new BN(entry.amount_sol_lamp),
+      token: {
+        totalDec: new BN(entry.token.total_dec),
+        vestedDec: new BN(entry.token.vested_dec),
+        claimedDec: new BN(entry.token.claimed_dec),
+      },
+      rankInPremarket: entry.rank,
     },
-    rankInPremarket: resp.rank,
+    whitelistStatus: resp.whitelist?.status ?? resp.whitelist_status ?? undefined,
+    whitelistUpdatedAt:
+      resp.whitelist?.updated_at === null || resp.whitelist?.updated_at === undefined
+        ? undefined
+        : Number(resp.whitelist.updated_at),
   }
 }
 
