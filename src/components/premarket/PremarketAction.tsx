@@ -121,7 +121,8 @@ export function PremarketActionPremarket({
   const isAllowedByWhitelist =
     !tokenMainInfo.isWhitelistEnabled ||
     (!!normalizedWhitelistStatus &&
-      ["accepted", "approved", "whitelisted", "in_whitelist", "in-whitelist"].includes(
+      // fix me and remove requested from the list
+      ["requested", "accepted", "approved", "whitelisted", "in_whitelist", "in-whitelist"].includes(
         normalizedWhitelistStatus
       ));
   const contactUrl = resolveContactUrl(tokenMainInfo.links);
@@ -157,7 +158,7 @@ export function PremarketActionPremarket({
       ) : !isAllowedByWhitelist ? (
         <View style={{ width: "100%", flexDirection: "row", gap: 16 }}>
           <Button leftSvgIconName="plus" mode="contained" style={{ flex: 4 }} onPress={handleWhitelistActionPress}>
-            Add to whitelist
+            Apply to whitelist
           </Button>
           <ShareTextButton mode="outlined" style={{ flex: 1 }} shareMessage={`Join to premarket on: ${currentURL}`}>
             Share
