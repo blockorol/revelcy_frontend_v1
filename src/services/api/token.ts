@@ -106,8 +106,7 @@ export async function getPremarketInfo({
     isExtended: (data.blockchain_info.premarket_is_extended|| undefined) ?? false,
     tokenMint: data.blockchain_info.mint_address,
     isHided: data.availability_info?.is_hided ?? false,
-    // isWhitelistEnabled: data.availability_info?.is_whitelist_enabled ?? false,
-    isWhitelistEnabled: true,
+    isWhitelistEnabled: data.availability_info?.is_whitelist_enabled ?? false,
     vestingInfo: vestingInfo,
   };
 
@@ -475,4 +474,83 @@ export async function addWhitelistUserList(args: AddWhitelistUserListDTO) {
     console.error("[addWhitelistUserList] failed", { payload, error: e });
     throw new Error(`Failed to add whitelist users: ${e?.message ?? "Unknown error"}`);
   }
+}
+
+export interface GetWhitelistRequestDTO {
+  network?: string;
+  premarket_id: string;
+  status?: string;
+  cursor: number;
+  limit: number;
+}
+
+export interface WhitelistUserDTO {
+  id: string;
+  username?: string;
+  avatar_url?: string;
+  wallets: string[];
+}
+
+export interface WhitelistUsersResultDTO {
+  items: WhitelistUserDTO[];
+  total?: number;
+}
+
+export async function getWhitelistUsers(args: GetWhitelistRequestDTO): Promise<WhitelistUsersResultDTO> {
+  const payload = {
+    network: args.network ?? NETWORK,
+    premarket_id: args.premarket_id,
+    status: args.status,
+    cursor: args.cursor,
+    limit: args.limit,
+  };
+
+  const data = await http.post<any>(`${API_HOST}/premarket/whitelist/get`, {
+    json: payload,
+    retry: RETRY_DEFAULT,
+  });
+
+  const rawItems: any[] = Array.isArray(data?.items)
+    ? data.items
+    : Array.isArray(data?.users)
+    ? data.users
+    : Array.isArray(data?.entries)
+    ? data.entries
+    : Array.isArray(data)
+    ? data
+    : [];
+
+  const parseWallets = (item: any): string[] => {
+    const walletsFromArray =
+      item?.wallets ?? item?.wallet_addresses ?? item?.user_pubkeys ?? item?.addresses;
+
+    if (Array.isArray(walletsFromArray)) {
+      return walletsFromArray
+        .map((wallet: any) => String(wallet))
+        .filter((wallet: string) => wallet.length > 0);
+    }
+
+    const singleWallet =
+      item?.wallet_address ?? item?.wallet ?? item?.user_pubkey ?? item?.pubkey ?? item?.address;
+
+    return singleWallet ? [String(singleWallet)] : [];
+  };
+
+  return {
+    items: rawItems.map((item: any) => {
+      const wallets = parseWallets(item);
+      return {
+        id: String(item?.id ?? item?.user_id ?? wallets[0] ?? ""),
+        username: item?.username ?? item?.name ?? undefined,
+        avatar_url: item?.avatar_url ?? item?.icon_url ?? item?.url ?? undefined,
+        wallets,
+      };
+    }),
+    total:
+      data?.total === null || data?.total === undefined
+        ? data?.count === null || data?.count === undefined
+          ? undefined
+          : Number(data.count)
+        : Number(data.total),
+  };
 }

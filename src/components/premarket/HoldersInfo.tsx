@@ -1,14 +1,15 @@
-import { TokenInfo} from "@api/token";
+import { getWhitelistUsers, TokenInfo, WhitelistUserDTO } from "@api/token";
 import { UserCard } from "@components/user/UserCard";
 import { AppTheme } from "@theme/types";
 import { convertLamportToSmallCount } from "@utils/premarket";
 import { View } from "react-native";
 import {Text} from '@components/ui/Text'
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Menu, useTheme, TouchableRipple, Divider } from "react-native-paper";
 import RevelcySegmentedButtons from "@components/ui/SegmentedButton";
 import { SvgIcon } from "@components/base/SvgIcon";
 import { convertTokenToPersent } from "@services/pumpfun/adds";
+import shortString from "@utils/address_shorter";
 
 interface Props {
   tokenData: TokenInfo;
@@ -18,12 +19,23 @@ interface Props {
 }
 const DEFAULT_SHOW_COUNT = 10;
 const STEP_SHOW_COUNT = 10;
+const ACCEPTED_PAGE_SIZE = 100;
 export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Props) {
   const [showCount, setShowCount] = useState(DEFAULT_SHOW_COUNT)
   const [order, setOrder] = useState<OrderValue>("SUPPLY")
   const { colors } = useTheme() as AppTheme;
-  const [sectionType, setSectionType] = useState("Applied")
+  const [sectionType, setSectionType] = useState("Joined")
+  const [acceptedUsers, setAcceptedUsers] = useState<WhitelistUserDTO[]>([]);
+  const [acceptedTotal, setAcceptedTotal] = useState<number | undefined>(undefined);
+  const [acceptedCursor, setAcceptedCursor] = useState(0);
+  const [acceptedHasMore, setAcceptedHasMore] = useState<boolean>(true);
+  const [acceptedLoading, setAcceptedLoading] = useState(false);
   const holders = tokenData.dynamicInfo.holders
+
+  useEffect(() => {
+    setShowCount(DEFAULT_SHOW_COUNT);
+  }, [sectionType]);
+
   const sortedHolders = useMemo(() => {
   if (!holders) return [];
 
@@ -44,8 +56,101 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
       break;
   }
 
-  return list.slice(0, showCount);
-}, [holders, order, showCount]);
+  return list;
+}, [holders, order]);
+
+  useEffect(() => {
+    if (!tokenData.mainInfo.isWhitelistEnabled) {
+      setAcceptedUsers([]);
+      setAcceptedTotal(undefined);
+      setAcceptedCursor(0);
+      setAcceptedHasMore(false);
+      setAcceptedLoading(false);
+      return;
+    }
+    setAcceptedUsers([]);
+    setAcceptedTotal(undefined);
+    setAcceptedCursor(0);
+    setAcceptedHasMore(true);
+    setAcceptedLoading(false);
+  }, [tokenData.mainInfo.id, tokenData.mainInfo.isWhitelistEnabled]);
+
+  useEffect(() => {
+    if (sectionType !== "Accepted") return;
+    if (!tokenData.mainInfo.isWhitelistEnabled) return;
+    if (acceptedLoading) return;
+    if (!acceptedHasMore) return;
+    if (acceptedUsers.length >= showCount) return;
+
+    let disposed = false;
+
+    (async () => {
+      setAcceptedLoading(true);
+      try {
+        let nextCursor = acceptedCursor;
+        let nextUsers = [...acceptedUsers];
+        let nextTotal = acceptedTotal;
+        let hasMore: boolean = acceptedHasMore;
+
+        while (!disposed && nextUsers.length < showCount) {
+          if (!hasMore) break;
+          const result = await getWhitelistUsers({
+            premarket_id: tokenData.mainInfo.id,
+            cursor: nextCursor,
+            limit: ACCEPTED_PAGE_SIZE,
+          });
+
+          const pageItems = result.items ?? [];
+          nextUsers = [...nextUsers, ...pageItems];
+          nextTotal = result.total ?? nextTotal;
+          nextCursor += pageItems.length;
+
+          const noNewItems = pageItems.length === 0;
+          const reachedTotal = typeof nextTotal === "number" && nextCursor >= nextTotal;
+          const lastPage = pageItems.length < ACCEPTED_PAGE_SIZE;
+          hasMore = !(noNewItems || reachedTotal || lastPage);
+        }
+
+        if (disposed) return;
+        setAcceptedUsers(nextUsers);
+        setAcceptedTotal(nextTotal);
+        setAcceptedCursor(nextCursor);
+        setAcceptedHasMore(hasMore);
+      } catch (e) {
+        if (disposed) return;
+        console.warn("[HoldersInfo] failed to fetch accepted whitelist users", e);
+        setAcceptedUsers([]);
+        setAcceptedTotal(undefined);
+        setAcceptedCursor(0);
+        setAcceptedHasMore(false);
+      } finally {
+        if (!disposed) setAcceptedLoading(false);
+      }
+    })();
+
+    return () => {
+      disposed = true;
+    };
+  }, [
+    sectionType,
+    tokenData.mainInfo.id,
+    tokenData.mainInfo.isWhitelistEnabled,
+    showCount,
+    acceptedUsers,
+    acceptedTotal,
+    acceptedCursor,
+    acceptedHasMore,
+  ]);
+
+  const joinedList = useMemo(() => sortedHolders.slice(0, showCount), [sortedHolders, showCount]);
+  const acceptedList = useMemo(() => acceptedUsers.slice(0, showCount), [acceptedUsers, showCount]);
+  const isAcceptedSection = sectionType === "Accepted";
+  const displayCount = isAcceptedSection
+    ? acceptedTotal ?? acceptedUsers.length
+    : holdersAmount;
+  const canShowMore = !limited && (isAcceptedSection
+    ? acceptedHasMore || showCount < displayCount
+    : showCount < displayCount);
 
 
   return (
@@ -58,22 +163,32 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
         gap: 16,
       }}
     >
-      <View style={{flexDirection: 'row', alignItems: 'center', justifyContent:'space-between'}}>
-        <View style={{flexDirection: 'row', gap: 8, marginTop: -25}}>
+      <View style={{flexDirection: 'row', alignItems: 'center', justifyContent:'space-between', height: 40}}>
+        <View style={{flexDirection: 'row', gap: 8}}>
           <Text variant="titleLarge"  selectionColor={colors.onSurface}>People</Text>
-          <Text variant="titleLarge" style={{color:colors.onSurfaceVariant}}>{holdersAmount}</Text>
+          <Text
+            variant="titleLarge"
+            style={{
+              color: colors.onSurfaceVariant,
+              fontVariant: ["tabular-nums"],
+              minWidth: 44,
+              textAlign: "left",
+            }}
+          >
+            {displayCount}
+          </Text>
           {tokenData.mainInfo.isWhitelistEnabled && <RevelcySegmentedButtons value={sectionType} onValueChange={setSectionType} buttons={[
-          { value: 'Applied', label: 'Applied', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
+          // { value: 'Applied', label: 'Applied', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
           { value: 'Accepted', label: 'Accepted', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
           { value: 'Joined', label: 'Joined', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
         ]} />}
         </View>
         
-        <OrderMenu value={order} onChange={setOrder}/>
+        {!isAcceptedSection && <OrderMenu value={order} onChange={setOrder}/>}
       </View>
      
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 20, rowGap: 16 }}>
-        {sortedHolders.map((holder, ) => {
+        {!isAcceptedSection && joinedList.map((holder) => {
           const amount = convertLamportToSmallCount(holder.amountSolLamp)
           const percent = convertTokenToPersent(holder.amountTokenDec)
           return (
@@ -94,10 +209,30 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
               />
             </View>
           );
-        })
-        }
+        })}
+        {isAcceptedSection && acceptedList.map((user) => {
+          const walletAddress = user.wallets?.[0] ?? user.id;
+          const displayName = user.username?.trim() ? user.username : shortString(walletAddress, 4);
+          const isCreator = user.wallets?.includes(tokenData.mainInfo.createdByPubkey) ?? false;
+          return (
+            <View key={user.id}>
+              <UserCard
+                baseInfo={{
+                  userId: user.id,
+                  username: displayName,
+                  walletAddress,
+                  avatarUrl: user.avatar_url ?? null,
+                }}
+                tokenInfo={{
+                  isCreator,
+                  hideEntryStats: true,
+                }}
+              />
+            </View>
+          );
+        })}
       </View>
-      {!limited&&showCount<holdersAmount&&
+      {canShowMore &&
         <TouchableRipple
         style={{
           height: 40,

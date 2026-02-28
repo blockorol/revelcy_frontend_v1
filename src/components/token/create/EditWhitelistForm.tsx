@@ -1,14 +1,18 @@
 import ContinueButtonWithProgressBar from "@components/ContinueButtonWithProgressBar";
 import { SvgIconButton } from "@components/base/SvgIcon";
+import { Avatar } from "@components/ui/Avatar";
 import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeader";
 import { WhitelistData, WhitelistEntry } from "@components/token/create/interface";
 import { useIsMobileWithDemention } from "@hooks/useIsMobile";
+import { useShortUserInfoList } from "@hooks/useShortUserInfoList";
 import { useNotification } from "@providers/NotificationContext";
 import { ExtendedMD3Colors } from "@theme/types";
+import shortString from "@utils/address_shorter";
 import { isSolanaPublicKey } from "@utils/solana";
-import React, { useMemo, useState } from "react";
-import { Platform, ScrollView, View } from "react-native";
-import { Text, useTheme } from "react-native-paper";
+import React, { useEffect, useMemo, useState } from "react";
+import { Text } from "@components/ui/Text";
+import { Platform, ScrollView, TouchableOpacity, View } from "react-native";
+import { useTheme } from "react-native-paper";
 import { Switch } from "@components/ui/Switch";
 
 export type EditWhitelistFormProps = {
@@ -79,10 +83,24 @@ export default function EditWhitelistForm({
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
   const notify = useNotification();
+  const pageSize = 10;
   const [enabled, setEnabled] = useState((presetData?.state ?? "disabled") === "enabled");
   const [entries, setEntries] = useState<WhitelistEntry[]>(presetData?.items ?? []);
+  const [currentPage, setCurrentPage] = useState(0);
 
-  const previewTop10 = useMemo(() => entries.slice(0, 10), [entries]);
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(entries.length / pageSize)), [entries.length]);
+  const pagedEntries = useMemo(
+    () => entries.slice(currentPage * pageSize, (currentPage + 1) * pageSize),
+    [entries, currentPage]
+  );
+  const previewAddresses = useMemo(() => pagedEntries.map((entry) => entry.pubkey), [pagedEntries]);
+  const { shortInfoMap } = useShortUserInfoList(previewAddresses);
+
+  useEffect(() => {
+    if (currentPage > totalPages - 1) {
+      setCurrentPage(Math.max(0, totalPages - 1));
+    }
+  }, [currentPage, totalPages]);
 
   const handleSubmit = () => {
     onNext({
@@ -123,6 +141,63 @@ export default function EditWhitelistForm({
 
   const isFilledAll = () => true;
 
+  const onDeleteEntry = (pubkey: string) => {
+    setEntries((prev) => prev.filter((entry) => entry.pubkey !== pubkey));
+  };
+
+  const getShortInfo = (pubkey: string) => shortInfoMap[pubkey] ?? { address: pubkey };
+
+  const renderWhitelistEntry = (
+    entry: WhitelistEntry,
+    onDeleteEntryCb: (pubkey: string) => void
+  ) => {
+    const shortInfo = getShortInfo(entry.pubkey);
+    const displayName = shortInfo.name || shortString(entry.pubkey, 4);
+    const shortAddress = shortString(entry.pubkey, 4);
+    const showAddress = shortInfo.name !== undefined && shortInfo.name !== "";
+
+    return (
+      <View
+        key={entry.pubkey}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 12,
+          paddingVertical: 8,
+        }}
+      >
+        <Avatar
+          size={40}
+          source={shortInfo.avatarUrl ?? null}
+          walletAddress={entry.pubkey}
+        />
+
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text variant="labelLarge" prominent style={{ color: colors.onSurface }}>
+            {displayName}
+          </Text>
+          {showAddress && (
+            <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+              {shortAddress}
+            </Text>
+          )}
+        </View>
+
+        <SvgIconButton
+          name="x-base"
+          size={16}
+          color={colors.onSurfaceVariant}
+          onPress={() => onDeleteEntryCb(entry.pubkey)}
+          containerStyle={{
+            width: 24,
+            height: 24,
+            borderRadius: 12,
+          }}
+        />
+      </View>
+    );
+  };
+
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
@@ -150,9 +225,13 @@ export default function EditWhitelistForm({
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
+                borderRadius: 14,
+                backgroundColor: colors.surfaceContainerHigh,
+                paddingVertical: 12,
+                paddingHorizontal: 12,
               }}
             >
-              <Text variant="titleMedium" style={{ color: colors.onSurface }}>
+              <Text variant='labelLarge' prominent style={{ color: colors.onSurface }}>
                 Whitelisting
               </Text>
               <Switch value={enabled} onValueChange={setEnabled} />
@@ -165,39 +244,86 @@ export default function EditWhitelistForm({
                 justifyContent: "space-between",
               }}
             >
-              <Text variant="titleMedium" style={{ color: colors.onSurface }}>
-                Add people {entries.length}
+              <View style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+              }}>
+              <Text variant='labelLarge' prominent style={{ color: colors.onSurface }}>
+                Add people 
               </Text>
+              <Text variant='labelLarge' prominent style={{ color: colors.onSurfaceVariant }}>
+                {entries.length} 
+              </Text>
+              </View>
+              
               <SvgIconButton
-                name="plus"
-                size={20}
-                color={colors.primary}
+                name="clip"
+                size={24}
+                color={colors.onSurface}
                 onPress={onAddPeopleFromFile}
                 containerStyle={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 16,
-                  backgroundColor: colors.surfaceContainerHighest,
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  borderWidth: 1,
+                  borderColor: colors.outline,
                 }}
               />
             </View>
 
             <View style={{ gap: 8 }}>
-              <Text variant="bodyMedium" style={{ color: colors.onSurface }}>
-                Added addresses (top 10)
-              </Text>
               <View style={{ gap: 4 }}>
-                {previewTop10.length === 0 && (
+                {pagedEntries.length === 0 ? (
                   <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
                     No addresses added yet
                   </Text>
+                ) : (
+                  pagedEntries.map((entry) => renderWhitelistEntry(entry, onDeleteEntry))
                 )}
-                {previewTop10.map((entry) => (
-                  <Text key={entry.pubkey} variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
-                    {entry.pubkey}
-                  </Text>
-                ))}
               </View>
+              {entries.length > pageSize && (
+                <View
+                  style={{
+                    marginTop: 8,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <TouchableOpacity
+                    onPress={() => setCurrentPage((prev) => Math.max(0, prev - 1))}
+                    disabled={currentPage === 0}
+                  >
+                    <Text
+                      variant="bodySmall"
+                      style={{
+                        color: currentPage === 0 ? colors.outline : colors.primary,
+                      }}
+                    >
+                      Prev
+                    </Text>
+                  </TouchableOpacity>
+
+                  <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                    {currentPage + 1} / {totalPages}
+                  </Text>
+
+                  <TouchableOpacity
+                    onPress={() => setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1))}
+                    disabled={currentPage >= totalPages - 1}
+                  >
+                    <Text
+                      variant="bodySmall"
+                      style={{
+                        color: currentPage >= totalPages - 1 ? colors.outline : colors.primary,
+                      }}
+                    >
+                      Next
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
           </View>
         </View>
