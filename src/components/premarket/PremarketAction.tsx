@@ -18,6 +18,7 @@ import { PublicKey } from "@solana/web3.js";
 import TextedLoader from "@components/ui/Loader";
 import { SvgIcon } from "@components/base/SvgIcon";
 import { AppTheme } from "@theme/types";
+import { IconName } from "@components/base/SvgIcon";
 
 interface PremarketActionProps {
   tokenMainInfo: TokenMainInfo;
@@ -125,12 +126,14 @@ export function PremarketActionPremarket({
       ["requested", "accepted", "approved", "whitelisted", "in_whitelist", "in-whitelist"].includes(
         normalizedWhitelistStatus
       ));
+  const contactLinks = resolveContactLinks(tokenMainInfo.links);
   const contactUrl = resolveContactUrl(tokenMainInfo.links);
 
   const handleWhitelistActionPress = () => {
     open(
       <ApplyForWhitelistModal
         isMobile={isMobile}
+        contactLinks={contactLinks}
         contactUrl={contactUrl}
         onClose={close}
       />
@@ -184,11 +187,12 @@ export function PremarketActionCanceled() {
 
 type ApplyForWhitelistModalProps = {
   isMobile: boolean;
+  contactLinks: Array<{ icon: IconName; url: string }>;
   contactUrl?: string;
   onClose: () => void;
 };
 
-function ApplyForWhitelistModal({ isMobile, contactUrl, onClose }: ApplyForWhitelistModalProps) {
+function ApplyForWhitelistModal({ isMobile, contactLinks, contactUrl, onClose }: ApplyForWhitelistModalProps) {
   const { colors } = useTheme<AppTheme>();
   const hasContact = !!contactUrl;
 
@@ -227,17 +231,17 @@ function ApplyForWhitelistModal({ isMobile, contactUrl, onClose }: ApplyForWhite
           <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant, textAlign: "center" }}>
             Please contact creator to apply for whitelist
           </Text>
-          {contactUrl && (
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-              <SvgIcon name="send" size={16} color={colors.onSurfaceVariant} />
+          {contactLinks.map((link, index) => (
+            <View key={`${link.url}-${index}`} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <SvgIcon name={link.icon} size={16} color={colors.onSurfaceVariant} />
               <Text
                 variant="bodyMedium"
                 style={{ color: colors.onSurface, textDecorationLine: "underline" }}
               >
-                {shortenLink(contactUrl)}
+                {shortenLink(link.url)}
               </Text>
             </View>
-          )}
+          ))}
         </View>
         <Button mode="contained" disabled={!hasContact} style={{ width: "100%" }} onPress={onContactPress}>
           Contact
@@ -249,6 +253,14 @@ function ApplyForWhitelistModal({ isMobile, contactUrl, onClose }: ApplyForWhite
 
 function resolveContactUrl(links: TokenMainInfo["links"]): string | undefined {
   return links.telegram || links.twitter || links.webSite || undefined;
+}
+
+function resolveContactLinks(links: TokenMainInfo["links"]): Array<{ icon: IconName; url: string }> {
+  const items: Array<{ icon: IconName; url: string }> = [];
+  if (links.telegram) items.push({ icon: "tg-logo", url: links.telegram });
+  if (links.twitter) items.push({ icon: "x-logo", url: links.twitter });
+  if (links.webSite) items.push({ icon: "world-outlined", url: links.webSite });
+  return items;
 }
 
 function normalizeUrl(url: string): string {
