@@ -285,9 +285,9 @@ export default function EditTokenomicsForm({
         style={{
           backgroundColor: colors.surfaceContainerLowest,
           width: "100%",
-          paddingHorizontal: isMobile ? 8 : 16,
+          paddingHorizontal: isMobile ? 16 : 24,
           paddingVertical: isMobile ? 40 : 24,
-          //maxWidth: 500,
+          maxWidth: 500,
           flex: 1,
         }}
       >

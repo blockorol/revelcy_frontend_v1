@@ -71,7 +71,6 @@ export default function VestingSetupForm({
     onNext,
     onClose,
     onBack,
-    onSaveDraft,
     step,
     totalSteps,
     presetData,
@@ -234,7 +233,6 @@ export default function VestingSetupForm({
                             after: step / totalSteps,
                         }}
                         onBack={onBack}
-                        handleSaveForLatter={onSaveDraft}
                         handleSubmit={handleSubmit}
                         isFilledAll={() => true}
                     />

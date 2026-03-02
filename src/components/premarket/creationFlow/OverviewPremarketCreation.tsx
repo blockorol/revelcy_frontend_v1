@@ -174,6 +174,7 @@ export default function OverviewPremarketCreation({
           width: "100%",
           paddingHorizontal: isMobile ? 16 : 24,
           paddingVertical: isMobile ? 40 : 24,
+          maxWidth: 500,
           minHeight: isMobile ? height: height * 0.9,
         }}
       >
