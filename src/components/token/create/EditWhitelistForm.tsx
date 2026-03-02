@@ -1,6 +1,8 @@
 import ContinueButtonWithProgressBar from "@components/ContinueButtonWithProgressBar";
 import { SvgIconButton } from "@components/base/SvgIcon";
+import { SvgIcon } from "@components/base/SvgIcon";
 import { Avatar } from "@components/ui/Avatar";
+import { Button } from "@components/ui/Button";
 import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeader";
 import { WhitelistData, WhitelistEntry } from "@components/token/create/interface";
 import { useIsMobileWithDemention } from "@hooks/useIsMobile";
@@ -14,6 +16,7 @@ import { Text } from "@components/ui/Text";
 import { Platform, ScrollView, TouchableOpacity, View } from "react-native";
 import { useTheme } from "react-native-paper";
 import { Switch } from "@components/ui/Switch";
+import { makeTransparent } from "@utils/colors";
 
 export type EditWhitelistFormProps = {
   onNext: (data: WhitelistData) => void;
@@ -26,6 +29,7 @@ export type EditWhitelistFormProps = {
 
 function parseWhitelistContent(raw: string): {
   valid: string[];
+  invalid: string[];
   invalidCount: number;
   totalParsed: number;
 } {
@@ -36,14 +40,24 @@ function parseWhitelistContent(raw: string): {
 
   const unique = Array.from(new Set(tokens));
   const valid = unique.filter((pk) => isSolanaPublicKey(pk));
+  const invalid = unique.filter((pk) => !isSolanaPublicKey(pk));
   const invalidCount = unique.length - valid.length;
 
   return {
     valid,
+    invalid,
     invalidCount,
     totalParsed: unique.length,
   };
 }
+
+type ParseResultModalData = {
+  totalParsed: number;
+  addCount: number;
+  invalidCount: number;
+  invalidPreview: string;
+  nextEntries: WhitelistEntry[];
+};
 
 async function pickFileTextWeb(): Promise<string | null> {
   if (Platform.OS !== "web") return null;
@@ -87,6 +101,8 @@ export default function EditWhitelistForm({
   const [enabled, setEnabled] = useState((presetData?.state ?? "disabled") === "enabled");
   const [entries, setEntries] = useState<WhitelistEntry[]>(presetData?.items ?? []);
   const [currentPage, setCurrentPage] = useState(0);
+  const [parseResultModal, setParseResultModal] = useState<ParseResultModalData | null>(null);
+  const [removeAllModalOpen, setRemoveAllModalOpen] = useState(false);
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(entries.length / pageSize)), [entries.length]);
   const pagedEntries = useMemo(
@@ -131,11 +147,18 @@ export default function EditWhitelistForm({
         state: "enabled" as const,
       })),
     ];
-    setEntries(nextEntries);
+    const invalidPreview = parsed.invalid
+      .slice(0, 4)
+      .map((value) => shortString(value, 4))
+      .join(", ");
+    const invalidTail = parsed.invalid.length > 4 ? ", etc." : "";
 
-    notify.success(`Parsed ${parsed.totalParsed} keys`, {
-      suggest: `Added: ${newValid.length}, Invalid: ${parsed.invalidCount}, Duplicates: ${parsed.valid.length - newValid.length}`,
-      duration: 6000,
+    setParseResultModal({
+      totalParsed: parsed.totalParsed,
+      addCount: newValid.length,
+      invalidCount: parsed.invalidCount,
+      invalidPreview: `${invalidPreview}${invalidTail}`,
+      nextEntries,
     });
   };
 
@@ -256,20 +279,32 @@ export default function EditWhitelistForm({
                 {entries.length} 
               </Text>
               </View>
-              
-              <SvgIconButton
-                name="clip"
-                size={24}
-                color={colors.onSurface}
-                onPress={onAddPeopleFromFile}
-                containerStyle={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 20,
-                  borderWidth: 1,
-                  borderColor: colors.outline,
-                }}
-              />
+
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                {entries.length > 0 && (
+                  <Button
+                    mode="outlined"
+                    variant="error"
+                    size="small"
+                    onPress={() => setRemoveAllModalOpen(true)}
+                  >
+                    Remove all
+                  </Button>
+                )}
+                <SvgIconButton
+                  name="clip"
+                  size={24}
+                  color={colors.onSurface}
+                  onPress={onAddPeopleFromFile}
+                  containerStyle={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 20,
+                    borderWidth: 1,
+                    borderColor: colors.outline,
+                  }}
+                />
+              </View>
             </View>
 
             <View style={{ gap: 8 }}>
@@ -341,6 +376,139 @@ export default function EditWhitelistForm({
           />
         </View>
       </View>
+      {parseResultModal && (
+        <View
+          style={{
+            position: "fixed" as any,
+            inset: 0 as any,
+            width: "100%",
+            height: "100%",
+            backgroundColor: makeTransparent(colors.surfaceContainerLowest, 0.08),
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
+            zIndex: 9999,
+          }}
+        >
+          <View
+            style={{
+              width: "100%",
+              maxWidth: 420,
+              borderRadius: 24,
+              backgroundColor: colors.surfaceContainerLow,
+              paddingHorizontal: 24,
+              paddingVertical: 24,
+              gap: 8,
+            }}
+          >
+            <Text variant="titleLarge" prominent style={{ color: colors.onSurface, textAlign: "center" }}>
+              {parseResultModal.addCount}/{parseResultModal.totalParsed} wallets uploaded
+            </Text>
+
+            {parseResultModal.invalidCount > 0 && (
+              <View style={{ gap: 16, alignItems: "center" }}>
+                <View style={{ flexDirection: "row", gap: 4, alignItems: "center" }}>
+                  <SvgIcon name='info-circle' size={24} color={colors.error} />
+                  <Text variant="titleMedium" prominent style={{ color: colors.error }}>
+                    {parseResultModal.invalidCount} wallets not valid
+                  </Text>
+                </View>
+                {!!parseResultModal.invalidPreview && (
+                  <Text
+                    variant="bodyMedium"
+                    style={{ color: colors.onSurfaceVariant, textAlign: "center" }}
+                  >
+                    {parseResultModal.invalidPreview}
+                  </Text>
+                )}
+              </View>
+            )}
+
+            <View style={{ flexDirection: "row", gap: 12, marginTop: 20 }}>
+              <Button
+                mode="outlined"
+                variant="error"
+                style={{ flex: 1 }}
+                onPress={() => setParseResultModal(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                mode="contained"
+                style={{ flex: 1 }}
+                disabled={parseResultModal.addCount === 0}
+                onPress={() => {
+                  setEnabled(true);
+                  setEntries(parseResultModal.nextEntries);
+                  setParseResultModal(null);
+                  notify.success(`Added ${parseResultModal.addCount} wallets`);
+                }}
+              >
+                {`Add ${parseResultModal.addCount}`}
+              </Button>
+            </View>
+          </View>
+        </View>
+      )}
+      {removeAllModalOpen && (
+        <View
+          style={{
+            position: "fixed" as any,
+            inset: 0 as any,
+            width: "100%",
+            height: "100%",
+            backgroundColor: makeTransparent(colors.surfaceContainerLowest, 0.08),
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
+            zIndex: 10000,
+          }}
+        >
+          <View
+            style={{
+              width: "100%",
+              maxWidth: 420,
+              borderRadius: 24,
+              backgroundColor: colors.surfaceContainerLow,
+              paddingHorizontal: 24,
+              paddingVertical: 24,
+              gap: 0,
+            }}
+          >
+            <Text variant="titleMedium" prominent style={{ color: colors.onSurface, textAlign: "center" }}>
+              Are you sure you want
+            </Text>
+            <Text variant="titleMedium" prominent style={{ color: colors.onSurface, textAlign: "center" }}>
+              to remove all wallets from whitelist?
+            </Text>
+
+            <View style={{ flexDirection: "row", gap: 12, marginTop: 28, alignItems: "center", justifyContent: "center" }}>
+              <Button
+                mode="outlined"
+                variant="secondary"
+                size="small"
+                style={{width: 84 }}
+                onPress={() => setRemoveAllModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                mode="contained"
+                size="small"
+                variant="error"
+                style={{ width: 84 }}
+                onPress={() => {
+                  setEntries([]);
+                  setCurrentPage(0);
+                  setRemoveAllModalOpen(false);
+                }}
+              >
+                Remove
+              </Button>
+            </View>
+          </View>
+        </View>
+      )}
     </ScrollView>
   );
 }
