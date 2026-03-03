@@ -308,12 +308,13 @@ export const OrderMenu: React.FC<PropsOrderMenu> = ({ value, onChange, anchor })
 
   const Item: React.FC<{ label: string; icon: "percent" | "hourglass-up" | "hourglass-down"; target: OrderValue; active?: boolean; }> =
   ({ label, icon, target, active }) => {
-    const fg = active ? colors.onPrimary : colors.onSurface;
-    const bg = active ? colors.primary : colors.surfaceContainerHigh;
+    const fg = active ? colors.primary : colors.onSurface;
+    const bg = colors.surfaceContainerHigh;
 
     return (
       <TouchableRipple
         onPress={() => { onChange(target); close(); }}
+        rippleColor="transparent"
         style={[commonItemStyle, { backgroundColor: bg }]}
       >
         <View style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: 'flex-start', gap: 4}}>
@@ -325,8 +326,8 @@ export const OrderMenu: React.FC<PropsOrderMenu> = ({ value, onChange, anchor })
   };
 
   const currentDef = items[0];
-  const anchorFg = visible ? colors.onSecondaryContainer : colors.primary;
-  const anchorBg = visible ? colors.secondaryContainer : "transparent";
+  const anchorFg = colors.primary 
+  const anchorBg = visible ? colors.surfaceContainerHigh : "transparent";
 
   const defaultAnchor = (
     <TouchableRipple
@@ -338,6 +339,7 @@ export const OrderMenu: React.FC<PropsOrderMenu> = ({ value, onChange, anchor })
         paddingLeft: 32,
         height: 40,
         alignSelf: "flex-start",
+        justifyContent: "center",
       }}
     >
       <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
