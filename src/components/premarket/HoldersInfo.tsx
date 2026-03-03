@@ -352,7 +352,7 @@ export const OrderMenu: React.FC<PropsOrderMenu> = ({ value, onChange, anchor })
   return (
     <Menu
       visible={visible}
-      onDismiss={() => { /* не закрываем по клику вне */ }}
+      onDismiss={close}
       anchor={anchor ?? defaultAnchor}
       contentStyle={contentStyle}
     >
