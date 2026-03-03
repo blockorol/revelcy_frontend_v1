@@ -24,6 +24,7 @@ import { updateUriPremarket } from "@services/blockchain/premarket/updateUriPrem
 import CreateTokenForm from "@components/token/create/CreateTokenForm";
 import { TokenMainData } from "@components/token/create/interface";
 import TextedLoader from "@components/ui/Loader";
+import { getTokenShortLink } from "@utils/shortLink";
 
 interface CreatorInfoProps {
   tokenMainInfo: TokenMainInfo;
@@ -349,7 +350,7 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
 
       <VisabilitySwitch
         isDiscoverablePreset={!tokenMainInfo.isHided}
-        shortLink={tokenMainInfo.shortLinkPrefix?"https://beta.revelcy.com/token/"+tokenMainInfo.shortLinkPrefix:undefined}
+        shortLink={getTokenShortLink(tokenMainInfo.shortLinkPrefix)}
         premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
         onUpdated={onUpdated}
       />
@@ -381,7 +382,7 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
 
         <VisabilitySwitch
           isDiscoverablePreset={!tokenMainInfo.isHided}
-          shortLink={tokenMainInfo.shortLinkPrefix?"https://beta.revelcy.com/token/"+tokenMainInfo.shortLinkPrefix:undefined}
+          shortLink={getTokenShortLink(tokenMainInfo.shortLinkPrefix)}
           premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
           onUpdated={onUpdated}
         />
@@ -413,7 +414,7 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
         
         <VisabilitySwitch
           isDiscoverablePreset={!tokenMainInfo.isHided}
-          shortLink={tokenMainInfo.shortLinkPrefix?"https://beta.revelcy.com/token/"+tokenMainInfo.shortLinkPrefix:undefined}
+          shortLink={getTokenShortLink(tokenMainInfo.shortLinkPrefix)}
           premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
           onUpdated={onUpdated}
         />

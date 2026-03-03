@@ -414,6 +414,7 @@ function LeavePremarketModal({ refundAmount, onCancel, onConfirm, isMobile }: Le
         width: isMobile ? 380 : 480,
         maxWidth: "100%",
         gap: 16,
+        alignItems: "center",
       }}
     >
       <View style={{ alignItems: "center", marginBottom: 4 }}>

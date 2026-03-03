@@ -20,6 +20,7 @@ import { round, formatNumberNoTrailingZeros } from "@utils/numbers";
 import { convertSolToPercentOnStart } from "@services/pumpfun/adds";
 import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
 import { Switch } from "@components/ui/Switch";
+import { getTokenShortLink } from "@utils/shortLink";
 
 type Props = {
   data: TokenCreateFullData;
@@ -555,7 +556,7 @@ export default function OverviewPremarketCreation({
                 <Switch value={isDiscoverable} onValueChange={onChangeDiscoverable}/>
               </View>
               <HelperText type="info" visible={!isDiscoverable}>
-                Token is hidden from Discovery. People can only find it via short link ({data.premarket.short_link_name? `https://beta.revelcy.com/token/${data.premarket.short_link_name}`:"You can set a short link in the previous step"}).
+                Token is hidden from Discovery. People can only find it via short link ({getTokenShortLink(data.premarket.short_link_name) ?? "You can set a short link in the previous step"}).
               </HelperText>
           </View>
 

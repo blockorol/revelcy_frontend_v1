@@ -76,9 +76,7 @@ export const UniversalOverlayProvider: React.FC<Props> = ({
             }}
             pointerEvents="box-none"
           >
-            <View pointerEvents="auto" style={{ width: "100%", height: "100%" }}>
-              {content}
-            </View>
+            {content}
           </View>
         </View>
       )}
