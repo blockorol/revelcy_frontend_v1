@@ -12,6 +12,7 @@ import { uploadImage } from "@api/files";
 import { ExtendedMD3Colors } from "@theme/types";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 import { validateImageFile, uriToFile, BANNER_MAX_FILE_SIZE_BYTES } from "@utils/imageValidation";
+import { COMMUNITY_BANNER_ASPECT_RATIO } from "@utils/aspectRatios";
 import { useNotification } from "@providers/NotificationContext";
 
 interface AboutCommunityProps {
@@ -112,7 +113,7 @@ export function AboutCommunity({
         <View
           style={{
             width: "100%",
-            aspectRatio: 3,
+            aspectRatio: COMMUNITY_BANNER_ASPECT_RATIO,
             borderRadius: 20,
             overflow: "hidden",
             backgroundColor: colors.surfaceContainerLowest,

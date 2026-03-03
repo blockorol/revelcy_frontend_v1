@@ -19,6 +19,7 @@ import { DonutWithLegend } from "@components/base/DonutWithLegend";
 import { round, formatNumberNoTrailingZeros } from "@utils/numbers";
 import { convertSolToPercentOnStart } from "@services/pumpfun/adds";
 import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
+import { COMMUNITY_BANNER_ASPECT_RATIO } from "@utils/aspectRatios";
 import { Switch } from "@components/ui/Switch";
 import { getTokenShortLink } from "@utils/shortLink";
 
@@ -152,8 +153,11 @@ export default function OverviewPremarketCreation({
     customData?.banner?.url ??
     (customData?.banner?.data ? { uri: customData.banner.data } : undefined);
 
-  // description
-  const descriptionCommunity = customData?.description;
+  // description (with legacy fallback for older drafts)
+  const descriptionCommunity = (
+    customData?.description ?? (customData as { communityDescription?: string } | undefined)?.communityDescription ?? ""
+  ).trim();
+  const hasAboutCommunity = !!bannerSrc || !!descriptionCommunity || customLinks.length > 0;
 
   const deadlineText = data.premarket?.deadline_sec
     ? format(new Date(data.premarket.deadline_sec * 1000), "dd.MM.yyyy HH:mm (XXX)")
@@ -355,7 +359,7 @@ export default function OverviewPremarketCreation({
             />
           </View>
 
-          {(!!bannerSrc || !!descriptionCommunity) && (
+          {hasAboutCommunity && (
             <View
               style={{
                 backgroundColor: colors.surfaceContainerLowest,
@@ -370,12 +374,7 @@ export default function OverviewPremarketCreation({
                 <View
                   style={{
                     width: "100%",
-                    height: "100%",
-                    // @ts-ignore
-                    objectFit: "cover",
-                    // @ts-ignore
-                    objectPosition: "center",
-                    aspectRatio: 3,
+                    aspectRatio: COMMUNITY_BANNER_ASPECT_RATIO,
                     borderRadius: 20,
                     overflow: "hidden",
                     backgroundColor: colors.surfaceContainerLowest,
