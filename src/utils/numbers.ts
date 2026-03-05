@@ -46,6 +46,11 @@ export function ensureDec(name: string, v: string) {
   if (!/^\d+$/.test(v)) throw new Error(`${name} must be a decimal string, got "${v}"`);
 }
 
+export function clampInt(v: number, min: number, max: number) {
+  const n = Math.round(v);
+  return Math.max(min, Math.min(max, n));
+}
+
 export function clamp(n: number, min: number, max: number) {
   return Math.min(max, Math.max(min, n));
 }

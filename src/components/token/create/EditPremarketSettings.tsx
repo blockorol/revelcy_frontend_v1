@@ -2,16 +2,17 @@ import ContinueButtonWithProgressBar from "@components/ContinueButtonWithProgres
 import { PremarketSettingData, TokenomicsData } from "@components/token/create/interface";
 import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeader";
 import React, { useState } from "react";
-import { ScrollView, View } from "react-native";
-import { HelperText, useTheme } from "react-native-paper";
+import { ScrollView, View, Pressable } from "react-native";
+import { HelperText, Switch, useTheme } from "react-native-paper";
 import { Text } from "@components/ui/Text";
 import { DateTimeEditField } from "@components/base/DateTimeEditField";
 import { CustomSlider } from "@components/base/CustomSlider";
 import { useIsMobileWithDemention } from "@hooks/useIsMobile";
 import { ExtendedMD3Colors } from "@theme/types";
-import { TOKEN_CONVERTOR_SETTINGS } from "env";
 import TextInput from "@components/ui/TextInput";
 import { sanitizeShortPath } from "@utils/url";
+import { clamp , clampInt } from "@utils/numbers";
+import { normalizeStringDecimalInput } from "@utils/convertors";
 const DEFAULT_PREMARKET_GOAL_SOL = 5;
 
 export type EditPremarketSettingsFormProps = {
@@ -23,6 +24,32 @@ export type EditPremarketSettingsFormProps = {
   presetData?: PremarketSettingData;
   tokenomicsData?: TokenomicsData;
 };
+
+function InfoBadge({ onPress }: { onPress?: () => void }) {
+  const theme = useTheme();
+  const colors = theme.colors as ExtendedMD3Colors;
+
+  return (
+    <Pressable
+      onPress={onPress}
+      hitSlop={10}
+      style={{
+        width: 22,
+        height: 22,
+        borderRadius: 999,
+        borderWidth: 1,
+        borderColor: colors.outlineVariant,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Text variant="labelSmall" style={{ color: colors.onSurfaceVariant }}>
+        ?
+      </Text>
+    </Pressable>
+  );
+}
+
 
 export default function EditPremarketSettingsForm({
   tokenomicsData,
@@ -36,62 +63,86 @@ export default function EditPremarketSettingsForm({
   const { isMobile } = useIsMobileWithDemention();
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
-  const minPremarketSol = tokenomicsData?.creatorInitialBuy??DEFAULT_PREMARKET_GOAL_SOL
-  
-  const [premarketGoalSol, setPremarketGoalSol] = useState(
-    presetData?.goal_sol ??minPremarketSol
-    );
-  const [goalError, setGoalError] = useState<string | null>(null);
-  
-  const [shortName, setShortName] = useState<string | null>(presetData?.short_link_name ?? null);
-  const [shortNameError, _setShortNameError] = useState<string | null>(null); // in future use it for validation
 
-  const [deadlineDateTimeSec, setDeadlineDateTimeSec] = useState<number | undefined>(
-    presetData?.deadline_sec
+  // Keep old goal_sol (NOT shown in UI) to avoid breaking on-chain createPremarketArgs for now
+  const minPremarketSol = tokenomicsData?.creatorInitialBuy ?? DEFAULT_PREMARKET_GOAL_SOL;
+  const [premarketGoalSol] = useState<number>(presetData?.goal_sol ?? minPremarketSol);
+
+  //  Flat Bonding Curve
+  const [isFlatBondingCurveEnabled, setIsFlatBondingCurveEnabled] = useState(
+    presetData?.isFlatBondingCurveEnabled ?? true
   );
+  const bcOpacity = isFlatBondingCurveEnabled ? 1 : 0.35;
+  //  BC %
+  const [bondingCurvePercent, setBondingCurvePercent] = useState<number>(
+    typeof presetData?.bondingCurvePercent === "number" ? presetData.bondingCurvePercent : 30
+  );
+
+  //  Project Development Raise + amount
+  const initialAmount = typeof presetData?.amountToRaise === "number" ? presetData.amountToRaise : 55;
+  const [projectRaiseEnabled, setProjectRaiseEnabled] = useState<boolean>((presetData?.amountToRaise ?? initialAmount) > 0);
+  const [amountToRaise, setAmountToRaise] = useState<number>(projectRaiseEnabled ? (presetData?.amountToRaise ?? initialAmount) : 0);
+  const projectRaiseOpacity = projectRaiseEnabled ? 1 : 0.35;
+
+  // Short link
+  const [shortName, setShortName] = useState<string | null>(presetData?.short_link_name ?? null);
+  const [shortNameError, _setShortNameError] = useState<string | null>(null);
+
+  // Deadline
+  const [deadlineDateTimeSec, setDeadlineDateTimeSec] = useState<number | undefined>(presetData?.deadline_sec);
   const [dataTimeError, setDataTimeError] = useState<string | null>(null);
-  const [currentDataTime, setDataTime] = useState<Date>(new Date(presetData?.deadline_sec ? presetData.deadline_sec * 1000 : Date.now()));
+  const [currentDataTime, setDataTime] = useState<Date>(
+    new Date(presetData?.deadline_sec ? presetData.deadline_sec * 1000 : Date.now())
+  );
+
+  // Treasury Allocation (SOL) input
+  const TREASURY_MAX_SOL = 217;
+  const [treasuryRaw, setTreasuryRaw] = useState<string>(
+    presetData?.treasuryAllocationSol != null ? String(presetData.treasuryAllocationSol) : ""
+  );
+  const initialTreasurySol = typeof presetData?.treasuryAllocationSol === "number" ? presetData.treasuryAllocationSol : 0;
+  const [treasuryAllocationSol, setTreasuryAllocationSol] = useState<number>(initialTreasurySol);
+  const [treasuryError, setTreasuryError] = useState<string | null>(null);
 
   const isMoreThanOneMonthAway = (d: Date) => {
     const now = new Date();
     const max = new Date(now);
-    max.setMonth(max.getMonth() + 1); 
+    max.setMonth(max.getMonth() + 1);
     return d.getTime() > max.getTime();
   };
   const ONE_HOUR_MS = 60 * 60 * 1000;
   const isLessThanOneHourAhead = (d: Date) => d.getTime() <= Date.now() + ONE_HOUR_MS;
 
+  // Slider configs
+  const bcLabels = [5, 25, 50, 75, 100];
+  const bcPoints = [5, 15, 25, 37.5, 50, 62.5, 75, 87.5, 100];
 
-  const changeSliderPremarketValue = (value: number) => {
-    setPremarketGoalSol(value)
-    if (value < minPremarketSol) {
-      setGoalError("The premarket goal must exceed the initial buy amount")
-    } else {
-      setGoalError(null)
-    }
+  const raiseMax = 217; // per design
+  const raiseLabels = [0, 50, 100, 150, 217];
+  const raisePoints = [0, 25, 50, 75, 100, 125, 150, 183.5, 217];
+
+  const treasuryPercent =
+    tokenomicsData?.treasuryAllocationPercent != null
+      ? `${Math.round(tokenomicsData.treasuryAllocationPercent)}%`
+      : "—";
+
+  const isFilledAll = (): boolean => {
+    return deadlineDateTimeSec !== undefined && !dataTimeError && !treasuryError;
   };
+
   const handleSubmit = () => {
     if (!deadlineDateTimeSec) return;
     if (dataTimeError) return;
-    if ((tokenomicsData?.creatorInitialBuy??0) > premarketGoalSol) return
     onNext({
       deadline_sec: deadlineDateTimeSec,
-      goal_sol: premarketGoalSol,
+      goal_sol: premarketGoalSol, // keep for now
       short_link_name: shortName?.length ? shortName : undefined,
+      isFlatBondingCurveEnabled,
+      bondingCurvePercent: clampInt(bondingCurvePercent, 0, 100),
+      amountToRaise: projectRaiseEnabled ? clampInt(amountToRaise, 0, raiseMax) : 0,
+      treasuryAllocationSol: treasuryAllocationSol, 
     });
   };
-  const isFilledAll = (): boolean => {
-    return (
-      (tokenomicsData?.creatorInitialBuy??0) <= premarketGoalSol &&
-      deadlineDateTimeSec !== undefined
-    );
-  };
-  const sliderFrom = 1
-  const sliderTo = TOKEN_CONVERTOR_SETTINGS.SolTo80Percent
-              
-  const labels: number[]=sliderTo > 50 ? [10, 30, 50, 70, 86]: [5, 10, 15, 20]
-  const points: number[]=sliderTo > 50 ?[10, 20, 30, 40, 50, 60, 70, 80, 86]: [2.5, 5, 7.5 , 10, 12.5,  15, 17.5, 20, 22.5]
-
 
   return (
     <ScrollView
@@ -112,14 +163,158 @@ export default function EditPremarketSettingsForm({
           flex: 1,
         }}
       >
-        <View style={{ flex: 1, gap: 0 }}>
-          <TokenCreateFormHeader
-            title={"Premarket"}
-            theme={theme}
-            onClose={onClose}
-          />
+        <View style={{ flex: 1 }}>
+          <TokenCreateFormHeader title={"Premarket"} theme={theme} onClose={onClose} />
+
+          {/* Flat Bonding Curve */}
+          <View
+            style={{
+              marginTop: 22,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <Text variant="labelLarge" prominent>
+              Flat Bonding Curve
+            </Text>
+            <Switch value={isFlatBondingCurveEnabled} onValueChange={setIsFlatBondingCurveEnabled} />
+          </View>
+
+          {/* Bonding Curve % (disabled when Flat Bonding Curve is OFF) */}
+          <View style={{ marginTop: 22, opacity: bcOpacity }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 8,
+              }}
+            >
+              <Text variant="labelLarge" prominent>
+                Bonding Curve %
+              </Text>
+              <InfoBadge />
+            </View>
+
+            <View style={{ marginTop: 12, pointerEvents: isFlatBondingCurveEnabled ? "auto" : "none" }}>
+              <CustomSlider
+                initValue={bondingCurvePercent}
+                min={0}
+                max={100}
+                step={1}
+                bubbleWidth={90}
+                formatBubbleText={(v) => `${Math.round(v)}%`}
+                labels={bcLabels}
+                formatLabel={(v) => `${v}%`}
+                edgeLabelInset={8}
+                points={bcPoints}
+                onValueChange={(v) => setBondingCurvePercent(clampInt(v, 0, 100))}
+                isMobile={isMobile}
+              />
+            </View>
+          </View>
+
+          {/* Project Development Raise */}
+          <View
+            style={{
+              marginTop: 28,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <Text variant="labelLarge" prominent>
+              Project Development Raise
+            </Text>
+            <Switch
+              value={projectRaiseEnabled}
+              onValueChange={(v) => {
+                setProjectRaiseEnabled(v);
+                setAmountToRaise(v ? Math.max(1, amountToRaise || 55) : 0);
+              }}
+            />
+          </View>
+
+          {/* Raise amount slider */}
+          <View style={{ marginTop: 14, opacity: projectRaiseOpacity }}>
+            <View style={{ marginTop: 12, pointerEvents: projectRaiseEnabled ? "auto" : "none" }}>
+              <CustomSlider
+                initValue={amountToRaise}
+                min={0}
+                max={raiseMax}
+                step={1}
+                bubbleWidth={120}
+                formatBubbleText={(v) => `${Math.round(v)} SOL`}
+                labels={raiseLabels}
+                formatLabel={(v) => `${v} SOL`}
+                edgeLabelInset={8}
+                points={raisePoints}
+                onValueChange={(v) => setAmountToRaise(clampInt(v, 0, raiseMax))}
+                isMobile={isMobile}
+              />
+            </View>
+          </View>
+
+        {/* Treasury Allocation (SOL input) */}
+          <View style={{ marginTop: 26 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 8,
+              }}
+            >
+              <Text variant="labelLarge" prominent>
+                Treasury Allocation
+              </Text>
+              <InfoBadge />
+            </View>
+
+            <TextInput
+              disableRemoveBtn
+              alwaysLabelOnTop
+              label={`Treasury Allocation Up to ${TREASURY_MAX_SOL} SOL`}
+              value={treasuryRaw}
+              onChangeText={(text: string) => {
+                const raw = normalizeStringDecimalInput(text); // no suffix here
+                setTreasuryRaw(raw);
+
+                if (!raw) {
+                  setTreasuryAllocationSol(0);
+                  setTreasuryError(null);
+                  return;
+                }
+
+                const n = Number(raw);
+                if (!Number.isFinite(n)) {
+                  setTreasuryAllocationSol(0);
+                  setTreasuryError(null);
+                  return;
+                }
+
+                if (n > TREASURY_MAX_SOL) {
+                  setTreasuryError(`Max ${TREASURY_MAX_SOL} SOL`);
+                  setTreasuryAllocationSol(TREASURY_MAX_SOL);
+                  setTreasuryRaw(String(TREASURY_MAX_SOL));
+                  return;
+                }
+
+                setTreasuryError(null);
+                setTreasuryAllocationSol(clamp(n, 0, TREASURY_MAX_SOL));
+              }}
+              inputMode="decimal"
+              keyboardType="decimal-pad"
+              placeholder="0"
+              rightAffixText="SOL"
+              mode="flat"
+              errorValue={treasuryError}
+            />
+          </View>
+
           {/* Deadline */}
-          <View style={{ paddingTop: 16 }}>
+          <View style={{ paddingTop: 22 }}>
             <Text
               variant="bodySmall"
               style={{ color: colors.onSurfaceVariant }}
@@ -147,39 +342,18 @@ export default function EditPremarketSettingsForm({
                   return;
                 }
                 setDataTimeError(null);
-                setDeadlineDateTimeSec(Math.floor(newDate.getTime() / 1000)); // todo: check /1000(?)
+                setDeadlineDateTimeSec(Math.floor(newDate.getTime() / 1000));
               }}
             />
             <View style={{ marginTop: -20 }}>
-              {" "}
               <HelperText type="error" visible={!!dataTimeError}>
-                {dataTimeError??""}
+                {dataTimeError ?? ""}
               </HelperText>
             </View>
           </View>
 
-          {/* Goal */}
-          <View style={{ marginTop: 64 }}>
-            <Text variant="labelLarge" prominent>Premarket Goal</Text>
-            <CustomSlider
-              initValue={presetData?.goal_sol}
-              min={sliderFrom}
-              max={sliderTo}
-              labels={labels}
-              points={points}
-              onValueChange={changeSliderPremarketValue}
-              isMobile={isMobile}
-            />
-            <View style={{ marginTop: -30 }}>
-              {" "}
-              <HelperText type="error" visible={true}>
-                {goalError??" "}
-              </HelperText>
-            </View>
-          </View>
-
-          {/* Short Name */}
-          <View style={{ marginTop: 64 }}>
+          {/* Short link */}
+          <View style={{ marginTop: 22, marginLeft: -8 }}>
             <TextInput
               label="Premarket short link"
               placeholder="eg. project_name"

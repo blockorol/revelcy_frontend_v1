@@ -42,4 +42,8 @@ export type PremarketSettingData = {
     deadline_sec: number,
     goal_sol: number,
     short_link_name?: string,
+    isFlatBondingCurveEnabled?: boolean;
+    bondingCurvePercent?: number; 
+    amountToRaise?: number; 
+    treasuryAllocationSol?: number; 
 }

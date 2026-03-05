@@ -17,7 +17,8 @@ type Props = Omit<TextInputProps, 'label'> & {
   overrideRemoveBtn?: ()=>void;
   errorValue?: string | null;
   backgroundColor?: string
-  label?: string
+  label?: string;
+  rightAffixText?: string;
 };
 
 export default function TextInput(props: Props) {
@@ -34,6 +35,7 @@ export default function TextInput(props: Props) {
     theme,
     value,
     label,
+    rightAffixText, 
     onPointerEnter,
     onPointerLeave,
     onFocus,
@@ -125,21 +127,25 @@ export default function TextInput(props: Props) {
           : undefined}
         placeholder={showLabelOnPlaceholder? label: placeholder}
         right={
-          errorValue ? <PaperTextInput.Icon icon="alert-circle" color={colors.error} /> : 
-          !disableRemoveBtn ? <PaperTextInput.Icon 
-            icon={(_iconProps) => (
-              <SvgIcon
-                name='x-circle-outlined'
-                color={colors.onSurface}
-                size={24}
-              />
-            )}
-          color={colors.onSurface} onPress={() => {
-            if (overrideRemoveBtn) return overrideRemoveBtn()
-            rest.onChangeText?.("");
-          }} /> :
-          undefined
-        }
+        errorValue
+          ? <PaperTextInput.Icon icon="alert-circle" color={colors.error} />
+          : rightAffixText
+            ? <PaperTextInput.Affix text={rightAffixText} />
+            : !disableRemoveBtn
+              ? (
+                <PaperTextInput.Icon
+                  icon={(_iconProps) => (
+                    <SvgIcon name="x-circle-outlined" color={colors.onSurface} size={24} />
+                  )}
+                  color={colors.onSurface}
+                  onPress={() => {
+                    if (overrideRemoveBtn) return overrideRemoveBtn();
+                    rest.onChangeText?.("");
+                  }}
+                />
+              )
+              : undefined
+      }
         label={ undefined }
         onPointerEnter={(e) => {
           setIsHovered(true);
