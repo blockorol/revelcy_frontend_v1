@@ -352,7 +352,7 @@ export default function EditPremarketSettingsForm({
             </View>
           </View>
 
-          {/* Short link */}
+          {/* Short name */}
           <View style={{ marginTop: 22, marginLeft: -8 }}>
             <TextInput
               label="Premarket short link"
