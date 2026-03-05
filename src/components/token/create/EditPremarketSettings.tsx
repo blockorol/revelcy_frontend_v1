@@ -65,7 +65,7 @@ export default function EditPremarketSettingsForm({
   const colors = theme.colors as ExtendedMD3Colors;
 
   // Keep old goal_sol (NOT shown in UI) to avoid breaking on-chain createPremarketArgs for now
-  const minPremarketSol = tokenomicsData?.creatorInitialBuy ?? DEFAULT_PREMARKET_GOAL_SOL;
+  const minPremarketSol = tokenomicsData?.creatorInitialBuy??DEFAULT_PREMARKET_GOAL_SOL;
   const [premarketGoalSol] = useState<number>(presetData?.goal_sol ?? minPremarketSol);
 
   //  Flat Bonding Curve
@@ -86,15 +86,12 @@ export default function EditPremarketSettingsForm({
 
   // Short link
   const [shortName, setShortName] = useState<string | null>(presetData?.short_link_name ?? null);
-  const [shortNameError, _setShortNameError] = useState<string | null>(null);
+  const [shortNameError, _setShortNameError] = useState<string | null>(null); // in future use it for validation
 
   // Deadline
   const [deadlineDateTimeSec, setDeadlineDateTimeSec] = useState<number | undefined>(presetData?.deadline_sec);
   const [dataTimeError, setDataTimeError] = useState<string | null>(null);
-  const [currentDataTime, setDataTime] = useState<Date>(
-    new Date(presetData?.deadline_sec ? presetData.deadline_sec * 1000 : Date.now())
-  );
-
+  const [currentDataTime, setDataTime] = useState<Date>(new Date(presetData?.deadline_sec ? presetData.deadline_sec * 1000 : Date.now()));
   // Treasury Allocation (SOL) input
   const TREASURY_MAX_SOL = 217;
   const [treasuryRaw, setTreasuryRaw] = useState<string>(
@@ -107,7 +104,7 @@ export default function EditPremarketSettingsForm({
   const isMoreThanOneMonthAway = (d: Date) => {
     const now = new Date();
     const max = new Date(now);
-    max.setMonth(max.getMonth() + 1);
+    max.setMonth(max.getMonth() + 1); 
     return d.getTime() > max.getTime();
   };
   const ONE_HOUR_MS = 60 * 60 * 1000;
@@ -342,7 +339,7 @@ export default function EditPremarketSettingsForm({
                   return;
                 }
                 setDataTimeError(null);
-                setDeadlineDateTimeSec(Math.floor(newDate.getTime() / 1000));
+                setDeadlineDateTimeSec(Math.floor(newDate.getTime() / 1000));// todo: check /1000(?)
               }}
             />
             <View style={{ marginTop: -20 }}>
@@ -352,7 +349,7 @@ export default function EditPremarketSettingsForm({
             </View>
           </View>
 
-          {/* Short name */}
+          {/* Short Name */}
           <View style={{ marginTop: 22, marginLeft: -8 }}>
             <TextInput
               label="Premarket short link"
