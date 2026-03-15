@@ -118,6 +118,7 @@ export function WhitelistUserSearch({
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<WhitelistSearchUser[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   const trimmedQuery = query.trim();
   const shouldSearch = trimmedQuery.length >= minSearchLength;
@@ -204,7 +205,6 @@ export function WhitelistUserSearch({
   }, [results, shouldSearch]);
 
   const showPanel = shouldSearch && (visibleResults.length > 0 || isLoading);
-  const isSearchActive = shouldSearch;
 
   return (
     <View style={{ gap: showPanel ? 0 : 8 }}>
@@ -212,14 +212,16 @@ export function WhitelistUserSearch({
         style={{
           backgroundColor: colors.surfaceContainerHigh,
           borderRadius: 12,
-          borderBottomLeftRadius: isSearchActive ? 0 : 12,
-          borderBottomRightRadius: isSearchActive ? 0 : 12,
+          borderBottomLeftRadius: isFocused ? 0 : 12,
+          borderBottomRightRadius: isFocused ? 0 : 12,
           overflow: "hidden",
         }}
       >
         <TextInput
           value={query}
           onChangeText={setQuery}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           placeholder="Search by username or wallet"
           autoCapitalize="none"
           autoCorrect={false}
@@ -230,8 +232,8 @@ export function WhitelistUserSearch({
           selectionColor={colors.primary}
           style={{
             borderRadius: 12,
-            borderBottomLeftRadius: isSearchActive ? 0 : 12,
-            borderBottomRightRadius: isSearchActive ? 0 : 12,
+            borderBottomLeftRadius: isFocused ? 0 : 12,
+            borderBottomRightRadius: isFocused ? 0 : 12,
             paddingVertical: 0,
           }}
         />
