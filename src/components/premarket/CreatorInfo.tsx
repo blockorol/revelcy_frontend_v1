@@ -353,6 +353,12 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
         premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
         tokenMainInfoPreset={tokenMainInfo} onUpdated={onUpdated}
         />
+      <EditWhitelistModal
+        visible={showEditWhitelist}
+        onClose={closeEditWhitelistOpen}
+        tokenMainInfoPreset={tokenMainInfo}
+        onUpdated={onUpdated}
+      />
 
       <VisabilitySwitch
         isDiscoverablePreset={!tokenMainInfo.isHided}
@@ -377,6 +383,9 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
             <Button style={{flex:1}} variant='primary' 
               mode="contained"
               onPress={()=>setShowEditLink(true)}>Edit links</Button>
+            <Button style={{flex:1}} variant='primary' 
+              mode="outlined"
+              onPress={()=>setShowEditWhitelist(true)}>Edit whitelist</Button>
           </View>
         }
 
@@ -591,12 +600,13 @@ function EditLinksModal({
         style={{alignItems: 'center', justifyContent: 'center',}}
         visible={visible}
         onDismiss={onClose}
-        contentContainerStyle={[styles.modalContainer]}>     
+        contentContainerStyle={[styles.editorModalContainer]}>     
           <CreateTokenForm
             onNext={handleUpdateURIConfirm}
             onClose={onClose}
             step={1}
-            totalSteps={4}
+            totalSteps={1}
+            submitLabel="Save"
             presetData={{
               tokenName: tokenMainInfoPreset.name,
               tokenTicker: tokenMainInfoPreset.symbol,
@@ -632,7 +642,7 @@ function EditWhitelistModal({
         style={{alignItems: 'center', justifyContent: 'center'}}
         visible={visible}
         onDismiss={onClose}
-        contentContainerStyle={[styles.modalContainer, { maxWidth: 540, padding: 0 }]}>
+        contentContainerStyle={[styles.editorModalContainer, { padding: 0 }]}>
         <EditWhitelistForm
           onNext={() => {
             onClose();
@@ -659,5 +669,12 @@ const styles = StyleSheet.create({
     maxHeight: 700, 
     maxWidth: 600,
     padding: 24 
-},
+  },
+  editorModalContainer: {
+    width: "100%",
+    maxWidth: 480,
+    maxHeight: 792,
+    height: "90%",
+    padding: 0,
+  },
 })

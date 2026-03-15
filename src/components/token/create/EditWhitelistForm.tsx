@@ -417,17 +417,33 @@ export default function EditWhitelistForm({
               </Text>
               </View>
 
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                {entries.length > 0 && (
-                  <Button
-                    mode="outlined"
-                    variant="error"
-                    size="small"
-                    onPress={() => setRemoveAllModalOpen(true)}
-                  >
-                    Remove all
-                  </Button>
-                )}
+              {entries.length > 0 && (
+                <Button
+                  mode="outlined"
+                  variant="error"
+                  size="small"
+                  onPress={() => setRemoveAllModalOpen(true)}
+                >
+                  Remove all
+                </Button>
+              )}
+            </View>
+
+            <View style={{ gap: 8 }}>
+              <View style={{ flexDirection: "row", gap: 8, alignItems: "flex-start" }}>
+                <View style={{ flex: 1 }}>
+                  {isLoadingRemote ? (
+                    <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                      Loading whitelist...
+                    </Text>
+                  ) : (
+                    <WhitelistUserSearch
+                      colors={colors}
+                      onAddUser={handleAddSearchedUser}
+                      isUserAdded={isSearchedUserAdded}
+                    />
+                  )}
+                </View>
                 <SvgIconButton
                   name="clip"
                   size={24}
@@ -442,20 +458,6 @@ export default function EditWhitelistForm({
                   }}
                 />
               </View>
-            </View>
-
-            <View style={{ gap: 8 }}>
-              {isLoadingRemote ? (
-                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
-                  Loading whitelist...
-                </Text>
-              ) : (
-              <WhitelistUserSearch
-                colors={colors}
-                onAddUser={handleAddSearchedUser}
-                isUserAdded={isSearchedUserAdded}
-              />
-              )}
 
               <View style={{ gap: 4 }}>
                 {pagedEntries.length === 0 ? (
