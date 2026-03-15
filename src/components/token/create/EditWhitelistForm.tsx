@@ -1,9 +1,13 @@
 import ContinueButtonWithProgressBar from "@components/ContinueButtonWithProgressBar";
 import { SvgIconButton } from "@components/base/SvgIcon";
 import { SvgIcon } from "@components/base/SvgIcon";
-import { Avatar } from "@components/ui/Avatar";
 import { Button } from "@components/ui/Button";
 import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeader";
+import {
+  WhitelistUserRow,
+  WhitelistUserSearch,
+  WhitelistSearchUser,
+} from "@components/token/create/WhitelistUserSearch";
 import { WhitelistData, WhitelistEntry } from "@components/token/create/interface";
 import { useIsMobileWithDemention } from "@hooks/useIsMobile";
 import { useShortUserInfoList } from "@hooks/useShortUserInfoList";
@@ -168,6 +172,53 @@ export default function EditWhitelistForm({
     setEntries((prev) => prev.filter((entry) => entry.pubkey !== pubkey));
   };
 
+  const addWhitelistEntry = (pubkey: string) => {
+    let added = false;
+    let nextLength = entries.length;
+
+    setEntries((prev) => {
+      if (prev.some((entry) => entry.pubkey === pubkey)) {
+        nextLength = prev.length;
+        return prev;
+      }
+
+      added = true;
+      nextLength = prev.length + 1;
+      return [
+        ...prev,
+        {
+          pubkey,
+          state: "enabled",
+        },
+      ];
+    });
+
+    if (added) {
+      setEnabled(true);
+      setCurrentPage(Math.floor((nextLength - 1) / pageSize));
+    }
+
+    return added;
+  };
+
+  const handleAddSearchedUser = (user: WhitelistSearchUser) => {
+    const walletAddress = user.wallets[0];
+    if (!walletAddress) return false;
+
+    const added = addWhitelistEntry(walletAddress);
+    if (added) {
+      notify.success("User added to whitelist");
+    }
+
+    return added;
+  };
+
+  const isSearchedUserAdded = (user: WhitelistSearchUser) => {
+    const walletAddress = user.wallets[0];
+    if (!walletAddress) return false;
+    return entries.some((entry) => entry.pubkey === walletAddress);
+  };
+
   const getShortInfo = (pubkey: string) => shortInfoMap[pubkey] ?? { address: pubkey };
 
   const renderWhitelistEntry = (
@@ -175,49 +226,17 @@ export default function EditWhitelistForm({
     onDeleteEntryCb: (pubkey: string) => void
   ) => {
     const shortInfo = getShortInfo(entry.pubkey);
-    const displayName = shortInfo.name || shortString(entry.pubkey, 4);
-    const shortAddress = shortString(entry.pubkey, 4);
-    const showAddress = shortInfo.name !== undefined && shortInfo.name !== "";
 
     return (
-      <View
+      <WhitelistUserRow
         key={entry.pubkey}
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 12,
-          paddingVertical: 8,
-        }}
-      >
-        <Avatar
-          size={40}
-          source={shortInfo.avatarUrl ?? null}
-          walletAddress={entry.pubkey}
-        />
-
-        <View style={{ flex: 1, gap: 2 }}>
-          <Text variant="labelLarge" prominent style={{ color: colors.onSurface }}>
-            {displayName}
-          </Text>
-          {showAddress && (
-            <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
-              {shortAddress}
-            </Text>
-          )}
-        </View>
-
-        <SvgIconButton
-          name="x-base"
-          size={16}
-          color={colors.onSurfaceVariant}
-          onPress={() => onDeleteEntryCb(entry.pubkey)}
-          containerStyle={{
-            width: 24,
-            height: 24,
-            borderRadius: 12,
-          }}
-        />
-      </View>
+        walletAddress={entry.pubkey}
+        username={shortInfo.name}
+        avatarUrl={shortInfo.avatarUrl ?? null}
+        colors={colors}
+        trailingIcon="x-base"
+        onPress={() => onDeleteEntryCb(entry.pubkey)}
+      />
     );
   };
 
@@ -308,6 +327,12 @@ export default function EditWhitelistForm({
             </View>
 
             <View style={{ gap: 8 }}>
+              <WhitelistUserSearch
+                colors={colors}
+                onAddUser={handleAddSearchedUser}
+                isUserAdded={isSearchedUserAdded}
+              />
+
               <View style={{ gap: 4 }}>
                 {pagedEntries.length === 0 ? (
                   <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>

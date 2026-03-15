@@ -1,4 +1,4 @@
-import { getListShortUserInfo, ShortUserInfo } from "@api/auth";
+import { getListShortUserInfo, ShortUserInfo } from "@api/users";
 import { useEffect, useMemo, useState } from "react";
 
 type ShortUserInfoMap = Record<string, ShortUserInfo>;
