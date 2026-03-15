@@ -25,7 +25,7 @@ import { isSolanaPublicKey } from "@utils/solana";
 import React, { useEffect, useMemo, useState } from "react";
 import { Text } from "@components/ui/Text";
 import { Platform, ScrollView, TouchableOpacity, View } from "react-native";
-import { useTheme } from "react-native-paper";
+import { Modal, Portal, useTheme } from "react-native-paper";
 import { Switch } from "@components/ui/Switch";
 import { makeTransparent } from "@utils/colors";
 
@@ -51,7 +51,7 @@ function parseWhitelistContent(raw: string): {
   totalParsed: number;
 } {
   const tokens = raw
-    .split(";")
+    .split(/[\s,;]+/g)
     .map((item) => item.trim())
     .filter(Boolean);
 
@@ -124,6 +124,7 @@ export default function EditWhitelistForm({
   const [currentPage, setCurrentPage] = useState(0);
   const [parseResultModal, setParseResultModal] = useState<ParseResultModalData | null>(null);
   const [removeAllModalOpen, setRemoveAllModalOpen] = useState(false);
+  const [uploadInfoModalOpen, setUploadInfoModalOpen] = useState(false);
   const [isLoadingRemote, setIsLoadingRemote] = useState(false);
   const [isSavingRemote, setIsSavingRemote] = useState(false);
   const [initialRemoteEntries, setInitialRemoteEntries] = useState<WhitelistEntry[]>(presetData?.items ?? []);
@@ -458,6 +459,15 @@ export default function EditWhitelistForm({
                   }}
                 />
               </View>
+              <TouchableOpacity
+                onPress={() => setUploadInfoModalOpen(true)}
+                style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingTop: 4 }}
+              >
+                <SvgIcon name="info-circle" size={20} color={colors.primary} />
+                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                  You can upload .txt or .csv files
+                </Text>
+              </TouchableOpacity>
 
               <View style={{ gap: 4 }}>
                 {pagedEntries.length === 0 ? (
@@ -661,6 +671,46 @@ export default function EditWhitelistForm({
           </View>
         </View>
       )}
+      <Portal>
+        <Modal
+          visible={uploadInfoModalOpen}
+          onDismiss={() => setUploadInfoModalOpen(false)}
+          style={{ alignItems: "center", justifyContent: "center" }}
+        >
+          <View
+            style={{
+              width: "100%",
+              maxWidth: 420,
+              borderRadius: 24,
+              backgroundColor: colors.surfaceContainerLow,
+              paddingHorizontal: 24,
+              paddingVertical: 24,
+              gap: 16,
+            }}
+          >
+            <Text variant="titleMedium" prominent style={{ color: colors.onSurface }}>
+              Upload whitelist file
+            </Text>
+            <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant }}>
+              Supported formats: .txt and .csv
+            </Text>
+            <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant }}>
+              Supported separators: new line, comma, semicolon, tab, or spaces
+            </Text>
+            <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant }}>
+              File content must contain valid Solana wallet addresses
+            </Text>
+            <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+              Example: one wallet per line or `wallet1,wallet2,wallet3`
+            </Text>
+            <View style={{ marginTop: 8 }}>
+              <Button mode="contained" onPress={() => setUploadInfoModalOpen(false)}>
+                Close
+              </Button>
+            </View>
+          </View>
+        </Modal>
+      </Portal>
     </ScrollView>
   );
 }
