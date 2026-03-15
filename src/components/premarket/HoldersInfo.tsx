@@ -31,7 +31,49 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
   const [whitelistHasMore, setWhitelistHasMore] = useState<boolean>(true);
   const [whitelistLoading, setWhitelistLoading] = useState(false);
   const whitelistRequestIdRef = useRef(0);
+  const whitelistUsersRef = useRef<WhitelistUserDTO[]>([]);
+  const whitelistTotalRef = useRef<number | undefined>(undefined);
+  const whitelistCursorRef = useRef(0);
+  const whitelistHasMoreRef = useRef(true);
+  const whitelistLoadingRef = useRef(false);
   const holders = tokenData.dynamicInfo.holders
+
+  const setWhitelistState = ({
+    users,
+    total,
+    hasTotal = false,
+    cursor,
+    hasMore,
+    loading,
+  }: {
+    users?: WhitelistUserDTO[];
+    total?: number | undefined;
+    hasTotal?: boolean;
+    cursor?: number;
+    hasMore?: boolean;
+    loading?: boolean;
+  }) => {
+    if (users !== undefined) {
+      whitelistUsersRef.current = users;
+      setWhitelistUsers(users);
+    }
+    if (hasTotal) {
+      whitelistTotalRef.current = total;
+      setWhitelistTotal(total);
+    }
+    if (cursor !== undefined) {
+      whitelistCursorRef.current = cursor;
+      setWhitelistCursor(cursor);
+    }
+    if (hasMore !== undefined) {
+      whitelistHasMoreRef.current = hasMore;
+      setWhitelistHasMore(hasMore);
+    }
+    if (loading !== undefined) {
+      whitelistLoadingRef.current = loading;
+      setWhitelistLoading(loading);
+    }
+  };
 
   useEffect(() => {
     setShowCount(DEFAULT_SHOW_COUNT);
@@ -63,19 +105,25 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
   useEffect(() => {
     if (!tokenData.mainInfo.isWhitelistEnabled) {
       whitelistRequestIdRef.current += 1;
-      setWhitelistUsers([]);
-      setWhitelistTotal(undefined);
-      setWhitelistCursor(0);
-      setWhitelistHasMore(false);
-      setWhitelistLoading(false);
+      setWhitelistState({
+        users: [],
+        total: undefined,
+        hasTotal: true,
+        cursor: 0,
+        hasMore: false,
+        loading: false,
+      });
       return;
     }
     whitelistRequestIdRef.current += 1;
-    setWhitelistUsers([]);
-    setWhitelistTotal(undefined);
-    setWhitelistCursor(0);
-    setWhitelistHasMore(true);
-    setWhitelistLoading(false);
+    setWhitelistState({
+      users: [],
+      total: undefined,
+      hasTotal: true,
+      cursor: 0,
+      hasMore: true,
+      loading: false,
+    });
   }, [tokenData.mainInfo.id, tokenData.mainInfo.isWhitelistEnabled]);
 
   useEffect(() => {
@@ -84,87 +132,116 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
     }
 
     whitelistRequestIdRef.current += 1;
-    setWhitelistUsers([]);
-    setWhitelistTotal(undefined);
-    setWhitelistCursor(0);
-    setWhitelistHasMore(true);
-    setWhitelistLoading(false);
+    setWhitelistState({
+      users: [],
+      total: undefined,
+      hasTotal: true,
+      cursor: 0,
+      hasMore: true,
+      loading: false,
+    });
   }, [sectionType]);
 
-  useEffect(() => {
-    const whitelistStatus =
-      sectionType === "Accepted" ? "APPROVED" :
-      sectionType === "Applied" ? "REQUESTED" :
-      undefined;
+  const whitelistStatus =
+    sectionType === "Accepted" ? "APPROVED" :
+    sectionType === "Applied" ? "REQUESTED" :
+    undefined;
 
+  const loadWhitelist = async ({ reset, targetCount }: { reset: boolean; targetCount: number }) => {
     if (!whitelistStatus) return;
     if (!tokenData.mainInfo.isWhitelistEnabled) return;
-    if (!whitelistHasMore) return;
-    if (whitelistUsers.length >= showCount) return;
+    if (whitelistLoadingRef.current) return;
 
-    let disposed = false;
     const requestId = ++whitelistRequestIdRef.current;
+    const initialUsers = reset ? [] : whitelistUsersRef.current;
+    const initialTotal = reset ? undefined : whitelistTotalRef.current;
+    const initialCursor = reset ? 0 : whitelistCursorRef.current;
+    const initialHasMore = reset ? true : whitelistHasMoreRef.current;
 
-    (async () => {
-      setWhitelistLoading(true);
-      try {
-        let nextCursor = whitelistCursor;
-        let nextUsers = [...whitelistUsers];
-        let nextTotal = whitelistTotal;
-        let hasMore: boolean = whitelistHasMore;
+    if (!reset) {
+      if (!initialHasMore) return;
+      if (initialUsers.length >= targetCount) return;
+    }
 
-        while (!disposed && nextUsers.length < showCount) {
-          if (!hasMore) break;
-          const result = await getWhitelistUsers({
-            premarket_id: tokenData.mainInfo.id,
-            status: whitelistStatus,
-            cursor: nextCursor,
-            limit: WHITELIST_PAGE_SIZE,
-          });
+    setWhitelistState({
+      users: reset ? [] : undefined,
+      total: reset ? undefined : undefined,
+      cursor: reset ? 0 : undefined,
+      hasMore: reset ? true : undefined,
+      loading: true,
+    });
 
-          const pageItems = result.items ?? [];
-          nextUsers = [...nextUsers, ...pageItems];
-          nextTotal = result.total ?? nextTotal;
-          nextCursor += pageItems.length;
+    try {
+      let nextCursor = initialCursor;
+      let nextUsers = [...initialUsers];
+      let nextTotal = initialTotal;
+      let hasMore = initialHasMore;
 
-          const noNewItems = pageItems.length === 0;
-          const reachedTotal = typeof nextTotal === "number" && nextCursor >= nextTotal;
-          const lastPage = pageItems.length < WHITELIST_PAGE_SIZE;
-          hasMore = !(noNewItems || reachedTotal || lastPage);
+      while (nextUsers.length < targetCount && hasMore) {
+        const result = await getWhitelistUsers({
+          premarket_id: tokenData.mainInfo.id,
+          status: whitelistStatus,
+          cursor: nextCursor,
+          limit: WHITELIST_PAGE_SIZE,
+        });
+
+        if (whitelistRequestIdRef.current !== requestId) {
+          return;
         }
 
-        if (disposed) return;
-        setWhitelistUsers(nextUsers);
-        setWhitelistTotal(nextTotal);
-        setWhitelistCursor(nextCursor);
-        setWhitelistHasMore(hasMore);
-      } catch (e) {
-        if (disposed) return;
-        console.warn("[HoldersInfo] failed to fetch whitelist users", e);
-        setWhitelistUsers([]);
-        setWhitelistTotal(undefined);
-        setWhitelistCursor(0);
-        setWhitelistHasMore(false);
-      } finally {
-        if (!disposed && whitelistRequestIdRef.current === requestId) {
-          setWhitelistLoading(false);
-        }
+        const pageItems = result.items ?? [];
+        nextUsers = [...nextUsers, ...pageItems];
+        nextTotal = result.total ?? nextTotal;
+        nextCursor += pageItems.length;
+
+        const noNewItems = pageItems.length === 0;
+        const reachedTotal = typeof nextTotal === "number" && nextCursor >= nextTotal;
+        const lastPage = pageItems.length < WHITELIST_PAGE_SIZE;
+        hasMore = !(noNewItems || reachedTotal || lastPage);
       }
-    })();
 
-    return () => {
-      disposed = true;
-    };
-  }, [
-    sectionType,
-    tokenData.mainInfo.id,
-    tokenData.mainInfo.isWhitelistEnabled,
-    showCount,
-    whitelistCursor,
-    whitelistHasMore,
-    whitelistTotal,
-    whitelistUsers,
-  ]);
+      if (whitelistRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      setWhitelistState({
+        users: nextUsers,
+        total: nextTotal,
+        hasTotal: true,
+        cursor: nextCursor,
+        hasMore,
+        loading: false,
+      });
+    } catch (e) {
+      if (whitelistRequestIdRef.current !== requestId) {
+        return;
+      }
+      console.warn("[HoldersInfo] failed to fetch whitelist users", e);
+      setWhitelistState({
+        users: [],
+        total: undefined,
+        hasTotal: true,
+        cursor: 0,
+        hasMore: false,
+        loading: false,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!whitelistStatus) return;
+    if (!tokenData.mainInfo.isWhitelistEnabled) return;
+
+    void loadWhitelist({ reset: true, targetCount: showCount });
+  }, [whitelistStatus, tokenData.mainInfo.id, tokenData.mainInfo.isWhitelistEnabled]);
+
+  useEffect(() => {
+    if (!whitelistStatus) return;
+    if (!tokenData.mainInfo.isWhitelistEnabled) return;
+    if (showCount <= whitelistUsersRef.current.length) return;
+
+    void loadWhitelist({ reset: false, targetCount: showCount });
+  }, [showCount]);
 
   const joinedList = useMemo(() => sortedHolders.slice(0, showCount), [sortedHolders, showCount]);
   const whitelistList = useMemo(() => whitelistUsers.slice(0, showCount), [whitelistUsers, showCount]);
