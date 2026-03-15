@@ -1,9 +1,20 @@
 import ContinueButtonWithProgressBar from "@components/ContinueButtonWithProgressBar";
 import { SvgIconButton } from "@components/base/SvgIcon";
 import { SvgIcon } from "@components/base/SvgIcon";
-import { Avatar } from "@components/ui/Avatar";
 import { Button } from "@components/ui/Button";
 import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeader";
+import {
+  WhitelistUserRow,
+  WhitelistUserSearch,
+  WhitelistSearchUser,
+} from "@components/token/create/WhitelistUserSearch";
+import {
+  addWhitelistUser,
+  addWhitelistUserList,
+  getAllWhitelistUsers,
+  removeWhitelistUser,
+  updateTokenAvailbility,
+} from "@api/token";
 import { WhitelistData, WhitelistEntry } from "@components/token/create/interface";
 import { useIsMobileWithDemention } from "@hooks/useIsMobile";
 import { useShortUserInfoList } from "@hooks/useShortUserInfoList";
@@ -14,7 +25,7 @@ import { isSolanaPublicKey } from "@utils/solana";
 import React, { useEffect, useMemo, useState } from "react";
 import { Text } from "@components/ui/Text";
 import { Platform, ScrollView, TouchableOpacity, View } from "react-native";
-import { useTheme } from "react-native-paper";
+import { Modal, Portal, useTheme } from "react-native-paper";
 import { Switch } from "@components/ui/Switch";
 import { makeTransparent } from "@utils/colors";
 
@@ -25,6 +36,12 @@ export type EditWhitelistFormProps = {
   step: number;
   totalSteps: number;
   presetData?: WhitelistData;
+  editMode?: {
+    premarketId: string;
+    premarketPubkey: string;
+    isWhitelistEnabled: boolean;
+    onUpdated?: () => Promise<void> | void;
+  };
 };
 
 function parseWhitelistContent(raw: string): {
@@ -34,7 +51,7 @@ function parseWhitelistContent(raw: string): {
   totalParsed: number;
 } {
   const tokens = raw
-    .split(";")
+    .split(/[\s,;]+/g)
     .map((item) => item.trim())
     .filter(Boolean);
 
@@ -92,17 +109,25 @@ export default function EditWhitelistForm({
   step,
   totalSteps,
   presetData,
+  editMode,
 }: EditWhitelistFormProps) {
   const { isMobile } = useIsMobileWithDemention();
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
   const notify = useNotification();
   const pageSize = 10;
-  const [enabled, setEnabled] = useState((presetData?.state ?? "disabled") === "enabled");
+  const isEditMode = !!editMode;
+  const [enabled, setEnabled] = useState(
+    isEditMode ? editMode.isWhitelistEnabled : (presetData?.state ?? "disabled") === "enabled"
+  );
   const [entries, setEntries] = useState<WhitelistEntry[]>(presetData?.items ?? []);
   const [currentPage, setCurrentPage] = useState(0);
   const [parseResultModal, setParseResultModal] = useState<ParseResultModalData | null>(null);
   const [removeAllModalOpen, setRemoveAllModalOpen] = useState(false);
+  const [uploadInfoModalOpen, setUploadInfoModalOpen] = useState(false);
+  const [isLoadingRemote, setIsLoadingRemote] = useState(false);
+  const [isSavingRemote, setIsSavingRemote] = useState(false);
+  const [initialRemoteEntries, setInitialRemoteEntries] = useState<WhitelistEntry[]>(presetData?.items ?? []);
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(entries.length / pageSize)), [entries.length]);
   const pagedEntries = useMemo(
@@ -118,7 +143,105 @@ export default function EditWhitelistForm({
     }
   }, [currentPage, totalPages]);
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    if (!editMode) return;
+
+    let disposed = false;
+
+    (async () => {
+      setIsLoadingRemote(true);
+      try {
+        const users = await getAllWhitelistUsers({
+          premarket_id: editMode.premarketId,
+        });
+
+        if (disposed) return;
+
+        const nextEntries = users
+          .map((user) => user.wallets[0])
+          .filter((wallet): wallet is string => !!wallet)
+          .map((pubkey) => ({
+            pubkey,
+            state: "enabled" as const,
+          }));
+
+        setEntries(nextEntries);
+        setInitialRemoteEntries(nextEntries);
+        setEnabled(editMode.isWhitelistEnabled);
+      } catch (error) {
+        if (!disposed) {
+          console.error("[EditWhitelistForm] failed to load whitelist", error);
+          notify.error("Failed to load whitelist");
+        }
+      } finally {
+        if (!disposed) {
+          setIsLoadingRemote(false);
+        }
+      }
+    })();
+
+    return () => {
+      disposed = true;
+    };
+  }, [editMode?.isWhitelistEnabled, editMode?.premarketId]);
+
+  const handleSubmit = async () => {
+    if (isEditMode && editMode) {
+      if (isSavingRemote) return;
+
+      setIsSavingRemote(true);
+      try {
+        const initialEntries = initialRemoteEntries;
+        const initialSet = new Set(initialEntries.map((item) => item.pubkey));
+        const nextSet = new Set(entries.map((item) => item.pubkey));
+
+        const toAdd = entries
+          .map((item) => item.pubkey)
+          .filter((pubkey) => !initialSet.has(pubkey));
+        const toRemove = initialEntries
+          .map((item) => item.pubkey)
+          .filter((pubkey) => !nextSet.has(pubkey));
+
+        await Promise.all([
+          updateTokenAvailbility(editMode.premarketPubkey, {
+            isWhitelistEnabled: enabled,
+          }),
+          toAdd.length > 1
+            ? addWhitelistUserList({
+                premarket_id: editMode.premarketId,
+                user_pubkeys: toAdd,
+              })
+            : toAdd.length === 1
+            ? addWhitelistUser({
+                premarket_id: editMode.premarketId,
+                user_pubkey: toAdd[0],
+              })
+            : Promise.resolve(),
+          ...toRemove.map((pubkey) =>
+            removeWhitelistUser({
+              premarket_id: editMode.premarketId,
+              user_pubkey: pubkey,
+            })
+          ),
+        ]);
+
+        setInitialRemoteEntries(entries);
+        notify.success("Whitelist updated");
+        await editMode.onUpdated?.();
+        onNext({
+          state: enabled ? "enabled" : "disabled",
+          items: entries,
+        });
+        return;
+      } catch (error) {
+        console.error("[EditWhitelistForm] failed to save whitelist", error);
+        notify.error("Failed to update whitelist");
+        return;
+      } finally {
+        setIsSavingRemote(false);
+      }
+    }
+
     onNext({
       state: enabled ? "enabled" : "disabled",
       items: entries,
@@ -162,10 +285,57 @@ export default function EditWhitelistForm({
     });
   };
 
-  const isFilledAll = () => true;
+  const isFilledAll = () => !isLoadingRemote && !isSavingRemote;
 
   const onDeleteEntry = (pubkey: string) => {
     setEntries((prev) => prev.filter((entry) => entry.pubkey !== pubkey));
+  };
+
+  const addWhitelistEntry = (pubkey: string) => {
+    let added = false;
+    let nextLength = entries.length;
+
+    setEntries((prev) => {
+      if (prev.some((entry) => entry.pubkey === pubkey)) {
+        nextLength = prev.length;
+        return prev;
+      }
+
+      added = true;
+      nextLength = prev.length + 1;
+      return [
+        ...prev,
+        {
+          pubkey,
+          state: "enabled",
+        },
+      ];
+    });
+
+    if (added) {
+      setEnabled(true);
+      setCurrentPage(Math.floor((nextLength - 1) / pageSize));
+    }
+
+    return added;
+  };
+
+  const handleAddSearchedUser = (user: WhitelistSearchUser) => {
+    const walletAddress = user.wallets[0];
+    if (!walletAddress) return false;
+
+    const added = addWhitelistEntry(walletAddress);
+    if (added) {
+      notify.success("User added to whitelist");
+    }
+
+    return added;
+  };
+
+  const isSearchedUserAdded = (user: WhitelistSearchUser) => {
+    const walletAddress = user.wallets[0];
+    if (!walletAddress) return false;
+    return entries.some((entry) => entry.pubkey === walletAddress);
   };
 
   const getShortInfo = (pubkey: string) => shortInfoMap[pubkey] ?? { address: pubkey };
@@ -175,49 +345,17 @@ export default function EditWhitelistForm({
     onDeleteEntryCb: (pubkey: string) => void
   ) => {
     const shortInfo = getShortInfo(entry.pubkey);
-    const displayName = shortInfo.name || shortString(entry.pubkey, 4);
-    const shortAddress = shortString(entry.pubkey, 4);
-    const showAddress = shortInfo.name !== undefined && shortInfo.name !== "";
 
     return (
-      <View
+      <WhitelistUserRow
         key={entry.pubkey}
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 12,
-          paddingVertical: 8,
-        }}
-      >
-        <Avatar
-          size={40}
-          source={shortInfo.avatarUrl ?? null}
-          walletAddress={entry.pubkey}
-        />
-
-        <View style={{ flex: 1, gap: 2 }}>
-          <Text variant="labelLarge" prominent style={{ color: colors.onSurface }}>
-            {displayName}
-          </Text>
-          {showAddress && (
-            <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
-              {shortAddress}
-            </Text>
-          )}
-        </View>
-
-        <SvgIconButton
-          name="x-base"
-          size={16}
-          color={colors.onSurfaceVariant}
-          onPress={() => onDeleteEntryCb(entry.pubkey)}
-          containerStyle={{
-            width: 24,
-            height: 24,
-            borderRadius: 12,
-          }}
-        />
-      </View>
+        walletAddress={entry.pubkey}
+        username={shortInfo.name}
+        avatarUrl={shortInfo.avatarUrl ?? null}
+        colors={colors}
+        trailingIcon="x-base"
+        onPress={() => onDeleteEntryCb(entry.pubkey)}
+      />
     );
   };
 
@@ -280,17 +418,33 @@ export default function EditWhitelistForm({
               </Text>
               </View>
 
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                {entries.length > 0 && (
-                  <Button
-                    mode="outlined"
-                    variant="error"
-                    size="small"
-                    onPress={() => setRemoveAllModalOpen(true)}
-                  >
-                    Remove all
-                  </Button>
-                )}
+              {entries.length > 0 && (
+                <Button
+                  mode="outlined"
+                  variant="error"
+                  size="small"
+                  onPress={() => setRemoveAllModalOpen(true)}
+                >
+                  Remove all
+                </Button>
+              )}
+            </View>
+
+            <View style={{ gap: 8 }}>
+              <View style={{ flexDirection: "row", gap: 8, alignItems: "flex-start" }}>
+                <View style={{ flex: 1 }}>
+                  {isLoadingRemote ? (
+                    <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                      Loading whitelist...
+                    </Text>
+                  ) : (
+                    <WhitelistUserSearch
+                      colors={colors}
+                      onAddUser={handleAddSearchedUser}
+                      isUserAdded={isSearchedUserAdded}
+                    />
+                  )}
+                </View>
                 <SvgIconButton
                   name="clip"
                   size={24}
@@ -305,13 +459,20 @@ export default function EditWhitelistForm({
                   }}
                 />
               </View>
-            </View>
+              <TouchableOpacity
+                onPress={() => setUploadInfoModalOpen(true)}
+                style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingTop: 4 }}
+              >
+                <SvgIcon name="info-circle" size={20} color={colors.primary} />
+                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                  You can upload .txt or .csv files
+                </Text>
+              </TouchableOpacity>
 
-            <View style={{ gap: 8 }}>
               <View style={{ gap: 4 }}>
                 {pagedEntries.length === 0 ? (
                   <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
-                    No addresses added yet
+                    {isLoadingRemote ? "Loading..." : "No addresses added yet"}
                   </Text>
                 ) : (
                   pagedEntries.map((entry) => renderWhitelistEntry(entry, onDeleteEntry))
@@ -373,6 +534,7 @@ export default function EditWhitelistForm({
             handleSubmit={handleSubmit}
             isFilledAll={isFilledAll}
             onBack={onBack}
+            submitLabel={isEditMode ? (isSavingRemote ? "Saving..." : "Save") : "Continue"}
           />
         </View>
       </View>
@@ -509,6 +671,46 @@ export default function EditWhitelistForm({
           </View>
         </View>
       )}
+      <Portal>
+        <Modal
+          visible={uploadInfoModalOpen}
+          onDismiss={() => setUploadInfoModalOpen(false)}
+          style={{ alignItems: "center", justifyContent: "center" }}
+        >
+          <View
+            style={{
+              width: "100%",
+              maxWidth: 420,
+              borderRadius: 24,
+              backgroundColor: colors.surfaceContainerLow,
+              paddingHorizontal: 24,
+              paddingVertical: 24,
+              gap: 16,
+            }}
+          >
+            <Text variant="titleMedium" prominent style={{ color: colors.onSurface }}>
+              Upload whitelist file
+            </Text>
+            <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant }}>
+              Supported formats: .txt and .csv
+            </Text>
+            <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant }}>
+              Supported separators: new line, comma, semicolon, tab, or spaces
+            </Text>
+            <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant }}>
+              File content must contain valid Solana wallet addresses
+            </Text>
+            <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+              Example: one wallet per line or `wallet1,wallet2,wallet3`
+            </Text>
+            <View style={{ marginTop: 8 }}>
+              <Button mode="contained" onPress={() => setUploadInfoModalOpen(false)}>
+                Close
+              </Button>
+            </View>
+          </View>
+        </Modal>
+      </Portal>
     </ScrollView>
   );
 }

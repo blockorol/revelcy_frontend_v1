@@ -2,7 +2,6 @@
 import axios from 'axios';
 import base64js from 'base64-js';
 import { API_HOST } from 'env';
-import { http } from "@api/http";
 
 export const API_AUTH_URL = `${API_HOST}/auth`;
 export const API_USER_URL = `${API_HOST}/user`;
@@ -147,46 +146,3 @@ export async function confirmLogin({
   };
 }
 
-type ShortUserInfoRaw = {
-  address?: string;
-  name?: string;
-  url?: string | null;
-};
-
-export type ShortUserInfo = {
-  name?: string;
-  avatarUrl?: string | null;
-  address: string;
-};
-
-export async function getListShortUserInfo(addresses: string[]): Promise<ShortUserInfo[]> {
-  if (!addresses.length) return [];
-
-  const response = await http.post<any>(`${API_USER_URL}/short_list`, {
-    json: { addresses },
-    retry: 3,
-  });
-
-  const list: ShortUserInfoRaw[] = Array.isArray(response)
-    ? response
-    : Array.isArray(response?.items)
-    ? response.items
-    : Array.isArray(response?.users)
-    ? response.users
-    : [];
-
-  const normalized: ShortUserInfo[] = [];
-
-  for (const item of list) {
-    const address = item.address ?? "";
-    if (!address) continue;
-
-    normalized.push({
-      address,
-      name: item.name ?? undefined,
-      avatarUrl: item.url ?? null,
-    });
-  }
-
-  return normalized;
-}
