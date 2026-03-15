@@ -52,6 +52,7 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
   const [showEditWhitelist, setShowEditWhitelist] = useState(false);
   const closEditLinkOpen = () => {setShowEditLink(false)}
   const closeEditWhitelistOpen = () => {setShowEditWhitelist(false)}
+  const whitelistButtonLabel = tokenMainInfo.isWhitelistEnabled ? "Edit whitelist" : "Add whitelist";
 
   const handleRefund = async () => {
     if (!wallet || !connected) {
@@ -313,7 +314,7 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
               onPress={()=>setShowEditLink(true)}>Edit links</Button>
             <Button style={{flex:1}} variant='primary' 
               mode="outlined"
-              onPress={()=>setShowEditWhitelist(true)}>Edit whitelist</Button>
+              onPress={()=>setShowEditWhitelist(true)}>{whitelistButtonLabel}</Button>
           </View>
         }
 
@@ -385,7 +386,7 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
               onPress={()=>setShowEditLink(true)}>Edit links</Button>
             <Button style={{flex:1}} variant='primary' 
               mode="outlined"
-              onPress={()=>setShowEditWhitelist(true)}>Edit whitelist</Button>
+              onPress={()=>setShowEditWhitelist(true)}>{whitelistButtonLabel}</Button>
           </View>
         }
 
@@ -421,7 +422,7 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
               onPress={()=>setShowEditLink(true)}>Edit links</Button>
             <Button style={{flex:1}} variant='primary' 
               mode="outlined"
-              onPress={()=>setShowEditWhitelist(true)}>Edit whitelist</Button>
+              onPress={()=>setShowEditWhitelist(true)}>{whitelistButtonLabel}</Button>
           </View>
         }
         <View style={{flexDirection:'row', gap:16, alignItems:'center'}}>

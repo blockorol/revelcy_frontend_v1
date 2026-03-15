@@ -22,6 +22,7 @@ import { useNotification } from "@providers/NotificationContext";
 import { ExtendedMD3Colors } from "@theme/types";
 import shortString from "@utils/address_shorter";
 import { isSolanaPublicKey } from "@utils/solana";
+import { useOverlay } from "@storage/UniversalOverlayProvider";
 import React, { useEffect, useMemo, useState } from "react";
 import { Text } from "@components/ui/Text";
 import { Platform, ScrollView, TouchableOpacity, View } from "react-native";
@@ -115,6 +116,7 @@ export default function EditWhitelistForm({
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
   const notify = useNotification();
+  const { open, close } = useOverlay();
   const pageSize = 10;
   const isEditMode = !!editMode;
   const [enabled, setEnabled] = useState(
@@ -185,61 +187,81 @@ export default function EditWhitelistForm({
     };
   }, [editMode?.isWhitelistEnabled, editMode?.premarketId]);
 
+  const saveEditModeWhitelist = async () => {
+    if (!editMode || isSavingRemote) return;
+
+    setIsSavingRemote(true);
+    try {
+      const initialEntries = initialRemoteEntries;
+      const initialSet = new Set(initialEntries.map((item) => item.pubkey));
+      const nextSet = new Set(entries.map((item) => item.pubkey));
+
+      const toAdd = entries
+        .map((item) => item.pubkey)
+        .filter((pubkey) => !initialSet.has(pubkey));
+      const toRemove = initialEntries
+        .map((item) => item.pubkey)
+        .filter((pubkey) => !nextSet.has(pubkey));
+
+      await Promise.all([
+        updateTokenAvailbility(editMode.premarketPubkey, {
+          isWhitelistEnabled: enabled,
+        }),
+        toAdd.length > 1
+          ? addWhitelistUserList({
+              premarket_id: editMode.premarketId,
+              user_pubkeys: toAdd,
+            })
+          : toAdd.length === 1
+          ? addWhitelistUser({
+              premarket_id: editMode.premarketId,
+              user_pubkey: toAdd[0],
+            })
+          : Promise.resolve(),
+        ...toRemove.map((pubkey) =>
+          removeWhitelistUser({
+            premarket_id: editMode.premarketId,
+            user_pubkey: pubkey,
+          })
+        ),
+      ]);
+
+      setInitialRemoteEntries(entries);
+      notify.success("Whitelist updated");
+      await editMode.onUpdated?.();
+      onNext({
+        state: enabled ? "enabled" : "disabled",
+        items: entries,
+      });
+    } catch (error) {
+      console.error("[EditWhitelistForm] failed to save whitelist", error);
+      notify.error("Failed to update whitelist");
+    } finally {
+      setIsSavingRemote(false);
+    }
+  };
+
   const handleSubmit = async () => {
     if (isEditMode && editMode) {
-      if (isSavingRemote) return;
+      const statusChanged = enabled !== editMode.isWhitelistEnabled;
 
-      setIsSavingRemote(true);
-      try {
-        const initialEntries = initialRemoteEntries;
-        const initialSet = new Set(initialEntries.map((item) => item.pubkey));
-        const nextSet = new Set(entries.map((item) => item.pubkey));
-
-        const toAdd = entries
-          .map((item) => item.pubkey)
-          .filter((pubkey) => !initialSet.has(pubkey));
-        const toRemove = initialEntries
-          .map((item) => item.pubkey)
-          .filter((pubkey) => !nextSet.has(pubkey));
-
-        await Promise.all([
-          updateTokenAvailbility(editMode.premarketPubkey, {
-            isWhitelistEnabled: enabled,
-          }),
-          toAdd.length > 1
-            ? addWhitelistUserList({
-                premarket_id: editMode.premarketId,
-                user_pubkeys: toAdd,
-              })
-            : toAdd.length === 1
-            ? addWhitelistUser({
-                premarket_id: editMode.premarketId,
-                user_pubkey: toAdd[0],
-              })
-            : Promise.resolve(),
-          ...toRemove.map((pubkey) =>
-            removeWhitelistUser({
-              premarket_id: editMode.premarketId,
-              user_pubkey: pubkey,
-            })
-          ),
-        ]);
-
-        setInitialRemoteEntries(entries);
-        notify.success("Whitelist updated");
-        await editMode.onUpdated?.();
-        onNext({
-          state: enabled ? "enabled" : "disabled",
-          items: entries,
-        });
+      if (statusChanged) {
+        open(
+          <WhitelistStatusConfirmOverlay
+            colors={colors}
+            nextEnabled={enabled}
+            onCancel={close}
+            onConfirm={async () => {
+              close();
+              await saveEditModeWhitelist();
+            }}
+          />
+        );
         return;
-      } catch (error) {
-        console.error("[EditWhitelistForm] failed to save whitelist", error);
-        notify.error("Failed to update whitelist");
-        return;
-      } finally {
-        setIsSavingRemote(false);
       }
+
+      await saveEditModeWhitelist();
+      return;
     }
 
     onNext({
@@ -712,5 +734,48 @@ export default function EditWhitelistForm({
         </Modal>
       </Portal>
     </ScrollView>
+  );
+}
+
+function WhitelistStatusConfirmOverlay({
+  colors,
+  nextEnabled,
+  onCancel,
+  onConfirm,
+}: {
+  colors: ExtendedMD3Colors;
+  nextEnabled: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <View
+      style={{
+        width: "100%",
+        maxWidth: 420,
+        borderRadius: 24,
+        backgroundColor: colors.surfaceContainerLow,
+        paddingHorizontal: 24,
+        paddingVertical: 24,
+        gap: 16,
+      }}
+    >
+      <Text variant="titleMedium" prominent style={{ color: colors.onSurface, textAlign: "center" }}>
+        {nextEnabled ? "Add whitelist to this premarket?" : "Remove whitelist from this premarket?"}
+      </Text>
+      <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant, textAlign: "center" }}>
+        {nextEnabled
+          ? "Whitelist access will be enabled after saving these changes."
+          : "Whitelist access will be disabled after saving these changes."}
+      </Text>
+      <View style={{ flexDirection: "row", gap: 12, marginTop: 8 }}>
+        <Button mode="outlined" variant="secondary" style={{ flex: 1 }} onPress={onCancel}>
+          Cancel
+        </Button>
+        <Button mode="contained" style={{ flex: 1 }} onPress={onConfirm}>
+          Confirm
+        </Button>
+      </View>
+    </View>
   );
 }
