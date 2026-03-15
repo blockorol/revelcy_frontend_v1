@@ -119,6 +119,7 @@ export function WhitelistUserSearch({
   const [results, setResults] = useState<WhitelistSearchUser[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [isBlurPending, setIsBlurPending] = useState(false);
 
   const trimmedQuery = query.trim();
   const shouldSearch = trimmedQuery.length >= minSearchLength;
@@ -204,7 +205,7 @@ export function WhitelistUserSearch({
     return results;
   }, [results, shouldSearch]);
 
-  const showPanel = shouldSearch && (visibleResults.length > 0 || isLoading);
+  const showPanel = (isFocused || isBlurPending) && shouldSearch && (visibleResults.length > 0 || isLoading);
 
   return (
     <View style={{ gap: showPanel ? 0 : 8 }}>
@@ -220,9 +221,19 @@ export function WhitelistUserSearch({
         <TextInput
           value={query}
           onChangeText={setQuery}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
+          onFocus={() => {
+            setIsFocused(true);
+            setIsBlurPending(false);
+          }}
+          onBlur={() => {
+            setIsFocused(false);
+            setIsBlurPending(true);
+            setTimeout(() => {
+              setIsBlurPending(false);
+            }, 150);
+          }}
           placeholder="Search by username or wallet"
+          placeholderAsLabel
           autoCapitalize="none"
           autoCorrect={false}
           disableRemoveBtn
