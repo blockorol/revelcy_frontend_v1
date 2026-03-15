@@ -4,8 +4,8 @@ import { AppTheme } from "@theme/types";
 import { convertLamportToSmallCount } from "@utils/premarket";
 import { View } from "react-native";
 import {Text} from '@components/ui/Text'
-import React, { useEffect, useMemo, useState } from "react";
-import { Menu, useTheme, TouchableRipple, Divider } from "react-native-paper";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Menu, useTheme, TouchableRipple, Divider, ActivityIndicator } from "react-native-paper";
 import RevelcySegmentedButtons from "@components/ui/SegmentedButton";
 import { SvgIcon } from "@components/base/SvgIcon";
 import { convertTokenToPersent } from "@services/pumpfun/adds";
@@ -30,6 +30,7 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
   const [whitelistCursor, setWhitelistCursor] = useState(0);
   const [whitelistHasMore, setWhitelistHasMore] = useState<boolean>(true);
   const [whitelistLoading, setWhitelistLoading] = useState(false);
+  const whitelistRequestIdRef = useRef(0);
   const holders = tokenData.dynamicInfo.holders
 
   useEffect(() => {
@@ -61,6 +62,7 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
 
   useEffect(() => {
     if (!tokenData.mainInfo.isWhitelistEnabled) {
+      whitelistRequestIdRef.current += 1;
       setWhitelistUsers([]);
       setWhitelistTotal(undefined);
       setWhitelistCursor(0);
@@ -68,6 +70,7 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
       setWhitelistLoading(false);
       return;
     }
+    whitelistRequestIdRef.current += 1;
     setWhitelistUsers([]);
     setWhitelistTotal(undefined);
     setWhitelistCursor(0);
@@ -76,7 +79,11 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
   }, [tokenData.mainInfo.id, tokenData.mainInfo.isWhitelistEnabled]);
 
   useEffect(() => {
-    if (sectionType !== "Accepted" && sectionType !== "Applied") return;
+    if (sectionType !== "Accepted" && sectionType !== "Applied") {
+      return;
+    }
+
+    whitelistRequestIdRef.current += 1;
     setWhitelistUsers([]);
     setWhitelistTotal(undefined);
     setWhitelistCursor(0);
@@ -92,11 +99,11 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
 
     if (!whitelistStatus) return;
     if (!tokenData.mainInfo.isWhitelistEnabled) return;
-    if (whitelistLoading) return;
     if (!whitelistHasMore) return;
     if (whitelistUsers.length >= showCount) return;
 
     let disposed = false;
+    const requestId = ++whitelistRequestIdRef.current;
 
     (async () => {
       setWhitelistLoading(true);
@@ -139,7 +146,9 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
         setWhitelistCursor(0);
         setWhitelistHasMore(false);
       } finally {
-        if (!disposed) setWhitelistLoading(false);
+        if (!disposed && whitelistRequestIdRef.current === requestId) {
+          setWhitelistLoading(false);
+        }
       }
     })();
 
@@ -151,20 +160,21 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
     tokenData.mainInfo.id,
     tokenData.mainInfo.isWhitelistEnabled,
     showCount,
-    whitelistUsers,
-    whitelistTotal,
     whitelistCursor,
     whitelistHasMore,
+    whitelistTotal,
+    whitelistUsers,
   ]);
 
   const joinedList = useMemo(() => sortedHolders.slice(0, showCount), [sortedHolders, showCount]);
   const whitelistList = useMemo(() => whitelistUsers.slice(0, showCount), [whitelistUsers, showCount]);
   const isWhitelistSection = sectionType === "Accepted" || sectionType === "Applied";
+  const isInitialWhitelistLoading = isWhitelistSection && whitelistLoading && whitelistUsers.length === 0;
   const displayCount = isWhitelistSection
     ? whitelistTotal ?? whitelistUsers.length
     : holdersAmount;
   const canShowMore = !limited && (isWhitelistSection
-    ? whitelistHasMore || showCount < displayCount
+    ? !whitelistLoading && !isInitialWhitelistLoading && (whitelistHasMore || showCount < displayCount)
     : showCount < displayCount);
 
 
@@ -225,6 +235,18 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
             </View>
           );
         })}
+        {isInitialWhitelistLoading && (
+          <View
+            style={{
+              width: "100%",
+              minHeight: 120,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <ActivityIndicator size="small" color={colors.primary} />
+          </View>
+        )}
         {isWhitelistSection && whitelistList.map((user) => {
           const walletAddress = user.wallets?.[0] ?? user.id;
           const displayName = user.username?.trim() ? user.username : shortString(walletAddress, 4);
