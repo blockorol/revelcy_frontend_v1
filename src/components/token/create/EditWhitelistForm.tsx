@@ -1,17 +1,20 @@
 import ContinueButtonWithProgressBar from "@components/ContinueButtonWithProgressBar";
 import { SvgIconButton } from "@components/base/SvgIcon";
 import { SvgIcon } from "@components/base/SvgIcon";
+import { Avatar } from "@components/ui/Avatar";
 import { Button } from "@components/ui/Button";
+import RevelcySegmentedButtons from "@components/ui/SegmentedButton";
 import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeader";
 import {
-  WhitelistUserRow,
   WhitelistUserSearch,
   WhitelistSearchUser,
 } from "@components/token/create/WhitelistUserSearch";
 import {
   addWhitelistUser,
   addWhitelistUserList,
+  approveWhitelistUser,
   getAllWhitelistUsers,
+  rejectWhitelistUser,
   removeWhitelistUser,
   updateTokenAvailbility,
 } from "@api/token";
@@ -29,6 +32,7 @@ import { Platform, ScrollView, TouchableOpacity, View } from "react-native";
 import { Modal, Portal, useTheme } from "react-native-paper";
 import { Switch } from "@components/ui/Switch";
 import { makeTransparent } from "@utils/colors";
+import { ChipDisplay } from "@components/ui/Chip";
 
 export type EditWhitelistFormProps = {
   onNext: (data: WhitelistData) => void;
@@ -74,7 +78,14 @@ type ParseResultModalData = {
   addCount: number;
   invalidCount: number;
   invalidPreview: string;
-  nextEntries: WhitelistEntry[];
+  nextEntries: ManagedWhitelistEntry[];
+};
+
+type ManagedWhitelistStatus = "approved" | "requested" | "rejected";
+
+type ManagedWhitelistEntry = WhitelistEntry & {
+  status: ManagedWhitelistStatus;
+  userId?: string;
 };
 
 async function pickFileTextWeb(): Promise<string | null> {
@@ -122,19 +133,37 @@ export default function EditWhitelistForm({
   const [enabled, setEnabled] = useState(
     isEditMode ? editMode.isWhitelistEnabled : (presetData?.state ?? "disabled") === "enabled"
   );
-  const [entries, setEntries] = useState<WhitelistEntry[]>(presetData?.items ?? []);
+  const [entries, setEntries] = useState<ManagedWhitelistEntry[]>(
+    (presetData?.items ?? []).map((item) => ({
+      ...item,
+      status: "approved",
+    }))
+  );
   const [currentPage, setCurrentPage] = useState(0);
   const [parseResultModal, setParseResultModal] = useState<ParseResultModalData | null>(null);
   const [removeAllModalOpen, setRemoveAllModalOpen] = useState(false);
   const [uploadInfoModalOpen, setUploadInfoModalOpen] = useState(false);
   const [isLoadingRemote, setIsLoadingRemote] = useState(false);
   const [isSavingRemote, setIsSavingRemote] = useState(false);
-  const [initialRemoteEntries, setInitialRemoteEntries] = useState<WhitelistEntry[]>(presetData?.items ?? []);
+  const [initialRemoteEntries, setInitialRemoteEntries] = useState<ManagedWhitelistEntry[]>(
+    (presetData?.items ?? []).map((item) => ({
+      ...item,
+      status: "approved",
+    }))
+  );
+  const [editSectionType, setEditSectionType] = useState<"all" | "requested" | "approved" | "rejected">("all");
 
-  const totalPages = useMemo(() => Math.max(1, Math.ceil(entries.length / pageSize)), [entries.length]);
+  const filteredEntries = useMemo(
+    () =>
+      isEditMode
+        ? entries.filter((entry) => editSectionType === "all" || entry.status === editSectionType)
+        : entries,
+    [editSectionType, entries, isEditMode]
+  );
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(filteredEntries.length / pageSize)), [filteredEntries.length]);
   const pagedEntries = useMemo(
-    () => entries.slice(currentPage * pageSize, (currentPage + 1) * pageSize),
-    [entries, currentPage]
+    () => filteredEntries.slice(currentPage * pageSize, (currentPage + 1) * pageSize),
+    [filteredEntries, currentPage]
   );
   const previewAddresses = useMemo(() => pagedEntries.map((entry) => entry.pubkey), [pagedEntries]);
   const { shortInfoMap } = useShortUserInfoList(previewAddresses);
@@ -159,13 +188,18 @@ export default function EditWhitelistForm({
 
         if (disposed) return;
 
-        const nextEntries = users
-          .map((user) => user.wallets[0])
-          .filter((wallet): wallet is string => !!wallet)
-          .map((pubkey) => ({
-            pubkey,
-            state: "enabled" as const,
-          }));
+        const nextEntries: ManagedWhitelistEntry[] = users
+          .map((user) => {
+            const pubkey = user.wallets[0];
+            if (!pubkey) return null;
+            return {
+              pubkey,
+              state: "enabled" as const,
+              status: normalizeWhitelistStatus(user.status),
+              userId: user.id,
+            };
+          })
+          .filter((item): item is NonNullable<typeof item> => item !== null);
 
         setEntries(nextEntries);
         setInitialRemoteEntries(nextEntries);
@@ -195,13 +229,21 @@ export default function EditWhitelistForm({
       const initialEntries = initialRemoteEntries;
       const initialSet = new Set(initialEntries.map((item) => item.pubkey));
       const nextSet = new Set(entries.map((item) => item.pubkey));
+      const initialMap = new Map(initialEntries.map((item) => [item.pubkey, item]));
+      const nextMap = new Map(entries.map((item) => [item.pubkey, item]));
 
       const toAdd = entries
-        .map((item) => item.pubkey)
-        .filter((pubkey) => !initialSet.has(pubkey));
+          .map((item) => item.pubkey)
+          .filter((pubkey) => !initialSet.has(pubkey));
       const toRemove = initialEntries
         .map((item) => item.pubkey)
         .filter((pubkey) => !nextSet.has(pubkey));
+      const toApprove = entries
+        .filter((item) => {
+          const initial = initialMap.get(item.pubkey);
+          return initial && initial.status !== item.status && item.status === "approved";
+        })
+        .map((item) => item.pubkey);
 
       await Promise.all([
         updateTokenAvailbility(editMode.premarketPubkey, {
@@ -218,11 +260,25 @@ export default function EditWhitelistForm({
               user_pubkey: toAdd[0],
             })
           : Promise.resolve(),
-        ...toRemove.map((pubkey) =>
-          removeWhitelistUser({
+        ...toApprove.map((pubkey) =>
+          approveWhitelistUser({
             premarket_id: editMode.premarketId,
+            user_id: nextMap.get(pubkey)?.userId,
             user_pubkey: pubkey,
           })
+        ),
+        ...toRemove.map((pubkey) =>
+          initialMap.get(pubkey)?.status === "requested"
+            ? rejectWhitelistUser({
+                premarket_id: editMode.premarketId,
+                user_id: initialMap.get(pubkey)?.userId,
+                user_pubkey: pubkey,
+              })
+            : removeWhitelistUser({
+                premarket_id: editMode.premarketId,
+                user_id: initialMap.get(pubkey)?.userId,
+                user_pubkey: pubkey,
+              })
         ),
       ]);
 
@@ -266,7 +322,7 @@ export default function EditWhitelistForm({
 
     onNext({
       state: enabled ? "enabled" : "disabled",
-      items: entries,
+      items: entries.map(({ pubkey, state }) => ({ pubkey, state })),
     });
   };
 
@@ -290,6 +346,7 @@ export default function EditWhitelistForm({
       ...newValid.map((pubkey) => ({
         pubkey,
         state: "enabled" as const,
+        status: "approved" as const,
       })),
     ];
     const invalidPreview = parsed.invalid
@@ -330,6 +387,7 @@ export default function EditWhitelistForm({
         {
           pubkey,
           state: "enabled",
+          status: "approved",
         },
       ];
     });
@@ -362,22 +420,87 @@ export default function EditWhitelistForm({
 
   const getShortInfo = (pubkey: string) => shortInfoMap[pubkey] ?? { address: pubkey };
 
+  const onApproveEntry = (pubkey: string) => {
+    setEntries((prev) =>
+      prev.map((entry) =>
+        entry.pubkey === pubkey ? { ...entry, status: "approved" } : entry
+      )
+    );
+  };
+
+  const onDeclineEntry = (pubkey: string) => {
+    setEntries((prev) => prev.filter((entry) => entry.pubkey !== pubkey));
+  };
+
   const renderWhitelistEntry = (
-    entry: WhitelistEntry,
+    entry: ManagedWhitelistEntry,
     onDeleteEntryCb: (pubkey: string) => void
   ) => {
     const shortInfo = getShortInfo(entry.pubkey);
+    const isRequested = entry.status === "requested";
+    const isRejected = entry.status === "rejected";
+    const chipVariant =
+      entry.status === "approved"
+        ? "primary"
+        : entry.status === "requested"
+        ? "secondary"
+        : "error";
 
     return (
-      <WhitelistUserRow
+      <View
         key={entry.pubkey}
-        walletAddress={entry.pubkey}
-        username={shortInfo.name}
-        avatarUrl={shortInfo.avatarUrl ?? null}
-        colors={colors}
-        trailingIcon="x-base"
-        onPress={() => onDeleteEntryCb(entry.pubkey)}
-      />
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 12,
+          paddingVertical: 8,
+        }}
+      >
+        <Avatar
+          size={40}
+          source={shortInfo.avatarUrl ?? null}
+          walletAddress={entry.pubkey}
+        />
+        <View style={{ flex: 1, gap: 6 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <Text variant="labelLarge" prominent style={{ color: colors.onSurface }}>
+              {shortInfo.name || shortString(entry.pubkey, 4)}
+            </Text>
+            <ChipDisplay mode='flat' variant={chipVariant} size="small">
+              {entry.status === "approved"
+                ? "accepted"
+                : entry.status === "requested"
+                ? "applied"
+                : "rejected"}
+            </ChipDisplay>
+          </View>
+          {!!shortInfo.name && (
+            <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+              {shortString(entry.pubkey, 4)}
+            </Text>
+          )}
+        </View>
+        {isEditMode && (isRequested || isRejected) ? (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+            <Button size="small" variant="primary" onPress={() => onApproveEntry(entry.pubkey)}>Accept </Button> 
+            <Button size="small" variant="error" onPress={() => onDeleteEntryCb(entry.pubkey)}>
+              {isRejected ? "Delete" : "Decline"}
+            </Button>
+          </View>
+        ) : (
+          <SvgIconButton
+            name="x-base"
+            size={16}
+            color={colors.onSurfaceVariant}
+            onPress={() => onDeleteEntryCb(entry.pubkey)}
+            containerStyle={{
+              width: 24,
+              height: 24,
+              borderRadius: 12,
+            }}
+          />
+        )}
+      </View>
     );
   };
 
@@ -453,6 +576,21 @@ export default function EditWhitelistForm({
             </View>
 
             <View style={{ gap: 8 }}>
+              {isEditMode && (
+                <RevelcySegmentedButtons
+                  value={editSectionType}
+                  onValueChange={(value: string) => {
+                    setEditSectionType(value as "all" | "requested" | "approved" | "rejected");
+                    setCurrentPage(0);
+                  }}
+                  buttons={[
+                    { value: "requested", label: "Applied", checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant },
+                    { value: "approved", label: "Accepted", checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant },
+                    { value: "rejected", label: "Rejected", checkedColor: colors.error, uncheckedColor: colors.onSurfaceVariant },
+                    { value: "all", label: "All", checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant },
+                  ]}
+                />
+              )}
               <View style={{ flexDirection: "row", gap: 8, alignItems: "flex-start" }}>
                 <View style={{ flex: 1 }}>
                   {isLoadingRemote ? (
@@ -494,13 +632,13 @@ export default function EditWhitelistForm({
               <View style={{ gap: 4 }}>
                 {pagedEntries.length === 0 ? (
                   <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
-                    {isLoadingRemote ? "Loading..." : "No addresses added yet"}
+                    {isLoadingRemote ? "Loading..." : "No users in this section"}
                   </Text>
                 ) : (
                   pagedEntries.map((entry) => renderWhitelistEntry(entry, onDeleteEntry))
                 )}
               </View>
-              {entries.length > pageSize && (
+              {filteredEntries.length > pageSize && (
                 <View
                   style={{
                     marginTop: 8,
@@ -735,6 +873,17 @@ export default function EditWhitelistForm({
       </Portal>
     </ScrollView>
   );
+}
+
+function normalizeWhitelistStatus(status?: string): ManagedWhitelistStatus {
+  const normalized = status?.toLowerCase().trim();
+  if (normalized === "applied" || normalized === "requested" || normalized === "pending") {
+    return "requested";
+  }
+  if (normalized === "rejected") {
+    return "rejected";
+  }
+  return "approved";
 }
 
 function WhitelistStatusConfirmOverlay({

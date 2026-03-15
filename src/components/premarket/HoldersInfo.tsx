@@ -19,17 +19,17 @@ interface Props {
 }
 const DEFAULT_SHOW_COUNT = 10;
 const STEP_SHOW_COUNT = 10;
-const ACCEPTED_PAGE_SIZE = 100;
+const WHITELIST_PAGE_SIZE = 100;
 export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Props) {
   const [showCount, setShowCount] = useState(DEFAULT_SHOW_COUNT)
   const [order, setOrder] = useState<OrderValue>("SUPPLY")
   const { colors } = useTheme() as AppTheme;
   const [sectionType, setSectionType] = useState("Joined")
-  const [acceptedUsers, setAcceptedUsers] = useState<WhitelistUserDTO[]>([]);
-  const [acceptedTotal, setAcceptedTotal] = useState<number | undefined>(undefined);
-  const [acceptedCursor, setAcceptedCursor] = useState(0);
-  const [acceptedHasMore, setAcceptedHasMore] = useState<boolean>(true);
-  const [acceptedLoading, setAcceptedLoading] = useState(false);
+  const [whitelistUsers, setWhitelistUsers] = useState<WhitelistUserDTO[]>([]);
+  const [whitelistTotal, setWhitelistTotal] = useState<number | undefined>(undefined);
+  const [whitelistCursor, setWhitelistCursor] = useState(0);
+  const [whitelistHasMore, setWhitelistHasMore] = useState<boolean>(true);
+  const [whitelistLoading, setWhitelistLoading] = useState(false);
   const holders = tokenData.dynamicInfo.holders
 
   useEffect(() => {
@@ -61,43 +61,58 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
 
   useEffect(() => {
     if (!tokenData.mainInfo.isWhitelistEnabled) {
-      setAcceptedUsers([]);
-      setAcceptedTotal(undefined);
-      setAcceptedCursor(0);
-      setAcceptedHasMore(false);
-      setAcceptedLoading(false);
+      setWhitelistUsers([]);
+      setWhitelistTotal(undefined);
+      setWhitelistCursor(0);
+      setWhitelistHasMore(false);
+      setWhitelistLoading(false);
       return;
     }
-    setAcceptedUsers([]);
-    setAcceptedTotal(undefined);
-    setAcceptedCursor(0);
-    setAcceptedHasMore(true);
-    setAcceptedLoading(false);
+    setWhitelistUsers([]);
+    setWhitelistTotal(undefined);
+    setWhitelistCursor(0);
+    setWhitelistHasMore(true);
+    setWhitelistLoading(false);
   }, [tokenData.mainInfo.id, tokenData.mainInfo.isWhitelistEnabled]);
 
   useEffect(() => {
-    if (sectionType !== "Accepted") return;
+    if (sectionType !== "Accepted" && sectionType !== "Applied") return;
+    setWhitelistUsers([]);
+    setWhitelistTotal(undefined);
+    setWhitelistCursor(0);
+    setWhitelistHasMore(true);
+    setWhitelistLoading(false);
+  }, [sectionType]);
+
+  useEffect(() => {
+    const whitelistStatus =
+      sectionType === "Accepted" ? "APPROVED" :
+      sectionType === "Applied" ? "REQUESTED" :
+      undefined;
+
+    if (!whitelistStatus) return;
     if (!tokenData.mainInfo.isWhitelistEnabled) return;
-    if (acceptedLoading) return;
-    if (!acceptedHasMore) return;
-    if (acceptedUsers.length >= showCount) return;
+    if (whitelistLoading) return;
+    if (!whitelistHasMore) return;
+    if (whitelistUsers.length >= showCount) return;
 
     let disposed = false;
 
     (async () => {
-      setAcceptedLoading(true);
+      setWhitelistLoading(true);
       try {
-        let nextCursor = acceptedCursor;
-        let nextUsers = [...acceptedUsers];
-        let nextTotal = acceptedTotal;
-        let hasMore: boolean = acceptedHasMore;
+        let nextCursor = whitelistCursor;
+        let nextUsers = [...whitelistUsers];
+        let nextTotal = whitelistTotal;
+        let hasMore: boolean = whitelistHasMore;
 
         while (!disposed && nextUsers.length < showCount) {
           if (!hasMore) break;
           const result = await getWhitelistUsers({
             premarket_id: tokenData.mainInfo.id,
+            status: whitelistStatus,
             cursor: nextCursor,
-            limit: ACCEPTED_PAGE_SIZE,
+            limit: WHITELIST_PAGE_SIZE,
           });
 
           const pageItems = result.items ?? [];
@@ -107,24 +122,24 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
 
           const noNewItems = pageItems.length === 0;
           const reachedTotal = typeof nextTotal === "number" && nextCursor >= nextTotal;
-          const lastPage = pageItems.length < ACCEPTED_PAGE_SIZE;
+          const lastPage = pageItems.length < WHITELIST_PAGE_SIZE;
           hasMore = !(noNewItems || reachedTotal || lastPage);
         }
 
         if (disposed) return;
-        setAcceptedUsers(nextUsers);
-        setAcceptedTotal(nextTotal);
-        setAcceptedCursor(nextCursor);
-        setAcceptedHasMore(hasMore);
+        setWhitelistUsers(nextUsers);
+        setWhitelistTotal(nextTotal);
+        setWhitelistCursor(nextCursor);
+        setWhitelistHasMore(hasMore);
       } catch (e) {
         if (disposed) return;
-        console.warn("[HoldersInfo] failed to fetch accepted whitelist users", e);
-        setAcceptedUsers([]);
-        setAcceptedTotal(undefined);
-        setAcceptedCursor(0);
-        setAcceptedHasMore(false);
+        console.warn("[HoldersInfo] failed to fetch whitelist users", e);
+        setWhitelistUsers([]);
+        setWhitelistTotal(undefined);
+        setWhitelistCursor(0);
+        setWhitelistHasMore(false);
       } finally {
-        if (!disposed) setAcceptedLoading(false);
+        if (!disposed) setWhitelistLoading(false);
       }
     })();
 
@@ -136,20 +151,20 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
     tokenData.mainInfo.id,
     tokenData.mainInfo.isWhitelistEnabled,
     showCount,
-    acceptedUsers,
-    acceptedTotal,
-    acceptedCursor,
-    acceptedHasMore,
+    whitelistUsers,
+    whitelistTotal,
+    whitelistCursor,
+    whitelistHasMore,
   ]);
 
   const joinedList = useMemo(() => sortedHolders.slice(0, showCount), [sortedHolders, showCount]);
-  const acceptedList = useMemo(() => acceptedUsers.slice(0, showCount), [acceptedUsers, showCount]);
-  const isAcceptedSection = sectionType === "Accepted";
-  const displayCount = isAcceptedSection
-    ? acceptedTotal ?? acceptedUsers.length
+  const whitelistList = useMemo(() => whitelistUsers.slice(0, showCount), [whitelistUsers, showCount]);
+  const isWhitelistSection = sectionType === "Accepted" || sectionType === "Applied";
+  const displayCount = isWhitelistSection
+    ? whitelistTotal ?? whitelistUsers.length
     : holdersAmount;
-  const canShowMore = !limited && (isAcceptedSection
-    ? acceptedHasMore || showCount < displayCount
+  const canShowMore = !limited && (isWhitelistSection
+    ? whitelistHasMore || showCount < displayCount
     : showCount < displayCount);
 
 
@@ -178,17 +193,17 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
             {displayCount}
           </Text>
           {tokenData.mainInfo.isWhitelistEnabled && <RevelcySegmentedButtons value={sectionType} onValueChange={setSectionType} buttons={[
-          // { value: 'Applied', label: 'Applied', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
+          { value: 'Applied', label: 'Applied', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
           { value: 'Accepted', label: 'Accepted', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
           { value: 'Joined', label: 'Joined', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
         ]} />}
         </View>
         
-        {!isAcceptedSection && <OrderMenu value={order} onChange={setOrder}/>}
+        {!isWhitelistSection && <OrderMenu value={order} onChange={setOrder}/>}
       </View>
      
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 20, rowGap: 16 }}>
-        {!isAcceptedSection && joinedList.map((holder) => {
+        {!isWhitelistSection && joinedList.map((holder) => {
           const amount = convertLamportToSmallCount(holder.amountSolLamp)
           const percent = convertTokenToPersent(holder.amountTokenDec)
           return (
@@ -210,7 +225,7 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
             </View>
           );
         })}
-        {isAcceptedSection && acceptedList.map((user) => {
+        {isWhitelistSection && whitelistList.map((user) => {
           const walletAddress = user.wallets?.[0] ?? user.id;
           const displayName = user.username?.trim() ? user.username : shortString(walletAddress, 4);
           const isCreator = user.wallets?.includes(tokenData.mainInfo.createdByPubkey) ?? false;

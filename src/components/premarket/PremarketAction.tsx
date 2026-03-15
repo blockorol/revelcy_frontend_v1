@@ -1,4 +1,4 @@
-import { TokenDynamicInfo, TokenMainInfo, UserEntry } from "@api/token";
+import { applyWhitelist, TokenDynamicInfo, TokenMainInfo, UserEntry } from "@api/token";
 import { PremarketJoin } from "@components/premarket/PremarketJoin";
 import { CreatorInfo } from "@components/premarket/CreatorInfo";
 import { useAuth } from "@providers/AuthContext";
@@ -84,6 +84,7 @@ export function PremarketActionPremarket({
   const { user } = useAuth();
   const { colors } = useTheme();
   const { open, close } = useOverlay();
+  const notify = useNotification();
   const currentURL = window.location.href;
 
   const isCreator = tokenMainInfo.createdByPubkey === user?.walletAddress;
@@ -119,22 +120,42 @@ export function PremarketActionPremarket({
   const isTimesUp = tokenMainInfo.state === "times_up";
   const isExtended = tokenMainInfo.isExtended;
   const normalizedWhitelistStatus = whitelistStatus?.toLowerCase().trim();
+  const isWhitelistRequested = normalizedWhitelistStatus === "requested";
+  const isWhitelistRejected = normalizedWhitelistStatus === "rejected";
   const isAllowedByWhitelist =
     !tokenMainInfo.isWhitelistEnabled ||
     (!!normalizedWhitelistStatus &&
-      // fix me and remove requested from the list
-      ["requested", "accepted", "approved", "whitelisted", "in_whitelist", "in-whitelist"].includes(
+      ["accepted", "approved", "whitelisted", "in_whitelist", "in-whitelist"].includes(
         normalizedWhitelistStatus
       ));
   const contactLinks = resolveContactLinks(tokenMainInfo.links);
   const contactUrl = resolveContactUrl(tokenMainInfo.links);
 
-  const handleWhitelistActionPress = () => {
+  const handleWhitelistActionPress = async () => {
+    if (!user?.walletAddress) {
+      return;
+    }
+
+    if (!isWhitelistRequested) {
+      try {
+        await applyWhitelist({
+          premarket_id: tokenMainInfo.id,
+          user_pubkey: user.walletAddress,
+        });
+        notify.success("You have applied for whitelist");
+        await onUpdated();
+      } catch (e: any) {
+        console.error("[PremarketAction] failed to apply whitelist", e);
+        return;
+      }
+    }
+
     open(
       <ApplyForWhitelistModal
         isMobile={isMobile}
         contactLinks={contactLinks}
         contactUrl={contactUrl}
+        requestSubmitted
         onClose={close}
       />
     );
@@ -158,10 +179,19 @@ export function PremarketActionPremarket({
         <ShareTextButton style={{ width: "100%" }} shareMessage={`Join to premarket on: ${currentURL}`}>
           Share
         </ShareTextButton>
+      ) : isWhitelistRejected ? (
+        <View style={{ width: "100%", gap: 16 }}>
+          <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant, textAlign: "center" }}>
+            Your whitelist request was declined by the creator
+          </Text>
+          <ShareTextButton mode="outlined" style={{ width: "100%" }} shareMessage={`Join to premarket on: ${currentURL}`}>
+            Share
+          </ShareTextButton>
+        </View>
       ) : !isAllowedByWhitelist ? (
         <View style={{ width: "100%", flexDirection: "row", gap: 16 }}>
           <Button leftSvgIconName="plus" mode="contained" style={{ flex: 4 }} onPress={handleWhitelistActionPress}>
-            Apply to whitelist
+            {isWhitelistRequested ? "Awaiting approval" : "Apply to whitelist"}
           </Button>
           <ShareTextButton mode="outlined" style={{ flex: 1 }} shareMessage={`Join to premarket on: ${currentURL}`}>
             Share
@@ -189,10 +219,11 @@ type ApplyForWhitelistModalProps = {
   isMobile: boolean;
   contactLinks: Array<{ icon: IconName; url: string }>;
   contactUrl?: string;
+  requestSubmitted?: boolean;
   onClose: () => void;
 };
 
-function ApplyForWhitelistModal({ isMobile, contactLinks, contactUrl, onClose }: ApplyForWhitelistModalProps) {
+function ApplyForWhitelistModal({ isMobile, contactLinks, contactUrl, requestSubmitted = false, onClose }: ApplyForWhitelistModalProps) {
   const { colors } = useTheme<AppTheme>();
   const hasContact = !!contactUrl;
 
@@ -226,10 +257,10 @@ function ApplyForWhitelistModal({ isMobile, contactLinks, contactUrl, onClose }:
         <View style={{ alignItems: "center", gap: 10 }}>
           <SvgIcon name="hourglass-up" size={28} color={colors.onSurface} />
           <Text variant="headlineSmall" style={{ color: colors.onSurface }}>
-            Apply for Whitelist
+            {requestSubmitted ? "Whitelist request sent" : "Apply for Whitelist"}
           </Text>
           <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant, textAlign: "center" }}>
-            Please contact creator to apply for whitelist
+            Please ask the creator to approve your whitelist request
           </Text>
           {contactLinks.map((link, index) => (
             <View key={`${link.url}-${index}`} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
@@ -244,7 +275,7 @@ function ApplyForWhitelistModal({ isMobile, contactLinks, contactUrl, onClose }:
           ))}
         </View>
         <Button mode="contained" disabled={!hasContact} style={{ width: "100%" }} onPress={onContactPress}>
-          Contact
+          Contact creator
         </Button>
       </View>
     </View>

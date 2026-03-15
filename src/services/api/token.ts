@@ -570,11 +570,24 @@ export interface GetWhitelistRequestDTO {
   limit: number;
 }
 
+export interface WhitelistSetStatusDTO {
+  premarket_id: string;
+  user_id?: string;
+  user_pubkey?: string;
+}
+
+export interface ApplyWhitelistDTO {
+  premarket_id: string;
+  user_id?: string;
+  user_pubkey?: string;
+}
+
 export interface WhitelistUserDTO {
   id: string;
   username?: string;
   avatar_url?: string;
   wallets: string[];
+  status?: string;
 }
 
 export interface WhitelistUsersResultDTO {
@@ -630,6 +643,7 @@ export async function getWhitelistUsers(args: GetWhitelistRequestDTO): Promise<W
         username: item?.username ?? item?.name ?? undefined,
         avatar_url: item?.avatar_url ?? item?.icon_url ?? item?.url ?? undefined,
         wallets,
+        status: item?.status ?? item?.whitelist_status ?? undefined,
       };
     }),
     total:
@@ -663,4 +677,61 @@ export async function getAllWhitelistUsers(args: Omit<GetWhitelistRequestDTO, "c
   }
 
   return items;
+}
+
+export async function approveWhitelistUser(args: WhitelistSetStatusDTO) {
+  const payload = {
+    network: NETWORK,
+    premarket_id: args.premarket_id,
+    user_id: args.user_id,
+    user_pubkey: args.user_pubkey,
+  };
+
+  try {
+    await http.post(`${API_HOST}/premarket/whitelist/approve`, {
+      json: payload,
+      retry: RETRY_DEFAULT,
+    });
+  } catch (e: any) {
+    console.error("[approveWhitelistUser] failed", { payload, error: e });
+    throw new Error(`Failed to approve whitelist user: ${e?.message ?? "Unknown error"}`);
+  }
+}
+
+export async function rejectWhitelistUser(args: WhitelistSetStatusDTO) {
+  const payload = {
+    network: NETWORK,
+    premarket_id: args.premarket_id,
+    user_id: args.user_id,
+    user_pubkey: args.user_pubkey,
+  };
+
+  try {
+    await http.post(`${API_HOST}/premarket/whitelist/reject`, {
+      json: payload,
+      retry: RETRY_DEFAULT,
+    });
+  } catch (e: any) {
+    console.error("[rejectWhitelistUser] failed", { payload, error: e });
+    throw new Error(`Failed to reject whitelist user: ${e?.message ?? "Unknown error"}`);
+  }
+}
+
+export async function applyWhitelist(args: ApplyWhitelistDTO) {
+  const payload = {
+    network: NETWORK,
+    premarket_id: args.premarket_id,
+    user_id: args.user_id,
+    user_pubkey: args.user_pubkey,
+  };
+
+  try {
+    await http.post(`${API_HOST}/premarket/whitelist/apply`, {
+      json: payload,
+      retry: RETRY_DEFAULT,
+    });
+  } catch (e: any) {
+    console.error("[applyWhitelist] failed", { payload, error: e });
+    throw new Error(`Failed to apply for whitelist: ${e?.message ?? "Unknown error"}`);
+  }
 }
