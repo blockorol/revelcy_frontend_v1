@@ -22,6 +22,7 @@ import { AppTheme } from "@theme/types";
 import { uploadTokenMetadataToIPFS } from "@services/files/ipfs/pumpfun";
 import { updateUriPremarket } from "@services/blockchain/premarket/updateUriPremarket";
 import CreateTokenForm from "@components/token/create/CreateTokenForm";
+import EditWhitelistForm from "@components/token/create/EditWhitelistForm";
 import { TokenMainData } from "@components/token/create/interface";
 import TextedLoader from "@components/ui/Loader";
 import { getTokenShortLink } from "@utils/shortLink";
@@ -48,7 +49,9 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showEditLink, setShowEditLink] = useState(false);
+  const [showEditWhitelist, setShowEditWhitelist] = useState(false);
   const closEditLinkOpen = () => {setShowEditLink(false)}
+  const closeEditWhitelistOpen = () => {setShowEditWhitelist(false)}
 
   const handleRefund = async () => {
     if (!wallet || !connected) {
@@ -308,6 +311,9 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
             <Button style={{flex:1}} variant='primary' 
               mode="contained"
               onPress={()=>setShowEditLink(true)}>Edit links</Button>
+            <Button style={{flex:1}} variant='primary' 
+              mode="outlined"
+              onPress={()=>setShowEditWhitelist(true)}>Edit whitelist</Button>
           </View>
         }
 
@@ -379,6 +385,12 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
           premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
           tokenMainInfoPreset={tokenMainInfo} onUpdated={onUpdated} 
         />
+        <EditWhitelistModal
+          visible={showEditWhitelist}
+          onClose={closeEditWhitelistOpen}
+          tokenMainInfoPreset={tokenMainInfo}
+          onUpdated={onUpdated}
+        />
 
         <VisabilitySwitch
           isDiscoverablePreset={!tokenMainInfo.isHided}
@@ -398,6 +410,9 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
             <Button style={{flex:1}} variant='primary' 
               mode="contained"
               onPress={()=>setShowEditLink(true)}>Edit links</Button>
+            <Button style={{flex:1}} variant='primary' 
+              mode="outlined"
+              onPress={()=>setShowEditWhitelist(true)}>Edit whitelist</Button>
           </View>
         }
         <View style={{flexDirection:'row', gap:16, alignItems:'center'}}>
@@ -409,6 +424,14 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
            <EditLinksModal visible={showEditLink} onClose={closEditLinkOpen} 
             premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
             tokenMainInfoPreset={tokenMainInfo} onUpdated={onUpdated} />
+        }
+        {(tokenMainInfo.state !== 'finished' && tokenMainInfo.state !== 'canceled') &&
+          <EditWhitelistModal
+            visible={showEditWhitelist}
+            onClose={closeEditWhitelistOpen}
+            tokenMainInfoPreset={tokenMainInfo}
+            onUpdated={onUpdated}
+          />
         }
 
         
@@ -590,6 +613,43 @@ function EditLinksModal({
     </Portal>
     
   )
+}
+
+function EditWhitelistModal({
+  visible,
+  onClose,
+  tokenMainInfoPreset,
+  onUpdated,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  tokenMainInfoPreset: TokenMainInfo;
+  onUpdated: () => Promise<void>;
+}) {
+  return (
+    <Portal>
+      <Modal
+        style={{alignItems: 'center', justifyContent: 'center'}}
+        visible={visible}
+        onDismiss={onClose}
+        contentContainerStyle={[styles.modalContainer, { maxWidth: 540, padding: 0 }]}>
+        <EditWhitelistForm
+          onNext={() => {
+            onClose();
+          }}
+          onClose={onClose}
+          step={1}
+          totalSteps={1}
+          editMode={{
+            premarketId: tokenMainInfoPreset.id,
+            premarketPubkey: tokenMainInfoPreset.premarketPubkey.toString(),
+            isWhitelistEnabled: tokenMainInfoPreset.isWhitelistEnabled,
+            onUpdated,
+          }}
+        />
+      </Modal>
+    </Portal>
+  );
 }
 
 

@@ -491,6 +491,12 @@ export interface AddWhitelistUserListDTO {
   user_pubkeys: string[];
 }
 
+export interface AddWhitelistUserDTO {
+  premarket_id: string;
+  user_id?: string;
+  user_pubkey?: string;
+}
+
 export async function addWhitelistUserList(args: AddWhitelistUserListDTO) {
   const payload = {
     network: NETWORK,
@@ -507,6 +513,52 @@ export async function addWhitelistUserList(args: AddWhitelistUserListDTO) {
   } catch (e: any) {
     console.error("[addWhitelistUserList] failed", { payload, error: e });
     throw new Error(`Failed to add whitelist users: ${e?.message ?? "Unknown error"}`);
+  }
+}
+
+export async function addWhitelistUser(args: AddWhitelistUserDTO) {
+  const payload = {
+    network: NETWORK,
+    premarket_id: args.premarket_id,
+    user_id: args.user_id,
+    user_pubkey: args.user_pubkey,
+  };
+
+  try {
+    await http.post(`${API_HOST}/premarket/whitelist/add_user`, {
+      json: payload,
+      retry: RETRY_DEFAULT,
+    });
+    return;
+  } catch (e: any) {
+    console.error("[addWhitelistUser] failed", { payload, error: e });
+    throw new Error(`Failed to add whitelist user: ${e?.message ?? "Unknown error"}`);
+  }
+}
+
+export interface RemoveWhitelistUserDTO {
+  premarket_id: string;
+  user_id?: string;
+  user_pubkey?: string;
+}
+
+export async function removeWhitelistUser(args: RemoveWhitelistUserDTO) {
+  const payload = {
+    network: NETWORK,
+    premarket_id: args.premarket_id,
+    user_id: args.user_id,
+    user_pubkey: args.user_pubkey,
+  };
+
+  try {
+    await http.post(`${API_HOST}/premarket/whitelist/remove_user`, {
+      json: payload,
+      retry: RETRY_DEFAULT,
+    });
+    return;
+  } catch (e: any) {
+    console.error("[removeWhitelistUser] failed", { payload, error: e });
+    throw new Error(`Failed to remove whitelist user: ${e?.message ?? "Unknown error"}`);
   }
 }
 
@@ -528,6 +580,22 @@ export interface WhitelistUserDTO {
 export interface WhitelistUsersResultDTO {
   items: WhitelistUserDTO[];
   total?: number;
+}
+
+function parseWhitelistUserWallets(item: any): string[] {
+  const walletsFromArray =
+    item?.wallets ?? item?.wallet_addresses ?? item?.user_pubkeys ?? item?.addresses;
+
+  if (Array.isArray(walletsFromArray)) {
+    return walletsFromArray
+      .map((wallet: any) => String(wallet))
+      .filter((wallet: string) => wallet.length > 0);
+  }
+
+  const singleWallet =
+    item?.wallet_address ?? item?.wallet ?? item?.user_pubkey ?? item?.pubkey ?? item?.address;
+
+  return singleWallet ? [String(singleWallet)] : [];
 }
 
 export async function getWhitelistUsers(args: GetWhitelistRequestDTO): Promise<WhitelistUsersResultDTO> {
@@ -554,25 +622,9 @@ export async function getWhitelistUsers(args: GetWhitelistRequestDTO): Promise<W
     ? data
     : [];
 
-  const parseWallets = (item: any): string[] => {
-    const walletsFromArray =
-      item?.wallets ?? item?.wallet_addresses ?? item?.user_pubkeys ?? item?.addresses;
-
-    if (Array.isArray(walletsFromArray)) {
-      return walletsFromArray
-        .map((wallet: any) => String(wallet))
-        .filter((wallet: string) => wallet.length > 0);
-    }
-
-    const singleWallet =
-      item?.wallet_address ?? item?.wallet ?? item?.user_pubkey ?? item?.pubkey ?? item?.address;
-
-    return singleWallet ? [String(singleWallet)] : [];
-  };
-
   return {
     items: rawItems.map((item: any) => {
-      const wallets = parseWallets(item);
+      const wallets = parseWhitelistUserWallets(item);
       return {
         id: String(item?.id ?? item?.user_id ?? wallets[0] ?? ""),
         username: item?.username ?? item?.name ?? undefined,
@@ -587,4 +639,28 @@ export async function getWhitelistUsers(args: GetWhitelistRequestDTO): Promise<W
           : Number(data.count)
         : Number(data.total),
   };
+}
+
+export async function getAllWhitelistUsers(args: Omit<GetWhitelistRequestDTO, "cursor" | "limit">): Promise<WhitelistUserDTO[]> {
+  const limit = 200;
+  let cursor = 0;
+  const items: WhitelistUserDTO[] = [];
+
+  while (true) {
+    const response = await getWhitelistUsers({
+      ...args,
+      cursor,
+      limit,
+    });
+
+    items.push(...response.items);
+
+    if (response.items.length < limit) {
+      break;
+    }
+
+    cursor += response.items.length;
+  }
+
+  return items;
 }

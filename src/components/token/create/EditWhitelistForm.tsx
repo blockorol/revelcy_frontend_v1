@@ -8,6 +8,13 @@ import {
   WhitelistUserSearch,
   WhitelistSearchUser,
 } from "@components/token/create/WhitelistUserSearch";
+import {
+  addWhitelistUser,
+  addWhitelistUserList,
+  getAllWhitelistUsers,
+  removeWhitelistUser,
+  updateTokenAvailbility,
+} from "@api/token";
 import { WhitelistData, WhitelistEntry } from "@components/token/create/interface";
 import { useIsMobileWithDemention } from "@hooks/useIsMobile";
 import { useShortUserInfoList } from "@hooks/useShortUserInfoList";
@@ -29,6 +36,12 @@ export type EditWhitelistFormProps = {
   step: number;
   totalSteps: number;
   presetData?: WhitelistData;
+  editMode?: {
+    premarketId: string;
+    premarketPubkey: string;
+    isWhitelistEnabled: boolean;
+    onUpdated?: () => Promise<void> | void;
+  };
 };
 
 function parseWhitelistContent(raw: string): {
@@ -96,17 +109,24 @@ export default function EditWhitelistForm({
   step,
   totalSteps,
   presetData,
+  editMode,
 }: EditWhitelistFormProps) {
   const { isMobile } = useIsMobileWithDemention();
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
   const notify = useNotification();
   const pageSize = 10;
-  const [enabled, setEnabled] = useState((presetData?.state ?? "disabled") === "enabled");
+  const isEditMode = !!editMode;
+  const [enabled, setEnabled] = useState(
+    isEditMode ? editMode.isWhitelistEnabled : (presetData?.state ?? "disabled") === "enabled"
+  );
   const [entries, setEntries] = useState<WhitelistEntry[]>(presetData?.items ?? []);
   const [currentPage, setCurrentPage] = useState(0);
   const [parseResultModal, setParseResultModal] = useState<ParseResultModalData | null>(null);
   const [removeAllModalOpen, setRemoveAllModalOpen] = useState(false);
+  const [isLoadingRemote, setIsLoadingRemote] = useState(false);
+  const [isSavingRemote, setIsSavingRemote] = useState(false);
+  const [initialRemoteEntries, setInitialRemoteEntries] = useState<WhitelistEntry[]>(presetData?.items ?? []);
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(entries.length / pageSize)), [entries.length]);
   const pagedEntries = useMemo(
@@ -122,7 +142,105 @@ export default function EditWhitelistForm({
     }
   }, [currentPage, totalPages]);
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    if (!editMode) return;
+
+    let disposed = false;
+
+    (async () => {
+      setIsLoadingRemote(true);
+      try {
+        const users = await getAllWhitelistUsers({
+          premarket_id: editMode.premarketId,
+        });
+
+        if (disposed) return;
+
+        const nextEntries = users
+          .map((user) => user.wallets[0])
+          .filter((wallet): wallet is string => !!wallet)
+          .map((pubkey) => ({
+            pubkey,
+            state: "enabled" as const,
+          }));
+
+        setEntries(nextEntries);
+        setInitialRemoteEntries(nextEntries);
+        setEnabled(editMode.isWhitelistEnabled);
+      } catch (error) {
+        if (!disposed) {
+          console.error("[EditWhitelistForm] failed to load whitelist", error);
+          notify.error("Failed to load whitelist");
+        }
+      } finally {
+        if (!disposed) {
+          setIsLoadingRemote(false);
+        }
+      }
+    })();
+
+    return () => {
+      disposed = true;
+    };
+  }, [editMode?.isWhitelistEnabled, editMode?.premarketId]);
+
+  const handleSubmit = async () => {
+    if (isEditMode && editMode) {
+      if (isSavingRemote) return;
+
+      setIsSavingRemote(true);
+      try {
+        const initialEntries = initialRemoteEntries;
+        const initialSet = new Set(initialEntries.map((item) => item.pubkey));
+        const nextSet = new Set(entries.map((item) => item.pubkey));
+
+        const toAdd = entries
+          .map((item) => item.pubkey)
+          .filter((pubkey) => !initialSet.has(pubkey));
+        const toRemove = initialEntries
+          .map((item) => item.pubkey)
+          .filter((pubkey) => !nextSet.has(pubkey));
+
+        await Promise.all([
+          updateTokenAvailbility(editMode.premarketPubkey, {
+            isWhitelistEnabled: enabled,
+          }),
+          toAdd.length > 1
+            ? addWhitelistUserList({
+                premarket_id: editMode.premarketId,
+                user_pubkeys: toAdd,
+              })
+            : toAdd.length === 1
+            ? addWhitelistUser({
+                premarket_id: editMode.premarketId,
+                user_pubkey: toAdd[0],
+              })
+            : Promise.resolve(),
+          ...toRemove.map((pubkey) =>
+            removeWhitelistUser({
+              premarket_id: editMode.premarketId,
+              user_pubkey: pubkey,
+            })
+          ),
+        ]);
+
+        setInitialRemoteEntries(entries);
+        notify.success("Whitelist updated");
+        await editMode.onUpdated?.();
+        onNext({
+          state: enabled ? "enabled" : "disabled",
+          items: entries,
+        });
+        return;
+      } catch (error) {
+        console.error("[EditWhitelistForm] failed to save whitelist", error);
+        notify.error("Failed to update whitelist");
+        return;
+      } finally {
+        setIsSavingRemote(false);
+      }
+    }
+
     onNext({
       state: enabled ? "enabled" : "disabled",
       items: entries,
@@ -166,7 +284,7 @@ export default function EditWhitelistForm({
     });
   };
 
-  const isFilledAll = () => true;
+  const isFilledAll = () => !isLoadingRemote && !isSavingRemote;
 
   const onDeleteEntry = (pubkey: string) => {
     setEntries((prev) => prev.filter((entry) => entry.pubkey !== pubkey));
@@ -327,16 +445,22 @@ export default function EditWhitelistForm({
             </View>
 
             <View style={{ gap: 8 }}>
+              {isLoadingRemote ? (
+                <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+                  Loading whitelist...
+                </Text>
+              ) : (
               <WhitelistUserSearch
                 colors={colors}
                 onAddUser={handleAddSearchedUser}
                 isUserAdded={isSearchedUserAdded}
               />
+              )}
 
               <View style={{ gap: 4 }}>
                 {pagedEntries.length === 0 ? (
                   <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
-                    No addresses added yet
+                    {isLoadingRemote ? "Loading..." : "No addresses added yet"}
                   </Text>
                 ) : (
                   pagedEntries.map((entry) => renderWhitelistEntry(entry, onDeleteEntry))
@@ -398,6 +522,7 @@ export default function EditWhitelistForm({
             handleSubmit={handleSubmit}
             isFilledAll={isFilledAll}
             onBack={onBack}
+            submitLabel={isEditMode ? (isSavingRemote ? "Saving..." : "Save") : "Continue"}
           />
         </View>
       </View>

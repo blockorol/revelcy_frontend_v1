@@ -1,13 +1,13 @@
 import { SvgIcon } from "@components/base/SvgIcon";
 import { Avatar } from "@components/ui/Avatar";
 import { Text } from "@components/ui/Text";
+import TextInput from "@components/ui/TextInput";
 import { searchUsers, UserDto } from "@api/users";
 import { ExtendedMD3Colors } from "@theme/types";
 import shortString from "@utils/address_shorter";
 import { isSolanaPublicKey } from "@utils/solana";
 import React, { useEffect, useMemo, useState } from "react";
 import { TouchableOpacity, View } from "react-native";
-import { TextInput as PaperTextInput } from "react-native-paper";
 
 export type WhitelistSearchUser = UserDto;
 
@@ -204,37 +204,46 @@ export function WhitelistUserSearch({
   }, [results, shouldSearch]);
 
   const showPanel = shouldSearch && (visibleResults.length > 0 || isLoading);
+  const isSearchActive = shouldSearch;
 
   return (
-    <View style={{ gap: 8 }}>
-      <PaperTextInput
-        mode="flat"
-        value={query}
-        onChangeText={setQuery}
-        placeholder="Search by username or wallet"
-        autoCapitalize="none"
-        autoCorrect={false}
-        textColor={colors.onSurface}
-        placeholderTextColor={colors.onSurfaceVariant}
-        selectionColor={colors.primary}
-        underlineColor="transparent"
-        activeUnderlineColor={colors.primary}
+    <View style={{ gap: showPanel ? 0 : 8 }}>
+      <View
         style={{
           backgroundColor: colors.surfaceContainerHigh,
-          borderRadius: 16,
+          borderRadius: 12,
+          borderBottomLeftRadius: isSearchActive ? 0 : 12,
+          borderBottomRightRadius: isSearchActive ? 0 : 12,
           overflow: "hidden",
         }}
-        contentStyle={{
-          minHeight: 52,
-          paddingHorizontal: 16,
-        }}
-      />
+      >
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Search by username or wallet"
+          autoCapitalize="none"
+          autoCorrect={false}
+          disableRemoveBtn
+          backgroundColor={colors.surfaceContainerHigh}
+          underlineColor="transparent"
+          activeUnderlineColor={colors.primary}
+          selectionColor={colors.primary}
+          style={{
+            borderRadius: 12,
+            borderBottomLeftRadius: isSearchActive ? 0 : 12,
+            borderBottomRightRadius: isSearchActive ? 0 : 12,
+            paddingVertical: 0,
+          }}
+        />
+      </View>
 
       {showPanel && (
         <View
           style={{
             backgroundColor: colors.surfaceContainerHigh,
             borderRadius: 20,
+            borderTopLeftRadius: 0,
+            borderTopRightRadius: 0,
             paddingHorizontal: 16,
             paddingVertical: 8,
             borderWidth: 1,
