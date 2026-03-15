@@ -517,6 +517,8 @@ export default function PremarketCreationFlow() {
             launchState={launchState}
             onLaunch={handleLaunch}
             data={getTokenData()!}
+            whitelistData={whitelistData}
+            vestingData={vestingData}
           />
         )}
 

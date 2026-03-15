@@ -9,7 +9,7 @@ import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeade
 import { useIsMobileWithDemention } from "@hooks/useIsMobile";
 import { useWallet } from "@storage/wallet-adapter";
 import { IconName, SvgIcon, SvgIconButton } from "@components/base/SvgIcon";
-import { TokenCreateFullData } from "@components/token/create/interface";
+import { TokenCreateFullData, WhitelistData } from "@components/token/create/interface";
 import { ExtendedMD3Colors } from "@theme/types";
 import { PremarketBondingCurve } from "@components/premarket/PremarketBondingCurve";
 import { useAuth } from "@providers/AuthContext";
@@ -22,9 +22,12 @@ import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
 import { COMMUNITY_BANNER_ASPECT_RATIO } from "@utils/aspectRatios";
 import { Switch } from "@components/ui/Switch";
 import { getTokenShortLink } from "@utils/shortLink";
+import { VestingData } from "@components/token/create/VestingSetupForm";
 
 type Props = {
   data: TokenCreateFullData;
+  whitelistData?: WhitelistData;
+  vestingData?: VestingData;
   onLaunch: (discoverable: boolean) => void;
   launchState: string | undefined;
   removeAll: () => void;
@@ -36,6 +39,8 @@ type Props = {
 const SOL_LOCK = 0.06918;
 export default function OverviewPremarketCreation({
   data,
+  whitelistData,
+  vestingData,
   onLaunch,
   launchState,
   removeAll,
@@ -161,6 +166,17 @@ export default function OverviewPremarketCreation({
 
   const deadlineText = data.premarket?.deadline_sec
     ? format(new Date(data.premarket.deadline_sec * 1000), "dd.MM.yyyy HH:mm (XXX)")
+    : undefined;
+  const whitelistEnabled = whitelistData?.state === "enabled";
+  const whitelistCount = whitelistData?.items?.length ?? 0;
+  const vestingEnabled = !!vestingData?.enabled;
+  const shortLinkValue = data.premarket.short_link_name
+    ? getTokenShortLink(data.premarket.short_link_name)
+    : undefined;
+  const vestingSubtitle = vestingEnabled
+    ? `${vestingData?.unlockAtLaunchPercent ?? 0}% unlock, ${formatVestingPeriod(
+        vestingData?.vestingPeriodSec ?? 0
+      )}`
     : undefined;
 
   return (
@@ -359,6 +375,67 @@ export default function OverviewPremarketCreation({
             />
           </View>
 
+          <View
+            style={{
+              backgroundColor: colors.surfaceContainerLowest,
+              gap: 24,
+            }}
+          >
+            <Text
+              variant="labelLarge"
+              prominent
+              style={{ color: colors.onSurface }}
+            >
+              Features
+            </Text>
+
+            <View
+              style={{
+                paddingVertical: 16,
+                paddingHorizontal: 12,
+                backgroundColor: colors.surfaceContainerLow,
+                borderRadius: 14,
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Text variant="bodyMedium" selectionColor={colors.onSurface}>
+                Make premarket discoverable
+              </Text>
+              <Switch value={isDiscoverable} onValueChange={onChangeDiscoverable} />
+              
+            </View>
+
+            <View style={{ gap: 24 }}>
+              <FeatureItem
+                icon="two-coins"
+                title="Vesting"
+                subTitle={vestingSubtitle}
+                status={vestingEnabled ? "active" : "inactive"}
+              />
+              <FeatureItem
+                icon="users"
+                title="Whitelist"
+                subTitle={`${whitelistCount} ${whitelistCount === 1 ? "user" : "users"}`}
+                status={whitelistEnabled ? "active" : "inactive"}
+              />
+              <FeatureItem
+                icon="world-outlined"
+                title="Short link"
+                subTitle={shortLinkValue}
+                status={shortLinkValue ? "active" : "inactive"}
+              />
+              <FeatureItem
+                titleColor={colors.error}
+                icon="binoculars"
+                title="Hidden from Discovery"
+                subTitle={`People can only find it via short link (${shortLinkValue ?? "You can set a short link in the previous step"}).`}
+                status={!isDiscoverable ? "active" : "inactive"}
+              />
+            </View>
+          </View>
+
           {hasAboutCommunity && (
             <View
               style={{
@@ -539,26 +616,6 @@ export default function OverviewPremarketCreation({
             /> */}
           </View>
 
-          {/* Launch options (hide) */}
-          <View style={{
-            }}>
-              <View style={{
-                paddingVertical: 16,
-                paddingHorizontal: 12,
-                backgroundColor: colors.surfaceContainerLow,
-                borderRadius: 14,
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}>
-                <Text variant='bodyMedium' selectionColor={colors.onSurface}>Make premarket discoverable</Text>
-                <Switch value={isDiscoverable} onValueChange={onChangeDiscoverable}/>
-              </View>
-              <HelperText type="info" visible={!isDiscoverable}>
-                Token is hidden from Discovery. People can only find it via short link ({getTokenShortLink(data.premarket.short_link_name) ?? "You can set a short link in the previous step"}).
-              </HelperText>
-          </View>
-
           {!!error && (
             <View style={{ flexDirection: "row", gap: 16 }}>
               <SvgIcon name="info-circle" color={colors.error} size={24} />
@@ -600,6 +657,67 @@ export default function OverviewPremarketCreation({
         </View>
       </View>
     </ScrollView>
+  );
+}
+
+function formatVestingPeriod(seconds: number): string {
+  if (seconds <= 0) return "Off";
+  if (seconds % (90 * 24 * 3600) === 0) return "3 months";
+  if (seconds % (30 * 24 * 3600) === 0) return "1 month";
+  if (seconds % (7 * 24 * 3600) === 0) return "1 week";
+  if (seconds % (24 * 3600) === 0) return "1 day";
+  if (seconds % 3600 === 0) {
+    const hours = seconds / 3600;
+    return `${hours} hour${hours === 1 ? "" : "s"}`;
+  }
+  return `${seconds} sec`;
+}
+
+function FeatureItem({
+  titleColor,
+  color,
+  icon,
+  title,
+  subTitle,
+  status,
+}: {
+  icon: IconName;
+  title: string;
+  subTitle?: string;
+  color?: string;
+  titleColor?: string;
+  status: "active" | "inactive";
+}) {
+  const theme = useTheme();
+  const colors = theme.colors as ExtendedMD3Colors;
+
+  if (status === "inactive" || !subTitle) {
+    return null;
+  }
+
+  return (
+    <View
+      style={{
+        borderWidth: 1,
+        borderColor: color || colors.primary,
+        borderRadius: 20,
+        padding: 16,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 16,
+      }}
+    >
+      <SvgIcon name={icon} size={32} color={ color || colors.primary} />
+      <View style={{ flex: 1, gap: 4 }}>
+        <Text variant="titleSmall" style={{ color: titleColor || colors.onSurface }}>
+          {title}
+        </Text>
+        <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
+          {subTitle}
+        </Text>
+      </View>
+      <SvgIcon name="check" size={24} color={color || colors.primary} />
+    </View>
   );
 }
 

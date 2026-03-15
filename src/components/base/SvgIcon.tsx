@@ -56,6 +56,7 @@ import WorldOutlined from "@assets/basic_icon/world-outlined.svg";
 import XCircleOutlined from "@assets/basic_icon/x-circle-outlined.svg";
 import XBase from "@assets/basic_icon/x-base.svg";
 import XLogo from "@assets/basic_icon/x-logo.svg";
+import Users from "@assets/basic_icon/users.svg";
 import EditSimple from "@assets/basic_icon/edit-simple.svg";
 import {
   TouchableOpacity,
@@ -121,6 +122,7 @@ export const icons = {
   "x-base": XBase,
   "x-circle-outlined": XCircleOutlined,
   "x-logo": XLogo,
+  "users": Users,
   "edit-simple": EditSimple,
 };
 
