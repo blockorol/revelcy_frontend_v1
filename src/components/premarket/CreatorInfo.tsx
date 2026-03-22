@@ -35,6 +35,12 @@ interface CreatorInfoProps {
   currentURL: string;
 }
 
+const secondaryEditButtonProps = {
+  variant: "primary" as const,
+  mode: "outlined" as const,
+  size: "small" as const,
+};
+
 export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReached, currentURL}: CreatorInfoProps) {
   const { colors } = useTheme();
 
@@ -309,11 +315,11 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
         </View>
         {(tokenMainInfo.state !== 'finished' && tokenMainInfo.state !== 'canceled') &&
           <View style={{flexDirection:'row', gap:16, width:'100%'}}>
-            <Button style={{flex:1}} variant='primary' 
-              mode="contained"
+            <Button style={{flex:1}} 
+              {...secondaryEditButtonProps}
               onPress={()=>setShowEditLink(true)}>Edit links</Button>
-            <Button style={{flex:1}} variant='primary' 
-              mode="outlined"
+            <Button style={{flex:1}} 
+              {...secondaryEditButtonProps}
               onPress={()=>setShowEditWhitelist(true)}>{whitelistButtonLabel}</Button>
           </View>
         }
@@ -381,11 +387,11 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
         </View>
         {(tokenMainInfo.state !== 'finished' && tokenMainInfo.state !== 'canceled') &&
           <View style={{flexDirection:'row', gap:16, width:'100%'}}>
-            <Button style={{flex:1}} variant='primary' 
-              mode="contained"
+            <Button style={{flex:1}} 
+              {...secondaryEditButtonProps}
               onPress={()=>setShowEditLink(true)}>Edit links</Button>
-            <Button style={{flex:1}} variant='primary' 
-              mode="outlined"
+            <Button style={{flex:1}} 
+              {...secondaryEditButtonProps}
               onPress={()=>setShowEditWhitelist(true)}>{whitelistButtonLabel}</Button>
           </View>
         }
@@ -417,11 +423,11 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
         <ShareTextButton style={{width:'100%'}} shareMessage={`Join to premarket on: ${currentURL}`}>Share</ShareTextButton>
         {(tokenMainInfo.state !== 'finished' && tokenMainInfo.state !== 'canceled') &&
           <View style={{flexDirection:'row', gap:16, width:'100%'}}>
-            <Button style={{flex:1}} variant='primary' 
-              mode="contained"
+            <Button style={{flex:1}} 
+              {...secondaryEditButtonProps}
               onPress={()=>setShowEditLink(true)}>Edit links</Button>
-            <Button style={{flex:1}} variant='primary' 
-              mode="outlined"
+            <Button style={{flex:1}} 
+              {...secondaryEditButtonProps}
               onPress={()=>setShowEditWhitelist(true)}>{whitelistButtonLabel}</Button>
           </View>
         }
@@ -505,7 +511,7 @@ function VisabilitySwitch({isDiscoverablePreset, shortLink, premarketPubkey, onU
 }
 
 
-function EditLinksModal({
+export function EditLinksModal({
   visible,
   onClose, 
   tokenMainInfoPreset,
@@ -626,7 +632,7 @@ function EditLinksModal({
   )
 }
 
-function EditWhitelistModal({
+export function EditWhitelistModal({
   visible,
   onClose,
   tokenMainInfoPreset,

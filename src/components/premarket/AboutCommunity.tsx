@@ -14,6 +14,7 @@ import { useOverlay } from "@storage/UniversalOverlayProvider";
 import { validateImageFile, uriToFile, BANNER_MAX_FILE_SIZE_BYTES } from "@utils/imageValidation";
 import { COMMUNITY_BANNER_ASPECT_RATIO } from "@utils/aspectRatios";
 import { useNotification } from "@providers/NotificationContext";
+import { Button as AppButton } from "@components/ui/Button";
 
 interface AboutCommunityProps {
   premarketPubkey: string;
@@ -46,6 +47,13 @@ export function AboutCommunity({
   }
 
   const bannerUri = communityInfoLocal?.tokenBannerURL;
+  const editButtonProps = {
+    variant: "primary" as const,
+    mode: "outlined" as const,
+    size: "small" as const,
+    style: { borderRadius: 8, paddingHorizontal: 0, margin: 0 },
+    contentStyle: { height: 30, paddingHorizontal: 16, margin: 0 },
+  };
 
   const openEdit = () => {
     open(
@@ -160,21 +168,12 @@ export function AboutCommunity({
             >
               <Text variant="titleLarge">About Community</Text>
               {isEditable && (
-                <Button
-                  mode="outlined"
+                <AppButton
                   onPress={openEdit}
-                  style={{ borderRadius: 8, paddingHorizontal: 0, margin: 0 }}
-                  contentStyle={{
-                    height: 30,
-                    paddingHorizontal: 16,
-                    margin: 0,
-                  }}
-                  labelStyle={{ margin: 0 }}
+                  {...editButtonProps}
                 >
-                  <Text prominent variant="labelMedium">
-                    Edit
-                  </Text>
-                </Button>
+                  Edit
+                </AppButton>
               )}
             </View>
             <View>
@@ -186,17 +185,12 @@ export function AboutCommunity({
           </View>
         ) : (
           isEditable && (
-            <Button
-              mode="outlined"
+            <AppButton
               onPress={openEdit}
-              style={{ borderRadius: 8, paddingHorizontal: 0, margin: 0 }}
-              contentStyle={{ height: 30, paddingHorizontal: 16, margin: 0 }}
-              labelStyle={{ margin: 0 }}
+              {...editButtonProps}
             >
-              <Text prominent variant="labelMedium">
-                Add comunity info
-              </Text>
-            </Button>
+              Add comunity info
+            </AppButton>
           )
         )}
 

@@ -142,6 +142,7 @@ export function convertTimeStampToDataMonth(timestamp: number): string {
 }
 
 export type PremarketState = 
+  'concept' | // concept-only state
   'premarket'| // active state
   'canceled' | // refunded
   'finished' | // premarket launched successfully

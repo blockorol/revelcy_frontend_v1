@@ -25,6 +25,7 @@ import {
 import {
   createPremarket,
   CreatePremarketArgs,
+  createPremarketConcept,
 } from "@services/premarket/create";
 import EditPremarketSettingsForm from "@components/token/create/EditPremarketSettings";
 import EditWhitelistForm from "@components/token/create/EditWhitelistForm";
@@ -228,94 +229,13 @@ export default function PremarketCreationFlow() {
   };
 
   const handleLaunch = async (discoverable: boolean) => {
+    const prepared = await preparePremarketCreation(discoverable);
+    if (!prepared) {
+      return;
+    }
+
     try {
-      await patch({ step: FLOW_STEP.OVERVIEW });
-
-      if (
-        !tokenMainData ||
-        !customizeTokenData ||
-        !tokenomicsData ||
-        !premarketSettingsData
-      ) {
-        console.error("no tokenData");
-        notify.error("no tokenData", {
-          suggest: "reload page and set all token data",
-        });
-        return;
-      }
-      const nowSec = Math.floor(Date.now() / 1000);
-      const SEC_IN_H = 60 * 60;
-      const SEC_IN_DAY = 24 * SEC_IN_H;
-
-      if (premarketSettingsData.deadline_sec < nowSec + SEC_IN_H) {
-        notify.error("Min deadline - 1 h", {
-          suggest: "Change deadline",
-        });
-        return;
-      }
-      if (premarketSettingsData.deadline_sec > nowSec + SEC_IN_DAY * 31) {
-        notify.error("Max deadline - 31 days", {
-          suggest: "Change deadline",
-        });
-        return;
-      }
-
-      const tokenData = {
-        mainData: tokenMainData,
-        customData: customizeTokenData,
-        tokenomicsData: tokenomicsData,
-        premarketSettingsData: premarketSettingsData,
-      };
-
       setLaunchState("Connecting wallet...");
-      if (wallet === undefined || !connected) {
-        console.error("wallet is not connected");
-        notify.error("wallet is not connected", {
-          suggest: "enable phantom extention and try again",
-          action: {
-            label: "connect",
-            onAction: async () => {
-              try {
-                await connect();
-              } catch (e) {
-                console.log("error during connect:", e);
-              }
-            },
-          },
-        });
-        return;
-      }
-      if (network === "testnet") {
-        console.error("wallet is not connected");
-        notify.error("testnet network is not supported");
-        return;
-      }
-
-      const createPremarketArgs: CreatePremarketArgs = {
-        avatar: tokenData.mainData.avatar,
-        name: tokenData.mainData.tokenName,
-        symbol: tokenData.mainData.tokenTicker,
-        description: tokenData.mainData.description,
-        links: tokenData.mainData.links,
-        deadline: tokenData.premarketSettingsData.deadline_sec,
-        goal_sol_lamp: convertSmallCountToLamport(tokenData.premarketSettingsData.goal_sol),
-        max_sol_lamp: convertSmallCountToLamport(tokenData.premarketSettingsData.goal_sol+0.5),
-        creator_allocate_lamp: convertSmallCountToLamport(
-          tokenData.tokenomicsData.creatorInitialBuy
-        ),
-      };
-      const communityInfo: AddCommunityInfoParams ={
-        banner: tokenData.customData.banner ? {
-          data: tokenData.customData.banner.data, 
-          url: tokenData.customData.banner.url,
-        } : undefined,
-        description: tokenData.customData.description, 
-        links: tokenData.customData.links
-      }
-      const effectiveWhitelist: WhitelistData = {
-        state: whitelistData?.state ?? "disabled",
-        items: whitelistData?.items ?? [],
-      };
       setLaunchState("Started premarket creation...");
       let resp:
         | undefined
@@ -326,17 +246,14 @@ export default function PremarketCreationFlow() {
 
       try {
         resp = await createPremarket(
-          network,
-          wallet,
+          prepared.network,
+          prepared.wallet,
           currentConnection,
-          createPremarketArgs,
-          communityInfo,
+          prepared.createPremarketArgs,
+          prepared.communityInfo,
           vestingData,
-          effectiveWhitelist,
-          {
-            isHided: !discoverable,
-            tokenShortUrlName: tokenData.premarketSettingsData.short_link_name,
-          },
+          prepared.effectiveWhitelist,
+          prepared.visibilityInfo,
           (text) => {
             setLaunchState(text);
           },
@@ -373,6 +290,147 @@ export default function PremarketCreationFlow() {
       closeOverlay();
       setLaunchState(undefined);
     }
+  };
+
+  const handleCreateConcept = async (discoverable: boolean) => {
+    const prepared = await preparePremarketCreation(discoverable);
+    if (!prepared) {
+      return;
+    }
+
+    try {
+      setLaunchState("Creating concept...");
+      const resp = await createPremarketConcept(
+        prepared.network,
+        prepared.wallet,
+        prepared.createPremarketArgs,
+        prepared.communityInfo,
+        vestingData,
+        prepared.effectiveWhitelist,
+        prepared.visibilityInfo,
+        (text) => {
+          setLaunchState(text);
+        },
+        notify.error
+      );
+
+      await clear();
+      router.push(`/token/${resp.premarketPDA}`);
+    } catch (error) {
+      console.error("failed to create concept", error);
+      notify.error("failed to create concept", {
+        suggest: "Please, try again",
+        duration: 60000,
+        action: {
+          label: "Ok",
+          onAction: () => {},
+        },
+      });
+    } finally {
+      closeOverlay();
+      setLaunchState(undefined);
+    }
+  };
+
+  const preparePremarketCreation = async (discoverable: boolean) => {
+    await patch({ step: FLOW_STEP.OVERVIEW });
+
+    if (
+      !tokenMainData ||
+      !customizeTokenData ||
+      !tokenomicsData ||
+      !premarketSettingsData
+    ) {
+      console.error("no tokenData");
+      notify.error("no tokenData", {
+        suggest: "reload page and set all token data",
+      });
+      return;
+    }
+
+    const nowSec = Math.floor(Date.now() / 1000);
+    const SEC_IN_H = 60 * 60;
+    const SEC_IN_DAY = 24 * SEC_IN_H;
+
+    if (premarketSettingsData.deadline_sec < nowSec + SEC_IN_H) {
+      notify.error("Min deadline - 1 h", {
+        suggest: "Change deadline",
+      });
+      return;
+    }
+    if (premarketSettingsData.deadline_sec > nowSec + SEC_IN_DAY * 31) {
+      notify.error("Max deadline - 31 days", {
+        suggest: "Change deadline",
+      });
+      return;
+    }
+
+    if (wallet === undefined || !connected) {
+      console.error("wallet is not connected");
+      notify.error("wallet is not connected", {
+        suggest: "enable phantom extention and try again",
+        action: {
+          label: "connect",
+          onAction: async () => {
+            try {
+              await connect();
+            } catch (e) {
+              console.log("error during connect:", e);
+            }
+          },
+        },
+      });
+      return;
+    }
+
+    if (network === "testnet") {
+      notify.error("testnet network is not supported");
+      return;
+    }
+
+    const creationNetwork = network;
+
+    const createPremarketArgs: CreatePremarketArgs = {
+      avatar: tokenMainData.avatar,
+      name: tokenMainData.tokenName,
+      symbol: tokenMainData.tokenTicker,
+      description: tokenMainData.description,
+      links: tokenMainData.links,
+      deadline: premarketSettingsData.deadline_sec,
+      goal_sol_lamp: convertSmallCountToLamport(premarketSettingsData.goal_sol),
+      max_sol_lamp: convertSmallCountToLamport(premarketSettingsData.goal_sol + 0.5),
+      creator_allocate_lamp: convertSmallCountToLamport(
+        tokenomicsData.creatorInitialBuy
+      ),
+    };
+
+    const communityInfo: AddCommunityInfoParams = {
+      banner: customizeTokenData.banner
+        ? {
+            data: customizeTokenData.banner.data,
+            url: customizeTokenData.banner.url,
+          }
+        : undefined,
+      description: customizeTokenData.description,
+      links: customizeTokenData.links,
+    };
+
+    const effectiveWhitelist: WhitelistData = {
+      state: whitelistData?.state ?? "disabled",
+      items: whitelistData?.items ?? [],
+    };
+
+    return {
+      network: creationNetwork,
+      wallet,
+      createPremarketArgs,
+      communityInfo,
+      effectiveWhitelist,
+      visibilityInfo: {
+        isHided: !discoverable,
+        tokenShortUrlName: premarketSettingsData.short_link_name,
+      },
+    };
   };
 
   const handleIsFinished = async (): Promise<boolean> => {
@@ -516,6 +574,7 @@ export default function PremarketCreationFlow() {
             onClose={onButtonClose}
             launchState={launchState}
             onLaunch={handleLaunch}
+            onCreateConcept={handleCreateConcept}
             data={getTokenData()!}
             whitelistData={whitelistData}
             vestingData={vestingData}

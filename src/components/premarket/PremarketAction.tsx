@@ -1,6 +1,6 @@
 import { applyWhitelist, TokenDynamicInfo, TokenMainInfo, UserEntry } from "@api/token";
 import { PremarketJoin } from "@components/premarket/PremarketJoin";
-import { CreatorInfo } from "@components/premarket/CreatorInfo";
+import { CreatorInfo, EditLinksModal, EditWhitelistModal } from "@components/premarket/CreatorInfo";
 import { useAuth } from "@providers/AuthContext";
 import { useTheme, Text } from "react-native-paper";
 import { TouchableOpacity, View } from "react-native";
@@ -19,6 +19,7 @@ import TextedLoader from "@components/ui/Loader";
 import { SvgIcon } from "@components/base/SvgIcon";
 import { AppTheme } from "@theme/types";
 import { IconName } from "@components/base/SvgIcon";
+import { useState } from "react";
 
 interface PremarketActionProps {
   tokenMainInfo: TokenMainInfo;
@@ -38,6 +39,15 @@ export function PremarketAction({
   isMobile,
 }: PremarketActionProps) {
   switch (tokenMainInfo.state) {
+    case "concept":
+      return (
+        <PremarketActionConcept
+          tokenMainInfo={tokenMainInfo}
+          whitelistStatus={whitelistStatus}
+          onUpdated={onUpdated}
+          isMobile={isMobile}
+        />
+      );
     case "premarket":
     case "times_up":
     case "expired":
@@ -213,6 +223,145 @@ export function PremarketActionPremarket({
 
 export function PremarketActionCanceled() {
   return null;
+}
+
+interface PremarketActionConceptProps {
+  tokenMainInfo: TokenMainInfo;
+  whitelistStatus?: string;
+  onUpdated: () => Promise<void>;
+  isMobile: boolean;
+}
+
+function PremarketActionConcept({
+  tokenMainInfo,
+  whitelistStatus,
+  onUpdated,
+  isMobile,
+}: PremarketActionConceptProps) {
+  const { user } = useAuth();
+  const { colors } = useTheme<AppTheme>();
+  const notify = useNotification();
+  const { open, close } = useOverlay();
+  const currentURL = window.location.href;
+  const isCreator = tokenMainInfo.createdByPubkey === user?.walletAddress;
+  const normalizedWhitelistStatus = whitelistStatus?.toLowerCase().trim();
+  const isWhitelistRequested = normalizedWhitelistStatus === "requested";
+  const isWhitelistRejected = normalizedWhitelistStatus === "rejected";
+  const contactLinks = resolveContactLinks(tokenMainInfo.links);
+  const contactUrl = resolveContactUrl(tokenMainInfo.links);
+  const [showEditLinks, setShowEditLinks] = useState(false);
+  const [showEditWhitelist, setShowEditWhitelist] = useState(false);
+  const whitelistButtonLabel = tokenMainInfo.isWhitelistEnabled ? "Edit whitelist" : "Add whitelist";
+
+  const handleApplyWhitelist = async () => {
+    if (!user?.walletAddress) {
+      return;
+    }
+
+    if (!isWhitelistRequested) {
+      try {
+        await applyWhitelist({
+          premarket_id: tokenMainInfo.id,
+          user_pubkey: user.walletAddress,
+        });
+        notify.success("You have applied for whitelist");
+        await onUpdated();
+      } catch (e: any) {
+        console.error("[PremarketActionConcept] failed to apply whitelist", e);
+        notify.error("Failed to apply for whitelist");
+        return;
+      }
+    }
+
+    open(
+      <ApplyForWhitelistModal
+        isMobile={isMobile}
+        contactLinks={contactLinks}
+        contactUrl={contactUrl}
+        requestSubmitted
+        onClose={close}
+      />
+    );
+  };
+
+  if (isCreator) {
+    return (
+      <View
+        style={{
+          gap: 16,
+          paddingLeft: isMobile ? 16 : 24,
+          paddingRight: isMobile ? 16 : 24,
+          alignItems: "center",
+          width: "100%",
+        }}
+      >
+        <View style={{ width: "100%", gap: 16, alignItems: "center", justifyContent: "center" , flexDirection: "row"}}> 
+          <Button leftSvgIconName="rocket" style={{ flex: 5 }} mode="contained" onPress={() => openInBrowser(`https://pump.fun/create/${tokenMainInfo.id}`)}>
+            Premarket
+          </Button>
+          <ShareTextButton style={{ flex: 1}} shareMessage={`Join to premarket on: ${currentURL}`}/>
+        </View>
+        <View style={{ flexDirection: "row", gap: 16, width: "100%" }}>
+          <Button style={{ flex: 1 }} variant="primary" mode="outlined" size="small" onPress={() => setShowEditLinks(true)}>
+            Edit links
+          </Button>
+          <Button style={{ flex: 1 }} variant="primary" mode="outlined" size="small" onPress={() => setShowEditWhitelist(true)}>
+            {whitelistButtonLabel}
+          </Button>
+        </View>
+        <EditLinksModal
+          visible={showEditLinks}
+          onClose={() => setShowEditLinks(false)}
+          premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
+          tokenMainInfoPreset={tokenMainInfo}
+          onUpdated={onUpdated}
+        />
+        <EditWhitelistModal
+          visible={showEditWhitelist}
+          onClose={() => setShowEditWhitelist(false)}
+          tokenMainInfoPreset={tokenMainInfo}
+          onUpdated={onUpdated}
+        />
+      </View>
+    );
+  }
+
+  return (
+    <View
+      style={{
+        gap: 16,
+        paddingLeft: isMobile ? 16 : 24,
+        paddingRight: isMobile ? 16 : 24,
+        alignItems: "center",
+        width: "100%",
+      }}
+    >
+
+      {isWhitelistRejected && (
+        <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant, textAlign: "center" }}>
+          Your whitelist request was declined by the creator
+        </Text>
+      )}
+      <View style={{ gap: 16, width: "100%", alignItems: "center", justifyContent: "center" , flexDirection: "row"}}>
+      {tokenMainInfo.isWhitelistEnabled && (
+        <Button
+          leftSvgIconName="plus"
+          mode="contained"
+          style={{ flex: 5}}
+          onPress={handleApplyWhitelist}
+          disabled={isWhitelistRequested}
+        >
+          {isWhitelistRequested ? "Awaiting approval" : "Apply to whitelist"}
+        </Button>
+      )}
+      <ShareTextButton
+        mode={tokenMainInfo.isWhitelistEnabled ? "outlined" : "contained"}
+        style={{ flex: 1 }}
+        shareMessage={`Join to premarket on: ${currentURL}`}
+      />
+      </View>
+    </View>
+  );
 }
 
 type ApplyForWhitelistModalProps = {

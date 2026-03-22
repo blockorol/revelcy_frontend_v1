@@ -4,14 +4,12 @@ import { Text, useTheme } from "react-native-paper";
 import { router } from "expo-router";
 import { SvgIcon } from "@components/base/SvgIcon";
 import { ChipDisplay } from '@components/ui/Chip';
-import { RoundIconLink } from "@components/premarket/RoundIcons";
 import { getTimeLeftLabel, convertDecimalToToken, convertLamportToSmallCount, formatNumberCompact, convertTimeStampToDataMonth } from "@utils/premarket";
 import { formatNumberNoTrailingZeros } from "@utils/numbers";
-import shortString from "@utils/address_shorter";
 import { TokenMainInfo, TokenDynamicInfo } from "@api/token";
 import { AvatarGroup } from "@components/base/AvatarGroup";
-import Svg, { Path } from 'react-native-svg';
 import { ExtendedMD3Colors } from "@theme/types";
+import { toBackground15 } from "@utils/colors";
 
 type PremarketCardProps = {
   mainInfo: TokenMainInfo;
@@ -23,6 +21,7 @@ type PremarketCardProps = {
 export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dynamicInfo, raisedLamports, compact = true }) => {
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
+  const isConcept = mainInfo.state === "concept";
 
   const goalSOL = useMemo(() => {
     const lamp = mainInfo.premarketGoalSolLamp.toString();
@@ -51,6 +50,10 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
 
   // Determine the effective state based on conditions
   const getEffectiveState = () => {
+    if (mainInfo.state === "concept") {
+      return mainInfo.state;
+    }
+
     const now = Math.floor(Date.now() / 1000);
     const isPremarket = mainInfo.state === 'premarket';
     const isDeadlinePassed = mainInfo.premarketDeadline < now;
@@ -71,8 +74,18 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
     return mainInfo.state;
   };
 
-  const button = (state: "premarket" | "canceled" | "finished" | "times_up" | "expired") => {
-    return state === 'premarket' ? 
+  const button = (state: TokenMainInfo["state"]) => {
+    return state === 'concept' ? (
+    <ChipDisplay
+      size="normal"
+      mode="flat"
+      style={{ backgroundColor: toBackground15(colors.yellow), borderColor: toBackground15(colors.yellow) }}
+    >
+      <Text variant="labelLarge" style={{ color: colors.yellow }}>
+        Concept
+      </Text>
+    </ChipDisplay>
+    ) : state === 'premarket' ? 
     (<ChipDisplay
       variant="secondary"
       size="normal"
@@ -129,7 +142,7 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
           borderRadius: 24,
           padding: 20,
           width: 368,
-          height: 590,
+          minHeight: isConcept ? 480 : 590,
           overflow: "hidden",
           gap: 16,
         }}
@@ -216,7 +229,7 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
         </View>
 
         {/* Dynamic Info Section */}
-        {mainInfo.state !== "canceled" && (
+        {!isConcept && mainInfo.state !== "canceled" && (
           dynamicInfo ? (
           <View
             style={{
@@ -347,7 +360,7 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
         )}
 
         {/* Progress bar (if raised exist) */}
-        {progressPct != null && (
+        {!isConcept && progressPct != null && (
           <View style={{ marginTop: 12 }}>
             <View
               style={{

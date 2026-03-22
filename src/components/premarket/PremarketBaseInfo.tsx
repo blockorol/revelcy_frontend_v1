@@ -12,6 +12,7 @@ import { QuestionMarkModal } from "@components/modals/QuestionMarkModal";
 import { useState } from "react";  
 import { tr } from "react-native-paper-dates";
 import { tryCopy } from "@utils/actions";
+import { toBackground15 } from "@utils/colors";
 
 interface PremarketBaseInfoProps {
   tokenMainInfo: TokenMainInfo;
@@ -22,9 +23,20 @@ export function PremarketBaseInfo({ tokenMainInfo, isMobile}: PremarketBaseInfoP
   const theme = useTheme();
   const { left } = useIsMobileForTwoScreenWithDemention();
   const [showQuestionModal, setShowQuestionModal] = useState(false);
+  const isConcept = tokenMainInfo.state === "concept";
 
-  const stateChip = (state: "premarket" | "canceled" | "finished" | "times_up" | "expired") => {
-    return state === 'premarket' ? 
+  const stateChip = (state: TokenMainInfo["state"]) => {
+    return state === 'concept' ? (
+    <ChipDisplay
+      size="normal"
+      mode="flat"
+      style={{ backgroundColor: toBackground15(theme.colors.yellow), borderColor: toBackground15(theme.colors.yellow) }}
+    >
+      <Text variant="labelLarge" style={{ color: theme.colors.yellow }}>
+        Concept
+      </Text>
+    </ChipDisplay>
+    ) : state === 'premarket' ? 
     (<ChipDisplay
       variant="secondary"
       size="normal"
@@ -174,7 +186,7 @@ export function PremarketBaseInfo({ tokenMainInfo, isMobile}: PremarketBaseInfoP
             {deadlineText}
           </Text>
         )}
-        {(tokenMainInfo.state === 'premarket' || tokenMainInfo.state === 'canceled') && (
+        {!isConcept && (tokenMainInfo.state === 'premarket' || tokenMainInfo.state === 'canceled') && (
           <View style={{ justifyContent: "center", alignItems: "center" }}>
             <SvgIconButton 
               name="question-mark-circle" 

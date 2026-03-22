@@ -58,6 +58,8 @@ import XBase from "@assets/basic_icon/x-base.svg";
 import XLogo from "@assets/basic_icon/x-logo.svg";
 import Users from "@assets/basic_icon/users.svg";
 import EditSimple from "@assets/basic_icon/edit-simple.svg";
+import Eyes from "@assets/basic_icon/eyes.svg";
+
 import {
   TouchableOpacity,
   GestureResponderEvent,
@@ -124,6 +126,7 @@ export const icons = {
   "x-logo": XLogo,
   "users": Users,
   "edit-simple": EditSimple,
+  "eyes": Eyes,
 };
 
 export const withStroke: Partial<Record<IconName, boolean>> = {

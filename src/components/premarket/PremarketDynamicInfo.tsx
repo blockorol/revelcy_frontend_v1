@@ -22,7 +22,7 @@ export function PremarketDynamicInfo({
   const { left } = useIsMobileForTwoScreenWithDemention();
   
   // Don't render if premarket state is canceled (refunded)
-  if (tokenMainInfo.state === "canceled") {
+  if (tokenMainInfo.state === "canceled" || tokenMainInfo.state === "concept") {
     return null;
   }
   

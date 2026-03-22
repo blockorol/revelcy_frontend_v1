@@ -29,6 +29,7 @@ type Props = {
   whitelistData?: WhitelistData;
   vestingData?: VestingData;
   onLaunch: (discoverable: boolean) => void;
+  onCreateConcept: (discoverable: boolean) => void;
   launchState: string | undefined;
   removeAll: () => void;
   onClose?: () => void;
@@ -42,6 +43,7 @@ export default function OverviewPremarketCreation({
   whitelistData,
   vestingData,
   onLaunch,
+  onCreateConcept,
   launchState,
   removeAll,
   onClose,
@@ -647,9 +649,28 @@ export default function OverviewPremarketCreation({
               />
             )}
             {!error ? (
-              <Button disabled={launchState!==undefined} mode="contained" onPress={() => onLaunch(isDiscoverable)} variant="primary" size="normal" style={{ flex: 1 }}>
-                {`Start premarket with ${shortAddress}`}
-              </Button>
+              <>
+                <Button
+                  disabled={launchState!==undefined}
+                  mode="outlined"
+                  onPress={() => onCreateConcept(isDiscoverable)}
+                  variant="primary"
+                  size="normal"
+                  style={{ flex: 1 }}
+                >
+                  {`Start concept with ${shortAddress}`}
+                </Button>
+                <Button
+                  disabled={launchState!==undefined}
+                  mode="contained"
+                  onPress={() => onLaunch(isDiscoverable)}
+                  variant="primary"
+                  size="normal"
+                  style={{ flex: 1 }}
+                >
+                  {`Start premarket with ${shortAddress}`}
+                </Button>
+              </>
             ) : (
               error.button
             )}
