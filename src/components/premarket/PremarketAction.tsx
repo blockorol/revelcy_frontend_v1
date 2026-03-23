@@ -449,6 +449,7 @@ function PremarketActionConcept({
           <VisabilitySwitch
             entity="concept"
             isDiscoverablePreset={tokenMainInfo.isConceptVisible}
+            shortLink={getTokenShortLink(tokenMainInfo.shortLinkPrefix)}
             premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
             onUpdated={onUpdated}
           />

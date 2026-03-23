@@ -194,6 +194,7 @@ export function Button({
   children,
   leftIcon,
   leftSvgIconName,
+  textColor,
   prominentText = true,
   disabled,
   onPress,
@@ -216,7 +217,7 @@ export function Button({
     : "enabled";
 
   const rule = resolveRule(RULES[mode][state], variant, state);
-  const { backgroundColor, textColor, borderColor, hasBorder, main } = materialize(
+  const { backgroundColor, textColor: textColorMaterial, borderColor, hasBorder, main } = materialize(
     rule,
     variant,
     theme.colors as ExtendedMD3Colors
@@ -253,18 +254,18 @@ export function Button({
   const renderIcon = () => {
     if (leftIcon) {
       if (typeof leftIcon === "function") {
-        return leftIcon(textColor, iconSize);
+        return leftIcon(textColor??textColorMaterial, iconSize);
       }
       // @ts-ignore
       return React.cloneElement(leftIcon as React.ReactElement, {
         // @ts-ignore
         size: (leftIcon as any)?.props?.size ?? iconSize,
         // @ts-ignore
-        color: (leftIcon as any)?.props?.color ?? textColor,
+        color: (leftIcon as any)?.props?.color ?? textColor??textColorMaterial,
       });
     }
     if (leftSvgIconName) {
-      return <SvgIcon name={leftSvgIconName} size={iconSize} color={textColor} />;
+      return <SvgIcon name={leftSvgIconName} size={iconSize} color={textColor??textColorMaterial} />;
     }
     return null;
   };
@@ -294,7 +295,7 @@ export function Button({
       onPressOut={() => setPressed(false)}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
-      textColor={main}
+      textColor={textColor??textColorMaterial}
       {...webHoverProps}
       {...rest}
     >
@@ -306,7 +307,7 @@ export function Button({
           <Text
             variant={textVariant}
             prominent={prominentText}
-            style={{ color: textColor, textAlign: "center" }}
+            style={{ color: textColor??textColorMaterial, textAlign: "center" }}
             numberOfLines={1}
           >
             {String(children)}

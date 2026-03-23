@@ -518,8 +518,8 @@ export function VisabilitySwitch({
       </View>
     {!isDiscoverable&& (
       <HelperText type="info" visible={!isDiscoverable}>
-        Token is hidden from Discovery.
-        {shortLink?"People can only find it via short link ("+shortLink+")":null}
+        Hidden from Discovery.
+        {shortLink?" People can only find it via short link ("+shortLink+")":null}
       </HelperText>
     )}
   </View>);
