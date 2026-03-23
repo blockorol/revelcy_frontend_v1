@@ -21,10 +21,12 @@ const DEFAULT_SHOW_COUNT = 10;
 const STEP_SHOW_COUNT = 10;
 const WHITELIST_PAGE_SIZE = 100;
 export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Props) {
+  const isConcept = tokenData.mainInfo.state === "concept";
+  const shouldHideConceptWhitelist = isConcept && !tokenData.mainInfo.isWhitelistEnabled;
   const [showCount, setShowCount] = useState(DEFAULT_SHOW_COUNT)
   const [order, setOrder] = useState<OrderValue>("SUPPLY")
   const { colors } = useTheme() as AppTheme;
-  const [sectionType, setSectionType] = useState("Joined")
+  const [sectionType, setSectionType] = useState(isConcept ? "Accepted" : "Joined")
   const [whitelistUsers, setWhitelistUsers] = useState<WhitelistUserDTO[]>([]);
   const [whitelistTotal, setWhitelistTotal] = useState<number | undefined>(undefined);
   const [whitelistCursor, setWhitelistCursor] = useState(0);
@@ -78,6 +80,10 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
   useEffect(() => {
     setShowCount(DEFAULT_SHOW_COUNT);
   }, [sectionType]);
+
+  useEffect(() => {
+    setSectionType(isConcept ? "Accepted" : "Joined");
+  }, [isConcept, tokenData.mainInfo.id]);
 
   const sortedHolders = useMemo(() => {
   if (!holders) return [];
@@ -245,7 +251,7 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
 
   const joinedList = useMemo(() => sortedHolders.slice(0, showCount), [sortedHolders, showCount]);
   const whitelistList = useMemo(() => whitelistUsers.slice(0, showCount), [whitelistUsers, showCount]);
-  const isWhitelistSection = sectionType === "Accepted" || sectionType === "Applied";
+  const isWhitelistSection = isConcept || sectionType === "Accepted" || sectionType === "Applied";
   const isInitialWhitelistLoading = isWhitelistSection && whitelistLoading && whitelistUsers.length === 0;
   const displayCount = isWhitelistSection
     ? whitelistTotal ?? whitelistUsers.length
@@ -253,6 +259,10 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
   const canShowMore = !limited && (isWhitelistSection
     ? !whitelistLoading && !isInitialWhitelistLoading && (whitelistHasMore || showCount < displayCount)
     : showCount < displayCount);
+
+  if (shouldHideConceptWhitelist) {
+    return null;
+  }
 
 
   return (
@@ -267,7 +277,7 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
     >
       <View style={{flexDirection: 'row', alignItems: 'center', justifyContent:'space-between', height: 40}}>
         <View style={{flexDirection: 'row', gap: 8}}>
-          <Text variant="titleLarge"  selectionColor={colors.onSurface}>People</Text>
+          <Text variant="titleLarge"  selectionColor={colors.onSurface}>{isConcept ? "Whitelist" : "People"}</Text>
           <Text
             variant="titleLarge"
             style={{
@@ -279,11 +289,24 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
           >
             {displayCount}
           </Text>
-          {tokenData.mainInfo.isWhitelistEnabled && <RevelcySegmentedButtons value={sectionType} onValueChange={setSectionType} buttons={[
-          { value: 'Applied', label: 'Applied', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
-          { value: 'Accepted', label: 'Accepted', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
-          { value: 'Joined', label: 'Joined', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
-        ]} />}
+          {tokenData.mainInfo.isWhitelistEnabled && (
+            <RevelcySegmentedButtons
+              value={sectionType}
+              onValueChange={setSectionType}
+              buttons={
+                isConcept
+                  ? [
+                      { value: 'Accepted', label: 'Accepted', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
+                      { value: 'Applied', label: 'Applied', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
+                    ]
+                  : [
+                      { value: 'Applied', label: 'Applied', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
+                      { value: 'Accepted', label: 'Accepted', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
+                      { value: 'Joined', label: 'Joined', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
+                    ]
+              }
+            />
+          )}
         </View>
         
         {!isWhitelistSection && <OrderMenu value={order} onChange={setOrder}/>}

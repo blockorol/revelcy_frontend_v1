@@ -72,7 +72,7 @@ export const PremarketList: React.FC<PremarketListProps> = ({
       
       // Fetch dynamic info for each item
       items.forEach(item => {
-        if (item.premarketPubkey) {
+        if (item.premarketPubkey && item.state !== "concept") {
           fetchDynamicInfo(item.premarketPubkey);
         }
       });
@@ -119,7 +119,7 @@ export const PremarketList: React.FC<PremarketListProps> = ({
     if (!filter || filter === "all") return true;
     
     if (filter === "premarket") {
-      return it.state === "premarket";
+      return it.state === "premarket" || it.state === "concept";
     }
     
     if (filter === "launched") {

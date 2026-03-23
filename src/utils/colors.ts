@@ -17,6 +17,10 @@ export function makeTransparent(hex: string, alphaFactor: number): string {
   return `rgba(${r}, ${g}, ${b}, ${newA.toFixed(3)})`;
 }
 
+export function toBackground15(hex: string): string {
+  return makeTransparent(hex, 0.85);
+}
+
 export function hexToRgba(hex: string, alpha = 1): string {
   const h = hex.replace("#", "");
   if (h.length === 8) {

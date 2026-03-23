@@ -106,6 +106,8 @@ export interface CreatePremaketConceptArgs {
   name: string;
   symbol: string;
   description: string;
+  uri?: string;
+  image_url?: string;
   links: {
     twitter?: string;
     telegram?: string;
@@ -120,6 +122,25 @@ export interface CreatePremarketConcept_Response {
   premarket_account_pda: string
   premarket_id: UUID
 }
+
+export async function getUserConcept(network: Network): Promise<any | null> {
+  try {
+    const data = await http.get<any>(`${API_HOST}/premarket/concept/get`, {
+      query: { network },
+      retry: RETRY_TX_GEN,
+    });
+    console.log("[getUserConcept] response", data);
+    return data;
+  } catch (e: any) {
+    if (e?.status === 404) {
+      console.log("[getUserConcept] no concept found (404)");
+      return null;
+    }
+    console.error("[getUserConcept] failed", e);
+    throw new Error(`Failed to get user concept: ${e?.message ?? "Unknown error"}`);
+  }
+}
+
 export async function createConcept(
   params:CreatePremaketConceptArgs,
   userPubkeyBase58: string,
@@ -129,8 +150,8 @@ export async function createConcept(
     name: params.name, 
     description: params.description, 
     symbol: params.symbol,
-    uri: "", // will be uploaded late (when IPFS info will be created)
-    image_url: "", // will be uploaded late (when IPFS info will be created)
+    uri: params.uri ?? "",
+    image_url: params.image_url ?? "",
     links: {
       telegram: params.links.telegram,
       twitter: params.links.twitter,

@@ -10,6 +10,19 @@ import { isSolanaPublicKey } from "@utils/solana";
 
 const RETRY_DEFAULT = 6;
 
+export function createEmptyTokenDynamicInfo(): TokenDynamicInfo {
+  return {
+    holdersCount: 0,
+    holders: [],
+    currentPriceLamp: 0,
+    marketCapTokenDec: new BN(0),
+    marketCapSolLamp: new BN(0),
+    reservedTokenLamp: new BN(0),
+    reservedSolLamp: new BN(0),
+    change24h: 0,
+  };
+}
+
 export async function updateAboutCommunity(premarketPubkey: string, args: TokenCommunityInfo) {
   const payload = {
     premarket_pubkey: premarketPubkey,
@@ -35,6 +48,7 @@ export async function updateAboutCommunity(premarketPubkey: string, args: TokenC
 
 export interface TokenAvailabilityInfo {
   isHided?: boolean;
+  isConceptVisible?: boolean;
   tokenShortUrlName?: string;
   isWhitelistEnabled?: boolean;
 }
@@ -44,6 +58,7 @@ export async function updateTokenAvailbility(premarketPubkey: string, args: Toke
     premarket_pubkey: premarketPubkey,
     network: NETWORK, // todo: remove me
     is_hided: args.isHided,
+    is_concept_visible: args.isConceptVisible,
     is_whitelist_enabled: args.isWhitelistEnabled,
     token_short_url_name: args.tokenShortUrlName, // todo: move to separated value
   };
@@ -83,6 +98,11 @@ export async function getPremarketInfo({
     enabled: data.vesting_info.enabled,
   }: undefined;
 
+  const rawState =
+    typeof data.blockchain_info.state === "string"
+      ? data.blockchain_info.state.toLowerCase()
+      : data.blockchain_info.state;
+
   const mainInfo: TokenMainInfo = {
     id: data.blockchain_info.id,
     premarketPubkey: new PublicKey(data.blockchain_info.premarket_address), 
@@ -101,11 +121,12 @@ export async function getPremarketInfo({
     premarketDeadline: data.blockchain_info.premarket_deadline,
     premarketCreated: data.blockchain_info.premarket_created,
     createdByPubkey: data.blockchain_info.creator_address,
-    state: data.blockchain_info.state,
+    state: rawState,
     finishDate: data.blockchain_info.premarket_finished || undefined,
     isExtended: (data.blockchain_info.premarket_is_extended|| undefined) ?? false,
     tokenMint: data.blockchain_info.mint_address,
     isHided: data.availability_info?.is_hided ?? false,
+    isConceptVisible: data.availability_info?.is_concept_visible ?? false,
     isWhitelistEnabled: data.availability_info?.is_whitelist_enabled ?? false,
     vestingInfo: vestingInfo,
   };
@@ -119,10 +140,17 @@ export async function getPremarketInfo({
       type: link.type,
     })) || [],
   };
-  const dynamicInfo = await fetchTokenDynamicInfo(data.blockchain_info.premarket_address);
+  const dynamicInfo =
+    rawState === "concept"
+      ? createEmptyTokenDynamicInfo()
+      : await fetchTokenDynamicInfo(data.blockchain_info.premarket_address);
   
   // Determine the effective state based on conditions
   const convertState = () => {
+    if (mainInfo.state === "concept") {
+      return mainInfo.state;
+    }
+
     const now = Math.floor(Date.now() / 1000);
     const isPremarket = mainInfo.state === 'premarket';
     const isDeadlinePassed = mainInfo.premarketDeadline < now;
@@ -180,6 +208,7 @@ export async function getPremarketList({
     premarketCreated:  b.blockchain_info.premarket_created,
     createdByPubkey: b.blockchain_info.creator_address,
     isHided: b.availability_info?.is_hided ?? false,
+    isConceptVisible: b.availability_info?.is_concept_visible ?? false,
     state: typeof b.blockchain_info.state === "string" ? (b.blockchain_info.state.toLowerCase() as any) : b.blockchain_info.state,
   }));
 
@@ -216,7 +245,8 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
   const reservedToken = DEFAULT_TOKEN_COUNT_DECIMAL.sub(tokenMarketCapFromCurve);
   let cumulativeSolLamp = new BN(0);
 
-  const holders: HoldersInfo[] = raw.holders
+  const holdersRaw = Array.isArray(raw.holders) ? raw.holders : [];
+  const holders: HoldersInfo[] = holdersRaw
     .map((h: any): HoldersInfo => ({
       id: h.id ?? "",
       walletAddress: h.wallet_address,
@@ -267,7 +297,7 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
 
 
   return {
-    holdersCount: raw.holders_count,
+    holdersCount: raw.holders_count ?? holders.length,
     currentPriceLamp: Number(
       raw.current_price_lamp ?? raw.current_price ?? raw.currentPriceLamp ?? raw.currentPrice ?? 0
     ),
@@ -315,6 +345,7 @@ export interface TokenMainInfo {
     finishDate?: number;
     isExtended: boolean;
     isHided: boolean;
+    isConceptVisible: boolean;
     isWhitelistEnabled: boolean;
     tokenMint?: string;
     vestingInfo?: VestingBaseSettings

@@ -19,11 +19,15 @@ export type RequestOptions = {
 
 function buildUrl(url: string, query?: RequestOptions["query"]) {
   if (!query) return url;
+  const isAbsolute = /^[a-z][a-z0-9+.-]*:\/\//i.test(url);
   const u = new URL(url, typeof window !== "undefined" ? window.location.origin : "https://dummy.local");
   Object.entries(query).forEach(([k, v]) => {
     if (v !== undefined && v !== null) u.searchParams.set(k, String(v));
   });
-  return u.toString().replace(u.origin, "");
+  if (isAbsolute) {
+    return u.toString();
+  }
+  return `${u.pathname}${u.search}${u.hash}`;
 }
 
 let refreshing: Promise<boolean> | null = null;

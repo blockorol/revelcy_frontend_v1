@@ -1,7 +1,7 @@
 // components/token/TokenOverviewCreation.tsx
 import { useMemo, useState } from "react";
-import { View, Image, ScrollView } from "react-native";
-import { useTheme, Divider, HelperText } from "react-native-paper";
+import { View, Image, ScrollView, TouchableOpacity } from "react-native";
+import { useTheme, Divider, HelperText, Portal, Modal } from "react-native-paper";
 import { Button } from "@components/ui/Button";
 import { Text } from "@components/ui/Text";
 import { format } from "date-fns";
@@ -23,12 +23,14 @@ import { COMMUNITY_BANNER_ASPECT_RATIO } from "@utils/aspectRatios";
 import { Switch } from "@components/ui/Switch";
 import { getTokenShortLink } from "@utils/shortLink";
 import { VestingData } from "@components/token/create/VestingSetupForm";
+import { toBackground15 } from "@utils/colors";
 
 type Props = {
   data: TokenCreateFullData;
   whitelistData?: WhitelistData;
   vestingData?: VestingData;
   onLaunch: (discoverable: boolean) => void;
+  onCreateConcept: (discoverable: boolean) => void;
   launchState: string | undefined;
   removeAll: () => void;
   onClose?: () => void;
@@ -37,11 +39,14 @@ type Props = {
 // const PUMP_FEE_PERCENTAGE = 0.015;
 // const REVELCY_FEE_PERCENTAGE = 0.01;
 const SOL_LOCK = 0.06918;
+type StageType = "concept" | "premarket" | null;
+
 export default function OverviewPremarketCreation({
   data,
   whitelistData,
   vestingData,
   onLaunch,
+  onCreateConcept,
   launchState,
   removeAll,
   onClose,
@@ -54,7 +59,9 @@ export default function OverviewPremarketCreation({
   const { user, logout } = useAuth();
   
   const [isDiscoverable, setIsDiscoverable] = useState(true);
+  const [selectedStage, setSelectedStage] = useState<StageType>(null);
   const onChangeDiscoverable = () => setIsDiscoverable(!isDiscoverable);
+  const closeStageDialog = () => setSelectedStage(null);
 
   const errorMapper = {
     user: {
@@ -124,14 +131,6 @@ export default function OverviewPremarketCreation({
     }
     return undefined;
   }, [launchState, connected, publicKey, user]);
-
-  const shortAddress = useMemo(() => {
-    if (!connected || !publicKey) {
-      return "";
-    }
-    const s = publicKey.toString();
-    return `${s.slice(0, 4)}...${s.slice(-4)}`;
-  }, [connected, publicKey]);
 
   if (!data) {
     return (
@@ -628,35 +627,182 @@ export default function OverviewPremarketCreation({
             </View>
           )}
 
-          {/* Launch CTA */}
+          <View style={{ gap: 24 }}>
+            <Text variant="labelLarge" prominent style={{ color: colors.onSurface }}>
+              Choose Token Stage
+            </Text>
 
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: 16,
-            }}
-          >
-            {onBack && (
-              <SvgIconButton
-                name="caret-left"
-                size={32}
-                onPress={onBack}
-                color={colors.onSurface}
-              />
-            )}
             {!error ? (
-              <Button disabled={launchState!==undefined} mode="contained" onPress={() => onLaunch(isDiscoverable)} variant="primary" size="normal" style={{ flex: 1 }}>
-                {`Start premarket with ${shortAddress}`}
-              </Button>
+              <View style={{ gap: 16 }}>
+                <StageCard
+                  title="Concept"
+                  description="Users can apply for whitelist before premarket starts"
+                  caption="All info is editable"
+                  color={colors.yellow}
+                  backgroundColor={toBackground15(colors.yellow)}
+                  onPress={() => setSelectedStage("concept")}
+                />
+                <StageCard
+                  title="Premarket"
+                  description="Deadline starts now and users can enter premarket."
+                  caption="All info is locked"
+                  color={colors.secondary}
+                  backgroundColor={toBackground15(colors.secondary)}
+                  onPress={() => setSelectedStage("premarket")}
+                />
+              </View>
             ) : (
               error.button
+            )}
+
+            {onBack && (
+              <View style={{ alignItems: "flex-start" }}>
+                <SvgIconButton
+                  name="caret-left"
+                  size={32}
+                  onPress={onBack}
+                  color={colors.onSurface}
+                />
+              </View>
             )}
           </View>
         </View>
       </View>
+      <StageConfirmModal
+        visible={selectedStage === "premarket"}
+        title="Start Premarket Stage?"
+        description="Starting the Premarket stage will lock key token parameters. After this action, you won't be able to modify configuration settings."
+        confirmLabel="Start"
+        confirmColor={colors.secondary}
+        confirmColorText={colors.onSecondary}
+        onClose={closeStageDialog}
+        onConfirm={() => {
+          closeStageDialog();
+          onLaunch(isDiscoverable);
+        }}
+      />
+      <StageConfirmModal
+        visible={selectedStage === "concept"}
+        title="Enter Concept Stage?"
+        description="The Concept stage allows you to edit all token parameters freely. Adjust settings, test ideas, and get your token ready for the next stage."
+        confirmLabel="Enter"
+        confirmColor={colors.yellow}
+        confirmColorText={colors.onError}
+        onClose={closeStageDialog}
+        onConfirm={() => {
+          closeStageDialog();
+          onCreateConcept(isDiscoverable);
+        }}
+      />
     </ScrollView>
+  );
+}
+
+function StageCard({
+  title,
+  description,
+  caption,
+  color,
+  backgroundColor,
+  onPress,
+}: {
+  title: string;
+  description: string;
+  caption: string;
+  color: string;
+  backgroundColor: string;
+  onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity activeOpacity={0.9} onPress={onPress}>
+      <View
+        style={{
+          paddingHorizontal: 28,
+          paddingVertical: 22,
+          borderRadius: 24,
+          gap: 8,
+          backgroundColor,
+        }}
+      >
+        <Text variant="titleMedium" style={{ color }}>
+          {title}
+        </Text>
+        <View>
+          <Text variant="labelMedium" style={{ color }}>
+            {description}
+          </Text>
+          <Text variant="labelMedium" style={{ color }}>
+            {caption}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+function StageConfirmModal({
+  visible,
+  title,
+  description,
+  confirmLabel,
+  confirmColor,
+  confirmColorText,
+  onClose,
+  onConfirm,
+}: {
+  visible: boolean;
+  title: string;
+  description: string;
+  confirmLabel: string;
+  confirmColor: string;
+  confirmColorText: string;
+  onClose: () => void;
+  onConfirm: () => void;
+}) {
+  const theme = useTheme();
+  const colors = theme.colors as ExtendedMD3Colors;
+
+  return (
+    <Portal>
+      <Modal
+        visible={visible}
+        onDismiss={onClose}
+        style={{ alignItems: "center", justifyContent: "center" }}
+        contentContainerStyle={{
+          width: "100%",
+          maxWidth: 460,
+          marginHorizontal: 16,
+          borderRadius: 28,
+          backgroundColor: colors.surfaceContainerLow,
+          paddingHorizontal: 24,
+          paddingVertical: 28,
+          gap: 28,
+        }}
+      >
+        <View style={{ gap: 16, alignItems: "center" }}>
+          <Text variant="titleLarge" prominent style={{ color: colors.onSurface, textAlign: "center" }}>
+            {title}
+          </Text>
+          <Text variant="bodySmall" style={{ color: colors.onSurface, textAlign: "center" }}>
+            {description}
+          </Text>
+        </View>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <Button mode="outlined" variant='error' style={{ flex: 1 }} onPress={onClose}>
+            Cancel
+          </Button>
+          <Button
+            mode="contained"
+            variant='secondary'
+            style={{ flex: 1, backgroundColor: confirmColor }}
+            textColor={confirmColorText}
+            onPress={onConfirm}
+          >
+            {confirmLabel}
+          </Button>
+        </View>
+      </Modal>
+    </Portal>
   );
 }
 

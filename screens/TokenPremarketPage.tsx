@@ -20,6 +20,7 @@ import { Button } from "@components/ui/Button";
 import { useHolderEntryInfo } from "@hooks/useHolderEntryInfo";
 import { VestingCard } from "@components/premarket/VestingCard";
 import { VestingSetting } from "@components/premarket/VestingSetting";
+import { ConceptShow } from "@components/premarket/ConceptShow";
 
 const SLIDER_HEIGHT = 48
 const ALLOWED_WHITELIST_STATUSES = new Set(["accepted", "approved", "whitelisted", "in_whitelist", "in-whitelist"]);
@@ -123,6 +124,7 @@ export function TokenPremarketPageNormal({
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
   const canJoinWhitelist = canJoinByWhitelist(token.mainInfo.isWhitelistEnabled, whitelistStatus);
+  const isConcept = token.mainInfo.state === "concept";
 
   return (
     <ScrollView
@@ -167,11 +169,13 @@ export function TokenPremarketPageNormal({
             >
               <View style={{ gap: 32}}>
                 <PremarketBaseInfo tokenMainInfo={token.mainInfo} isMobile={false}/>
-                <PremarketDynamicInfo
-                  tokenMainInfo={token.mainInfo}
-                  tokenDynamicInfo={token.dynamicInfo}
-                  isMobile={false}
-                />
+                {!isConcept && (
+                  <PremarketDynamicInfo
+                    tokenMainInfo={token.mainInfo}
+                    tokenDynamicInfo={token.dynamicInfo}
+                    isMobile={false}
+                  />
+                )}
                 <PremarketAction
                   tokenMainInfo={token.mainInfo}
                   tokenDynamicInfo={token.dynamicInfo}
@@ -181,7 +185,7 @@ export function TokenPremarketPageNormal({
                   isMobile={false}
                 />
                 
-                {(!(user && holderEntryInfo)) && !!token.mainInfo.vestingInfo?.enabled && (
+                {!isConcept && (!(user && holderEntryInfo)) && !!token.mainInfo.vestingInfo?.enabled && (
                   <VestingSetting
                     paddingHorisontal={24}
                     periodSec={token.mainInfo.vestingInfo?.vestingPeriodSec ?? 0}
@@ -191,7 +195,7 @@ export function TokenPremarketPageNormal({
               </View>
             </View>
           </View>
-          {user && holderEntryInfo && (
+          {!isConcept && user && holderEntryInfo && (
             <YourEntry 
               premarketPubkey={token.mainInfo.premarketPubkey}
               user={user}
@@ -212,34 +216,42 @@ export function TokenPremarketPageNormal({
         >
           <View style={{ gap: 24}}>
             <AboutCommunity
-              isEditable={(token.mainInfo.createdByPubkey === user?.walletAddress) && (token.mainInfo.state === 'premarket' || token.mainInfo.state === 'expired')}
+              isEditable={(token.mainInfo.createdByPubkey === user?.walletAddress) && (token.mainInfo.state === 'premarket' || token.mainInfo.state === 'expired' || token.mainInfo.state === 'concept')}
               premarketPubkey={token.mainInfo.premarketPubkey.toString()}
               communityInfo={token.communityInfo}
               isMobile={false}
               width={rigth.width}
             />
-            <VestingCard
-              vesting={token.dynamicInfo.vesting}
-              isMobile={false}
-            />
-            <PremarketInfo
-              currentUserId={user?.userId}
-              width={rigth.width}
-              tokenInfo={token}
-              isMobile={false}
-              withJoinButton={
-                canJoinWhitelist &&
-                (user === null || holderEntryInfo === null) &&
-                token.mainInfo.premarketDeadline > Math.floor(Date.now() / 1000)
-              }
-              onUpdated={refetchTokenInfo}
-            />
-            <HoldersInfo
-              tokenData={token}
-              holdersAmount={token.dynamicInfo.holdersCount}              
-              isMobile={false}
-              limited={false}
-            />
+            {isConcept ? (
+              <ConceptShow tokenMainInfo={token.mainInfo} isMobile={false} />
+            ) : (
+              <>
+                <VestingCard
+                  vesting={token.dynamicInfo.vesting}
+                  isMobile={false}
+                />
+                <PremarketInfo
+                  currentUserId={user?.userId}
+                  width={rigth.width}
+                  tokenInfo={token}
+                  isMobile={false}
+                  withJoinButton={
+                    canJoinWhitelist &&
+                    (user === null || holderEntryInfo === null) &&
+                    token.mainInfo.premarketDeadline > Math.floor(Date.now() / 1000)
+                  }
+                  onUpdated={refetchTokenInfo}
+                />
+              </>
+            )}
+            {(!isConcept || token.mainInfo.isWhitelistEnabled) && (
+              <HoldersInfo
+                tokenData={token}
+                holdersAmount={token.dynamicInfo.holdersCount}              
+                isMobile={false}
+                limited={false}
+              />
+            )}
           </View>
         </View>
       </View>
@@ -265,17 +277,23 @@ export function TokenPremarketPageMobile({
   const colors = theme.colors as ExtendedMD3Colors
   
   const [index, setIndex] = React.useState(0);
-  const toPeopleSection = ()=>{setIndex(1)}
+  const isConcept = token.mainInfo.state === "concept";
+  const hasConceptWhitelist = !isConcept || token.mainInfo.isWhitelistEnabled;
+  const toPeopleSection = ()=>{if (hasConceptWhitelist) setIndex(1)}
   const renderScene = SceneMap({
     first: ()=>BriefMobile({token, holderEntryInfo, whitelistStatus, refetchTokenInfo, screenDem, toPeopleSection}),
-    second:()=> PeopleMobile({token, refetchTokenInfo, screenDem}),
+    ...(hasConceptWhitelist ? {
+      second:()=> PeopleMobile({token, refetchTokenInfo, screenDem}),
+    } : {}),
   });
   const layout = useWindowDimensions();
 
-  const routes = [
-    { key: 'first', title: 'Brief' },
-    { key: 'second', title: 'People' },
-  ];
+  const routes = hasConceptWhitelist
+    ? [
+        { key: 'first', title: 'Brief' },
+        { key: 'second', title: isConcept ? 'Whitelist' : 'People' },
+      ]
+    : [{ key: 'first', title: 'Brief' }];
   const renderTabBar = (props: any) => (
     <View style={{width: "100%", backgroundColor: theme.colors.background, justifyContent: 'center', alignItems:'center'}}>
       <TabBar
@@ -331,6 +349,8 @@ function BriefMobile({
   const { user } = useAuth();
   const theme = useTheme();
   const canJoinWhitelist = canJoinByWhitelist(token.mainInfo.isWhitelistEnabled, whitelistStatus);
+  const isConcept = token.mainInfo.state === "concept";
+  const hasConceptWhitelist = !isConcept || token.mainInfo.isWhitelistEnabled;
 
   return (
     
@@ -359,12 +379,14 @@ function BriefMobile({
         }}
       >
         <PremarketBaseInfo tokenMainInfo={token.mainInfo} isMobile={true} />
-        <PremarketDynamicInfo
-          tokenMainInfo={token.mainInfo}
-          tokenDynamicInfo={token.dynamicInfo}
-          isMobile={true}
-        />
-        {user && holderEntryInfo ?
+        {!isConcept && (
+          <PremarketDynamicInfo
+            tokenMainInfo={token.mainInfo}
+            tokenDynamicInfo={token.dynamicInfo}
+            isMobile={true}
+          />
+        )}
+        {!isConcept && user && holderEntryInfo ?
           <YourEntry 
             user={user}
             userEntry={holderEntryInfo}
@@ -373,42 +395,54 @@ function BriefMobile({
             tokenMainInfo={token.mainInfo}
             onUpdated={refetchTokenInfo}
             isMobile={true}
-          /> : !!token.mainInfo.vestingInfo?.enabled && <VestingSetting
+          /> : !isConcept && !!token.mainInfo.vestingInfo?.enabled && <VestingSetting
             paddingHorisontal={16}
             periodSec={token.mainInfo.vestingInfo?.vestingPeriodSec ?? 0}
             percentInit={token.mainInfo.vestingInfo?.unlockAtLaunchPercent ?? 0}
           />
         }
         <AboutCommunity
-          isEditable={(token.mainInfo.createdByPubkey === user?.walletAddress) && (token.mainInfo.state === 'premarket' || token.mainInfo.state === 'expired')}
+          isEditable={(token.mainInfo.createdByPubkey === user?.walletAddress) && (token.mainInfo.state === 'premarket' || token.mainInfo.state === 'expired' || token.mainInfo.state === 'concept')}
           premarketPubkey={token.mainInfo.premarketPubkey.toString()}
           communityInfo={token.communityInfo}
           isMobile={true}
           width={screenDem.width}
         />
-        <VestingCard
-          vesting={token.dynamicInfo.vesting}
-          isMobile={true}
-        />
-        <PremarketInfo
-          currentUserId={user?.userId}
-          width={screenDem.width}
-          tokenInfo={token}
-          isMobile={true}
-          withJoinButton={
-            canJoinWhitelist &&
-            (user === null || holderEntryInfo === null) &&
-            token.mainInfo.premarketDeadline > Math.floor(Date.now() / 1000)
-          }
-          onUpdated={refetchTokenInfo}
-        />
-        <HoldersInfo
-          tokenData={token}
-          holdersAmount={token.dynamicInfo.holdersCount}
-          isMobile={true}
-          limited={true}
-        />
-        <Button variant='primary' mode='text' onPress={toPeopleSection} style={{width:'100%', marginTop:-10}}>View all</Button>
+        {isConcept ? (
+          <ConceptShow tokenMainInfo={token.mainInfo} isMobile={true} />
+        ) : (
+          <>
+            <VestingCard
+              vesting={token.dynamicInfo.vesting}
+              isMobile={true}
+            />
+            <PremarketInfo
+              currentUserId={user?.userId}
+              width={screenDem.width}
+              tokenInfo={token}
+              isMobile={true}
+              withJoinButton={
+                canJoinWhitelist &&
+                (user === null || holderEntryInfo === null) &&
+                token.mainInfo.premarketDeadline > Math.floor(Date.now() / 1000)
+              }
+              onUpdated={refetchTokenInfo}
+            />
+          </>
+        )}
+        {hasConceptWhitelist && (
+          <HoldersInfo
+            tokenData={token}
+            holdersAmount={token.dynamicInfo.holdersCount}
+            isMobile={true}
+            limited={true}
+          />
+        )}
+        {hasConceptWhitelist && (
+          <Button variant='primary' mode='text' onPress={toPeopleSection} style={{width:'100%', marginTop:-10}}>
+            {isConcept ? "View whitelist" : "View all"}
+          </Button>
+        )}
       </View>
       <View  // hack to spase for PremarketAction
         style={{
