@@ -1,6 +1,6 @@
 import { applyWhitelist, TokenDynamicInfo, TokenMainInfo, UserEntry } from "@api/token";
 import { PremarketJoin } from "@components/premarket/PremarketJoin";
-import { CreatorInfo, EditLinksModal, EditWhitelistModal } from "@components/premarket/CreatorInfo";
+import { CreatorInfo, EditLinksModal, EditWhitelistModal, VisabilitySwitch } from "@components/premarket/CreatorInfo";
 import { useAuth } from "@providers/AuthContext";
 import { useTheme, Text } from "react-native-paper";
 import { TouchableOpacity, View } from "react-native";
@@ -20,6 +20,19 @@ import { SvgIcon } from "@components/base/SvgIcon";
 import { AppTheme } from "@theme/types";
 import { IconName } from "@components/base/SvgIcon";
 import { useState } from "react";
+import { launchPremarketFromConcept, CreatePremarketArgs } from "@services/premarket/create";
+import { convertSmallCountToLamport } from "@utils/premarket";
+import { getTokenShortLink } from "@utils/shortLink";
+import { draftKey, PremarketDraft } from "@hooks/usePremarketDraft";
+import {
+  CustomizeTokenData,
+  PremarketSettingData,
+  TokenMainData,
+  TokenomicsData,
+} from "@components/token/create/interface";
+import { VestingData } from "@components/token/create/VestingSetupForm";
+import { kvStorage } from "@storage/kvStorage";
+import { confirmTxFinalised } from "@services/blockchain/signAndSend";
 
 interface PremarketActionProps {
   tokenMainInfo: TokenMainInfo;
@@ -242,6 +255,10 @@ function PremarketActionConcept({
   const { colors } = useTheme<AppTheme>();
   const notify = useNotification();
   const { open, close } = useOverlay();
+  const { network } = useNetwork();
+  const connection = getSolanaConnection(network);
+  const { connected, connect } = useWallet();
+  const wallet = useAnchorWalletSafe();
   const currentURL = window.location.href;
   const isCreator = tokenMainInfo.createdByPubkey === user?.walletAddress;
   const normalizedWhitelistStatus = whitelistStatus?.toLowerCase().trim();
@@ -252,6 +269,118 @@ function PremarketActionConcept({
   const [showEditLinks, setShowEditLinks] = useState(false);
   const [showEditWhitelist, setShowEditWhitelist] = useState(false);
   const whitelistButtonLabel = tokenMainInfo.isWhitelistEnabled ? "Edit whitelist" : "Add whitelist";
+
+  const handleStartPremarket = async () => {
+    if (!wallet || !connected) {
+      notify.error("Wallet is not connected", {
+        suggest: "Enable Phantom (or compatible) and try again",
+        action: {
+          label: "Connect",
+          onAction: async () => {
+            try {
+              await connect();
+            } catch (e) {
+              console.log("connect error:", e);
+            }
+          },
+        },
+      });
+      return;
+    }
+
+    if (network === "testnet") {
+      notify.error("testnet is not supported");
+      return;
+    }
+
+    type StoredDraft = PremarketDraft<
+      TokenMainData,
+      TokenomicsData,
+      PremarketSettingData,
+      CustomizeTokenData,
+      VestingData
+    >;
+
+    const rawDraft = await kvStorage.getItem(draftKey());
+    if (!rawDraft) {
+      notify.error("No saved draft found for this concept", {
+        suggest: "Create the concept from this device first, then try again",
+      });
+      return;
+    }
+
+    let draft: StoredDraft | null = null;
+    try {
+      draft = JSON.parse(rawDraft) as StoredDraft;
+    } catch (e) {
+      console.error("[PremarketActionConcept] failed to parse draft", e);
+      notify.error("Failed to read saved concept draft");
+      return;
+    }
+
+    if (!draft?.tokenMainData || !draft.tokenomicsData || !draft.premarketSettingsData) {
+      notify.error("Saved draft is incomplete", {
+        suggest: "Open create flow again and resave the concept",
+      });
+      return;
+    }
+
+    const isMatchingDraft =
+      draft.tokenMainData.tokenName === tokenMainInfo.name &&
+      draft.tokenMainData.tokenTicker === tokenMainInfo.symbol &&
+      draft.premarketSettingsData.deadline_sec === tokenMainInfo.premarketDeadline;
+
+    if (!isMatchingDraft) {
+      notify.error("Saved draft does not match this concept", {
+        suggest: "Open the original concept draft and try again",
+      });
+      return;
+    }
+
+    const launchArgs: CreatePremarketArgs = {
+      avatar: draft.tokenMainData.avatar,
+      name: draft.tokenMainData.tokenName,
+      symbol: draft.tokenMainData.tokenTicker,
+      description: draft.tokenMainData.description,
+      links: draft.tokenMainData.links,
+      deadline: draft.premarketSettingsData.deadline_sec,
+      goal_sol_lamp: convertSmallCountToLamport(draft.premarketSettingsData.goal_sol),
+      max_sol_lamp: convertSmallCountToLamport(draft.premarketSettingsData.goal_sol + 0.5),
+      creator_allocate_lamp: convertSmallCountToLamport(
+        draft.tokenomicsData.creatorInitialBuy
+      ),
+    };
+
+    try {
+      open(<TextedLoader text={"Starting premarket..."} />);
+      const resp = await launchPremarketFromConcept(
+        network,
+        wallet,
+        connection,
+        launchArgs,
+        tokenMainInfo.premarketPubkey.toBase58(),
+        (text) => {
+          open(<TextedLoader text={text} />);
+        }
+      );
+
+      await confirmTxFinalised(connection, resp.txId);
+      notify.success("Premarket started successfully!", {
+        action: {
+          label: "View",
+          onAction: () => window.location.reload(),
+        },
+      });
+      await onUpdated();
+    } catch (e: any) {
+      console.error("[PremarketActionConcept] failed to start premarket", e);
+      notify.error("Failed to start premarket", {
+        suggest: e?.message ?? "Please try again",
+      });
+    } finally {
+      close();
+    }
+  };
 
   const handleApplyWhitelist = async () => {
     if (!user?.walletAddress) {
@@ -296,7 +425,7 @@ function PremarketActionConcept({
         }}
       >
         <View style={{ width: "100%", gap: 16, alignItems: "center", justifyContent: "center" , flexDirection: "row"}}> 
-          <Button leftSvgIconName="rocket" style={{ flex: 5 }} mode="contained" onPress={() => openInBrowser(`https://pump.fun/create/${tokenMainInfo.id}`)}>
+          <Button leftSvgIconName="rocket" style={{ flex: 5 }} mode="contained" onPress={handleStartPremarket}>
             Premarket
           </Button>
           <ShareTextButton style={{ flex: 1}} shareMessage={`Join to premarket on: ${currentURL}`}/>
@@ -308,6 +437,21 @@ function PremarketActionConcept({
           <Button style={{ flex: 1 }} variant="primary" mode="outlined" size="small" onPress={() => setShowEditWhitelist(true)}>
             {whitelistButtonLabel}
           </Button>
+        </View>
+        <View style={{ width: "100%", gap: 8}}>
+          <VisabilitySwitch
+            entity="premarket"
+            isDiscoverablePreset={!tokenMainInfo.isHided}
+            shortLink={getTokenShortLink(tokenMainInfo.shortLinkPrefix)}
+            premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
+            onUpdated={onUpdated}
+          />
+          <VisabilitySwitch
+            entity="concept"
+            isDiscoverablePreset={tokenMainInfo.isConceptVisible}
+            premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
+            onUpdated={onUpdated}
+          />
         </View>
         <EditLinksModal
           visible={showEditLinks}

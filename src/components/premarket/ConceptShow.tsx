@@ -52,6 +52,7 @@ export function ConceptShow({ tokenMainInfo, isMobile }: ConceptShowProps) {
                 name={link.icon}
                 link={link.url}
                 colors={colors}
+                withoutBackgroud
               />
             ))}
           </View>

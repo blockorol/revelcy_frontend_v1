@@ -462,15 +462,24 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
 }
 
 
-function VisabilitySwitch({isDiscoverablePreset, shortLink, premarketPubkey, onUpdated}: {
+export function VisabilitySwitch({
+  isDiscoverablePreset,
+  shortLink,
+  premarketPubkey,
+  onUpdated,
+  entity = "premarket",
+}: {
   premarketPubkey: string,
   isDiscoverablePreset: boolean,
   shortLink?: string,
   onUpdated: () => Promise<void>,
+  entity?: "premarket" | "concept",
 }) {
   const { colors } = useTheme<AppTheme>();
   const [isDiscoverable, setIsDiscoverable] = useState<boolean>(isDiscoverablePreset);
   const notify = useNotification();
+
+  const entityLabel = entity === "concept" ? "concept" : "premarket";
 
 
   const changeAvailability = async () => {
@@ -478,7 +487,8 @@ function VisabilitySwitch({isDiscoverablePreset, shortLink, premarketPubkey, onU
     try {
       setIsDiscoverable(newValue);
       await updateTokenAvailbility(premarketPubkey, {
-        isHided: !newValue,
+        isHided: entity === "premarket" ? !newValue : undefined,
+        isConceptVisible: entity === "concept" ? newValue : undefined,
       });
       onUpdated();
     } catch (e) {
@@ -492,6 +502,7 @@ function VisabilitySwitch({isDiscoverablePreset, shortLink, premarketPubkey, onU
   return (
     <View>
       <View style={{
+        width:'100%',
         paddingVertical: 16,
         paddingHorizontal: 12,
         backgroundColor: colors.surfaceContainerLow,
@@ -500,13 +511,17 @@ function VisabilitySwitch({isDiscoverablePreset, shortLink, premarketPubkey, onU
         justifyContent: "space-between",
         alignItems: "center",
       }}>
-        <Text variant='bodyMedium' selectionColor={colors.onSurface}>{isDiscoverable?"Your premarket is discoverable":"Your premarket is hidden"}</Text>
+        <Text variant='bodyMedium' selectionColor={colors.onSurface}>
+          {isDiscoverable ? `Your ${entityLabel} is discoverable` : `Your ${entityLabel} is hidden`}
+        </Text>
         <Switch value={isDiscoverable} onValueChange={changeAvailability}/>
       </View>
-    <HelperText type="info" visible={!isDiscoverable}>
-      Token is hidden from Discovery.
-      {shortLink?"People can only find it via short link ("+shortLink+")":null}
-    </HelperText>
+    {!isDiscoverable&& (
+      <HelperText type="info" visible={!isDiscoverable}>
+        Token is hidden from Discovery.
+        {shortLink?"People can only find it via short link ("+shortLink+")":null}
+      </HelperText>
+    )}
   </View>);
 }
 

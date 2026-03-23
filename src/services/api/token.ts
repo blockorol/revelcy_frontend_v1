@@ -48,6 +48,7 @@ export async function updateAboutCommunity(premarketPubkey: string, args: TokenC
 
 export interface TokenAvailabilityInfo {
   isHided?: boolean;
+  isConceptVisible?: boolean;
   tokenShortUrlName?: string;
   isWhitelistEnabled?: boolean;
 }
@@ -57,6 +58,7 @@ export async function updateTokenAvailbility(premarketPubkey: string, args: Toke
     premarket_pubkey: premarketPubkey,
     network: NETWORK, // todo: remove me
     is_hided: args.isHided,
+    is_concept_visible: args.isConceptVisible,
     is_whitelist_enabled: args.isWhitelistEnabled,
     token_short_url_name: args.tokenShortUrlName, // todo: move to separated value
   };
@@ -124,6 +126,7 @@ export async function getPremarketInfo({
     isExtended: (data.blockchain_info.premarket_is_extended|| undefined) ?? false,
     tokenMint: data.blockchain_info.mint_address,
     isHided: data.availability_info?.is_hided ?? false,
+    isConceptVisible: data.availability_info?.is_concept_visible ?? false,
     isWhitelistEnabled: data.availability_info?.is_whitelist_enabled ?? false,
     vestingInfo: vestingInfo,
   };
@@ -205,6 +208,7 @@ export async function getPremarketList({
     premarketCreated:  b.blockchain_info.premarket_created,
     createdByPubkey: b.blockchain_info.creator_address,
     isHided: b.availability_info?.is_hided ?? false,
+    isConceptVisible: b.availability_info?.is_concept_visible ?? false,
     state: typeof b.blockchain_info.state === "string" ? (b.blockchain_info.state.toLowerCase() as any) : b.blockchain_info.state,
   }));
 
@@ -341,6 +345,7 @@ export interface TokenMainInfo {
     finishDate?: number;
     isExtended: boolean;
     isHided: boolean;
+    isConceptVisible: boolean;
     isWhitelistEnabled: boolean;
     tokenMint?: string;
     vestingInfo?: VestingBaseSettings

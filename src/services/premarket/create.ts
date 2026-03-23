@@ -49,8 +49,34 @@ async function prepareConcept(
   onChangeState?: (state: string) => void,
   notifyError?: ErrorNotifier,
 ): Promise<PreparedConceptContext> {
+  onChangeState?.("Uploading data to IPFS...");
+  const conceptIpfsData = await uploadTokenMetadataToIPFS({
+    avatar: args.avatar,
+    tokenInfo: {
+      name: args.name,
+      symbol: args.symbol,
+      description: args.description,
+      links: {
+        telegram: args.links.telegram,
+        twitter: args.links.twitter,
+        website: args.links.website,
+      },
+    },
+  });
+  if (!conceptIpfsData) {
+    throw Error("failed to upload concept data to IPFS");
+  }
+
   onChangeState?.("Creating concept...");
-  const conceptResp = await createConcept(args, wallet.publicKey.toBase58(), network);
+  const conceptResp = await createConcept(
+    {
+      ...args,
+      uri: conceptIpfsData.metadataUri,
+      image_url: conceptIpfsData.avatarUri,
+    },
+    wallet.publicKey.toBase58(),
+    network
+  );
 
   onChangeState?.("Adding rest info...");
   const effectiveWhitelist: WhitelistData = whitelistData ?? {

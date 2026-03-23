@@ -1,8 +1,9 @@
 // screens/TokenCreationFlow.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { useTheme } from "react-native-paper";
 import { useRouter } from "@hooks/useSafeRouter";
+import BN from "bn.js";
 
 import CreateTokenForm from "@components/token/create/CreateTokenForm";
 import CustomizeTokenForm from "@components/token/create/CustomizeTokenForm";
@@ -27,9 +28,11 @@ import {
   CreatePremarketArgs,
   createPremarketConcept,
 } from "@services/premarket/create";
+import { getUserConcept } from "@api/tx_premarket";
+import { getAllWhitelistUsers } from "@api/token";
 import EditPremarketSettingsForm from "@components/token/create/EditPremarketSettings";
 import EditWhitelistForm from "@components/token/create/EditWhitelistForm";
-import { convertSmallCountToLamport } from "@utils/premarket";
+import { convertLamportToSmallCount, convertSmallCountToLamport } from "@utils/premarket";
 import useIsMobile from "@hooks/useIsMobile";
 import { useNetwork } from "@providers/NetworkContext";
 import { getSolanaConnection } from "@services/blockchain/solana";
@@ -88,6 +91,12 @@ export default function PremarketCreationFlow() {
   );
   const [txId, setTxId] = useState<string | undefined>(undefined);
   const [vestingData, setVestingData] = useState<VestingData | undefined>(undefined);
+  const [loadingConcept, setLoadingConcept] = useState(true);
+  const shouldRestoreFromStorageRef = useRef(true);
+  const shouldHydrateFromBackendRef = useRef(true);
+  const tokenomicsDataRef = useRef<TokenomicsData | undefined>(undefined);
+  const whitelistDataRef = useRef<WhitelistData>({ state: "disabled", items: [] });
+  const vestingDataRef = useRef<VestingData | undefined>(undefined);
   const totalSteps = IsVestingEnable ? 6 : 5;
 
   const theme = useTheme();
@@ -108,16 +117,37 @@ export default function PremarketCreationFlow() {
   }, [launchState])
 
   // === Хук черновика: авто-восстановление, таймаут, patch/clear ===
-  const onRestore = React.useCallback((d: any) => {
+  const applyRestoredData = React.useCallback((d: any) => {
+    console.log("[PremarketCreationFlow] applyRestoredData", d);
     if (d.tokenMainData) setTokenMainData(d.tokenMainData);
     if (d.tokenomicsData) setTokenomicsData(d.tokenomicsData);
-    if (d.premarketSettingsData)
-      setPremarketSettingsData(d.premarketSettingsData);
+    if (d.premarketSettingsData) setPremarketSettingsData(d.premarketSettingsData);
     if (d.whitelistData) setWhitelistData(d.whitelistData as WhitelistData);
     if (d.customizeTokenData) setCustomizeTokenData(d.customizeTokenData);
     if (d.vestingData) setVestingData(d.vestingData);
-    setStep((d.step as FLOW_STEP) ?? FLOW_STEP.TOKEN_BASE_INFO);
+    setStep(resolveFlowStep(d.step));
   }, []);
+
+  const onRestore = React.useCallback((d: any) => {
+    if (!shouldRestoreFromStorageRef.current) {
+      console.log("[PremarketCreationFlow] onRestore:skip repeated restore");
+      return;
+    }
+    shouldRestoreFromStorageRef.current = false;
+    applyRestoredData(d);
+  }, [applyRestoredData]);
+
+  useEffect(() => {
+    tokenomicsDataRef.current = tokenomicsData;
+  }, [tokenomicsData]);
+
+  useEffect(() => {
+    whitelistDataRef.current = whitelistData;
+  }, [whitelistData]);
+
+  useEffect(() => {
+    vestingDataRef.current = vestingData;
+  }, [vestingData]);
 
   const normalizeStep = React.useCallback(
     (s: FlowStep): FlowStep => {
@@ -131,7 +161,8 @@ export default function PremarketCreationFlow() {
     TokenMainData,
     TokenomicsData,
     PremarketSettingData,
-    CustomizeTokenData
+    CustomizeTokenData,
+    VestingData
   >({
     loadTimeoutMs: 1500,
     retry: 1,
@@ -141,7 +172,104 @@ export default function PremarketCreationFlow() {
     initialDraft: { step: FLOW_STEP.TOKEN_BASE_INFO },
   });
 
-  if (loading) {
+  useEffect(() => {
+    let cancelled = false;
+
+    const hydrateConceptFromBackend = async () => {
+      if (!shouldHydrateFromBackendRef.current) {
+        console.log("[PremarketCreationFlow] hydrateConceptFromBackend:skip repeated hydrate");
+        return;
+      }
+      console.log("[PremarketCreationFlow] hydrateConceptFromBackend:start", {
+        loading,
+        network,
+      });
+      if (loading) {
+        console.log("[PremarketCreationFlow] hydrateConceptFromBackend:skip because draft is still loading");
+        return;
+      }
+
+      if (network === "testnet") {
+        console.log("[PremarketCreationFlow] hydrateConceptFromBackend:skip on testnet");
+        if (!cancelled) setLoadingConcept(false);
+        return;
+      }
+
+      try {
+        const rawConcept = await getUserConcept(network);
+        console.log("[PremarketCreationFlow] hydrateConceptFromBackend:rawConcept", rawConcept);
+        if (cancelled) {
+          console.log("[PremarketCreationFlow] hydrateConceptFromBackend:cancelled after fetch");
+          return;
+        }
+
+        const mappedConcept = mapBackendConceptToDraft(rawConcept, {
+          tokenomicsData: tokenomicsDataRef.current,
+          whitelistData: whitelistDataRef.current,
+          vestingData: vestingDataRef.current,
+        });
+        console.log("[PremarketCreationFlow] hydrateConceptFromBackend:mappedConcept", mappedConcept);
+        if (!mappedConcept) {
+          console.log("[PremarketCreationFlow] hydrateConceptFromBackend:no mapped concept, keeping local draft");
+          setLoadingConcept(false);
+          return;
+        }
+
+        const conceptId =
+          rawConcept?.blockchain_info?.id ??
+          rawConcept?.blockchainInfo?.id ??
+          rawConcept?.id;
+
+        if (mappedConcept.whitelistData.state === "enabled" && conceptId) {
+          console.log("[PremarketCreationFlow] hydrateConceptFromBackend:loading full whitelist", {
+            conceptId,
+          });
+          try {
+            const users = await getAllWhitelistUsers({
+              premarket_id: String(conceptId),
+            });
+            mappedConcept.whitelistData = {
+              state: "enabled",
+              items: users.flatMap((user) =>
+                user.wallets.map((wallet) => ({
+                  pubkey: wallet,
+                  state: "enabled" as const,
+                }))
+              ),
+            };
+            console.log("[PremarketCreationFlow] hydrateConceptFromBackend:full whitelist loaded", {
+              count: mappedConcept.whitelistData.items.length,
+            });
+          } catch (e) {
+            console.error("[PremarketCreationFlow] hydrateConceptFromBackend:failed to load full whitelist", e);
+          }
+        }
+
+        shouldHydrateFromBackendRef.current = false;
+        shouldRestoreFromStorageRef.current = false;
+        applyRestoredData(mappedConcept);
+        console.log("[PremarketCreationFlow] hydrateConceptFromBackend:state applied");
+        await patch(mappedConcept);
+        console.log("[PremarketCreationFlow] hydrateConceptFromBackend:draft patched");
+      } catch (e) {
+        console.error("[PremarketCreationFlow] failed to hydrate concept from backend", e);
+      } finally {
+        if (!cancelled) {
+          console.log("[PremarketCreationFlow] hydrateConceptFromBackend:finish");
+          setLoadingConcept(false);
+        }
+      }
+    };
+
+    hydrateConceptFromBackend();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [loading, network, patch, applyRestoredData]);
+
+  if (loading || loadingConcept) {
+    console.log("[PremarketCreationFlow] render loading", { loading, loadingConcept });
     return (
       <View
         style={{
@@ -314,7 +442,6 @@ export default function PremarketCreationFlow() {
         notify.error
       );
 
-      await clear();
       router.push(`/token/${resp.premarketPDA}`);
     } catch (error) {
       console.error("failed to create concept", error);
@@ -592,4 +719,243 @@ export default function PremarketCreationFlow() {
       </View>
     </View>
   );
+}
+
+function mapBackendConceptToDraft(
+  raw: any,
+  fallback?: {
+    tokenomicsData?: TokenomicsData;
+    whitelistData?: WhitelistData;
+    vestingData?: VestingData;
+  }
+):
+  | {
+      step: FLOW_STEP;
+      tokenMainData: TokenMainData;
+      tokenomicsData?: TokenomicsData;
+      premarketSettingsData: PremarketSettingData;
+      customizeTokenData: CustomizeTokenData;
+      whitelistData: WhitelistData;
+      vestingData?: VestingData;
+    }
+  | null {
+  if (!raw) {
+    console.log("[mapBackendConceptToDraft] raw is empty");
+    return null;
+  }
+
+  const blockchainInfo = raw.blockchain_info ?? raw.blockchainInfo ?? raw.token_info ?? raw.tokenInfo ?? raw;
+  const communityInfo = raw.community_info ?? raw.communityInfo ?? {};
+  const availabilityInfo = raw.availability_info ?? raw.availabilityInfo ?? {};
+  const whitelistInfo = raw.whitelist_info ?? raw.whitelistInfo ?? raw.whitelist ?? {};
+  const vestingInfo = raw.vesting_info ?? raw.vestingInfo ?? {};
+
+  const tokenName = blockchainInfo.name ?? raw.name;
+  const tokenTicker = blockchainInfo.symbol ?? raw.symbol;
+  const description = blockchainInfo.description ?? raw.description ?? "";
+  const avatar =
+    blockchainInfo.image_url ??
+    blockchainInfo.imageURL ??
+    raw.image_url ??
+    raw.imageURL ??
+    "";
+
+  const deadlineSec = Number(
+    blockchainInfo.premarket_deadline ??
+      blockchainInfo.deadline ??
+      raw.premarket_deadline ??
+      raw.deadline ??
+      0
+  );
+
+  const goalSolLamp =
+    blockchainInfo.premarket_goal_sol_lamp ??
+    blockchainInfo.goal_sol_lamp ??
+    raw.premarket_goal_sol_lamp ??
+    raw.goal_sol_lamp;
+
+  const creatorAllocateLamp =
+    blockchainInfo.creator_allocate_lamp ??
+    raw.creator_allocate_lamp;
+
+  if (!tokenName && !tokenTicker && !description && !avatar && !deadlineSec && goalSolLamp == null) {
+    console.log("[mapBackendConceptToDraft] required fields missing", {
+      tokenName,
+      tokenTicker,
+      deadlineSec,
+      goalSolLamp,
+      creatorAllocateLamp,
+      raw,
+    });
+    return null;
+  }
+
+  const tokenMainData: TokenMainData = {
+    tokenName: String(tokenName ?? ""),
+    tokenTicker: String(tokenTicker ?? ""),
+    description: String(description),
+    avatar: String(avatar),
+    links: {
+      telegram: blockchainInfo.links?.telegram ?? raw.links?.telegram ?? undefined,
+      twitter: blockchainInfo.links?.twitter ?? raw.links?.twitter ?? undefined,
+      website:
+        blockchainInfo.links?.web_site ??
+        blockchainInfo.links?.website ??
+        raw.links?.web_site ??
+        raw.links?.website ??
+        undefined,
+    },
+  };
+
+  const tokenomicsData: TokenomicsData | undefined =
+    creatorAllocateLamp != null
+      ? {
+          creatorInitialBuy: convertLamportToSmallCount(new BN(String(creatorAllocateLamp))),
+        }
+      : fallback?.tokenomicsData;
+
+  const premarketSettingsData: PremarketSettingData | undefined =
+    deadlineSec && goalSolLamp != null
+      ? {
+          deadline_sec: deadlineSec,
+          goal_sol: convertLamportToSmallCount(new BN(String(goalSolLamp))),
+          short_link_name:
+            availabilityInfo.token_short_url_name ??
+            availabilityInfo.tokenShortUrlName ??
+            raw.token_short_url_name ??
+            raw.tokenShortUrlName ??
+            undefined,
+        }
+      : undefined;
+
+  const customizeTokenData: CustomizeTokenData = {
+    description: communityInfo.description ?? "",
+    links: Array.isArray(communityInfo.links)
+      ? communityInfo.links.map((link: any) => ({
+          text: String(link.text ?? ""),
+          url: String(link.url ?? ""),
+          type: normalizeCommunityLinkType(link.type),
+        }))
+      : [],
+    banner:
+      communityInfo.token_banner_url || communityInfo.tokenBannerURL
+        ? {
+            url: communityInfo.token_banner_url ?? communityInfo.tokenBannerURL,
+          }
+        : undefined,
+  };
+
+  const whitelistItemsRaw =
+    whitelistInfo.items ??
+    whitelistInfo.user_pubkeys ??
+    whitelistInfo.userPubkeys ??
+    raw.whitelist_user_pubkeys ??
+    [];
+
+  const whitelistData: WhitelistData =
+    Array.isArray(whitelistItemsRaw) || availabilityInfo.is_whitelist_enabled || availabilityInfo.isWhitelistEnabled
+      ? {
+          state:
+            availabilityInfo.is_whitelist_enabled || availabilityInfo.isWhitelistEnabled
+              ? "enabled"
+              : "disabled",
+          items: Array.isArray(whitelistItemsRaw)
+            ? whitelistItemsRaw.map((item: any) => ({
+                pubkey: String(item?.pubkey ?? item?.user_pubkey ?? item),
+                state: "enabled" as const,
+              }))
+            : [],
+        }
+      : fallback?.whitelistData ?? { state: "disabled", items: [] };
+
+  const vestingEnabled = Boolean(vestingInfo.enabled);
+  const vestingData: VestingData | undefined =
+    vestingInfo.enabled !== undefined ||
+    vestingInfo.unlock_at_launch_percent !== undefined ||
+    vestingInfo.vesting_period_sec !== undefined
+      ? {
+          enabled: vestingEnabled,
+          unlockAtLaunchPercent: Number(vestingInfo.unlock_at_launch_percent ?? 0),
+          vestingPeriodSec: Number(vestingInfo.vesting_period_sec ?? 0),
+        }
+      : fallback?.vestingData;
+
+  const step = getEarliestIncompleteStep({
+    tokenMainData,
+    tokenomicsData,
+    premarketSettingsData,
+  });
+
+  const mapped = {
+    step,
+    tokenMainData,
+    tokenomicsData,
+    premarketSettingsData,
+    customizeTokenData,
+    whitelistData,
+    vestingData,
+  };
+  console.log("[mapBackendConceptToDraft] mapped draft", mapped);
+  return mapped;
+}
+
+function normalizeCommunityLinkType(type: unknown): "x" | "tg" | "other" {
+  if (type === "x" || type === "tg" || type === "other") {
+    return type;
+  }
+
+  if (typeof type !== "string") {
+    return "other";
+  }
+
+  const normalized = type.toLowerCase();
+  if (normalized === "x" || normalized === "twitter") return "x";
+  if (normalized === "tg" || normalized === "telegram") return "tg";
+  return "other";
+}
+
+function resolveFlowStep(step: unknown): FLOW_STEP {
+  return typeof step === "number" && step in FLOW_STEP
+    ? (step as FLOW_STEP)
+    : FLOW_STEP.TOKEN_BASE_INFO;
+}
+
+function getEarliestIncompleteStep({
+  tokenMainData,
+  tokenomicsData,
+  premarketSettingsData,
+}: {
+  tokenMainData: TokenMainData;
+  tokenomicsData?: TokenomicsData;
+  premarketSettingsData?: PremarketSettingData;
+}): FLOW_STEP {
+  const isMainInfoIncomplete =
+    !tokenMainData.tokenName.trim() ||
+    !tokenMainData.tokenTicker.trim() ||
+    !tokenMainData.description.trim() ||
+    !tokenMainData.avatar.trim();
+
+  if (isMainInfoIncomplete) {
+    return FLOW_STEP.TOKEN_BASE_INFO;
+  }
+
+  const isTokenomicsIncomplete =
+    tokenomicsData?.creatorInitialBuy === undefined ||
+    tokenomicsData.creatorInitialBuy <= 0;
+
+  if (isTokenomicsIncomplete) {
+    return FLOW_STEP.TOKENOMICS;
+  }
+
+  const isPremarketIncomplete =
+    !premarketSettingsData ||
+    !premarketSettingsData.deadline_sec ||
+    premarketSettingsData.goal_sol === undefined ||
+    premarketSettingsData.goal_sol <= 0;
+
+  if (isPremarketIncomplete) {
+    return FLOW_STEP.PREMARKET_SETTINGS;
+  }
+
+  return FLOW_STEP.OVERVIEW;
 }

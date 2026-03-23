@@ -1,12 +1,13 @@
-import { IconName, SvgIconButton } from "@components/base/SvgIcon";
-import { Linking } from "react-native";
-import { MD3Colors } from "react-native-paper/lib/typescript/types";
+import React from "react";
+import { IconName, SvgIcon } from "@components/base/SvgIcon";
+import { Linking, Platform, Pressable, ViewStyle } from "react-native";
+import { ExtendedMD3Colors } from "@theme/types";
 
 interface SvgIconButtonProps {
   name: IconName;
   size?: number;
   iconSize?: number;
-  colors: MD3Colors;
+  colors: ExtendedMD3Colors;
   link: string;
   withoutBackgroud?:boolean
 }
@@ -19,26 +20,46 @@ export function RoundIconLink({
   link,
   withoutBackgroud
 }: SvgIconButtonProps) {
+  const [hovered, setHovered] = React.useState(false);
+  const [pressed, setPressed] = React.useState(false);
+  const [focused, setFocused] = React.useState(false);
+
+  const isActive = hovered || pressed || focused;
+  const containerStyle: ViewStyle = {
+    justifyContent: "center",
+    alignItems: "center",
+    width: size,
+    height: size,
+    borderWidth: 1,
+    borderColor: isActive ? colors.primary : colors.outline,
+    backgroundColor: withoutBackgroud
+      ? "transparent"
+      : isActive
+      ? colors.surfaceContainerHighest
+      : colors.surfaceVariant,
+    borderRadius: size / 2,
+  };
+
+  const webHoverProps =
+    Platform.OS === "web"
+      ? ({
+          onHoverIn: () => setHovered(true),
+          onHoverOut: () => setHovered(false),
+        } as const)
+      : {};
+
   return (
-    <SvgIconButton
+    <Pressable
       onPress={() => Linking.openURL(link)}
-      name={name}
-      size={iconSize}
-      color={colors.onSurface}
-      containerStyle={{
-        justifyContent: "center",
-        alignItems: "center",
-        width: size,
-        height: size,
-        borderWidth: 1,
-        borderColor: colors.onSurfaceVariant,
-        backgroundColor: withoutBackgroud?'transparent':colors.surfaceVariant,
-        opacity: 0.4,
-        borderRadius: size / 2,
-      }}
-      style={{
-        opacity: 1,
-      }}
-    />
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      style={containerStyle}
+      hitSlop={8}
+      {...webHoverProps}
+    >
+      <SvgIcon name={name} size={iconSize} color={colors.onSurface} />
+    </Pressable>
   );
 }

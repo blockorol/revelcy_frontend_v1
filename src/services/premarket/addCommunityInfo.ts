@@ -24,19 +24,24 @@ type ErrorNotifier = (message: string, options?: Omit<NoticeOptions, "type"> | u
 
 export async function addCommunityInfo(premarketPubkey: string, params:AddCommunityInfoParams, notifyError?: ErrorNotifier) {
     try {
-        // if banner.url exist -> set url, if not -> uploadBanner with banner.data (if exist)
-        const bannerURL = params.banner
-            ? params.banner.url??
-                params.banner.data === undefined ? undefined
-                : await uploadBanner(premarketPubkey, params.banner.data, notifyError)
-            : undefined
+        let bannerURL: string | undefined;
+        if (params.banner?.url) {
+            bannerURL = params.banner.url;
+        } else if (params.banner?.data !== undefined) {
+            bannerURL = await uploadBanner(premarketPubkey, params.banner.data, notifyError);
+        }
 
         await updateAboutCommunity(premarketPubkey, {
                 description: params.description ?? "",
                 tokenBannerURL: bannerURL,
                 links: params.links,
                 });
-    } catch {
+    } catch (e) {
+        console.error("[addCommunityInfo] failed", {
+            premarketPubkey,
+            params,
+            error: e,
+        });
         notifyError?.("failed to add community info", {
             suggest: "Please, add it again from premarket page",
             duration: 60000,
@@ -45,7 +50,7 @@ export async function addCommunityInfo(premarketPubkey: string, params:AddCommun
               onAction: () => {},
             },
           });
-        return
+        throw e;
     }
     /*
         notify.error(, {
