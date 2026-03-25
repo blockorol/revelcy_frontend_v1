@@ -1,7 +1,7 @@
 import ContinueButtonWithProgressBar from "@components/ContinueButtonWithProgressBar";
 import { PremarketSettingData, TokenomicsData } from "@components/token/create/interface";
 import TokenCreateFormHeader from "@components/token/create/TokenCreateFormHeader";
-import React, { useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { ScrollView, View, Pressable } from "react-native";
 import { HelperText, Switch, useTheme } from "react-native-paper";
 import { Text } from "@components/ui/Text";
@@ -19,6 +19,7 @@ export type EditPremarketSettingsFormProps = {
   onNext: (data: PremarketSettingData) => void;
   onClose?: () => void;
   onBack?: () => void;
+  onSaveDraft?: (data: PremarketSettingData) => void;
   step: number;
   totalSteps: number;
   presetData?: PremarketSettingData;
@@ -57,6 +58,7 @@ export default function EditPremarketSettingsForm({
   onClose,
   onBack,
   onNext,
+  onSaveDraft,
   step,
   totalSteps,
 }: EditPremarketSettingsFormProps) {
@@ -97,14 +99,14 @@ export default function EditPremarketSettingsForm({
   const [treasuryRaw, setTreasuryRaw] = useState<string>(
     presetData?.treasuryAllocationSol != null ? String(presetData.treasuryAllocationSol) : ""
   );
-  const initialTreasurySol = typeof presetData?.treasuryAllocationSol === "number" ? presetData.treasuryAllocationSol : 0;
+    const initialTreasurySol = typeof presetData?.treasuryAllocationSol === "number" ? presetData.treasuryAllocationSol : 0;
   const [treasuryAllocationSol, setTreasuryAllocationSol] = useState<number>(initialTreasurySol);
   const [treasuryError, setTreasuryError] = useState<string | null>(null);
 
   const isMoreThanOneMonthAway = (d: Date) => {
     const now = new Date();
     const max = new Date(now);
-    max.setMonth(max.getMonth() + 1); 
+    max.setMonth(max.getMonth() + 1);
     return d.getTime() > max.getTime();
   };
   const ONE_HOUR_MS = 60 * 60 * 1000;
@@ -118,10 +120,35 @@ export default function EditPremarketSettingsForm({
   const raiseLabels = [0, 50, 100, 150, 217];
   const raisePoints = [0, 25, 50, 75, 100, 125, 150, 183.5, 217];
 
-  const treasuryPercent =
-    tokenomicsData?.treasuryAllocationPercent != null
-      ? `${Math.round(tokenomicsData.treasuryAllocationPercent)}%`
-      : "—";
+  const buildDraft = useCallback((): PremarketSettingData => {
+    return {
+      deadline_sec: deadlineDateTimeSec ?? presetData?.deadline_sec ?? 0,
+      goal_sol: premarketGoalSol,
+      short_link_name: shortName?.length ? shortName : undefined,
+
+      isFlatBondingCurveEnabled,
+      bondingCurvePercent: clampInt(bondingCurvePercent, 0, 100),
+      amountToRaise: projectRaiseEnabled ? clampInt(amountToRaise, 0, raiseMax) : 0,
+      treasuryAllocationSol: treasuryAllocationSol,
+    };
+  }, [
+    amountToRaise,
+    bondingCurvePercent,
+    deadlineDateTimeSec,
+    isFlatBondingCurveEnabled,
+    premarketGoalSol,
+    presetData?.deadline_sec,
+    projectRaiseEnabled,
+    raiseMax,
+    shortName,
+    treasuryAllocationSol,
+  ]);
+
+  const saveDraftSoon = useCallback(() => {
+    if (!onSaveDraft) return;
+    // ensure latest state is applied before saving
+    setTimeout(() => onSaveDraft(buildDraft()), 0);
+  }, [buildDraft, onSaveDraft]);
 
   const isFilledAll = (): boolean => {
     return deadlineDateTimeSec !== undefined && !dataTimeError && !treasuryError;
@@ -130,14 +157,17 @@ export default function EditPremarketSettingsForm({
   const handleSubmit = () => {
     if (!deadlineDateTimeSec) return;
     if (dataTimeError) return;
+    if (treasuryError) return;
+
     onNext({
       deadline_sec: deadlineDateTimeSec,
       goal_sol: premarketGoalSol, // keep for now
       short_link_name: shortName?.length ? shortName : undefined,
+
       isFlatBondingCurveEnabled,
       bondingCurvePercent: clampInt(bondingCurvePercent, 0, 100),
       amountToRaise: projectRaiseEnabled ? clampInt(amountToRaise, 0, raiseMax) : 0,
-      treasuryAllocationSol: treasuryAllocationSol, 
+      treasuryAllocationSol: treasuryAllocationSol,
     });
   };
 
@@ -175,7 +205,13 @@ export default function EditPremarketSettingsForm({
             <Text variant="labelLarge" prominent>
               Flat Bonding Curve
             </Text>
-            <Switch value={isFlatBondingCurveEnabled} onValueChange={setIsFlatBondingCurveEnabled} />
+            <Switch
+              value={isFlatBondingCurveEnabled}
+              onValueChange={(v) => {
+                setIsFlatBondingCurveEnabled(v);
+                saveDraftSoon();
+              }}
+            />
           </View>
 
           {/* Bonding Curve % (disabled when Flat Bonding Curve is OFF) */}
@@ -206,7 +242,10 @@ export default function EditPremarketSettingsForm({
                 formatLabel={(v) => `${v}%`}
                 edgeLabelInset={8}
                 points={bcPoints}
-                onValueChange={(v) => setBondingCurvePercent(clampInt(v, 0, 100))}
+                onValueChange={(v) => {
+                  setBondingCurvePercent(clampInt(v, 0, 100));
+                  saveDraftSoon();
+                }}
                 isMobile={isMobile}
               />
             </View>
@@ -229,6 +268,7 @@ export default function EditPremarketSettingsForm({
               onValueChange={(v) => {
                 setProjectRaiseEnabled(v);
                 setAmountToRaise(v ? Math.max(1, amountToRaise || 55) : 0);
+                saveDraftSoon();
               }}
             />
           </View>
@@ -247,13 +287,16 @@ export default function EditPremarketSettingsForm({
                 formatLabel={(v) => `${v} SOL`}
                 edgeLabelInset={8}
                 points={raisePoints}
-                onValueChange={(v) => setAmountToRaise(clampInt(v, 0, raiseMax))}
+                onValueChange={(v) => {
+                  setAmountToRaise(clampInt(v, 0, raiseMax));
+                  saveDraftSoon();
+                }}
                 isMobile={isMobile}
               />
             </View>
           </View>
 
-        {/* Treasury Allocation (SOL input) */}
+          {/* Treasury Allocation (SOL input) */}
           <View style={{ marginTop: 26 }}>
             <View
               style={{
@@ -281,6 +324,7 @@ export default function EditPremarketSettingsForm({
                 if (!raw) {
                   setTreasuryAllocationSol(0);
                   setTreasuryError(null);
+                  saveDraftSoon();
                   return;
                 }
 
@@ -288,6 +332,7 @@ export default function EditPremarketSettingsForm({
                 if (!Number.isFinite(n)) {
                   setTreasuryAllocationSol(0);
                   setTreasuryError(null);
+                  saveDraftSoon();
                   return;
                 }
 
@@ -295,11 +340,13 @@ export default function EditPremarketSettingsForm({
                   setTreasuryError(`Max ${TREASURY_MAX_SOL} SOL`);
                   setTreasuryAllocationSol(TREASURY_MAX_SOL);
                   setTreasuryRaw(String(TREASURY_MAX_SOL));
+                  saveDraftSoon();
                   return;
                 }
 
                 setTreasuryError(null);
                 setTreasuryAllocationSol(clamp(n, 0, TREASURY_MAX_SOL));
+                saveDraftSoon();
               }}
               inputMode="decimal"
               keyboardType="decimal-pad"
@@ -339,7 +386,8 @@ export default function EditPremarketSettingsForm({
                   return;
                 }
                 setDataTimeError(null);
-                setDeadlineDateTimeSec(Math.floor(newDate.getTime() / 1000));// todo: check /1000(?)
+                setDeadlineDateTimeSec(Math.floor(newDate.getTime() / 1000));
+                saveDraftSoon();
               }}
             />
             <View style={{ marginTop: -20 }}>
@@ -356,10 +404,14 @@ export default function EditPremarketSettingsForm({
               placeholder="eg. project_name"
               value={shortName??undefined}
               onChangeText={(text: string) => {
-                setShortName(sanitizeShortPath(text))
+                setShortName(sanitizeShortPath(text));
+                saveDraftSoon();
               }}
               alwaysLabelOnTop={true}
-              overrideRemoveBtn={() => setShortName("")}
+              overrideRemoveBtn={() => {
+                setShortName("");
+                saveDraftSoon();
+              }}
               error={!!shortNameError}
               errorValue={shortNameError}
             />

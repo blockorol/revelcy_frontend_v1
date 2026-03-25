@@ -449,6 +449,7 @@ export default function PremarketCreationFlow() {
                 step: nextStep,
               });
             }}
+            onSaveDraft={(d) => patch({ premarketSettingsData: d, step: FLOW_STEP.PREMARKET_SETTINGS })}
             onClose={onButtonClose}
             step={3}
             totalSteps={totalSteps}
