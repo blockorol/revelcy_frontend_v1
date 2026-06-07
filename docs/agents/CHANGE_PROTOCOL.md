@@ -50,6 +50,10 @@ Use `.agents/skills/revelcy-agent-doc-maintenance/SKILL.md` for the decision pro
 - Install, local run, setup requirements, or local env setup changed -> update `docs/SETUP.md`.
 - Developer conventions, aliases, routing, UI, state, API, or feature workflow changed -> update `docs/DEVELOPMENT.md`.
 - Human-readable architecture, routing, auth, API, wallet, or IPFS overview changed -> update `docs/ARCHITECTURE.md`.
+- Human project structure changed -> update `docs/PROJECT_STRUCTURE.md`.
+- Human UI guidance changed -> update `docs/UI.md`.
+- Human API overview or API contract placeholder changed -> update `docs/API.md`.
+- Human Web3/wallet overview or contract placeholder changed -> update `docs/WEB3.md`.
 - Env variables, required/optional status, defaults, or exposure notes changed -> update `docs/ENVIRONMENT.md`.
 - Common setup/runtime/build/wallet/backend issues changed -> update `docs/TROUBLESHOOTING.md`.
 - Build/export/hosting/deployment env or pre-deploy checks changed -> update `docs/DEPLOYMENT.md`.
@@ -130,6 +134,10 @@ When the task includes human-facing documentation, also compare:
 - `docs/SETUP.md`
 - `docs/DEVELOPMENT.md`
 - `docs/ARCHITECTURE.md`
+- `docs/PROJECT_STRUCTURE.md`
+- `docs/UI.md`
+- `docs/API.md`
+- `docs/WEB3.md`
 - `docs/ENVIRONMENT.md`
 - `docs/TROUBLESHOOTING.md`
 - `docs/DEPLOYMENT.md`

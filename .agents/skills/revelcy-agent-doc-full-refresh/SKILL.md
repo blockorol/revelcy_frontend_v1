@@ -53,6 +53,10 @@ Human-facing docs, when the task includes human docs:
 - `docs/SETUP.md`
 - `docs/DEVELOPMENT.md`
 - `docs/ARCHITECTURE.md`
+- `docs/PROJECT_STRUCTURE.md`
+- `docs/UI.md`
+- `docs/API.md`
+- `docs/WEB3.md`
 - `docs/ENVIRONMENT.md`
 - `docs/TROUBLESHOOTING.md`
 - `docs/DEPLOYMENT.md`

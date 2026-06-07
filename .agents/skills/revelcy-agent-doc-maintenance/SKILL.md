@@ -136,7 +136,7 @@ If yes to any item, update the relevant agent docs before final response.
 - Top-level commands, aliases, platform stance, sensitive areas, required skills:
   update `AGENTS.md`.
 - Human-facing docs:
-  update `README.md`, `docs/README.md`, `docs/SETUP.md`, `docs/DEVELOPMENT.md`, `docs/ARCHITECTURE.md`, `docs/ENVIRONMENT.md`, `docs/TROUBLESHOOTING.md`, `docs/DEPLOYMENT.md`, `CONTRIBUTING.md`, `SECURITY.md`, `.github/ISSUE_TEMPLATE/*`, or `.github/pull_request_template.md` as relevant.
+  update `README.md`, `docs/README.md`, `docs/SETUP.md`, `docs/DEVELOPMENT.md`, `docs/ARCHITECTURE.md`, `docs/PROJECT_STRUCTURE.md`, `docs/UI.md`, `docs/API.md`, `docs/WEB3.md`, `docs/ENVIRONMENT.md`, `docs/TROUBLESHOOTING.md`, `docs/DEPLOYMENT.md`, `CONTRIBUTING.md`, `SECURITY.md`, `.github/ISSUE_TEMPLATE/*`, or `.github/pull_request_template.md` as relevant.
 - Skill invocation or shared-agent behavior:
   update `.agents/skills/*`, `.cursor/rules/revelcy-agent-docs.mdc`, and `CLAUDE.md` as needed.
 

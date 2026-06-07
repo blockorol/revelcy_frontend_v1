@@ -20,6 +20,8 @@ Native platform files exist, especially for wallet adapters, but Android/iOS beh
 - `storage/` - storage helpers, modal/overlay contexts, and wallet adapters.
 - `assets/` - images and SVG icons.
 
+For a more detailed map, see [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md).
+
 ## Aliases
 
 Configured in `tsconfig.json`:
@@ -60,6 +62,8 @@ Prefer shared UI primitives before adding one-off components:
 
 SVG icons live in `assets/basic_icon/` and are registered through `src/components/base/SvgIcon.tsx`.
 
+See [UI.md](UI.md) for a focused UI guide.
+
 ## State
 
 Global providers are composed in `app/_layout.tsx`.
@@ -84,6 +88,8 @@ API clients live in `src/services/api/`.
 Use `src/services/api/http.ts` for shared HTTP behavior.
 Avoid raw `fetch` in components when an API client belongs in `src/services/api/*`.
 
+See [API.md](API.md) for the API client overview and contract placeholder.
+
 ## Wallet And Solana
 
 Wallet adapters live in `storage/wallet-adapter/`.
@@ -91,6 +97,8 @@ Wallet adapters live in `storage/wallet-adapter/`.
 Solana helpers live in `src/services/blockchain/` and `src/utils/solana.ts`.
 
 Wallet and transaction flows are high risk. Preserve explicit wallet connection/signature behavior.
+
+See [WEB3.md](WEB3.md) for the wallet/Solana overview and contract placeholder.
 
 ## Adding A Feature
 
