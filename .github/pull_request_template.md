@@ -2,10 +2,15 @@
 
 -
 
+## User-Facing Notes
+
+- 
+
 ## Scope
 
 - [ ] App code changed
 - [ ] Agent docs changed
+- [ ] Human docs changed
 - [ ] UI changed
 - [ ] API client behavior changed
 - [ ] Wallet/web3 behavior changed
@@ -24,6 +29,12 @@
 - [ ] `docs/agents/CHANGE_PROTOCOL.md` checked
 - [ ] Agent docs updated where needed
 - [ ] No agent docs update needed
+
+## Human Docs
+
+- [ ] README/docs updated where needed
+- [ ] `CONTRIBUTING.md` / `SECURITY.md` updated where needed
+- [ ] No human docs update needed
 
 ## Risk Checks
 

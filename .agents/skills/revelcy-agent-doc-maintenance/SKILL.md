@@ -39,6 +39,7 @@ Then update these files as needed:
 - `docs/agents/REVIEW_CHECKLIST.md`
 - `docs/agents/WORKFLOWS.md`
 - `docs/agents/CHANGE_PROTOCOL.md`
+- human-facing docs when user-facing setup, development, env, architecture, deployment, troubleshooting, contributing, security, issue, or PR expectations change
 - repo-shared skills in `.agents/skills/`
 - agent adapters: `.cursor/rules/revelcy-agent-docs.mdc`, `CLAUDE.md`
 
@@ -73,6 +74,7 @@ After a change, inspect the diff and answer:
 - Did reusable agent prompt patterns change?
 - Did `env.ts`, `app.config.js`, `babel.config.js`, or env requirements change?
 - Did `package.json` commands or dependency-driven workflows change?
+- Did human-facing setup, development, env, architecture, deployment, troubleshooting, contributing, security, issue, or PR expectations change?
 - Did available validation commands or expected checks change?
 - Did a known limitation become outdated or newly important?
 - Did `tsconfig.json` or Babel aliases change?
@@ -133,6 +135,8 @@ If yes to any item, update the relevant agent docs before final response.
   update `docs/agents/CHANGE_PROTOCOL.md`.
 - Top-level commands, aliases, platform stance, sensitive areas, required skills:
   update `AGENTS.md`.
+- Human-facing docs:
+  update `README.md`, `docs/README.md`, `docs/SETUP.md`, `docs/DEVELOPMENT.md`, `docs/ARCHITECTURE.md`, `docs/ENVIRONMENT.md`, `docs/TROUBLESHOOTING.md`, `docs/DEPLOYMENT.md`, `CONTRIBUTING.md`, `SECURITY.md`, `.github/ISSUE_TEMPLATE/*`, or `.github/pull_request_template.md` as relevant.
 - Skill invocation or shared-agent behavior:
   update `.agents/skills/*`, `.cursor/rules/revelcy-agent-docs.mdc`, and `CLAUDE.md` as needed.
 

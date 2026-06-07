@@ -28,14 +28,16 @@ Repository map for AI agents. Use this to find the right files before editing.
   Images and SVG icons.
 - `public/`
   Static web assets.
-- `docs/agents/`
-  Agent-facing repository docs.
+- `docs/`
+  Human-facing documentation plus `docs/agents/` for agent-facing documentation.
 - `.agents/skills/`
   Repo-shared skills for Codex/Cursor/Claude-compatible workflows.
 - `.cursor/rules/`
   Cursor adapter rules for shared skills.
+- `.github/ISSUE_TEMPLATE/`
+  Human-facing GitHub issue templates.
 - `.github/pull_request_template.md`
-  Agent-assisted PR checklist for validation, docs, and risk checks.
+  GitHub PR checklist for validation, docs, and risk checks.
 
 ## Application Entrypoints
 
@@ -276,3 +278,32 @@ Do not change config files casually. Check `ARCHITECTURE.md` and `INVARIANTS.md`
   Common change recipes.
 - `docs/agents/CHANGE_PROTOCOL.md`
   Post-change doc update rules.
+
+## Human Documentation Files
+
+- `README.md`
+  Project overview, quick start, scripts, and documentation links.
+- `README_DEV.md`
+  Compatibility pointer to the current developer docs.
+- `docs/README.md`
+  Human documentation index.
+- `docs/SETUP.md`
+  Local setup and run instructions.
+- `docs/DEVELOPMENT.md`
+  Developer conventions and common development areas.
+- `docs/ARCHITECTURE.md`
+  Human-readable architecture overview.
+- `docs/ENVIRONMENT.md`
+  Environment variable reference.
+- `docs/TROUBLESHOOTING.md`
+  Common setup/runtime/build issues.
+- `docs/DEPLOYMENT.md`
+  Web deployment notes.
+- `CONTRIBUTING.md`
+  Contribution and PR expectations.
+- `SECURITY.md`
+  Human-facing security guidance.
+- `.github/ISSUE_TEMPLATE/*`
+  Bug report and feature request templates.
+- `.github/pull_request_template.md`
+  Pull request checklist.

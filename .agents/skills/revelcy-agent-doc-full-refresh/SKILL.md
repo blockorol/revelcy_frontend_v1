@@ -46,6 +46,21 @@ Shared skills and adapters:
 - `.cursor/rules/revelcy-agent-docs.mdc`
 - `CLAUDE.md`
 
+Human-facing docs, when the task includes human docs:
+
+- `README.md`
+- `docs/README.md`
+- `docs/SETUP.md`
+- `docs/DEVELOPMENT.md`
+- `docs/ARCHITECTURE.md`
+- `docs/ENVIRONMENT.md`
+- `docs/TROUBLESHOOTING.md`
+- `docs/DEPLOYMENT.md`
+- `CONTRIBUTING.md`
+- `SECURITY.md`
+- `.github/ISSUE_TEMPLATE/*`
+- `.github/pull_request_template.md`
+
 ## Full Refresh Workflow
 
 1. Check repository state:
@@ -104,6 +119,7 @@ Shared skills and adapters:
 - Changed logging, fingerprint events, telemetry-like behavior, or error visibility.
 - Changed reusable agent prompt patterns.
 - Changed package scripts, validation commands, or aliases.
+- Changed human-facing setup, development, env, architecture, deployment, troubleshooting, contributing, security, issue, or PR expectations.
 - Changed web/native support assumptions.
 - Changed invariants that agents must preserve.
 - Changed known limitations or validation guidance.

@@ -82,6 +82,25 @@ Never log or commit secrets. Never bypass wallet signature, auth/session, transa
 - `docs/agents/WORKFLOWS.md` - recipes for common changes.
 - `docs/agents/CHANGE_PROTOCOL.md` - post-change checks and doc update rules.
 
+## Human Docs
+
+Human-facing docs are maintained separately from agent docs:
+
+- `README.md` - project overview and quick start.
+- `docs/README.md` - human documentation index.
+- `docs/SETUP.md` - local setup.
+- `docs/DEVELOPMENT.md` - developer conventions.
+- `docs/ARCHITECTURE.md` - human-readable architecture overview.
+- `docs/ENVIRONMENT.md` - env variable reference.
+- `docs/TROUBLESHOOTING.md` - common issues.
+- `docs/DEPLOYMENT.md` - web deployment notes.
+- `CONTRIBUTING.md` - contribution guidelines.
+- `SECURITY.md` - human-facing security/reporting guidance.
+- `.github/ISSUE_TEMPLATE/*` - issue templates.
+- `.github/pull_request_template.md` - PR checklist.
+
+When setup, scripts, env, architecture, workflows, deployment, troubleshooting, security, or contribution expectations change, update the relevant human docs in the same task.
+
 Shared repo skills:
 
 - `.agents/skills/revelcy-agent-doc-maintenance/SKILL.md`

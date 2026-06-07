@@ -43,6 +43,21 @@ Use `.agents/skills/revelcy-agent-doc-maintenance/SKILL.md` for the decision pro
 - Commands, high-risk zones, or top-level rules changed -> update `AGENTS.md`.
 - Shared agent skill behavior changed -> update `.agents/skills/*`, and adapters if needed.
 
+## Update Human Docs When
+
+- Project overview, quick start, scripts, platform status, or doc links changed -> update `README.md`.
+- Human doc navigation changed -> update `docs/README.md`.
+- Install, local run, setup requirements, or local env setup changed -> update `docs/SETUP.md`.
+- Developer conventions, aliases, routing, UI, state, API, or feature workflow changed -> update `docs/DEVELOPMENT.md`.
+- Human-readable architecture, routing, auth, API, wallet, or IPFS overview changed -> update `docs/ARCHITECTURE.md`.
+- Env variables, required/optional status, defaults, or exposure notes changed -> update `docs/ENVIRONMENT.md`.
+- Common setup/runtime/build/wallet/backend issues changed -> update `docs/TROUBLESHOOTING.md`.
+- Build/export/hosting/deployment env or pre-deploy checks changed -> update `docs/DEPLOYMENT.md`.
+- Contribution, validation, PR, branch, or docs expectations changed -> update `CONTRIBUTING.md`.
+- Security reporting, secret handling, auth, wallet, user content, or upload safety changed -> update `SECURITY.md`.
+- Issue reporting fields changed -> update `.github/ISSUE_TEMPLATE/*`.
+- PR expectations changed -> update `.github/pull_request_template.md`.
+
 ## Validation Checklist
 
 Run what exists and is relevant:
@@ -107,3 +122,18 @@ Full refresh must compare current code against:
 - `docs/agents/REVIEW_CHECKLIST.md`
 - `docs/agents/WORKFLOWS.md`
 - `docs/agents/CHANGE_PROTOCOL.md`
+
+When the task includes human-facing documentation, also compare:
+
+- `README.md`
+- `docs/README.md`
+- `docs/SETUP.md`
+- `docs/DEVELOPMENT.md`
+- `docs/ARCHITECTURE.md`
+- `docs/ENVIRONMENT.md`
+- `docs/TROUBLESHOOTING.md`
+- `docs/DEPLOYMENT.md`
+- `CONTRIBUTING.md`
+- `SECURITY.md`
+- `.github/ISSUE_TEMPLATE/*`
+- `.github/pull_request_template.md`
