@@ -38,6 +38,7 @@ Agent-facing security guide for the Revelcy frontend.
 ## User Content And Links
 
 User-controlled fields can include token names, descriptions, avatars, banners, and social/community links.
+For copy wording rules, read `docs/agents/LOCALIZATION_COPY.md`.
 
 Rules:
 

@@ -36,6 +36,8 @@ Use console logging sparingly:
 - User-facing flows should also notify the user when the error affects them.
 - Never log JWTs, bearer tokens, private keys, secrets, full sensitive transaction payloads, or wallet-sensitive material.
 
+For broader logging and fingerprint guidance, read `docs/agents/OBSERVABILITY.md`.
+
 ## API Errors
 
 `src/services/api/http.ts` wraps failed responses with:

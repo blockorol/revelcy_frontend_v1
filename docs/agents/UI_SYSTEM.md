@@ -61,6 +61,7 @@ To add an icon:
 4. Use `<SvgIcon name="..." />`.
 
 Do not inline duplicate SVG code in domain components when `SvgIcon` can own it.
+For detailed asset rules, read `docs/agents/ASSET_PIPELINE.md`.
 
 ## Responsive Rules
 

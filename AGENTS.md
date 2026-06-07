@@ -73,6 +73,11 @@ Never log or commit secrets. Never bypass wallet signature, auth/session, transa
 - `docs/agents/TESTING_STRATEGY.md` - future testing standards and high-priority test targets.
 - `docs/agents/SECURITY_FRONTEND.md` - frontend security rules for auth, env, wallet, links, uploads.
 - `docs/agents/PERFORMANCE.md` - performance risks for lists, images, hooks, async flows.
+- `docs/agents/ROUTING.md` - route map, dynamic params, production vs example routes.
+- `docs/agents/ASSET_PIPELINE.md` - SVG/image asset handling and upload-related asset rules.
+- `docs/agents/LOCALIZATION_COPY.md` - copy rules; no i18n system, simple English.
+- `docs/agents/OBSERVABILITY.md` - logs, fingerprint events, notification visibility.
+- `docs/agents/AGENT_PROMPTS.md` - reusable prompts for future agent runs.
 - `docs/agents/REVIEW_CHECKLIST.md` - review and handoff checklist.
 - `docs/agents/WORKFLOWS.md` - recipes for common changes.
 - `docs/agents/CHANGE_PROTOCOL.md` - post-change checks and doc update rules.

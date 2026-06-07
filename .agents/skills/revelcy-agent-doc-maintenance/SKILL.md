@@ -31,6 +31,11 @@ Then update these files as needed:
 - `docs/agents/TESTING_STRATEGY.md`
 - `docs/agents/SECURITY_FRONTEND.md`
 - `docs/agents/PERFORMANCE.md`
+- `docs/agents/ROUTING.md`
+- `docs/agents/ASSET_PIPELINE.md`
+- `docs/agents/LOCALIZATION_COPY.md`
+- `docs/agents/OBSERVABILITY.md`
+- `docs/agents/AGENT_PROMPTS.md`
 - `docs/agents/REVIEW_CHECKLIST.md`
 - `docs/agents/WORKFLOWS.md`
 - `docs/agents/CHANGE_PROTOCOL.md`
@@ -61,6 +66,11 @@ After a change, inspect the diff and answer:
 - Did testing strategy, test locations, mocks, or test commands change?
 - Did frontend security expectations change?
 - Did performance-sensitive behavior or expectations change?
+- Did routing, dynamic params, navigation, or route-to-screen mapping change?
+- Did asset, icon, image, banner, avatar, or upload-related asset behavior change?
+- Did UI copy, notification wording, or localization assumptions change?
+- Did logging, fingerprint events, telemetry-like behavior, or error visibility change?
+- Did reusable agent prompt patterns change?
 - Did `env.ts`, `app.config.js`, `babel.config.js`, or env requirements change?
 - Did `package.json` commands or dependency-driven workflows change?
 - Did available validation commands or expected checks change?
@@ -105,6 +115,16 @@ If yes to any item, update the relevant agent docs before final response.
   update `docs/agents/SECURITY_FRONTEND.md`.
 - Performance-sensitive behavior and expectations:
   update `docs/agents/PERFORMANCE.md`.
+- Routing, dynamic params, navigation, and route-to-screen mapping:
+  update `docs/agents/ROUTING.md`.
+- Assets, icons, images, banners, avatars, and upload-related asset rules:
+  update `docs/agents/ASSET_PIPELINE.md`.
+- UI copy, notification wording, and localization assumptions:
+  update `docs/agents/LOCALIZATION_COPY.md`.
+- Logs, fingerprint events, telemetry-like behavior, and error visibility:
+  update `docs/agents/OBSERVABILITY.md`.
+- Reusable agent prompt patterns:
+  update `docs/agents/AGENT_PROMPTS.md`.
 - Review and handoff expectations:
   update `docs/agents/REVIEW_CHECKLIST.md`.
 - How to perform recurring tasks:

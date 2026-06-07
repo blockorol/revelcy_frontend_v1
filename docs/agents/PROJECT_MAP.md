@@ -260,6 +260,16 @@ Do not change config files casually. Check `ARCHITECTURE.md` and `INVARIANTS.md`
   Frontend security rules for auth, env, wallet, links, uploads, user content.
 - `docs/agents/PERFORMANCE.md`
   Performance risks and review checklist.
+- `docs/agents/ROUTING.md`
+  Route map, dynamic params, production vs example routes.
+- `docs/agents/ASSET_PIPELINE.md`
+  SVG/image assets and upload-related asset rules.
+- `docs/agents/LOCALIZATION_COPY.md`
+  UI copy rules. No i18n system; simple English.
+- `docs/agents/OBSERVABILITY.md`
+  Logs, fingerprint events, and error visibility.
+- `docs/agents/AGENT_PROMPTS.md`
+  Reusable prompts for future agent runs.
 - `docs/agents/REVIEW_CHECKLIST.md`
   Review and handoff checklist.
 - `docs/agents/WORKFLOWS.md`

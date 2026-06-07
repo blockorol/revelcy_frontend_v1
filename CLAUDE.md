@@ -30,6 +30,11 @@ Primary agent documentation:
 - `docs/agents/TESTING_STRATEGY.md`
 - `docs/agents/SECURITY_FRONTEND.md`
 - `docs/agents/PERFORMANCE.md`
+- `docs/agents/ROUTING.md`
+- `docs/agents/ASSET_PIPELINE.md`
+- `docs/agents/LOCALIZATION_COPY.md`
+- `docs/agents/OBSERVABILITY.md`
+- `docs/agents/AGENT_PROMPTS.md`
 - `docs/agents/REVIEW_CHECKLIST.md`
 - `docs/agents/WORKFLOWS.md`
 - `docs/agents/CHANGE_PROTOCOL.md`

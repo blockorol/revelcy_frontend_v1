@@ -10,6 +10,7 @@ Read:
 - nearby files in `app/`
 - related screen in `screens/`
 - `docs/agents/ARCHITECTURE.md`
+- `docs/agents/ROUTING.md`
 
 Change:
 
@@ -195,6 +196,7 @@ Read:
 - nearby components
 - `docs/agents/UI_SYSTEM.md`
 - `docs/agents/PERFORMANCE.md` if the change affects lists, images, layout cost, or dependencies
+- `docs/agents/ASSET_PIPELINE.md` if assets/icons/images changed
 
 Change:
 
@@ -209,6 +211,27 @@ Check:
 - Button/control sizing.
 - `PROJECT_MAP.md` if design-system ownership changed.
 - `UI_SYSTEM.md` if UI rules changed.
+
+## Change UI Copy
+
+Read:
+
+- nearby component copy
+- `docs/agents/LOCALIZATION_COPY.md`
+- `docs/agents/ERROR_HANDLING.md` for error/notification copy
+
+Change:
+
+- Use simple English.
+- Do not introduce i18n or translation files unless explicitly requested.
+- Keep labels short and actionable.
+
+Check:
+
+- mobile and desktop text fit,
+- button labels fit,
+- no sensitive data in error messages,
+- no accidental localization framework assumptions.
 
 ## Premarket Creation Flow
 

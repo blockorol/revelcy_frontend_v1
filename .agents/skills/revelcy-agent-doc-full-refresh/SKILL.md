@@ -30,6 +30,11 @@ Primary docs:
 - `docs/agents/TESTING_STRATEGY.md`
 - `docs/agents/SECURITY_FRONTEND.md`
 - `docs/agents/PERFORMANCE.md`
+- `docs/agents/ROUTING.md`
+- `docs/agents/ASSET_PIPELINE.md`
+- `docs/agents/LOCALIZATION_COPY.md`
+- `docs/agents/OBSERVABILITY.md`
+- `docs/agents/AGENT_PROMPTS.md`
 - `docs/agents/REVIEW_CHECKLIST.md`
 - `docs/agents/WORKFLOWS.md`
 - `docs/agents/CHANGE_PROTOCOL.md`
@@ -67,6 +72,7 @@ Shared skills and adapters:
    - error handling and state persistence docs
    - feature flags and review checklist
    - testing strategy, security, and performance docs
+   - routing, assets, copy, observability, and reusable prompts
 4. Compare findings with all primary docs.
 5. Patch docs so they describe current code, not intended future code.
 6. Verify no old agent instruction file competes with `AGENTS.md`.
@@ -92,6 +98,11 @@ Shared skills and adapters:
 - Changed testing strategy, test locations, mocks, or test commands.
 - Changed frontend security expectations.
 - Changed performance-sensitive behavior or expectations.
+- Changed routing, dynamic params, navigation, or route-to-screen mapping.
+- Changed asset, icon, image, banner, avatar, or upload-related asset behavior.
+- Changed UI copy, notification wording, or localization assumptions.
+- Changed logging, fingerprint events, telemetry-like behavior, or error visibility.
+- Changed reusable agent prompt patterns.
 - Changed package scripts, validation commands, or aliases.
 - Changed web/native support assumptions.
 - Changed invariants that agents must preserve.

@@ -37,6 +37,16 @@ Read this after `AGENTS.md`.
   Read before changing auth/session, env exposure, wallet signing, external links, user content, image/file upload, or security-sensitive behavior.
 - `PERFORMANCE.md`
   Read before changing large lists, image-heavy UI, expensive hooks, blocking async flows, or adding dependencies/assets.
+- `ROUTING.md`
+  Read before changing routes, dynamic params, navigation, route-to-screen mapping, or production/example route assumptions.
+- `ASSET_PIPELINE.md`
+  Read before adding SVG icons, static images, avatars, banners, or upload-related visual assets.
+- `LOCALIZATION_COPY.md`
+  Read before changing UI copy, button labels, notification text, or error wording. Current state: no i18n system; use simple English.
+- `OBSERVABILITY.md`
+  Read before changing logs, fingerprint events, telemetry-like behavior, or user/developer error visibility.
+- `AGENT_PROMPTS.md`
+  Read when launching another agent or standardizing repeat prompts for reviews, refreshes, UI work, routing, web3 audits, contract sync, or tests.
 - `REVIEW_CHECKLIST.md`
   Read when asked to review changes or prepare a handoff.
 - `WORKFLOWS.md`

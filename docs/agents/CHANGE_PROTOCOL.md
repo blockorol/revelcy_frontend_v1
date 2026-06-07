@@ -32,6 +32,11 @@ Use `.agents/skills/revelcy-agent-doc-maintenance/SKILL.md` for the decision pro
 - Testing approach, test locations, mocks, or test commands changed -> update `TESTING_STRATEGY.md`.
 - Frontend security expectations changed -> update `SECURITY_FRONTEND.md`.
 - Performance-sensitive behavior or expectations changed -> update `PERFORMANCE.md`.
+- Routes, dynamic params, navigation, or route-to-screen mapping changed -> update `ROUTING.md`.
+- Assets, icons, images, banners, avatars, or asset upload assumptions changed -> update `ASSET_PIPELINE.md`.
+- UI copy, notification wording, or localization assumptions changed -> update `LOCALIZATION_COPY.md`.
+- Logging, fingerprint events, telemetry-like behavior, or error visibility changed -> update `OBSERVABILITY.md`.
+- Repeat agent prompt patterns changed -> update `AGENT_PROMPTS.md`.
 - Review/handoff expectations changed -> update `REVIEW_CHECKLIST.md`.
 - Non-breaking or breaking rules changed -> update `INVARIANTS.md`.
 - A repeated edit recipe changed or emerged -> update `WORKFLOWS.md`.
@@ -94,6 +99,11 @@ Full refresh must compare current code against:
 - `docs/agents/TESTING_STRATEGY.md`
 - `docs/agents/SECURITY_FRONTEND.md`
 - `docs/agents/PERFORMANCE.md`
+- `docs/agents/ROUTING.md`
+- `docs/agents/ASSET_PIPELINE.md`
+- `docs/agents/LOCALIZATION_COPY.md`
+- `docs/agents/OBSERVABILITY.md`
+- `docs/agents/AGENT_PROMPTS.md`
 - `docs/agents/REVIEW_CHECKLIST.md`
 - `docs/agents/WORKFLOWS.md`
 - `docs/agents/CHANGE_PROTOCOL.md`
