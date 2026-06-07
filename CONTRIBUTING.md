@@ -10,6 +10,10 @@ Thanks for contributing to Revelcy Frontend.
 
 ## Branches And Scope
 
+- Branch from `dev` for normal work.
+- Open pull requests into `dev` first.
+- Merge `dev` into `main` only as a promotion/release step.
+- Do not merge feature branches directly into `main`.
 - Keep changes focused.
 - Avoid unrelated refactors.
 - Do not commit real secrets.

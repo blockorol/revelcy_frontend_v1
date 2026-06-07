@@ -10,6 +10,7 @@ After code changes, inspect:
 - changed routes/screens/components/hooks/providers/services/config
 - changed package scripts or validation commands
 - whether agent docs need updates
+- whether PR/merge guidance still targets `dev` before `main`
 
 Use `.agents/skills/revelcy-agent-doc-maintenance/SKILL.md` for the decision process.
 

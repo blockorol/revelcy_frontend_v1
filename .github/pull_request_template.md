@@ -8,6 +8,8 @@
 
 ## Scope
 
+- [ ] Target branch is `dev`
+- [ ] This is a `dev` -> `main` promotion/release PR
 - [ ] App code changed
 - [ ] Agent docs changed
 - [ ] Human docs changed

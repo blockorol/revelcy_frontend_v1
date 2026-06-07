@@ -75,6 +75,7 @@ After a change, inspect the diff and answer:
 - Did `env.ts`, `app.config.js`, `babel.config.js`, or env requirements change?
 - Did `package.json` commands or dependency-driven workflows change?
 - Did human-facing setup, development, env, architecture, deployment, troubleshooting, contributing, security, issue, or PR expectations change?
+- Did branch flow or merge-target guidance change?
 - Did available validation commands or expected checks change?
 - Did a known limitation become outdated or newly important?
 - Did `tsconfig.json` or Babel aliases change?

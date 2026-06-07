@@ -101,6 +101,12 @@ Human-facing docs are maintained separately from agent docs:
 
 When setup, scripts, env, architecture, workflows, deployment, troubleshooting, security, or contribution expectations change, update the relevant human docs in the same task.
 
+## Branch Flow
+
+- Normal work branches must merge into `dev` first.
+- `main` receives changes only through a `dev` -> `main` promotion/release merge.
+- Do not suggest or prepare direct feature-branch merges into `main`.
+
 Shared repo skills:
 
 - `.agents/skills/revelcy-agent-doc-maintenance/SKILL.md`
