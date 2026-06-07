@@ -1,0 +1,36 @@
+# Agent Docs README
+
+Navigation for AI agents working in the Revelcy frontend repo.
+Read this after `AGENTS.md`.
+
+## Which File To Read
+
+- `PROJECT_MAP.md`
+  Read when you need to know where routes, screens, components, hooks, API clients, state, styles, assets, config, or agent docs live.
+- `ARCHITECTURE.md`
+  Read before changing app layers, routing/layouts, state/providers, auth/session, API clients, env/config, design system, or wallet/web3 logic.
+- `DOMAIN.md`
+  Read before changing business behavior: user/auth, wallet, premarket, holder, whitelist, vesting, token/community metadata, claim, or transaction flows.
+- `INVARIANTS.md`
+  Read before high-risk changes. Preserve these rules unless the user explicitly asks to change them.
+- `WORKFLOWS.md`
+  Read when implementing a typical change: route, component, API client, form, auth flow, wallet transaction, env config, test, or styling.
+- `CHANGE_PROTOCOL.md`
+  Read after changes to decide what to validate and which agent docs must be updated.
+
+## Shared Agent Skills
+
+- `.agents/skills/revelcy-agent-doc-maintenance/SKILL.md`
+  Use after code changes to prevent agent docs drift.
+- `.agents/skills/revelcy-agent-doc-full-refresh/SKILL.md`
+  Use when asked to fully refresh project map/docs or when docs may be stale.
+
+## Source Of Truth Order
+
+1. Current code.
+2. `AGENTS.md`.
+3. `docs/agents/*`.
+4. Repo-shared skills/adapters.
+5. Older README files.
+
+Do not copy older docs into agent docs without verifying against code.

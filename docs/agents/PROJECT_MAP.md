@@ -1,0 +1,223 @@
+# Project Map
+
+Repository map for AI agents. Use this to find the right files before editing.
+
+## Top-Level Directories
+
+- `app/`
+  Expo Router entrypoints, layouts, route files, examples, legal docs, and token routes.
+- `screens/`
+  Route-level screen containers. Routes usually delegate here when logic is larger than a thin wrapper.
+- `src/components/`
+  Reusable UI, domain components, navigation, login, premarket, and token creation UI.
+- `src/hooks/`
+  Reusable UI/domain state hooks.
+- `src/providers/`
+  App-wide React context providers.
+- `src/services/`
+  Backend API clients, blockchain actions, IPFS upload, fingerprinting, and domain services.
+- `src/theme/`
+  Theme, colors, fonts, and theme types.
+- `src/types/`
+  Shared type declarations.
+- `src/utils/`
+  Formatting, validation, Solana, URL, image, math, vesting, and browser helpers.
+- `storage/`
+  Persistent storage helpers, overlay/modal contexts, and wallet adapters.
+- `assets/`
+  Images and SVG icons.
+- `public/`
+  Static web assets.
+- `docs/agents/`
+  Agent-facing repository docs.
+- `.agents/skills/`
+  Repo-shared skills for Codex/Cursor/Claude-compatible workflows.
+- `.cursor/rules/`
+  Cursor adapter rules for shared skills.
+
+## Application Entrypoints
+
+- `package.json`
+  Scripts and dependencies.
+- `app/_layout.tsx`
+  Root layout, providers, theme, navigation, route stack.
+- `app/index.tsx`
+  Home route.
+- `app/discover.tsx`
+  Discover/premarket listing route.
+- `app/me.tsx`
+  Profile route.
+- `app/resources.tsx`
+  Resources route.
+- `app/token/create.tsx`
+  Premarket/token creation route.
+- `app/token/[premarketId].tsx`
+  Premarket detail route.
+- `app/+not-found.tsx`
+  Not-found route.
+- `env.ts`
+  Runtime env exports.
+- `app.config.js`
+  Expo config and env forwarding.
+- `babel.config.js`
+  Babel plugins and module aliases.
+- `tsconfig.json`
+  TypeScript config and path aliases.
+
+## Routes And Pages
+
+Routes live in `app/`.
+
+- `app/docs/*.tsx`
+  Terms/privacy/risk disclosure pages.
+- `app/example/**`
+  UI and feature examples/test stand. Read for component usage examples; do not assume production behavior.
+- `app/token/*`
+  Token/premarket creation and detail routes.
+
+Before route changes, read:
+
+- `app/_layout.tsx`
+- the target route file under `app/`
+- related screen in `screens/`
+- `docs/agents/ARCHITECTURE.md`
+- `docs/agents/WORKFLOWS.md`
+
+## Screens
+
+- `screens/PremarketsPage.tsx`
+  Discover/list screen.
+- `screens/PremarketCreationFlow.tsx`
+  Multi-step premarket creation flow.
+- `screens/TokenPremarketPage.tsx`
+  Premarket detail screen.
+- `screens/MeScreen.tsx`
+  Profile screen.
+
+Ownership: screens compose domain components, hooks, providers, and services. Keep low-level UI and API details out of screens when shared abstractions exist.
+
+## Components
+
+- `src/components/ui/`
+  Project UI primitives: button, text, input, chip, avatar, switch, segmented button, bottom sheet, loader.
+- `src/components/base/`
+  Lower-level reusable building blocks: containers, SVG icon, calendar/date/time controls, slider, loader, chart, expandable text.
+- `src/components/navigation/`
+  Top navigation, menu, profile widget, navigation items.
+- `src/components/login/`
+  Login/wallet UI and user identity widgets.
+- `src/components/premarket/`
+  Premarket cards, detail sections, join/action UI, bonding curve, vesting, holders, community, creation overview.
+- `src/components/token/create/`
+  Token/premarket creation forms and process UI.
+- `src/components/modals/`
+  Shared modals.
+- `src/components/user/`
+  User card/modal UI.
+
+Before component changes, read nearby components plus `src/theme/*`.
+Prefer `src/components/ui/*` and `src/components/base/*` before local one-off styling.
+
+## API Clients
+
+API clients live in `src/services/api/`.
+
+- `http.ts`
+  Shared request wrapper, auth token injection, retry/timeout, refresh handling, response parsing.
+- `auth.ts`, `wallet.ts`, `token.ts`, `tx_premarket.ts`, `users.ts`, `files.ts`
+  Endpoint-specific clients.
+- `apiError.ts`, `retry.ts`, `constant.ts`
+  API helpers.
+
+Ownership: components and screens should call domain hooks/services instead of raw `fetch` when possible.
+
+Before API changes, read:
+
+- `src/services/api/http.ts`
+- the endpoint-specific client
+- caller hooks/screens/components
+- `src/providers/AuthContext.tsx` if auth is involved
+
+## Hooks And State
+
+Hooks live in `src/hooks/`.
+
+- `usePremarketDraft.ts`
+  Draft persistence for premarket creation.
+- `usePremarketInfo.ts`, `useHolderEntryInfo.ts`, `useJoinFlow.tsx`
+  Premarket data and action helpers.
+- `useWalletLoginFlow.ts`, `connectWallet.ts`
+  Wallet login/connect behavior.
+- `useContentArea.tsx`, `useIsMobile.ts`, `useImageAspectRatio.tsx`, `useSafeRouter.ts`
+  UI/layout/router helpers.
+
+Providers:
+
+- `src/providers/AuthContext.tsx`
+- `src/providers/LoginModalContext.tsx`
+- `src/providers/NetworkContext.tsx`
+- `src/providers/NotificationContext.tsx`
+- `storage/UserModalContext.tsx`
+- `storage/UniversalOverlayProvider.tsx`
+
+Provider composition is in `app/_layout.tsx`.
+
+## Web3, Wallet, And Blockchain
+
+- `storage/wallet-adapter/`
+  Platform-specific wallet providers/hooks.
+- `src/services/blockchain/solana.tsx`
+  Solana connection/network helpers.
+- `src/services/blockchain/signAndSend.ts`
+  Signing, sending, and finality helpers.
+- `src/services/blockchain/premarket/*`
+  Premarket transaction actions.
+- `src/utils/solana.ts`, `src/utils/phantom.ts`
+  Solana/browser wallet helpers.
+
+Ownership: wallet adapters own wallet state; blockchain services own transaction behavior; UI flows own user feedback and navigation.
+
+## Domain Services
+
+- `src/services/premarket/create.ts`
+  High-level premarket creation orchestration.
+- `src/services/premarket/addCommunityInfo.ts`
+  Community metadata support.
+- `src/services/files/ipfs/pumpfun.ts`
+  Main IPFS upload path.
+- `src/services/files/ipfs/pinata.ts`
+  Secondary/legacy IPFS path.
+- `src/services/fingerprint/*`
+  Fingerprint collection/sending.
+- `src/services/pumpfun/*`
+  Pump.fun conversion/helpers.
+
+## Styles, Theme, Assets
+
+- `src/theme/colors.ts`
+- `src/theme/fonts.ts`
+- `src/theme/theme.ts`
+- `src/theme/types.ts`
+- `assets/basic_icon/`
+- `src/components/base/SvgIcon.tsx`
+
+Register new SVG icons in `SvgIcon.tsx` before use.
+
+## Tests
+
+No test directory or `test` script is currently present in `package.json`.
+If tests are added, update this file and `WORKFLOWS.md`.
+
+## Config
+
+- `package.json`
+- `package-lock.json`
+- `tsconfig.json`
+- `babel.config.js`
+- `metro.config.js`
+- `app.config.js`
+- `app.json`
+- `vercel.json`
+- `global.d.ts`
+
+Do not change config files casually. Check `ARCHITECTURE.md` and `INVARIANTS.md` first.
