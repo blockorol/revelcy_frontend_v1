@@ -31,6 +31,12 @@ Read this after `AGENTS.md`.
   Read before changing providers, persistent storage, auth token storage, draft persistence, modal state, or overlay state.
 - `FEATURE_FLAGS.md`
   Read before changing env flags, hardcoded feature switches, network defaults, or token conversion settings.
+- `TESTING_STRATEGY.md`
+  Read before adding tests, test scripts, mocks, or test directory structure.
+- `SECURITY_FRONTEND.md`
+  Read before changing auth/session, env exposure, wallet signing, external links, user content, image/file upload, or security-sensitive behavior.
+- `PERFORMANCE.md`
+  Read before changing large lists, image-heavy UI, expensive hooks, blocking async flows, or adding dependencies/assets.
 - `REVIEW_CHECKLIST.md`
   Read when asked to review changes or prepare a handoff.
 - `WORKFLOWS.md`

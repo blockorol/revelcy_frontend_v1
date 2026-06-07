@@ -2,6 +2,7 @@
 
 Validation guide for AI agents. Use this after changes and before final response.
 For review mode and handoff checks, read `docs/agents/REVIEW_CHECKLIST.md`.
+For future test standards, read `docs/agents/TESTING_STRATEGY.md`.
 
 ## Current Commands
 
@@ -21,6 +22,8 @@ Not currently available:
 - Lint: no `lint` script
 - Typecheck: no `typecheck` script
 - Tests: no `test` script
+
+If a test script or test directory is added, update `TESTING_STRATEGY.md`.
 
 ## Docs-Only Changes
 

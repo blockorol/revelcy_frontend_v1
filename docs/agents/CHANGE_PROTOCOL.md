@@ -29,6 +29,9 @@ Use `.agents/skills/revelcy-agent-doc-maintenance/SKILL.md` for the decision pro
 - Error handling, notifications, logs, overlays, or failure recovery changed -> update `ERROR_HANDLING.md`.
 - State ownership, persistence, providers, drafts, modal, or overlay behavior changed -> update `STATE_AND_PERSISTENCE.md`.
 - Feature flags, env switches, or network-dependent settings changed -> update `FEATURE_FLAGS.md`.
+- Testing approach, test locations, mocks, or test commands changed -> update `TESTING_STRATEGY.md`.
+- Frontend security expectations changed -> update `SECURITY_FRONTEND.md`.
+- Performance-sensitive behavior or expectations changed -> update `PERFORMANCE.md`.
 - Review/handoff expectations changed -> update `REVIEW_CHECKLIST.md`.
 - Non-breaking or breaking rules changed -> update `INVARIANTS.md`.
 - A repeated edit recipe changed or emerged -> update `WORKFLOWS.md`.
@@ -88,6 +91,9 @@ Full refresh must compare current code against:
 - `docs/agents/ERROR_HANDLING.md`
 - `docs/agents/STATE_AND_PERSISTENCE.md`
 - `docs/agents/FEATURE_FLAGS.md`
+- `docs/agents/TESTING_STRATEGY.md`
+- `docs/agents/SECURITY_FRONTEND.md`
+- `docs/agents/PERFORMANCE.md`
 - `docs/agents/REVIEW_CHECKLIST.md`
 - `docs/agents/WORKFLOWS.md`
 - `docs/agents/CHANGE_PROTOCOL.md`

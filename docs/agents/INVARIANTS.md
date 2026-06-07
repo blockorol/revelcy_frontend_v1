@@ -3,6 +3,7 @@
 Rules AI agents must preserve unless the user explicitly asks to change them.
 For known limitations and missing validation/tooling, read `docs/agents/KNOWN_GAPS.md`.
 For review/handoff checks, read `docs/agents/REVIEW_CHECKLIST.md`.
+For frontend security-sensitive changes, read `docs/agents/SECURITY_FRONTEND.md`.
 
 ## Auth And Session
 

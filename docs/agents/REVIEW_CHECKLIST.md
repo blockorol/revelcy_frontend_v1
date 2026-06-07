@@ -55,6 +55,18 @@ Lead with risks and concrete file references in review responses.
 - Browser-only and server-only assumptions are not mixed.
 - Aliases remain synchronized if changed.
 
+## Security
+
+- `SECURITY_FRONTEND.md` was considered for auth, env, wallet, links, user content, or upload changes.
+- No new sensitive logs were added.
+- User-controlled content remains constrained.
+- Wallet signing remains explicit.
+
+## Performance
+
+- `PERFORMANCE.md` was considered for lists, images, expensive hooks, blocking async flows, or dependencies.
+- No avoidable repeated network calls or expensive render-loop work were introduced.
+
 ## Validation
 
 - Relevant checks from `VALIDATION.md` were run or clearly skipped.
@@ -78,3 +90,8 @@ For code review:
 4. Brief summary only after findings.
 
 If no issues are found, say so and mention remaining validation gaps.
+
+## Pull Request Template
+
+For PRs, use `.github/pull_request_template.md`.
+It includes scope, validation, agent docs, and risk checks.

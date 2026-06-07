@@ -27,6 +27,9 @@ Primary agent documentation:
 - `docs/agents/ERROR_HANDLING.md`
 - `docs/agents/STATE_AND_PERSISTENCE.md`
 - `docs/agents/FEATURE_FLAGS.md`
+- `docs/agents/TESTING_STRATEGY.md`
+- `docs/agents/SECURITY_FRONTEND.md`
+- `docs/agents/PERFORMANCE.md`
 - `docs/agents/REVIEW_CHECKLIST.md`
 - `docs/agents/WORKFLOWS.md`
 - `docs/agents/CHANGE_PROTOCOL.md`

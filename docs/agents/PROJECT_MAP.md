@@ -34,6 +34,8 @@ Repository map for AI agents. Use this to find the right files before editing.
   Repo-shared skills for Codex/Cursor/Claude-compatible workflows.
 - `.cursor/rules/`
   Cursor adapter rules for shared skills.
+- `.github/pull_request_template.md`
+  Agent-assisted PR checklist for validation, docs, and risk checks.
 
 ## Application Entrypoints
 
@@ -252,6 +254,12 @@ Do not change config files casually. Check `ARCHITECTURE.md` and `INVARIANTS.md`
   Providers, storage, auth persistence, draft persistence, modal/overlay state.
 - `docs/agents/FEATURE_FLAGS.md`
   Env flags, hardcoded switches, network-dependent settings.
+- `docs/agents/TESTING_STRATEGY.md`
+  Future testing standards, mock guidance, high-priority test targets.
+- `docs/agents/SECURITY_FRONTEND.md`
+  Frontend security rules for auth, env, wallet, links, uploads, user content.
+- `docs/agents/PERFORMANCE.md`
+  Performance risks and review checklist.
 - `docs/agents/REVIEW_CHECKLIST.md`
   Review and handoff checklist.
 - `docs/agents/WORKFLOWS.md`

@@ -27,6 +27,9 @@ Primary docs:
 - `docs/agents/ERROR_HANDLING.md`
 - `docs/agents/STATE_AND_PERSISTENCE.md`
 - `docs/agents/FEATURE_FLAGS.md`
+- `docs/agents/TESTING_STRATEGY.md`
+- `docs/agents/SECURITY_FRONTEND.md`
+- `docs/agents/PERFORMANCE.md`
 - `docs/agents/REVIEW_CHECKLIST.md`
 - `docs/agents/WORKFLOWS.md`
 - `docs/agents/CHANGE_PROTOCOL.md`
@@ -63,6 +66,7 @@ Shared skills and adapters:
    - validation commands and known gaps
    - error handling and state persistence docs
    - feature flags and review checklist
+   - testing strategy, security, and performance docs
 4. Compare findings with all primary docs.
 5. Patch docs so they describe current code, not intended future code.
 6. Verify no old agent instruction file competes with `AGENTS.md`.
@@ -85,6 +89,9 @@ Shared skills and adapters:
 - Changed error handling, notifications, logs, overlays, or recovery behavior.
 - Changed state ownership, persistence, providers, drafts, modal, or overlay behavior.
 - Changed feature flags, env switches, or network-dependent settings.
+- Changed testing strategy, test locations, mocks, or test commands.
+- Changed frontend security expectations.
+- Changed performance-sensitive behavior or expectations.
 - Changed package scripts, validation commands, or aliases.
 - Changed web/native support assumptions.
 - Changed invariants that agents must preserve.

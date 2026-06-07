@@ -61,3 +61,4 @@ State validation gaps clearly in final responses.
 
 - No test directory or test workflow is currently documented.
 - If tests are added, update `PROJECT_MAP.md`, `WORKFLOWS.md`, `VALIDATION.md`, and `CHANGE_PROTOCOL.md`.
+- `docs/agents/TESTING_STRATEGY.md` defines the future testing standard until real tests exist.

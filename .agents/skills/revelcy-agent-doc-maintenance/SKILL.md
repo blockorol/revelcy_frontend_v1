@@ -28,6 +28,9 @@ Then update these files as needed:
 - `docs/agents/ERROR_HANDLING.md`
 - `docs/agents/STATE_AND_PERSISTENCE.md`
 - `docs/agents/FEATURE_FLAGS.md`
+- `docs/agents/TESTING_STRATEGY.md`
+- `docs/agents/SECURITY_FRONTEND.md`
+- `docs/agents/PERFORMANCE.md`
 - `docs/agents/REVIEW_CHECKLIST.md`
 - `docs/agents/WORKFLOWS.md`
 - `docs/agents/CHANGE_PROTOCOL.md`
@@ -55,6 +58,9 @@ After a change, inspect the diff and answer:
 - Did error handling, notifications, logs, overlays, or failure recovery change?
 - Did state ownership, persistence, providers, drafts, modal, or overlay behavior change?
 - Did feature flags, env switches, or network-dependent settings change?
+- Did testing strategy, test locations, mocks, or test commands change?
+- Did frontend security expectations change?
+- Did performance-sensitive behavior or expectations change?
 - Did `env.ts`, `app.config.js`, `babel.config.js`, or env requirements change?
 - Did `package.json` commands or dependency-driven workflows change?
 - Did available validation commands or expected checks change?
@@ -93,6 +99,12 @@ If yes to any item, update the relevant agent docs before final response.
   update `docs/agents/STATE_AND_PERSISTENCE.md`.
 - Feature flags, env switches, hardcoded flags, and network-dependent settings:
   update `docs/agents/FEATURE_FLAGS.md`.
+- Testing approach, test locations, mocks, and test commands:
+  update `docs/agents/TESTING_STRATEGY.md`.
+- Frontend security expectations:
+  update `docs/agents/SECURITY_FRONTEND.md`.
+- Performance-sensitive behavior and expectations:
+  update `docs/agents/PERFORMANCE.md`.
 - Review and handoff expectations:
   update `docs/agents/REVIEW_CHECKLIST.md`.
 - How to perform recurring tasks:

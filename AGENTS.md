@@ -70,6 +70,9 @@ Never log or commit secrets. Never bypass wallet signature, auth/session, transa
 - `docs/agents/ERROR_HANDLING.md` - notifications, logs, overlays, API and transaction error handling.
 - `docs/agents/STATE_AND_PERSISTENCE.md` - providers, storage, draft persistence, modal/overlay state.
 - `docs/agents/FEATURE_FLAGS.md` - env flags, hardcoded switches, network-dependent settings.
+- `docs/agents/TESTING_STRATEGY.md` - future testing standards and high-priority test targets.
+- `docs/agents/SECURITY_FRONTEND.md` - frontend security rules for auth, env, wallet, links, uploads.
+- `docs/agents/PERFORMANCE.md` - performance risks for lists, images, hooks, async flows.
 - `docs/agents/REVIEW_CHECKLIST.md` - review and handoff checklist.
 - `docs/agents/WORKFLOWS.md` - recipes for common changes.
 - `docs/agents/CHANGE_PROTOCOL.md` - post-change checks and doc update rules.

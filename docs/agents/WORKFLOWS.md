@@ -172,6 +172,7 @@ Current state:
 
 - No `test` script.
 - No documented test directory.
+- Future testing guidance lives in `docs/agents/TESTING_STRATEGY.md`.
 
 When adding tests:
 
@@ -193,6 +194,7 @@ Read:
 - `src/components/base/*`
 - nearby components
 - `docs/agents/UI_SYSTEM.md`
+- `docs/agents/PERFORMANCE.md` if the change affects lists, images, layout cost, or dependencies
 
 Change:
 
