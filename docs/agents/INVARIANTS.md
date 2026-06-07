@@ -1,6 +1,7 @@
 # Invariants
 
 Rules AI agents must preserve unless the user explicitly asks to change them.
+For known limitations and missing validation/tooling, read `docs/agents/KNOWN_GAPS.md`.
 
 ## Auth And Session
 

@@ -61,6 +61,10 @@ Never log or commit secrets. Never bypass wallet signature, auth/session, transa
 - `docs/agents/ARCHITECTURE.md` - frontend layers and runtime structure.
 - `docs/agents/DOMAIN.md` - business entities and user scenarios.
 - `docs/agents/INVARIANTS.md` - rules agents must preserve.
+- `docs/agents/UI_SYSTEM.md` - UI primitives, theme, icons, and responsive rules.
+- `docs/agents/FLOWS.md` - important user flow maps.
+- `docs/agents/KNOWN_GAPS.md` - known limitations and stale areas.
+- `docs/agents/VALIDATION.md` - validation guidance by change type.
 - `docs/agents/WORKFLOWS.md` - recipes for common changes.
 - `docs/agents/CHANGE_PROTOCOL.md` - post-change checks and doc update rules.
 

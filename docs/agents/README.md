@@ -13,6 +13,14 @@ Read this after `AGENTS.md`.
   Read before changing business behavior: user/auth, wallet, premarket, holder, whitelist, vesting, token/community metadata, claim, or transaction flows.
 - `INVARIANTS.md`
   Read before high-risk changes. Preserve these rules unless the user explicitly asks to change them.
+- `UI_SYSTEM.md`
+  Read before changing shared UI primitives, domain UI, theme, icons, layout, or responsive behavior.
+- `FLOWS.md`
+  Read before changing login, wallet connect, browse/detail premarket, create premarket, join/leave, claim/finish/extend, or draft restore flows.
+- `KNOWN_GAPS.md`
+  Read when evaluating uncertainty, stale docs, missing scripts, platform support, example code, IPFS assumptions, or unavailable contracts.
+- `VALIDATION.md`
+  Read before deciding which checks to run after docs-only, UI, API, auth, wallet, env/config, or dependency changes.
 - `WORKFLOWS.md`
   Read when implementing a typical change: route, component, API client, form, auth flow, wallet transaction, env config, test, or styling.
 - `CHANGE_PROTOCOL.md`

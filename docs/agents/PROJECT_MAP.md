@@ -221,3 +221,28 @@ If tests are added, update this file and `WORKFLOWS.md`.
 - `global.d.ts`
 
 Do not change config files casually. Check `ARCHITECTURE.md` and `INVARIANTS.md` first.
+
+## Agent Documentation Files
+
+- `docs/agents/README.md`
+  Navigation.
+- `docs/agents/PROJECT_MAP.md`
+  Repository structure and ownership.
+- `docs/agents/ARCHITECTURE.md`
+  Frontend layers and runtime structure.
+- `docs/agents/DOMAIN.md`
+  Business entities and scenarios.
+- `docs/agents/INVARIANTS.md`
+  Rules agents must preserve.
+- `docs/agents/UI_SYSTEM.md`
+  UI primitives, theme, icons, and responsive rules.
+- `docs/agents/FLOWS.md`
+  Important user flow maps.
+- `docs/agents/KNOWN_GAPS.md`
+  Known limitations and stale areas.
+- `docs/agents/VALIDATION.md`
+  Validation guidance by change type.
+- `docs/agents/WORKFLOWS.md`
+  Common change recipes.
+- `docs/agents/CHANGE_PROTOCOL.md`
+  Post-change doc update rules.

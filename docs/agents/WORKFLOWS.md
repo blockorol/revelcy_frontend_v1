@@ -31,7 +31,8 @@ Read:
 - nearby domain components,
 - `src/components/ui/*`,
 - `src/components/base/*`,
-- `src/theme/*`.
+- `src/theme/*`,
+- `docs/agents/UI_SYSTEM.md`.
 
 Change:
 
@@ -45,6 +46,7 @@ Check:
 - Responsive layout.
 - Theme consistency.
 - `PROJECT_MAP.md` if component ownership changed.
+- `UI_SYSTEM.md` if shared UI rules changed.
 
 ## Change An API Client
 
@@ -185,7 +187,8 @@ Read:
 - `src/theme/*`
 - `src/components/ui/*`
 - `src/components/base/*`
-- nearby components.
+- nearby components
+- `docs/agents/UI_SYSTEM.md`
 
 Change:
 
@@ -199,6 +202,7 @@ Check:
 - Text overflow.
 - Button/control sizing.
 - `PROJECT_MAP.md` if design-system ownership changed.
+- `UI_SYSTEM.md` if UI rules changed.
 
 ## Premarket Creation Flow
 
@@ -227,7 +231,7 @@ Check:
 ## After Any Code Change
 
 1. Use `.agents/skills/revelcy-agent-doc-maintenance/SKILL.md`.
-2. Run available validation commands when relevant.
+2. Use `docs/agents/VALIDATION.md` to choose checks.
 3. Update `docs/agents/*` if structure, architecture, domain behavior, invariants, or workflows changed.
 4. Run `git status --short`.
 5. In the final response, state validation and whether agent docs were updated.

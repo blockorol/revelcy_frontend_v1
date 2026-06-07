@@ -18,6 +18,10 @@ Primary docs:
 - `docs/agents/ARCHITECTURE.md`
 - `docs/agents/DOMAIN.md`
 - `docs/agents/INVARIANTS.md`
+- `docs/agents/UI_SYSTEM.md`
+- `docs/agents/FLOWS.md`
+- `docs/agents/KNOWN_GAPS.md`
+- `docs/agents/VALIDATION.md`
 - `docs/agents/WORKFLOWS.md`
 - `docs/agents/CHANGE_PROTOCOL.md`
 
@@ -49,6 +53,8 @@ Shared skills and adapters:
    - blockchain services in `src/services/blockchain/`
    - premarket services and creation flow
    - UI primitives and theme
+   - important flow maps
+   - validation commands and known gaps
 4. Compare findings with all primary docs.
 5. Patch docs so they describe current code, not intended future code.
 6. Verify no old agent instruction file competes with `AGENTS.md`.
@@ -63,10 +69,13 @@ Shared skills and adapters:
 - Changed env variables or platform loading behavior.
 - Changed wallet, Phantom, Solana network, or transaction assumptions.
 - Changed domain entities or scenarios: user, auth session, wallet, premarket, holder, whitelist, vesting, community/token info, claims, transactions.
+- Changed user flow sequence or ownership.
+- Changed UI primitives, theme, icons, or responsive expectations.
 - Changed IPFS upload path or metadata flow.
 - Changed package scripts, validation commands, or aliases.
 - Changed web/native support assumptions.
 - Changed invariants that agents must preserve.
+- Changed known limitations or validation guidance.
 - Stale references to deleted files or old paths.
 
 ## Output Requirements

@@ -18,6 +18,10 @@ Primary agent documentation:
 - `docs/agents/ARCHITECTURE.md`
 - `docs/agents/DOMAIN.md`
 - `docs/agents/INVARIANTS.md`
+- `docs/agents/UI_SYSTEM.md`
+- `docs/agents/FLOWS.md`
+- `docs/agents/KNOWN_GAPS.md`
+- `docs/agents/VALIDATION.md`
 - `docs/agents/WORKFLOWS.md`
 - `docs/agents/CHANGE_PROTOCOL.md`
 

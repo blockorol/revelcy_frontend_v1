@@ -19,6 +19,10 @@ Then update these files as needed:
 - `docs/agents/ARCHITECTURE.md`
 - `docs/agents/DOMAIN.md`
 - `docs/agents/INVARIANTS.md`
+- `docs/agents/UI_SYSTEM.md`
+- `docs/agents/FLOWS.md`
+- `docs/agents/KNOWN_GAPS.md`
+- `docs/agents/VALIDATION.md`
 - `docs/agents/WORKFLOWS.md`
 - `docs/agents/CHANGE_PROTOCOL.md`
 - repo-shared skills in `.agents/skills/`
@@ -37,9 +41,13 @@ After a change, inspect the diff and answer:
 - Did Solana transaction behavior change?
 - Did premarket creation/join/claim/finish behavior change?
 - Did user, wallet, premarket, holder, whitelist, vesting, claim, or token/community domain behavior change?
+- Did a user flow sequence or ownership path change?
+- Did UI primitives, theme, icons, layout, or responsive rules change?
 - Did IPFS upload or metadata behavior change?
 - Did `env.ts`, `app.config.js`, `babel.config.js`, or env requirements change?
 - Did `package.json` commands or dependency-driven workflows change?
+- Did available validation commands or expected checks change?
+- Did a known limitation become outdated or newly important?
 - Did `tsconfig.json` or Babel aliases change?
 - Did an invariant change or become newly important?
 - Did a new common workflow emerge that future agents should follow?
@@ -56,6 +64,14 @@ If yes to any item, update the relevant agent docs before final response.
   update `docs/agents/DOMAIN.md`.
 - Rules agents must preserve:
   update `docs/agents/INVARIANTS.md`.
+- UI primitives, theme, icon, layout, or responsive rules:
+  update `docs/agents/UI_SYSTEM.md`.
+- Important user flow sequence or ownership:
+  update `docs/agents/FLOWS.md`.
+- Known limitations, missing scripts, stale docs, or unsupported areas:
+  update `docs/agents/KNOWN_GAPS.md`.
+- Validation command availability or check expectations:
+  update `docs/agents/VALIDATION.md`.
 - How to perform recurring tasks:
   update `docs/agents/WORKFLOWS.md`.
 - Rules for keeping docs fresh:

@@ -134,6 +134,7 @@ Design primitives:
 Prefer project primitives before adding local ad hoc controls.
 Use theme tokens where possible.
 Check responsive behavior when layout changes.
+For detailed UI rules, read `docs/agents/UI_SYSTEM.md`.
 
 ## Wallet, Web3, And Solana
 
@@ -186,3 +187,4 @@ Important collaborators:
 - `src/providers/NotificationContext.tsx`
 
 Changing step order, persisted draft shape, transaction creation, or final navigation is high risk.
+For scenario-level flow maps, read `docs/agents/FLOWS.md`.

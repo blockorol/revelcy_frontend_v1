@@ -1,6 +1,7 @@
 # Domain
 
 Business/domain model for AI agents working on the Revelcy frontend.
+For sequence-level maps of these scenarios, read `docs/agents/FLOWS.md`.
 
 ## Core Entities
 

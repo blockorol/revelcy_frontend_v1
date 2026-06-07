@@ -20,6 +20,10 @@ Use `.agents/skills/revelcy-agent-doc-maintenance/SKILL.md` for the decision pro
 - Architecture/state/provider/API ownership changed -> update `ARCHITECTURE.md`.
 - Auth/session/API behavior changed -> update `ARCHITECTURE.md` and possibly `INVARIANTS.md`.
 - Business behavior changed -> update `DOMAIN.md`.
+- User flow sequence changed -> update `FLOWS.md`.
+- UI primitives, theme, icons, or responsive rules changed -> update `UI_SYSTEM.md`.
+- Known limitations changed -> update `KNOWN_GAPS.md`.
+- Validation commands or expected checks changed -> update `VALIDATION.md`.
 - Non-breaking or breaking rules changed -> update `INVARIANTS.md`.
 - A repeated edit recipe changed or emerged -> update `WORKFLOWS.md`.
 - Commands, high-risk zones, or top-level rules changed -> update `AGENTS.md`.
@@ -28,6 +32,8 @@ Use `.agents/skills/revelcy-agent-doc-maintenance/SKILL.md` for the decision pro
 ## Validation Checklist
 
 Run what exists and is relevant:
+
+Use `VALIDATION.md` for detailed guidance.
 
 - Format: no format script is currently defined.
 - Lint: no `lint` script is currently defined.
@@ -67,5 +73,9 @@ Full refresh must compare current code against:
 - `docs/agents/ARCHITECTURE.md`
 - `docs/agents/DOMAIN.md`
 - `docs/agents/INVARIANTS.md`
+- `docs/agents/UI_SYSTEM.md`
+- `docs/agents/FLOWS.md`
+- `docs/agents/KNOWN_GAPS.md`
+- `docs/agents/VALIDATION.md`
 - `docs/agents/WORKFLOWS.md`
 - `docs/agents/CHANGE_PROTOCOL.md`
