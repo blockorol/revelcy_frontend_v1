@@ -24,6 +24,10 @@ Primary agent documentation:
 - `docs/agents/VALIDATION.md`
 - `docs/agents/API_CONTRACTS.md`
 - `docs/agents/WEB3_CONTRACTS.md`
+- `docs/agents/ERROR_HANDLING.md`
+- `docs/agents/STATE_AND_PERSISTENCE.md`
+- `docs/agents/FEATURE_FLAGS.md`
+- `docs/agents/REVIEW_CHECKLIST.md`
 - `docs/agents/WORKFLOWS.md`
 - `docs/agents/CHANGE_PROTOCOL.md`
 

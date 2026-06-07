@@ -1,6 +1,7 @@
 # Validation
 
 Validation guide for AI agents. Use this after changes and before final response.
+For review mode and handoff checks, read `docs/agents/REVIEW_CHECKLIST.md`.
 
 ## Current Commands
 

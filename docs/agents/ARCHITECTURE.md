@@ -47,6 +47,7 @@ Keep route files thin when the screen has meaningful logic.
 ## State Management
 
 State is mostly React Context + hooks.
+For detailed state and persistence ownership, read `docs/agents/STATE_AND_PERSISTENCE.md`.
 
 Provider composition in `app/_layout.tsx` includes:
 
@@ -99,6 +100,7 @@ Avoid direct `fetch` from screens/components unless there is a clear local prece
 ## Env And Config
 
 Runtime env exports live in `env.ts`.
+For feature flags and env-driven switches, read `docs/agents/FEATURE_FLAGS.md`.
 
 Web loading:
 

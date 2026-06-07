@@ -55,6 +55,7 @@ State validation gaps clearly in final responses.
 - `env.ts` required values can throw at import time.
 - Be careful when importing env-dependent code into examples, tests, or unsupported platform paths.
 - Do not document or commit real secret values.
+- `docs/agents/FEATURE_FLAGS.md` tracks known hardcoded or partially wired flags.
 
 ## Tests
 

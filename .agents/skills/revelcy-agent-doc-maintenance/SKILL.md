@@ -25,6 +25,10 @@ Then update these files as needed:
 - `docs/agents/VALIDATION.md`
 - `docs/agents/API_CONTRACTS.md`
 - `docs/agents/WEB3_CONTRACTS.md`
+- `docs/agents/ERROR_HANDLING.md`
+- `docs/agents/STATE_AND_PERSISTENCE.md`
+- `docs/agents/FEATURE_FLAGS.md`
+- `docs/agents/REVIEW_CHECKLIST.md`
 - `docs/agents/WORKFLOWS.md`
 - `docs/agents/CHANGE_PROTOCOL.md`
 - repo-shared skills in `.agents/skills/`
@@ -48,6 +52,9 @@ After a change, inspect the diff and answer:
 - Did a user flow sequence or ownership path change?
 - Did UI primitives, theme, icons, layout, or responsive rules change?
 - Did IPFS upload or metadata behavior change?
+- Did error handling, notifications, logs, overlays, or failure recovery change?
+- Did state ownership, persistence, providers, drafts, modal, or overlay behavior change?
+- Did feature flags, env switches, or network-dependent settings change?
 - Did `env.ts`, `app.config.js`, `babel.config.js`, or env requirements change?
 - Did `package.json` commands or dependency-driven workflows change?
 - Did available validation commands or expected checks change?
@@ -80,6 +87,14 @@ If yes to any item, update the relevant agent docs before final response.
   update `docs/agents/API_CONTRACTS.md`.
 - Solana/wallet transaction contract notes:
   update `docs/agents/WEB3_CONTRACTS.md`.
+- Error handling, notifications, logs, overlays, and recovery:
+  update `docs/agents/ERROR_HANDLING.md`.
+- State ownership, persistence, providers, drafts, modal, and overlay state:
+  update `docs/agents/STATE_AND_PERSISTENCE.md`.
+- Feature flags, env switches, hardcoded flags, and network-dependent settings:
+  update `docs/agents/FEATURE_FLAGS.md`.
+- Review and handoff expectations:
+  update `docs/agents/REVIEW_CHECKLIST.md`.
 - How to perform recurring tasks:
   update `docs/agents/WORKFLOWS.md`.
 - Rules for keeping docs fresh:

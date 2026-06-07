@@ -25,6 +25,14 @@ Read this after `AGENTS.md`.
   Placeholder for frontend/backend API contracts. Read before API contract changes, but do not treat it as complete until filled by an agent with backend access.
 - `WEB3_CONTRACTS.md`
   Placeholder for Solana/wallet transaction contracts. Read before web3 contract changes, but do not treat it as complete until filled with authoritative contract context.
+- `ERROR_HANDLING.md`
+  Read before changing notifications, API error handling, logs, loading overlays, or wallet/transaction failure paths.
+- `STATE_AND_PERSISTENCE.md`
+  Read before changing providers, persistent storage, auth token storage, draft persistence, modal state, or overlay state.
+- `FEATURE_FLAGS.md`
+  Read before changing env flags, hardcoded feature switches, network defaults, or token conversion settings.
+- `REVIEW_CHECKLIST.md`
+  Read when asked to review changes or prepare a handoff.
 - `WORKFLOWS.md`
   Read when implementing a typical change: route, component, API client, form, auth flow, wallet transaction, env config, test, or styling.
 - `CHANGE_PROTOCOL.md`

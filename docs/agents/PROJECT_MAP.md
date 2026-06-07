@@ -246,6 +246,14 @@ Do not change config files casually. Check `ARCHITECTURE.md` and `INVARIANTS.md`
   TODO placeholder for frontend/backend API contracts.
 - `docs/agents/WEB3_CONTRACTS.md`
   TODO placeholder for Solana/wallet transaction contracts.
+- `docs/agents/ERROR_HANDLING.md`
+  Notifications, logs, overlays, API errors, transaction errors.
+- `docs/agents/STATE_AND_PERSISTENCE.md`
+  Providers, storage, auth persistence, draft persistence, modal/overlay state.
+- `docs/agents/FEATURE_FLAGS.md`
+  Env flags, hardcoded switches, network-dependent settings.
+- `docs/agents/REVIEW_CHECKLIST.md`
+  Review and handoff checklist.
 - `docs/agents/WORKFLOWS.md`
   Common change recipes.
 - `docs/agents/CHANGE_PROTOCOL.md`

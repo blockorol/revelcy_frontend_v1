@@ -26,6 +26,10 @@ Use `.agents/skills/revelcy-agent-doc-maintenance/SKILL.md` for the decision pro
 - UI primitives, theme, icons, or responsive rules changed -> update `UI_SYSTEM.md`.
 - Known limitations changed -> update `KNOWN_GAPS.md`.
 - Validation commands or expected checks changed -> update `VALIDATION.md`.
+- Error handling, notifications, logs, overlays, or failure recovery changed -> update `ERROR_HANDLING.md`.
+- State ownership, persistence, providers, drafts, modal, or overlay behavior changed -> update `STATE_AND_PERSISTENCE.md`.
+- Feature flags, env switches, or network-dependent settings changed -> update `FEATURE_FLAGS.md`.
+- Review/handoff expectations changed -> update `REVIEW_CHECKLIST.md`.
 - Non-breaking or breaking rules changed -> update `INVARIANTS.md`.
 - A repeated edit recipe changed or emerged -> update `WORKFLOWS.md`.
 - Commands, high-risk zones, or top-level rules changed -> update `AGENTS.md`.
@@ -81,5 +85,9 @@ Full refresh must compare current code against:
 - `docs/agents/VALIDATION.md`
 - `docs/agents/API_CONTRACTS.md`
 - `docs/agents/WEB3_CONTRACTS.md`
+- `docs/agents/ERROR_HANDLING.md`
+- `docs/agents/STATE_AND_PERSISTENCE.md`
+- `docs/agents/FEATURE_FLAGS.md`
+- `docs/agents/REVIEW_CHECKLIST.md`
 - `docs/agents/WORKFLOWS.md`
 - `docs/agents/CHANGE_PROTOCOL.md`

@@ -55,7 +55,8 @@ Read:
 - `src/services/api/http.ts`
 - target file in `src/services/api/*`
 - caller hooks/screens/components
-- `src/providers/AuthContext.tsx` if auth is involved.
+- `src/providers/AuthContext.tsx` if auth is involved
+- `docs/agents/ERROR_HANDLING.md`.
 
 Change:
 
@@ -100,7 +101,9 @@ Read:
 - `src/services/api/http.ts`
 - `src/components/login/*`
 - `src/hooks/useWalletLoginFlow.ts`
-- target screen/component.
+- target screen/component
+- `docs/agents/STATE_AND_PERSISTENCE.md`
+- `docs/agents/ERROR_HANDLING.md`.
 
 Change:
 
@@ -148,6 +151,7 @@ Read:
 - `app.config.js`
 - `babel.config.js`
 - `docs/agents/INVARIANTS.md`
+- `docs/agents/FEATURE_FLAGS.md`
 
 Change:
 

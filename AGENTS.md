@@ -67,6 +67,10 @@ Never log or commit secrets. Never bypass wallet signature, auth/session, transa
 - `docs/agents/VALIDATION.md` - validation guidance by change type.
 - `docs/agents/API_CONTRACTS.md` - TODO placeholder for frontend/backend API contracts.
 - `docs/agents/WEB3_CONTRACTS.md` - TODO placeholder for Solana/wallet transaction contracts.
+- `docs/agents/ERROR_HANDLING.md` - notifications, logs, overlays, API and transaction error handling.
+- `docs/agents/STATE_AND_PERSISTENCE.md` - providers, storage, draft persistence, modal/overlay state.
+- `docs/agents/FEATURE_FLAGS.md` - env flags, hardcoded switches, network-dependent settings.
+- `docs/agents/REVIEW_CHECKLIST.md` - review and handoff checklist.
 - `docs/agents/WORKFLOWS.md` - recipes for common changes.
 - `docs/agents/CHANGE_PROTOCOL.md` - post-change checks and doc update rules.
 
