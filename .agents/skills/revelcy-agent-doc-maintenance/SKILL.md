@@ -23,6 +23,8 @@ Then update these files as needed:
 - `docs/agents/FLOWS.md`
 - `docs/agents/KNOWN_GAPS.md`
 - `docs/agents/VALIDATION.md`
+- `docs/agents/API_CONTRACTS.md`
+- `docs/agents/WEB3_CONTRACTS.md`
 - `docs/agents/WORKFLOWS.md`
 - `docs/agents/CHANGE_PROTOCOL.md`
 - repo-shared skills in `.agents/skills/`
@@ -37,8 +39,10 @@ After a change, inspect the diff and answer:
 - Did domain folders, services, hooks, providers, or storage responsibilities move?
 - Did `app/_layout.tsx` provider composition change?
 - Did API/auth/refresh/retry behavior change?
+- Did frontend/backend API contract documentation change?
 - Did wallet adapter behavior or platform assumptions change?
 - Did Solana transaction behavior change?
+- Did Solana/web3 contract documentation change?
 - Did premarket creation/join/claim/finish behavior change?
 - Did user, wallet, premarket, holder, whitelist, vesting, claim, or token/community domain behavior change?
 - Did a user flow sequence or ownership path change?
@@ -72,6 +76,10 @@ If yes to any item, update the relevant agent docs before final response.
   update `docs/agents/KNOWN_GAPS.md`.
 - Validation command availability or check expectations:
   update `docs/agents/VALIDATION.md`.
+- Frontend/backend API contract notes:
+  update `docs/agents/API_CONTRACTS.md`.
+- Solana/wallet transaction contract notes:
+  update `docs/agents/WEB3_CONTRACTS.md`.
 - How to perform recurring tasks:
   update `docs/agents/WORKFLOWS.md`.
 - Rules for keeping docs fresh:

@@ -242,6 +242,10 @@ Do not change config files casually. Check `ARCHITECTURE.md` and `INVARIANTS.md`
   Known limitations and stale areas.
 - `docs/agents/VALIDATION.md`
   Validation guidance by change type.
+- `docs/agents/API_CONTRACTS.md`
+  TODO placeholder for frontend/backend API contracts.
+- `docs/agents/WEB3_CONTRACTS.md`
+  TODO placeholder for Solana/wallet transaction contracts.
 - `docs/agents/WORKFLOWS.md`
   Common change recipes.
 - `docs/agents/CHANGE_PROTOCOL.md`

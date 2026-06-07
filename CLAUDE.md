@@ -22,6 +22,8 @@ Primary agent documentation:
 - `docs/agents/FLOWS.md`
 - `docs/agents/KNOWN_GAPS.md`
 - `docs/agents/VALIDATION.md`
+- `docs/agents/API_CONTRACTS.md`
+- `docs/agents/WEB3_CONTRACTS.md`
 - `docs/agents/WORKFLOWS.md`
 - `docs/agents/CHANGE_PROTOCOL.md`
 

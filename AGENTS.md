@@ -65,6 +65,8 @@ Never log or commit secrets. Never bypass wallet signature, auth/session, transa
 - `docs/agents/FLOWS.md` - important user flow maps.
 - `docs/agents/KNOWN_GAPS.md` - known limitations and stale areas.
 - `docs/agents/VALIDATION.md` - validation guidance by change type.
+- `docs/agents/API_CONTRACTS.md` - TODO placeholder for frontend/backend API contracts.
+- `docs/agents/WEB3_CONTRACTS.md` - TODO placeholder for Solana/wallet transaction contracts.
 - `docs/agents/WORKFLOWS.md` - recipes for common changes.
 - `docs/agents/CHANGE_PROTOCOL.md` - post-change checks and doc update rules.
 

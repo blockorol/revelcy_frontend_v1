@@ -19,6 +19,8 @@ Use `.agents/skills/revelcy-agent-doc-maintenance/SKILL.md` for the decision pro
 - Directory ownership changed -> update `PROJECT_MAP.md`.
 - Architecture/state/provider/API ownership changed -> update `ARCHITECTURE.md`.
 - Auth/session/API behavior changed -> update `ARCHITECTURE.md` and possibly `INVARIANTS.md`.
+- API contract documentation changed -> update `API_CONTRACTS.md` and backend-sync references.
+- Web3 contract documentation changed -> update `WEB3_CONTRACTS.md`.
 - Business behavior changed -> update `DOMAIN.md`.
 - User flow sequence changed -> update `FLOWS.md`.
 - UI primitives, theme, icons, or responsive rules changed -> update `UI_SYSTEM.md`.
@@ -77,5 +79,7 @@ Full refresh must compare current code against:
 - `docs/agents/FLOWS.md`
 - `docs/agents/KNOWN_GAPS.md`
 - `docs/agents/VALIDATION.md`
+- `docs/agents/API_CONTRACTS.md`
+- `docs/agents/WEB3_CONTRACTS.md`
 - `docs/agents/WORKFLOWS.md`
 - `docs/agents/CHANGE_PROTOCOL.md`

@@ -21,6 +21,10 @@ Read this after `AGENTS.md`.
   Read when evaluating uncertainty, stale docs, missing scripts, platform support, example code, IPFS assumptions, or unavailable contracts.
 - `VALIDATION.md`
   Read before deciding which checks to run after docs-only, UI, API, auth, wallet, env/config, or dependency changes.
+- `API_CONTRACTS.md`
+  Placeholder for frontend/backend API contracts. Read before API contract changes, but do not treat it as complete until filled by an agent with backend access.
+- `WEB3_CONTRACTS.md`
+  Placeholder for Solana/wallet transaction contracts. Read before web3 contract changes, but do not treat it as complete until filled with authoritative contract context.
 - `WORKFLOWS.md`
   Read when implementing a typical change: route, component, API client, form, auth flow, wallet transaction, env config, test, or styling.
 - `CHANGE_PROTOCOL.md`

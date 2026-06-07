@@ -40,8 +40,8 @@ State validation gaps clearly in final responses.
 
 ## Backend/Web3 Contracts
 
-- API contracts are not documented here yet.
-- Web3/Solana transaction contracts are not documented here yet.
+- `docs/agents/API_CONTRACTS.md` is currently a TODO placeholder.
+- `docs/agents/WEB3_CONTRACTS.md` is currently a TODO placeholder.
 - For contract-level changes, use an agent/session with access to both frontend and backend or explicit contract context.
 
 ## UI Checks

@@ -22,6 +22,8 @@ Primary docs:
 - `docs/agents/FLOWS.md`
 - `docs/agents/KNOWN_GAPS.md`
 - `docs/agents/VALIDATION.md`
+- `docs/agents/API_CONTRACTS.md`
+- `docs/agents/WEB3_CONTRACTS.md`
 - `docs/agents/WORKFLOWS.md`
 - `docs/agents/CHANGE_PROTOCOL.md`
 
@@ -66,8 +68,10 @@ Shared skills and adapters:
 - New, moved, or deleted domains under `src/components/`, `src/hooks/`, `src/services/`, `storage/`, or `screens/`.
 - Changed provider order or root layout behavior.
 - Changed auth, HTTP retry/refresh, or token handling.
+- Changed API contract notes or TODO status.
 - Changed env variables or platform loading behavior.
 - Changed wallet, Phantom, Solana network, or transaction assumptions.
+- Changed web3 contract notes or TODO status.
 - Changed domain entities or scenarios: user, auth session, wallet, premarket, holder, whitelist, vesting, community/token info, claims, transactions.
 - Changed user flow sequence or ownership.
 - Changed UI primitives, theme, icons, or responsive expectations.
