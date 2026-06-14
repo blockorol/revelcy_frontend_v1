@@ -1,93 +1,92 @@
 # Revelcy Frontend
 
-This is the frontend for **Revelcy**, a cross-platform (Web, Android, iOS) client built using **React Native** and **Expo SDK 52**, with integration to Solana blockchain and decentralized storage via IPFS.
+Frontend application for Revelcy, built with Expo, React Native, TypeScript, React Native Paper, Expo Router, Solana wallet integration, and IPFS upload support.
 
----
+The current practical target is **web**. Android and iOS scripts exist, but native support should be treated as scaffolded unless verified for a specific feature.
 
-## 🚀 How to Run the Project
+## Quick Start
 
-### ✅ Prerequisites
-- Node.js >= 18.x
-- Expo CLI (`npm install -g expo-cli`)
-- Android Studio or Xcode (for native emulators)
-- A real device or web browser
-
-### 1. Install dependencies  
 ```bash
 npm install
+npm run web
 ```
 
-### 2. Prepare `.env`
-Create a `.env` file in the project root with the following variables:
+For a production-style web export:
 
-```env
-HOST_BACKEND=<Your Backend Base URL> # Example: https://api.revelcy.com
-PINATA_API_KEY=<Your Pinata API Key>
-PINATA_SECRET_KEY=<Your Pinata Secret Key>
-PINATA_JWT=<Your Pinata JWT Token>
-HELIUS_KEY=<Your Helius api key>
-NETWORK=<devnet | main-beta>
-```
-
-> **Note:**  
-> `PINATA_*` variables are used for uploading files to IPFS via the Pinata service.  
-> `HOST_BACKEND` should point to your deployed backend server or local development API.
-
----
-
-### 3. Run the App
-
-#### 🖥️ Web
 ```bash
-expo start --web
+npm run build
+npm run serve
 ```
 
-#### 📱 Android
-```bash
-npm run android
-```
+## Requirements
 
-#### 🍏 iOS
-```bash
-npm run ios
-```
+- Node.js 18 or newer
+- npm
+- A browser for the supported web target
+- Backend/API and Solana/IPFS-related environment values
+- Phantom wallet for wallet flows on web
 
-Or use:
-```bash
-npx expo start
-```
-Then follow the terminal instructions to run on the desired platform.
+## Environment
 
----
+Create a local `.env` file in the project root. Do not commit real secrets.
 
-## ⚙️ Technologies Used
+Required runtime values are documented in [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md).
 
-- **React Native** (0.76)
-- **Expo SDK 52**
-- **TypeScript** (5.x)
-- **React Native Paper** (Material Design 3)
-- **Expo Router** (for navigation)
-- **@solana/web3.js** (Solana integration, web only)
-- **@solana/wallet-adapter-phantom**
-- **react-native-svg** + **react-native-svg-transformer** (for SVG icons)
+Common variables include:
 
----
+- `HOST_BACKEND`
+- `PINATA_JWT`
+- `PINATA_API_KEY`
+- `PINATA_SECRET_KEY`
+- `HELIUS_KEY`
+- `TRITON_URL`
+- `NETWORK`
 
-## 📦 Project Structure Aliases
+## Scripts
 
-| Alias        | Path                |
-|--------------|---------------------|
-| `@assets`    | `./assets`          |
-| `@components`| `./src/components`  |
-| `@hooks`     | `./src/hooks`       |
-| `@screens`   | `./src/screens`     |
-| `@services`  | `./src/services`    |
-| `@storage`   | `./src/storage`     |
-| `@theme`     | `./src/theme`       |
+| Command | Description |
+| --- | --- |
+| `npm install` | Install dependencies. |
+| `npm start` | Start Expo. |
+| `npm run web` | Start Expo for web. |
+| `npm run build` | Export the web build to `web-build`. |
+| `npm run serve` | Serve `web-build`. |
+| `npm run android` | Start Expo Android target. |
+| `npm run ios` | Start Expo iOS target. |
 
----
+No `lint`, `test`, `typecheck`, or `format` script is currently defined.
 
-## 🧑‍💻 Related Repositories
+## Documentation
 
-- **Smart Contracts**: [blockorol/solana-program](https://github.com/blockorol/solana-program)
-- **Backend API**: [blockorol/revelcy-backend](https://github.com/blockorol/revelcy-backend-v1)
+- [Documentation Index](docs/README.md)
+- [Setup](docs/SETUP.md)
+- [Development](docs/DEVELOPMENT.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Project Structure](docs/PROJECT_STRUCTURE.md)
+- [UI](docs/UI.md)
+- [API](docs/API.md)
+- [Web3 And Wallet](docs/WEB3.md)
+- [Environment](docs/ENVIRONMENT.md)
+- [Troubleshooting](docs/TROUBLESHOOTING.md)
+- [Deployment](docs/DEPLOYMENT.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security](SECURITY.md)
+
+Agent-facing documentation lives in [docs/agents/README.md](docs/agents/README.md).
+
+## Project Shape
+
+- `app/` - Expo Router routes and root layout.
+- `screens/` - route-level screen containers.
+- `src/components/` - shared and domain UI.
+- `src/hooks/` - reusable hooks.
+- `src/providers/` - app-wide providers.
+- `src/services/` - API, blockchain, IPFS, fingerprint, and domain services.
+- `src/theme/` - theme, colors, fonts, and theme types.
+- `storage/` - storage helpers, modal/overlay contexts, wallet adapters.
+- `assets/` - images and SVG icons.
+
+## Related Repositories
+
+- Backend API: `blockorol/revelcy-backend-v1`
+- Solana program: `blockorol/solana-program`
