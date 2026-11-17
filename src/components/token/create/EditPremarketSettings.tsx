@@ -12,6 +12,7 @@ import { ExtendedMD3Colors } from "@theme/types";
 import { TOKEN_CONVERTOR_SETTINGS } from "env";
 import TextInput from "@components/ui/TextInput";
 import { sanitizeShortPath } from "@utils/url";
+import { getTokenShortLink } from "@utils/shortLink";
 const DEFAULT_PREMARKET_GOAL_SOL = 5;
 
 export type EditPremarketSettingsFormProps = {
@@ -192,7 +193,7 @@ export default function EditPremarketSettingsForm({
               error={!!shortNameError}
               errorValue={shortNameError}
             />
-            <HelperText visible={!!shortName} type="info">https://beta.revelcy.com/token/{shortName}</HelperText>
+            <HelperText visible={!!shortName} type="info">{getTokenShortLink(shortName ?? undefined)}</HelperText>
           </View>
 
         </View>

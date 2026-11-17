@@ -8,6 +8,7 @@ export type ContinueButtonWithProgressBarProps = {
   handleSubmit: () => void;
   handleSaveForLatter?: () => void;
   isFilledAll: () => boolean;
+  submitLabel?: string;
   progress?: {
     before: number;
     after: number;
@@ -20,6 +21,7 @@ export default function ContinueButtonWithProgressBar({
   handleSubmit,
   handleSaveForLatter,
   isFilledAll,
+  submitLabel = "Continue",
   progress,
 }: ContinueButtonWithProgressBarProps) {
   return (
@@ -70,7 +72,7 @@ export default function ContinueButtonWithProgressBar({
               opacity: !isFilledAll() ? 0.3 : 1
             }}
           >
-            Continue
+            {submitLabel}
           </Button>
         </View>
       </View>

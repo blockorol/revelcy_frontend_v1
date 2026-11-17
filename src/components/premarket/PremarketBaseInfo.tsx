@@ -3,7 +3,8 @@ import { RoundIconLink } from "@components/premarket/RoundIcons";
 import { useIsMobileForTwoScreenWithDemention } from "@hooks/useIsMobile";
 import { getTimeLeftLabel } from "@utils/premarket";
 import shortString from "@utils/address_shorter";
-import { View, Image, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity } from "react-native";
+import { PremarketCover } from "./PremarketCover";
 import { Text, useTheme } from "react-native-paper";
 import { ExpandableText } from '@components/base/ExpandableText';
 import { SvgIcon, SvgIconButton } from '@components/base/SvgIcon';
@@ -78,8 +79,9 @@ export function PremarketBaseInfo({ tokenMainInfo, isMobile}: PremarketBaseInfoP
       }}>
       {!!tokenMainInfo.imageURL && (
         <View style={{paddingHorizontal: isMobile?24:0, paddingBottom: 8, paddingTop: 0}}>
-          <Image
-            source={{ uri: tokenMainInfo.imageURL }}
+          <PremarketCover
+            uri={tokenMainInfo.imageURL}
+            fallbackUri={tokenMainInfo.imageFallbackURL}
             style={{
               width: '100%',
               aspectRatio: 1,

@@ -13,6 +13,7 @@ import {
 import { darkTheme } from "@theme/theme";
 import { NavigationTop } from "@components/navigation/NavigationTop";
 import { NetworkProvider } from "@providers/NetworkContext";
+import { LoginModalProvider } from "@providers/LoginModalContext";
 import { WalletProvider } from "@storage/wallet-adapter/index";
 import * as SplashScreen from "expo-splash-screen";
 import {
@@ -35,6 +36,9 @@ import { ContentAreaProvider, useContentArea } from "@hooks/useContentArea";
 import { UserModalProvider } from "@storage/UserModalContext";
 import { NotificationProvider } from "@providers/NotificationContext";
 import { UniversalOverlayProvider } from "@storage/UniversalOverlayProvider";
+
+import LoginAutoOpener from "@components/login/LoginAutoOpener";
+
 
 if (typeof globalThis.Buffer === "undefined") {
   globalThis.Buffer = Buffer;
@@ -68,16 +72,16 @@ export default function Layout() {
       <Head>
         <title>Revelcy</title>
       </Head>
-    <NetworkProvider>
-      <AuthProvider>
-        <WalletProvider>
-          <ContentAreaProvider>
-            <InnerLayout />
-          </ContentAreaProvider>
-        </WalletProvider>
-      </AuthProvider>
-    </NetworkProvider>
-  </>
+      <NetworkProvider>
+        <AuthProvider>
+          <WalletProvider>
+            <ContentAreaProvider>
+              <InnerLayout />
+            </ContentAreaProvider>
+          </WalletProvider>
+        </AuthProvider>
+      </NetworkProvider>
+    </>
   );
 }
 
@@ -111,36 +115,42 @@ function InnerLayout() {
   return (
     <PaperProvider theme={theme}>
       <NotificationProvider>
-        <UserModalProvider>
-          <UniversalOverlayProvider>
-            <Portal.Host>
+        
+        <LoginModalProvider>
+          <UserModalProvider>
+            <UniversalOverlayProvider>
+              <Portal.Host>
+                <LoginAutoOpener />
+                <StatusBar
+                  barStyle={
+                    scheme === "dark" ? "light-content" : "dark-content"
+                  }
+                  backgroundColor={theme.colors.background}
+                />
 
-            <StatusBar
-              barStyle={scheme === "dark" ? "light-content" : "dark-content"}
-              backgroundColor={theme.colors.background}
-            />
-
-            <View
-              style={[
-                styles.container,
-                { backgroundColor: theme.colors.background },
-              ]}
-            >
-              <View onLayout={(e) => setTopHeight(e.nativeEvent.layout.height)}>
-                <NavigationTop />
-              </View>
-              <Stack screenOptions={{ headerShown: false }} />
-              {/* 
+                <View
+                  style={[
+                    styles.container,
+                    { backgroundColor: theme.colors.background },
+                  ]}
+                >
+                  <View
+                    onLayout={(e) => setTopHeight(e.nativeEvent.layout.height)}
+                  >
+                    <NavigationTop />
+                  </View>
+                  <Stack screenOptions={{ headerShown: false }} />
+                  {/* 
                 <View onLayout={(e) => setBottomHeight(e.nativeEvent.layout.height)}>
                   <NavigationBottom />
                 </View> 
               */}
-              <CookiesModal />
-            </View>
-            
-            </Portal.Host>
-          </UniversalOverlayProvider>
-        </UserModalProvider>
+                  <CookiesModal />
+                </View>
+              </Portal.Host>
+            </UniversalOverlayProvider>
+          </UserModalProvider>
+        </LoginModalProvider>
       </NotificationProvider>
     </PaperProvider>
   );

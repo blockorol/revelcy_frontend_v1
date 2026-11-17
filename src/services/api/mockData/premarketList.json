@@ -1,0 +1,95 @@
+{
+  "premarkets": [
+    {
+      "blockchain_info": {
+        "id": "be48170a-1cc6-4666-8541-aff208e31163",
+        "name": "LilPupsClub",
+        "description": "Champie The Dogfluencer. Real Life, Real Puppies, Real Story",
+        "symbol": "LilPups",
+        "image_url": "https://images.pump.fun/coin-image/DY9akJ7uojBebkLKQdfExUx6DokQrbs9VgrL2cD6pump",
+        "ipfs_uri": "https://ipfs.io/ipfs/QmaqXfHguobNutnVsju2guYni2rSFy41jZX5wexESggVeD",
+        "creator_id": "4e3b1bfe-ecd2-433f-8cc7-bb52f9ce41a5",
+        "creator_address": "CHAMpr6b1gDqfbur6FF2KgzSQnWE8jbiLz7LGiHn73HC",
+        "premarket_address": "HY6n4yxZb8QHtw32Z27SjAiiLtteHQsWtfxf6tTT5Vno",
+        "links": {
+          "telegram": "https://t.me/lilpupsclub",
+          "twitter": "https://x.com/lilpupsclub",
+          "web_site": "https://lilpups.shop/"
+        },
+        "premarket_goal_sol_lamp": "20000000000",
+        "premarket_deadline": 1768071600,
+        "premarket_is_extended": false,
+        "premarket_created": 1767881214,
+        "premarket_finished": 1767990663,
+        "mint_address": "DY9akJ7uojBebkLKQdfExUx6DokQrbs9VgrL2cD6pump",
+        "state": "finished",
+        "image_fallback_url": "/premarket-snapshot/DY9akJ7uojBebkLKQdfExUx6DokQrbs9VgrL2cD6pump.jpg"
+      },
+      "availability_info": {
+        "token_short_url_name": "lilpups",
+        "is_hided": false
+      }
+    },
+    {
+      "blockchain_info": {
+        "id": "c0aaef1f-5beb-4081-8ce5-6d10e6772f6a",
+        "name": "HOPE",
+        "description": "Play at sylvan.world | Solo dev | Built in public | Holders get in-game token allocation.",
+        "symbol": "HOPE",
+        "image_url": "https://images.pump.fun/coin-image/32H7xu7Ybs6ANQ4kJ8ConDwXj1ZaQTeKFzUgivDrpump",
+        "ipfs_uri": "https://ipfs.io/ipfs/QmVfxTKhdhbeMpnrmx3mPDvvWkwDVMHHWNyZAWbkHTja5L",
+        "creator_id": "c20673ae-951c-4135-8725-a484c3f945fc",
+        "creator_address": "GuXh4coRE779AhzQ43aVPpHdQnurWH3U5oHwBHv3FAZT",
+        "premarket_address": "iXHUK2U8XPXEDmhGNxZN9Heii3DXe9Wdo2j1JvhmrkD",
+        "links": {
+          "telegram": "https://discord.gg/w3jb67tcf3",
+          "twitter": "https://x.com/sergeysylvan",
+          "web_site": "https://www.sylvan.world/"
+        },
+        "premarket_goal_sol_lamp": "29900000000",
+        "premarket_deadline": 1766160000,
+        "premarket_is_extended": false,
+        "premarket_created": 1765987095,
+        "premarket_finished": 1766173107,
+        "mint_address": "32H7xu7Ybs6ANQ4kJ8ConDwXj1ZaQTeKFzUgivDrpump",
+        "state": "finished",
+        "image_fallback_url": "/premarket-snapshot/32H7xu7Ybs6ANQ4kJ8ConDwXj1ZaQTeKFzUgivDrpump.png"
+      },
+      "availability_info": {
+        "token_short_url_name": "sylvan",
+        "is_hided": false
+      }
+    },
+    {
+      "blockchain_info": {
+        "id": "594f1fe1-0676-42f3-989d-6bd1ffdf402d",
+        "name": "Mostro Speakeasy",
+        "description": "SPKZ is a utility & community token from Mostro.xyz, a fan-powered artist tokenization platform.\n\n1M SPKZ unlocks access to the gated Discord channel, events, NFT music drops, pfp.",
+        "symbol": "SPKZ",
+        "image_url": "https://images.pump.fun/coin-image/FvzFDZjko5sLdhJqpr8Zg3X3AbgGseQ2RR4XkVR8pump",
+        "ipfs_uri": "https://ipfs.io/ipfs/Qma7NM5Now3eQUy2tt8Y2nTqd91YQEDG9ihkwQdtcVuGqN",
+        "creator_id": "d90e79af-93d5-4afa-a5b0-781ea0c101db",
+        "creator_address": "5e5XmS8wVy8YLy2VWEnU37rgQNsX2yYmbdYx3AXBZByJ",
+        "premarket_address": "Ht8uGBziZw9CE4dhv33hUyzUZmznosTmG4M2U81uhXDo",
+        "links": {
+          "telegram": "https://t.me/mostroxyz",
+          "twitter": "https://x.com/mostroxyz",
+          "web_site": "https://www.mostro.xyz"
+        },
+        "premarket_goal_sol_lamp": "3300000000",
+        "premarket_deadline": 1765387800,
+        "premarket_is_extended": false,
+        "premarket_created": 1765301998,
+        "premarket_finished": 1765389675,
+        "mint_address": "FvzFDZjko5sLdhJqpr8Zg3X3AbgGseQ2RR4XkVR8pump",
+        "state": "finished",
+        "image_fallback_url": "/premarket-snapshot/FvzFDZjko5sLdhJqpr8Zg3X3AbgGseQ2RR4XkVR8pump.png"
+      },
+      "availability_info": {
+        "token_short_url_name": "mostro",
+        "is_hided": false
+      }
+    }
+  ],
+  "total": 3
+}

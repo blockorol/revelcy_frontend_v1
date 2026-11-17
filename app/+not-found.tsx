@@ -2,7 +2,7 @@
 import React from "react";
 import { View, Image, StyleSheet } from "react-native";
 import { useTheme } from "react-native-paper";
-import { useRouter } from "expo-router";
+import { useRouter } from "@hooks/useSafeRouter";
 import { Text } from "@components/ui/Text";
 import { Button } from "@components/ui/Button";
 

@@ -2,6 +2,8 @@ const PINATA_GATEWAY = 'https://gateway.pinata.cloud/ipfs/';
 const PINATA_FILE_URL = 'https://api.pinata.cloud/pinning/pinFileToIPFS';
 const PINATA_JSON_URL = 'https://api.pinata.cloud/pinning/pinJSONToIPFS';
 import Constants from 'expo-constants';
+import { IS_SITE_SNAPSHOT } from 'env';
+import { mockServerError } from '@api/mock';
 
 const PINATA_JWT = Constants.expoConfig?.extra?.PINATA_JWT || '';
 
@@ -20,6 +22,7 @@ export async function uploadTokenMetadataToIPFS ({avatar, tokenInfo}:
     }
   }
 ) {
+    if (IS_SITE_SNAPSHOT) mockServerError();
     console.log("uploadToIPFS with pinata");
     try {
       const fileName = `avatar_${tokenInfo.name}.jpg`;
@@ -76,7 +79,6 @@ export async function uploadBase64Image(base64Data: string, fileName: string): P
 
     const formData = new FormData();
     formData.append('file', blob, fileName);
-    console.log("PINATA_JWT", PINATA_JWT)
 
     const response = await fetch(PINATA_FILE_URL, {
       method: 'POST',

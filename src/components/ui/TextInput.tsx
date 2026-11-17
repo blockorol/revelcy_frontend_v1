@@ -12,6 +12,7 @@ import { SvgIcon } from "@components/base/SvgIcon";
 
 type Props = Omit<TextInputProps, 'label'> & {
   alwaysLabelOnTop?: boolean;
+  placeholderAsLabel?: boolean;
   style?: StyleProp<TextStyle>;
   disableRemoveBtn?: boolean;
   overrideRemoveBtn?: ()=>void;
@@ -23,6 +24,7 @@ type Props = Omit<TextInputProps, 'label'> & {
 export default function TextInput(props: Props) {
   const {
     alwaysLabelOnTop,
+    placeholderAsLabel,
     disableRemoveBtn,
     overrideRemoveBtn,
     errorValue,
@@ -60,13 +62,15 @@ export default function TextInput(props: Props) {
   const fixedBackGroundColor = fixColor(backgroundColor)
 
   
-  const showLabelOnTop = !!alwaysLabelOnTop || isFocused || !!value
+  const hasValue = value !== undefined && value !== null && String(value).length > 0;
+  const effectiveLabel = label ?? (placeholderAsLabel ? placeholder : undefined);
+  const showLabelOnTop = !placeholderAsLabel && (!!alwaysLabelOnTop || isFocused || hasValue);
   const showLabelOnPlaceholder = !showLabelOnTop;
 
 
   return (
     <View style={{backgroundColor:fixedBackGroundColor, width:'100%'}}>
-      { !!label &&  (showLabelOnTop?
+      { !!effectiveLabel && !placeholderAsLabel && (showLabelOnTop?
         <View style={{ backgroundColor: 'transparent' }}>
           <Text
             variant="bodySmall"
@@ -77,7 +81,7 @@ export default function TextInput(props: Props) {
               paddingTop: 0
             }}
           >
-            {label}
+            {effectiveLabel}
           </Text>
         </View>
       :
@@ -123,7 +127,7 @@ export default function TextInput(props: Props) {
             rest.disabled ? colors.onSurfaceDisabled :
             colors.onSurface  
           : undefined}
-        placeholder={showLabelOnPlaceholder? label: placeholder}
+        placeholder={showLabelOnPlaceholder ? effectiveLabel : placeholder}
         right={
           errorValue ? <PaperTextInput.Icon icon="alert-circle" color={colors.error} /> : 
           !disableRemoveBtn ? <PaperTextInput.Icon 

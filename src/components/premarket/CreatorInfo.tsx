@@ -10,7 +10,7 @@ import { useNotification } from "@providers/NotificationContext";
 import { useOverlay } from "@storage/UniversalOverlayProvider";
 
 import { Linking, View, StyleSheet} from "react-native";
-import { Text, ActivityIndicator, useTheme, HelperText, Portal, Modal} from "react-native-paper";
+import { Text, useTheme, HelperText, Portal, Modal} from "react-native-paper";
 import {Button} from '@components/ui/Button'
 import { ShareTextButton } from "@components/base/ButtonShare";
 import { SvgIcon } from "@components/base/SvgIcon";
@@ -22,7 +22,10 @@ import { AppTheme } from "@theme/types";
 import { uploadTokenMetadataToIPFS } from "@services/files/ipfs/pumpfun";
 import { updateUriPremarket } from "@services/blockchain/premarket/updateUriPremarket";
 import CreateTokenForm from "@components/token/create/CreateTokenForm";
+import EditWhitelistForm from "@components/token/create/EditWhitelistForm";
 import { TokenMainData } from "@components/token/create/interface";
+import TextedLoader from "@components/ui/Loader";
+import { getTokenShortLink } from "@utils/shortLink";
 
 interface CreatorInfoProps {
   tokenMainInfo: TokenMainInfo;
@@ -46,7 +49,10 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showEditLink, setShowEditLink] = useState(false);
+  const [showEditWhitelist, setShowEditWhitelist] = useState(false);
   const closEditLinkOpen = () => {setShowEditLink(false)}
+  const closeEditWhitelistOpen = () => {setShowEditWhitelist(false)}
+  const whitelistButtonLabel = tokenMainInfo.isWhitelistEnabled ? "Edit whitelist" : "Add whitelist";
 
   const handleRefund = async () => {
     if (!wallet || !connected) {
@@ -76,13 +82,13 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
 
 
     try {
-      open(renderLoader("Refunding premarket...", colors.primary));
+      open(<TextedLoader text ={"Refunding premarket..."}/>);
       const res = await refundPremarket(
         wallet,
         connection,
         network,
         tokenMainInfo.premarketPubkey,
-        (text) => {replace(renderLoader(text, colors.primary))}
+        (text) => {replace(<TextedLoader text ={text}/>)}
       );
       closeOverlay();
       notify.success("Premarket successfully refunding!", {action: {
@@ -202,14 +208,14 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
     }
 
     try {
-      open(renderLoader("Extending premarket deadline...", colors.primary));
+      open(<TextedLoader text ={"Extending premarket deadline..."}/>);
       const res = await extendPremarket(
         wallet,
         connection,
         network,
         tokenMainInfo.premarketPubkey,
         newDeadline,
-        (text) => {replace(renderLoader(text, colors.primary))}
+        (text) => {replace(<TextedLoader text ={text}/>)}
       );
 
       notify.success("Premarket deadline successfully extended!", {action: {
@@ -264,13 +270,13 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
     }
 
     try {
-      open(renderLoader("Finishing premarket...", colors.primary));
+      open(<TextedLoader text ={"Finishing premarket..."}/>);
       const res = await finishPremarket(
         wallet,
         connection,
         network,
         tokenMainInfo.premarketPubkey,
-        (text) => {replace(renderLoader(text, colors.primary))}
+        (text) => {replace(<TextedLoader text ={text}/>)}
       );
 
       notify.success("Premarket successfully finished!", {action: {
@@ -306,6 +312,9 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
             <Button style={{flex:1}} variant='primary' 
               mode="contained"
               onPress={()=>setShowEditLink(true)}>Edit links</Button>
+            <Button style={{flex:1}} variant='primary' 
+              mode="outlined"
+              onPress={()=>setShowEditWhitelist(true)}>{whitelistButtonLabel}</Button>
           </View>
         }
 
@@ -340,11 +349,21 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
         onConfirm={handleTimeConfirm}
         label="Pick time"
       />
-      <EditLinksModal visible={showEditLink} onClose={closEditLinkOpen} tokenMainInfoPreset={tokenMainInfo} onUpdated={onUpdated} />
+      <EditLinksModal 
+        visible={showEditLink} onClose={closEditLinkOpen}
+        premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
+        tokenMainInfoPreset={tokenMainInfo} onUpdated={onUpdated}
+        />
+      <EditWhitelistModal
+        visible={showEditWhitelist}
+        onClose={closeEditWhitelistOpen}
+        tokenMainInfoPreset={tokenMainInfo}
+        onUpdated={onUpdated}
+      />
 
       <VisabilitySwitch
         isDiscoverablePreset={!tokenMainInfo.isHided}
-        shortLink={tokenMainInfo.shortLinkPrefix?"https://beta.revelcy.com/token/"+tokenMainInfo.shortLinkPrefix:undefined}
+        shortLink={getTokenShortLink(tokenMainInfo.shortLinkPrefix)}
         premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
         onUpdated={onUpdated}
       />
@@ -355,7 +374,7 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
   // if (isDeadLine && isGoalReached) {
     return (
       <View style={{ gap:16, width:'100%'}}>
-        <View style={{flexDirection:'row'}}>
+        <View style={{flexDirection:'row', gap:8}}>
           <Button leftSvgIconName='pumpfun' style={{flex:3}} variant='primary' 
             onPress={handleFinish}>Launch on Pump</Button>
           <ShareTextButton style={{flex: 1}} shareMessage={`Join to premarket on: ${currentURL}`}/>
@@ -365,14 +384,27 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
             <Button style={{flex:1}} variant='primary' 
               mode="contained"
               onPress={()=>setShowEditLink(true)}>Edit links</Button>
+            <Button style={{flex:1}} variant='primary' 
+              mode="outlined"
+              onPress={()=>setShowEditWhitelist(true)}>{whitelistButtonLabel}</Button>
           </View>
         }
 
-        <EditLinksModal visible={showEditLink} onClose={closEditLinkOpen} tokenMainInfoPreset={tokenMainInfo} onUpdated={onUpdated} />
+        <EditLinksModal 
+          visible={showEditLink} onClose={closEditLinkOpen}
+          premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
+          tokenMainInfoPreset={tokenMainInfo} onUpdated={onUpdated} 
+        />
+        <EditWhitelistModal
+          visible={showEditWhitelist}
+          onClose={closeEditWhitelistOpen}
+          tokenMainInfoPreset={tokenMainInfo}
+          onUpdated={onUpdated}
+        />
 
         <VisabilitySwitch
           isDiscoverablePreset={!tokenMainInfo.isHided}
-          shortLink={tokenMainInfo.shortLinkPrefix?"https://beta.revelcy.com/token/"+tokenMainInfo.shortLinkPrefix:undefined}
+          shortLink={getTokenShortLink(tokenMainInfo.shortLinkPrefix)}
           premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
           onUpdated={onUpdated}
         />
@@ -388,6 +420,9 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
             <Button style={{flex:1}} variant='primary' 
               mode="contained"
               onPress={()=>setShowEditLink(true)}>Edit links</Button>
+            <Button style={{flex:1}} variant='primary' 
+              mode="outlined"
+              onPress={()=>setShowEditWhitelist(true)}>{whitelistButtonLabel}</Button>
           </View>
         }
         <View style={{flexDirection:'row', gap:16, alignItems:'center'}}>
@@ -397,13 +432,22 @@ export function CreatorInfo({ tokenMainInfo, onUpdated, isDeadLine, isGoalReache
         </View>
         {(tokenMainInfo.state !== 'finished' && tokenMainInfo.state !== 'canceled') &&
            <EditLinksModal visible={showEditLink} onClose={closEditLinkOpen} 
+            premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
             tokenMainInfoPreset={tokenMainInfo} onUpdated={onUpdated} />
+        }
+        {(tokenMainInfo.state !== 'finished' && tokenMainInfo.state !== 'canceled') &&
+          <EditWhitelistModal
+            visible={showEditWhitelist}
+            onClose={closeEditWhitelistOpen}
+            tokenMainInfoPreset={tokenMainInfo}
+            onUpdated={onUpdated}
+          />
         }
 
         
         <VisabilitySwitch
           isDiscoverablePreset={!tokenMainInfo.isHided}
-          shortLink={tokenMainInfo.shortLinkPrefix?"https://beta.revelcy.com/token/"+tokenMainInfo.shortLinkPrefix:undefined}
+          shortLink={getTokenShortLink(tokenMainInfo.shortLinkPrefix)}
           premarketPubkey={tokenMainInfo.premarketPubkey.toString()}
           onUpdated={onUpdated}
         />
@@ -464,22 +508,24 @@ function VisabilitySwitch({isDiscoverablePreset, shortLink, premarketPubkey, onU
 function EditLinksModal({
   visible,
   onClose, 
-  tokenMainInfoPreset, onUpdated}: {
+  tokenMainInfoPreset,
+  premarketPubkey,
+  onUpdated}: {
   visible: boolean, 
   onClose: ()=>void,
+  premarketPubkey: string,
   tokenMainInfoPreset: TokenMainInfo,
   onUpdated: () => Promise<void>;
 }) {
   const notify = useNotification();
   const { network } = useNetwork();
-  const {colors} = useTheme()
   const connection = getSolanaConnection(network);
   const { connected, connect } = useWallet();
   const wallet = useAnchorWalletSafe();
   const { open, replace, close: closeOverlay } = useOverlay();
 
     const handleUpdateURIConfirm = async (tokenMainInfo: TokenMainData) => {
-    open(renderLoader("Update premarket links...", colors.primary));
+    open(<TextedLoader text ={"Update premarket links..."}/>);
     if (!wallet || !connected) {
       notify.error("Wallet is not connected", {
         suggest: "Enable Phantom (or compatible) and try again",
@@ -509,10 +555,11 @@ function EditLinksModal({
       return;
 
     }
-    open(renderLoader("Uploading data to IPFS...", colors.primary));
+    open(<TextedLoader text ={"Uploading data to IPFS..."}/>);
     
     try {
       const ipfsData = await uploadTokenMetadataToIPFS({
+        premarketPDA:premarketPubkey,
         avatar: tokenMainInfo.avatar,
         tokenInfo: {
           name: tokenMainInfo.tokenName,
@@ -526,7 +573,7 @@ function EditLinksModal({
         },
       });
       if (!ipfsData) {
-        replace(renderLoader("Failed to upload to IPFS...", colors.primary));
+        replace(<TextedLoader text ={"Failed to upload to IPFS..."}/>);
         notify.error("failed to upload data to IPFS", {
           suggest: "Please, try again later",
         });
@@ -537,7 +584,7 @@ function EditLinksModal({
         wallet, connection, network,
         tokenMainInfoPreset.premarketPubkey,
         ipfsData.metadataUri, 
-        (text) => {replace(renderLoader(text, colors.primary))}
+        (text) => {replace(<TextedLoader text ={text}/>)}
       )
     } catch (e) {
       console.error("update links error:", e);
@@ -554,12 +601,13 @@ function EditLinksModal({
         style={{alignItems: 'center', justifyContent: 'center',}}
         visible={visible}
         onDismiss={onClose}
-        contentContainerStyle={[styles.modalContainer]}>     
+        contentContainerStyle={[styles.editorModalContainer]}>     
           <CreateTokenForm
             onNext={handleUpdateURIConfirm}
             onClose={onClose}
             step={1}
-            totalSteps={4}
+            totalSteps={1}
+            submitLabel="Save"
             presetData={{
               tokenName: tokenMainInfoPreset.name,
               tokenTicker: tokenMainInfoPreset.symbol,
@@ -578,14 +626,42 @@ function EditLinksModal({
   )
 }
 
-function renderLoader (status: string, color:string) {
+function EditWhitelistModal({
+  visible,
+  onClose,
+  tokenMainInfoPreset,
+  onUpdated,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  tokenMainInfoPreset: TokenMainInfo;
+  onUpdated: () => Promise<void>;
+}) {
   return (
-    <View style={{ gap: 20 }}>
-      <Text variant="titleMedium">{status}</Text>
-      <ActivityIndicator animating color={color} size="large" />
-    </View>
-  )
-};
+    <Portal>
+      <Modal
+        style={{alignItems: 'center', justifyContent: 'center'}}
+        visible={visible}
+        onDismiss={onClose}
+        contentContainerStyle={[styles.editorModalContainer, { padding: 0 }]}>
+        <EditWhitelistForm
+          onNext={() => {
+            onClose();
+          }}
+          onClose={onClose}
+          step={1}
+          totalSteps={1}
+          editMode={{
+            premarketId: tokenMainInfoPreset.id,
+            premarketPubkey: tokenMainInfoPreset.premarketPubkey.toString(),
+            isWhitelistEnabled: tokenMainInfoPreset.isWhitelistEnabled,
+            onUpdated,
+          }}
+        />
+      </Modal>
+    </Portal>
+  );
+}
 
 
 
@@ -594,5 +670,12 @@ const styles = StyleSheet.create({
     maxHeight: 700, 
     maxWidth: 600,
     padding: 24 
-},
+  },
+  editorModalContainer: {
+    width: "100%",
+    maxWidth: 480,
+    maxHeight: 792,
+    height: "90%",
+    padding: 0,
+  },
 })

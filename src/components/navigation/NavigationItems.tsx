@@ -6,6 +6,7 @@ interface NavigationItemBaseProps {
   label: string;
   labelShort: string;
   route: string;
+  disabled?: boolean;
 }
 
 export const navigationItems: NavigationItemBaseProps[] = [
@@ -28,7 +29,7 @@ export const navigationItems: NavigationItemBaseProps[] = [
         iconNotActive:"plus",
         label: "Create Premarket",
         labelShort:"Create",
-        route:"/token/create"
+        route:"/token/create",
     }
 ]
 

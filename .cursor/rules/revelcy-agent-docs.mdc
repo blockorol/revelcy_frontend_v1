@@ -1,0 +1,52 @@
+---
+description: Keep Revelcy shared agent documentation current and use repository skills for agent-doc maintenance.
+alwaysApply: true
+---
+
+# Revelcy Agent Documentation Rules
+
+Before non-trivial work, read `AGENTS.md`, then `docs/agents/README.md`.
+
+This repository keeps shared agent skills in `.agents/skills/`:
+
+- `.agents/skills/revelcy-agent-doc-maintenance/SKILL.md`
+- `.agents/skills/revelcy-agent-doc-full-refresh/SKILL.md`
+
+After code changes, use the maintenance skill to decide whether `AGENTS.md` or `docs/agents/*` must be updated.
+The required docs structure is:
+
+- `docs/agents/README.md`
+- `docs/agents/PROJECT_MAP.md`
+- `docs/agents/ARCHITECTURE.md`
+- `docs/agents/DOMAIN.md`
+- `docs/agents/INVARIANTS.md`
+- `docs/agents/UI_SYSTEM.md`
+- `docs/agents/FLOWS.md`
+- `docs/agents/KNOWN_GAPS.md`
+- `docs/agents/VALIDATION.md`
+- `docs/agents/API_CONTRACTS.md`
+- `docs/agents/WEB3_CONTRACTS.md`
+- `docs/agents/ERROR_HANDLING.md`
+- `docs/agents/STATE_AND_PERSISTENCE.md`
+- `docs/agents/FEATURE_FLAGS.md`
+- `docs/agents/TESTING_STRATEGY.md`
+- `docs/agents/SECURITY_FRONTEND.md`
+- `docs/agents/PERFORMANCE.md`
+- `docs/agents/ROUTING.md`
+- `docs/agents/ASSET_PIPELINE.md`
+- `docs/agents/LOCALIZATION_COPY.md`
+- `docs/agents/OBSERVABILITY.md`
+- `docs/agents/AGENT_PROMPTS.md`
+- `docs/agents/REVIEW_CHECKLIST.md`
+- `docs/agents/WORKFLOWS.md`
+- `docs/agents/CHANGE_PROTOCOL.md`
+
+Use the full-refresh skill when:
+
+- the user asks to update or rebuild the project map,
+- docs and code appear to conflict,
+- another contributor or agent may have skipped doc updates,
+- a branch is being prepared for handoff.
+
+Prefer current code over older docs.
+Do not recreate `.github/copilot-instructions.md`; `AGENTS.md` is the primary source of truth.

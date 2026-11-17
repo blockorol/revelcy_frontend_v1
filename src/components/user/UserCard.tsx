@@ -15,10 +15,11 @@ export interface UserCardProps {
     avatarUrl: string | null;
   };
   tokenInfo: {
-    userJoined: number; // timestamp
-    amount: number; // SOL
-    amountProcent: number; // %
+    userJoined?: number; // timestamp
+    amount?: number; // SOL
+    amountProcent?: number; // %
     isCreator?: boolean;
+    hideEntryStats?: boolean;
   };
   stats?: Stats;
 }
@@ -43,9 +44,15 @@ export const UserCard: React.FC<UserCardProps> = ({
   const {width}= useWindowDimensions();
   const { colors } = useTheme() as AppTheme;
   const { openUserModal } = useUserModal();
-  const joinedAgo = formatDistanceToNow(tokenInfo.userJoined, {
-    addSuffix: false,
-  });
+  const joinedAgo = tokenInfo.userJoined
+    ? formatDistanceToNow(tokenInfo.userJoined, {
+        addSuffix: false,
+      })
+    : null;
+  const showEntryStats =
+    !tokenInfo.hideEntryStats &&
+    typeof tokenInfo.amount === "number" &&
+    typeof tokenInfo.amountProcent === "number";
 
   return (
     <Pressable
@@ -98,30 +105,32 @@ export const UserCard: React.FC<UserCardProps> = ({
                   Creator
                 </Text>
               </View>
-            ) : (
+            ) : joinedAgo ? (
               <Text
                 variant="labelMedium"
                 style={{ color: colors.onSurfaceVariant, opacity: 0.8 }}
               >
                 {joinedAgo} ago
               </Text>
-            )}
+            ) : null}
           </View>
 
-          <View style={{ alignItems: "flex-end", gap: 4, paddingVertical: 4 }}>
-            <Text
-              variant="labelLarge"
-              style={{ color: colors.onSurface, fontWeight: 700 }}
-            >
-              {tokenInfo.amount.toFixed(1)} SOL
-            </Text>
-            <Text
-              variant="labelMedium"
-              style={{ color: colors.onSurfaceVariant, fontWeight: 700 }}
-            >
-              {tokenInfo.amountProcent.toFixed(2)}%
-            </Text>
-          </View>
+          {showEntryStats && (
+            <View style={{ alignItems: "flex-end", gap: 4, paddingVertical: 4 }}>
+              <Text
+                variant="labelLarge"
+                style={{ color: colors.onSurface, fontWeight: 700 }}
+              >
+                {tokenInfo.amount!.toFixed(1)} SOL
+              </Text>
+              <Text
+                variant="labelMedium"
+                style={{ color: colors.onSurfaceVariant, fontWeight: 700 }}
+              >
+                {tokenInfo.amountProcent!.toFixed(2)}%
+              </Text>
+            </View>
+          )}
         </View>
 
         {stats && (

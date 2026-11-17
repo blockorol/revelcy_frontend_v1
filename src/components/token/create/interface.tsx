@@ -43,3 +43,15 @@ export type PremarketSettingData = {
     goal_sol: number,
     short_link_name?: string,
 }
+
+export type WhitelistEntryState = "enabled" | "disabled";
+
+export type WhitelistEntry = {
+    pubkey: string;
+    state: WhitelistEntryState;
+};
+
+export type WhitelistData = {
+    state: WhitelistEntryState;
+    items: WhitelistEntry[];
+};

@@ -2,8 +2,11 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, TouchableRipple, useTheme } from 'react-native-paper';
-import { usePathname, useRouter } from 'expo-router';
+import { useRouter } from "@hooks/useSafeRouter";
+import { usePathname } from 'expo-router';
 import { SvgIcon, IconName } from '@components/base/SvgIcon';
+import { useLoginModal } from '@providers/LoginModalContext';
+import { IS_SITE_SNAPSHOT } from 'env';
 
 interface NavigationItemProps {
   iconActive: IconName;
@@ -12,6 +15,7 @@ interface NavigationItemProps {
   route: string;
   horizontal?: boolean;
   isMobile: boolean;
+  disabled?: boolean;
 }
 
 export function NavigationItem({
@@ -21,22 +25,25 @@ export function NavigationItem({
   label,
   route,
   horizontal = false,
+  disabled = false,
 }: NavigationItemProps) {
   const theme = useTheme();
   const pathname = usePathname();
   const router = useRouter();
+  const { openMaintenance } = useLoginModal();
   const isActive = pathname === route;
   
 
   return (
     <TouchableRipple
       onPress={() => {
-        if (!isActive) {
-          router.push(route);
+        if (!isActive && !disabled) {
+          if (IS_SITE_SNAPSHOT && route === "/token/create") openMaintenance();
+          else router.push(route);
         }
       }}
       borderless
-      disabled={isActive}
+      disabled={isActive || disabled}
       style={[
         isMobile ? styles.containerMobile : styles.containerDesktop,
         horizontal && styles.horizontalContainer,
@@ -48,7 +55,7 @@ export function NavigationItem({
           horizontal ? styles.horizontalItem : styles.verticalItem,
           {
             backgroundColor: theme.colors.background,
-            opacity: (!isActive && isMobile) || isActive ? 0.5 : 1,
+            opacity: disabled || (!isActive && isMobile) || isActive ? 0.5 : 1,
           },
         ]}
       >

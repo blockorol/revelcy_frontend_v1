@@ -3,6 +3,9 @@ import Constants from "expo-constants";
 import bs58 from "bs58";
 import { Keypair } from "@solana/web3.js";
 
+export const IS_SITE_SNAPSHOT =
+  Platform.OS === "web" && Constants.expoConfig?.extra?.REVELCY_WEB_MODE !== "live";
+
 type EnvVars = {
   PINATA_JWT?: string;
   PINATA_API_KEY?: string;
@@ -11,6 +14,7 @@ type EnvVars = {
   HELIUS_KEY?: string;
   TRITON_URL?: string;
   NETWORK?: "devnet" | "mainnet-beta";
+  IS_VESTING_ENABLE?: string;
   IS_DISCOVERY_FILTER_ENABLED?: boolean;
 };
 
@@ -29,6 +33,7 @@ function getEnv(platform: PlatformOSType): EnvVars {
       HELIUS_KEY: extra.HELIUS_KEY ?? process.env.HELIUS_KEY,
       NETWORK: extra.NETWORK ?? process.env.NETWORK,
       TRITON_URL: extra.TRITON_URL ?? process.env.TRITON_URL,
+      IS_VESTING_ENABLE: extra.IS_VESTING_ENABLE ?? process.env.IS_VESTING_ENABLE,
     };
   }
 
@@ -40,18 +45,22 @@ function getEnv(platform: PlatformOSType): EnvVars {
     throw new Error("@env is not available on native");
   }
 }
+export const IsVestingEnable: boolean  = true
+  // ENV.IS_VESTING_ENABLE === undefined
+  //   ? true
+  //   : ENV.IS_VESTING_ENABLE === "true";
 
-// ---- Exported constants ----
-export const PINATA_JWT = getRequired("PINATA_JWT", ENV.PINATA_JWT);
-export const PINATA_API_KEY = getRequired("PINATA_API_KEY", ENV.PINATA_API_KEY);
-export const PINATA_SECRET_KEY = getRequired(
+    // ---- Exported constants ----
+export const PINATA_JWT = getLiveValue("PINATA_JWT", ENV.PINATA_JWT);
+export const PINATA_API_KEY = getLiveValue("PINATA_API_KEY", ENV.PINATA_API_KEY);
+export const PINATA_SECRET_KEY = getLiveValue(
   "PINATA_SECRET_KEY",
   ENV.PINATA_SECRET_KEY
 );
-export const API_HOST = getRequired("HOST_BACKEND", ENV.HOST_BACKEND);
-export const HELIUS_KEY = getRequired("HELIUS_KEY", ENV.HELIUS_KEY);
-export const TRITON_URL = getRequired("TRITON_URL", ENV.TRITON_URL);
-export const NETWORK = ENV.NETWORK??'devnet';
+export const API_HOST = getLiveValue("HOST_BACKEND", ENV.HOST_BACKEND);
+export const HELIUS_KEY = getLiveValue("HELIUS_KEY", ENV.HELIUS_KEY);
+export const TRITON_URL = getLiveValue("TRITON_URL", ENV.TRITON_URL);
+export const NETWORK = IS_SITE_SNAPSHOT ? "mainnet-beta" : ENV.NETWORK ?? "devnet";
 export const TOKEN_CONVERTOR_SETTINGS = 
   NETWORK === 'devnet' ?
   {
@@ -71,6 +80,10 @@ export const IS_DISCOVERY_FILTER_ENABLED = ENV.IS_DISCOVERY_FILTER_ENABLED??fals
 
 
 // ---- Helpers ----
+
+function getLiveValue(name: string, value?: string): string {
+  return IS_SITE_SNAPSHOT ? "" : getRequired(name, value);
+}
 
 function getRequired(name: string, value?: string): string {
   if (!value) {

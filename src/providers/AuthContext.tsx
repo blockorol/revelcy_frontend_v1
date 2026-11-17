@@ -5,6 +5,7 @@ import { jwtDecode } from 'jwt-decode';
 import { setAuthToken } from '@api/http';
 import { getOrCreateInstallIdWeb } from '@services/fingerprint/collector';
 import { userSetAdditionalInfo } from '@services/fingerprint/sender';
+import { IS_SITE_SNAPSHOT } from 'env';
 
 const STORAGE_KEY = 'auth-token';
 
@@ -40,6 +41,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // init AsyncStorage
   useEffect(() => {
+    if (IS_SITE_SNAPSHOT) return;
     AsyncStorage.getItem(STORAGE_KEY).then((jwt) => {
       if (!jwt) {
         setAuthToken(undefined);
@@ -61,6 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user?.jwt]);
 
   const login = (jwt: string) => {
+    if (IS_SITE_SNAPSHOT) return;
     try {
       const userInfo = convertJwtToUser(jwt);
       setUser(userInfo);

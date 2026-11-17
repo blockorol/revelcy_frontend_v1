@@ -43,31 +43,44 @@ export const UniversalOverlayProvider: React.FC<Props> = ({
       {isOpen && (
         <View
           style={{
-            position: 'fixed' as any,
+            position: "fixed" as any,
             inset: 0 as any,
-            width: '100%',
-            height: '100%',
+            width: "100%",
+            height: "100%",
             zIndex: 9999,
-            backgroundColor: theme.colors.shadow,
-            alignItems: 'center',
-            justifyContent: 'center',
+            backgroundColor: "transparent",
           }}
-          pointerEvents="auto"
+          pointerEvents="box-none"
         >
-          {dismissOnBackdropPress ? (
+          {/* 1) Backdrop (фон) */}
+          {dismissOnBackdropPress && (
             <Pressable
               style={{
-                position: 'absolute',
+                position: "absolute",
                 inset: 0 as any,
-                width: '100%',
-                height: '100%',
+                width: "100%",
+                height: "100%",
+                backgroundColor: theme.colors.shadow,
               }}
               onPress={close}
             />
-          ) : null}
+          )}
+          <View
+            style={{
+              position: "absolute",
+              inset: 0 as any,
+              width: "100%",
+              height: "100%",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            pointerEvents="box-none"
+          >
             {content}
+          </View>
         </View>
       )}
+
     </OverlayContext.Provider>
   );
 };

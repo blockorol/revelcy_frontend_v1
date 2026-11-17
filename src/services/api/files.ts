@@ -1,9 +1,12 @@
-import { API_HOST } from 'env';
+import { API_HOST, IS_SITE_SNAPSHOT } from 'env';
 import axios from 'axios';
+import { mockServerError } from '@api/mock';
 
 const API_URL_FILES = `${API_HOST}/files`;
 
 export async function uploadImage(file: File, name: string): Promise<string> {
+  if (IS_SITE_SNAPSHOT) mockServerError();
+
   const formData = new FormData();
   formData.append('file', file);
 

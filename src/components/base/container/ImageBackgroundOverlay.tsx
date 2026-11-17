@@ -2,9 +2,6 @@ import { SvgIcon } from '@components/base/SvgIcon';
 import React from 'react';
 import {
   View,
-  Text,
-  Image,
-  StyleSheet,
   ImageSourcePropType,
   ImageBackground,
 } from 'react-native';

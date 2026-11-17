@@ -1,5 +1,6 @@
 // api/http.ts
-import { API_HOST } from "env";
+import { API_HOST, IS_SITE_SNAPSHOT } from "env";
+import { mockRequest } from "@api/mock";
 
 let currentToken: string | undefined;
 export function setAuthToken(token?: string) { currentToken = token; }
@@ -94,6 +95,8 @@ async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit, tim
 }
 
 export async function request<T = unknown>(url: string, opts: RequestOptions = {}, _internalRetry = true): Promise<T> {
+  if (IS_SITE_SNAPSHOT) return mockRequest<T>(buildUrl(url, opts.query), opts);
+
   const { method = "GET", headers = {}, json, body, query, signal, retry = 0 } = opts;
 
   const finalHeaders = new Headers(headers);

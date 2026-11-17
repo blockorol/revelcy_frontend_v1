@@ -1,13 +1,15 @@
-import { TokenInfo} from "@api/token";
+import { getWhitelistUsers, TokenInfo, WhitelistUserDTO } from "@api/token";
 import { UserCard } from "@components/user/UserCard";
 import { AppTheme } from "@theme/types";
 import { convertLamportToSmallCount } from "@utils/premarket";
 import { View } from "react-native";
 import {Text} from '@components/ui/Text'
-import React, { useMemo, useState } from "react";
-import { Menu, useTheme, TouchableRipple, Divider } from "react-native-paper";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Menu, useTheme, TouchableRipple, Divider, ActivityIndicator } from "react-native-paper";
+import RevelcySegmentedButtons from "@components/ui/SegmentedButton";
 import { SvgIcon } from "@components/base/SvgIcon";
 import { convertTokenToPersent } from "@services/pumpfun/adds";
+import shortString from "@utils/address_shorter";
 
 interface Props {
   tokenData: TokenInfo;
@@ -17,11 +19,66 @@ interface Props {
 }
 const DEFAULT_SHOW_COUNT = 10;
 const STEP_SHOW_COUNT = 10;
+const WHITELIST_PAGE_SIZE = 100;
 export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Props) {
   const [showCount, setShowCount] = useState(DEFAULT_SHOW_COUNT)
   const [order, setOrder] = useState<OrderValue>("SUPPLY")
   const { colors } = useTheme() as AppTheme;
+  const [sectionType, setSectionType] = useState("Joined")
+  const [whitelistUsers, setWhitelistUsers] = useState<WhitelistUserDTO[]>([]);
+  const [whitelistTotal, setWhitelistTotal] = useState<number | undefined>(undefined);
+  const [whitelistCursor, setWhitelistCursor] = useState(0);
+  const [whitelistHasMore, setWhitelistHasMore] = useState<boolean>(true);
+  const [whitelistLoading, setWhitelistLoading] = useState(false);
+  const whitelistRequestIdRef = useRef(0);
+  const whitelistUsersRef = useRef<WhitelistUserDTO[]>([]);
+  const whitelistTotalRef = useRef<number | undefined>(undefined);
+  const whitelistCursorRef = useRef(0);
+  const whitelistHasMoreRef = useRef(true);
+  const whitelistLoadingRef = useRef(false);
   const holders = tokenData.dynamicInfo.holders
+
+  const setWhitelistState = ({
+    users,
+    total,
+    hasTotal = false,
+    cursor,
+    hasMore,
+    loading,
+  }: {
+    users?: WhitelistUserDTO[];
+    total?: number | undefined;
+    hasTotal?: boolean;
+    cursor?: number;
+    hasMore?: boolean;
+    loading?: boolean;
+  }) => {
+    if (users !== undefined) {
+      whitelistUsersRef.current = users;
+      setWhitelistUsers(users);
+    }
+    if (hasTotal) {
+      whitelistTotalRef.current = total;
+      setWhitelistTotal(total);
+    }
+    if (cursor !== undefined) {
+      whitelistCursorRef.current = cursor;
+      setWhitelistCursor(cursor);
+    }
+    if (hasMore !== undefined) {
+      whitelistHasMoreRef.current = hasMore;
+      setWhitelistHasMore(hasMore);
+    }
+    if (loading !== undefined) {
+      whitelistLoadingRef.current = loading;
+      setWhitelistLoading(loading);
+    }
+  };
+
+  useEffect(() => {
+    setShowCount(DEFAULT_SHOW_COUNT);
+  }, [sectionType]);
+
   const sortedHolders = useMemo(() => {
   if (!holders) return [];
 
@@ -42,8 +99,160 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
       break;
   }
 
-  return list.slice(0, showCount);
-}, [holders, order, showCount]);
+  return list;
+}, [holders, order]);
+
+  useEffect(() => {
+    if (!tokenData.mainInfo.isWhitelistEnabled) {
+      whitelistRequestIdRef.current += 1;
+      setWhitelistState({
+        users: [],
+        total: undefined,
+        hasTotal: true,
+        cursor: 0,
+        hasMore: false,
+        loading: false,
+      });
+      return;
+    }
+    whitelistRequestIdRef.current += 1;
+    setWhitelistState({
+      users: [],
+      total: undefined,
+      hasTotal: true,
+      cursor: 0,
+      hasMore: true,
+      loading: false,
+    });
+  }, [tokenData.mainInfo.id, tokenData.mainInfo.isWhitelistEnabled]);
+
+  useEffect(() => {
+    if (sectionType !== "Accepted" && sectionType !== "Applied") {
+      return;
+    }
+
+    whitelistRequestIdRef.current += 1;
+    setWhitelistState({
+      users: [],
+      total: undefined,
+      hasTotal: true,
+      cursor: 0,
+      hasMore: true,
+      loading: false,
+    });
+  }, [sectionType]);
+
+  const whitelistStatus =
+    sectionType === "Accepted" ? "APPROVED" :
+    sectionType === "Applied" ? "REQUESTED" :
+    undefined;
+
+  const loadWhitelist = async ({ reset, targetCount }: { reset: boolean; targetCount: number }) => {
+    if (!whitelistStatus) return;
+    if (!tokenData.mainInfo.isWhitelistEnabled) return;
+    if (whitelistLoadingRef.current) return;
+
+    const requestId = ++whitelistRequestIdRef.current;
+    const initialUsers = reset ? [] : whitelistUsersRef.current;
+    const initialTotal = reset ? undefined : whitelistTotalRef.current;
+    const initialCursor = reset ? 0 : whitelistCursorRef.current;
+    const initialHasMore = reset ? true : whitelistHasMoreRef.current;
+
+    if (!reset) {
+      if (!initialHasMore) return;
+      if (initialUsers.length >= targetCount) return;
+    }
+
+    setWhitelistState({
+      users: reset ? [] : undefined,
+      total: reset ? undefined : undefined,
+      cursor: reset ? 0 : undefined,
+      hasMore: reset ? true : undefined,
+      loading: true,
+    });
+
+    try {
+      let nextCursor = initialCursor;
+      let nextUsers = [...initialUsers];
+      let nextTotal = initialTotal;
+      let hasMore = initialHasMore;
+
+      while (nextUsers.length < targetCount && hasMore) {
+        const result = await getWhitelistUsers({
+          premarket_id: tokenData.mainInfo.id,
+          status: whitelistStatus,
+          cursor: nextCursor,
+          limit: WHITELIST_PAGE_SIZE,
+        });
+
+        if (whitelistRequestIdRef.current !== requestId) {
+          return;
+        }
+
+        const pageItems = result.items ?? [];
+        nextUsers = [...nextUsers, ...pageItems];
+        nextTotal = result.total ?? nextTotal;
+        nextCursor += pageItems.length;
+
+        const noNewItems = pageItems.length === 0;
+        const reachedTotal = typeof nextTotal === "number" && nextCursor >= nextTotal;
+        const lastPage = pageItems.length < WHITELIST_PAGE_SIZE;
+        hasMore = !(noNewItems || reachedTotal || lastPage);
+      }
+
+      if (whitelistRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      setWhitelistState({
+        users: nextUsers,
+        total: nextTotal,
+        hasTotal: true,
+        cursor: nextCursor,
+        hasMore,
+        loading: false,
+      });
+    } catch (e) {
+      if (whitelistRequestIdRef.current !== requestId) {
+        return;
+      }
+      console.warn("[HoldersInfo] failed to fetch whitelist users", e);
+      setWhitelistState({
+        users: [],
+        total: undefined,
+        hasTotal: true,
+        cursor: 0,
+        hasMore: false,
+        loading: false,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!whitelistStatus) return;
+    if (!tokenData.mainInfo.isWhitelistEnabled) return;
+
+    void loadWhitelist({ reset: true, targetCount: showCount });
+  }, [whitelistStatus, tokenData.mainInfo.id, tokenData.mainInfo.isWhitelistEnabled]);
+
+  useEffect(() => {
+    if (!whitelistStatus) return;
+    if (!tokenData.mainInfo.isWhitelistEnabled) return;
+    if (showCount <= whitelistUsersRef.current.length) return;
+
+    void loadWhitelist({ reset: false, targetCount: showCount });
+  }, [showCount]);
+
+  const joinedList = useMemo(() => sortedHolders.slice(0, showCount), [sortedHolders, showCount]);
+  const whitelistList = useMemo(() => whitelistUsers.slice(0, showCount), [whitelistUsers, showCount]);
+  const isWhitelistSection = sectionType === "Accepted" || sectionType === "Applied";
+  const isInitialWhitelistLoading = isWhitelistSection && whitelistLoading && whitelistUsers.length === 0;
+  const displayCount = isWhitelistSection
+    ? whitelistTotal ?? whitelistUsers.length
+    : holdersAmount;
+  const canShowMore = !limited && (isWhitelistSection
+    ? !whitelistLoading && !isInitialWhitelistLoading && (whitelistHasMore || showCount < displayCount)
+    : showCount < displayCount);
 
 
   return (
@@ -56,16 +265,32 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
         gap: 16,
       }}
     >
-      <View style={{flexDirection: 'row', alignItems: 'center', justifyContent:'space-between'}}>
-        <View style={{flexDirection: 'row', gap: 8, marginTop: -25}}>
+      <View style={{flexDirection: 'row', alignItems: 'center', justifyContent:'space-between', height: 40}}>
+        <View style={{flexDirection: 'row', gap: 8}}>
           <Text variant="titleLarge"  selectionColor={colors.onSurface}>People</Text>
-          <Text variant="titleLarge" style={{color:colors.onSurfaceVariant}}>{holdersAmount}</Text>
+          <Text
+            variant="titleLarge"
+            style={{
+              color: colors.onSurfaceVariant,
+              fontVariant: ["tabular-nums"],
+              minWidth: 44,
+              textAlign: "left",
+            }}
+          >
+            {displayCount}
+          </Text>
+          {tokenData.mainInfo.isWhitelistEnabled && <RevelcySegmentedButtons value={sectionType} onValueChange={setSectionType} buttons={[
+          { value: 'Applied', label: 'Applied', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
+          { value: 'Accepted', label: 'Accepted', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
+          { value: 'Joined', label: 'Joined', checkedColor: colors.primary, uncheckedColor: colors.onSurfaceVariant},
+        ]} />}
         </View>
-        <OrderMenu value={order} onChange={setOrder}/>
+        
+        {!isWhitelistSection && <OrderMenu value={order} onChange={setOrder}/>}
       </View>
      
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 20, rowGap: 16 }}>
-        {sortedHolders.map((holder, ) => {
+        {!isWhitelistSection && joinedList.map((holder) => {
           const amount = convertLamportToSmallCount(holder.amountSolLamp)
           const percent = convertTokenToPersent(holder.amountTokenDec)
           return (
@@ -86,10 +311,42 @@ export function HoldersInfo({ tokenData, holdersAmount, isMobile, limited}: Prop
               />
             </View>
           );
-        })
-        }
+        })}
+        {isInitialWhitelistLoading && (
+          <View
+            style={{
+              width: "100%",
+              minHeight: 120,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <ActivityIndicator size="small" color={colors.primary} />
+          </View>
+        )}
+        {isWhitelistSection && whitelistList.map((user) => {
+          const walletAddress = user.wallets?.[0] ?? user.id;
+          const displayName = user.username?.trim() ? user.username : shortString(walletAddress, 4);
+          const isCreator = user.wallets?.includes(tokenData.mainInfo.createdByPubkey) ?? false;
+          return (
+            <View key={user.id}>
+              <UserCard
+                baseInfo={{
+                  userId: user.id,
+                  username: displayName,
+                  walletAddress,
+                  avatarUrl: user.avatar_url ?? null,
+                }}
+                tokenInfo={{
+                  isCreator,
+                  hideEntryStats: true,
+                }}
+              />
+            </View>
+          );
+        })}
       </View>
-      {!limited&&showCount<holdersAmount&&
+      {canShowMore &&
         <TouchableRipple
         style={{
           height: 40,
@@ -165,12 +422,13 @@ export const OrderMenu: React.FC<PropsOrderMenu> = ({ value, onChange, anchor })
 
   const Item: React.FC<{ label: string; icon: "percent" | "hourglass-up" | "hourglass-down"; target: OrderValue; active?: boolean; }> =
   ({ label, icon, target, active }) => {
-    const fg = active ? colors.onPrimary : colors.onSurface;
-    const bg = active ? colors.primary : colors.surfaceContainerHigh;
+    const fg = active ? colors.primary : colors.onSurface;
+    const bg = colors.surfaceContainerHigh;
 
     return (
       <TouchableRipple
         onPress={() => { onChange(target); close(); }}
+        rippleColor="transparent"
         style={[commonItemStyle, { backgroundColor: bg }]}
       >
         <View style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: 'flex-start', gap: 4}}>
@@ -182,8 +440,8 @@ export const OrderMenu: React.FC<PropsOrderMenu> = ({ value, onChange, anchor })
   };
 
   const currentDef = items[0];
-  const anchorFg = visible ? colors.onSecondaryContainer : colors.primary;
-  const anchorBg = visible ? colors.secondaryContainer : "transparent";
+  const anchorFg = colors.primary 
+  const anchorBg = visible ? colors.surfaceContainerHigh : "transparent";
 
   const defaultAnchor = (
     <TouchableRipple
@@ -195,6 +453,7 @@ export const OrderMenu: React.FC<PropsOrderMenu> = ({ value, onChange, anchor })
         paddingLeft: 32,
         height: 40,
         alignSelf: "flex-start",
+        justifyContent: "center",
       }}
     >
       <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
@@ -209,7 +468,7 @@ export const OrderMenu: React.FC<PropsOrderMenu> = ({ value, onChange, anchor })
   return (
     <Menu
       visible={visible}
-      onDismiss={() => { /* не закрываем по клику вне */ }}
+      onDismiss={close}
       anchor={anchor ?? defaultAnchor}
       contentStyle={contentStyle}
     >

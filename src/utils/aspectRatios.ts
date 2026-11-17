@@ -1,0 +1,1 @@
+export const COMMUNITY_BANNER_ASPECT_RATIO = 3;

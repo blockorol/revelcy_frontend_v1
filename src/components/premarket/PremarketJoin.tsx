@@ -1,4 +1,4 @@
-import { TokenDynamicInfo, TokenMainInfo, userJoinedToPremarket } from "@api/token";
+import { TokenDynamicInfo, TokenMainInfo } from "@api/token";
 import { getWalletInfo, WalletInfoResponseDto } from "@api/wallet";
 import { SvgIcon } from "@components/base/SvgIcon";
 import { BN } from "@coral-xyz/anchor";
@@ -19,7 +19,6 @@ import {
   TextInput,
   Text,
   useTheme,
-  ActivityIndicator,
 } from "react-native-paper";
 import {Button} from "@components/ui/Button"
 import { useWallet } from "@storage/wallet-adapter";
@@ -30,11 +29,14 @@ import { useOverlay } from "@storage/UniversalOverlayProvider"; // <-- новы�
 import { ShareTextButton } from "@components/base/ButtonShare";
 import React from "react";
 import { MobileBottomSheet } from "@components/ui/MobileBottomSheet";
-import { LoginModal } from "@components/login/LoginButton";
 import { convertNumberWithRaw } from "@utils/setterWithValidate";
+import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
+import { useLoginModal } from "@providers/LoginModalContext";
+import { IS_SITE_SNAPSHOT } from "env";
+import TextedLoader from "@components/ui/Loader";
+
 const SUFFIX = " SOL"
 const DEFAULT_VALUE = 0.5
-import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
 
 interface PremarketJoinProps {
   tokenDynamicInfo: TokenDynamicInfo;
@@ -85,13 +87,12 @@ function PremarketJoinBase({
 }: PremarketJoinProps) {
   const notify = useNotification();
   const { network } = useNetwork();
-  const currentConnection = getSolanaConnection(network);
   const { connected, connect } = useWallet();
 
   const wallet = useAnchorWalletSafe();
   const theme = useTheme();
   const { open, replace, close: closeOverlay } = useOverlay();
-  const [loginModalVisible, setLoginModalVisible] = React.useState(false);
+  const { openLogin, openMaintenance } = useLoginModal();
 
   const [rawInput, setRawInput] = useState<string|undefined>(undefined);
   const [errorBalance, setErrorBalance] = useState<string|undefined>(undefined);
@@ -133,12 +134,6 @@ function PremarketJoinBase({
     fetchWalletInfo();
   }, [user?.walletAddress]);
 
-  const renderLoader = (status: string) => (
-    <View style={{ gap: 20 }}>
-      <Text variant="titleMedium">{status}</Text>
-      <ActivityIndicator animating color={theme.colors.primary} size="large" />
-    </View>
-  );
   const handleSelectionChange = (e: any) => {
     const { start, end } = e.nativeEvent.selection;
     if (!rawInput) {
@@ -179,6 +174,7 @@ function PremarketJoinBase({
   };
 
   const handleJoin = async () => {
+    if (IS_SITE_SNAPSHOT) return openMaintenance();
     if (amountSol === undefined) {
       console.error("no amountSol");
       notify.warning("Please set amount in SOL");
@@ -187,8 +183,7 @@ function PremarketJoinBase({
     
     // If user is not authenticated, show login flow
     if (!user) {
-      setLoginModalVisible(true);
-      return;
+      openLogin()
     }
     
     if (!wallet || !connected) {
@@ -216,15 +211,15 @@ function PremarketJoinBase({
     const solInLamp = convertSmallCountToLamport(amountSol);
 
     try {
-      open(renderLoader("join to premarket..."));
+      open(<TextedLoader text={"join to premarket..."}/>);
       await joinToPremarket(
         wallet,
-        currentConnection,
+        getSolanaConnection(network),
         network,
         tokenMainInfo.premarketPubkey,
         solInLamp,
         solInLamp,
-        (text) => {replace(renderLoader(text))}
+        (text) => {replace(<TextedLoader text={text} />)}
       );
 
       notify.success("Successfully joined premarket!");
@@ -364,11 +359,6 @@ function PremarketJoinBase({
         
         {!isMobile&&<ShareTextButton style={{flex: 1}} shareMessage={`Join to premarket on: ${currentURL}`}/>}
       </View>
-
-      <LoginModal 
-        visible={loginModalVisible} 
-        setVisible={setLoginModalVisible}
-      />
     </View>
   );
 }

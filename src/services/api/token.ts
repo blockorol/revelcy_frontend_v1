@@ -2,7 +2,6 @@ import { API_HOST, NETWORK } from "env";
 import { BN } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
 import { PremarketState, convertTokenToDecimal } from "@utils/premarket";
-import { toDecString } from "@api/tx_premarket";
 import { http } from "@api/http";
 import shortString from "@utils/address_shorter";
 import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
@@ -10,66 +9,6 @@ import { DEFAULT_TOKEN_COUNT_DECIMAL } from "@services/pumpfun/adds";
 import { isSolanaPublicKey } from "@utils/solana";
 
 const RETRY_DEFAULT = 6;
-
-export interface premerketTransactionArgs {
-  premarketPubKey: string;
-  userWallet: string;
-  userId?: string;
-  tx: string;
-}
-
-export interface premarketCreatedArgs extends premerketTransactionArgs {
-  mainInfo: TokenMainInfo,
-  communityInfo: TokenCommunityInfo,
-}
-
-export interface userJoinedToPremarketArgs extends premerketTransactionArgs {
-  joinAmountInSolLamport: BN
-}
-
-export async function premarketCreated(args: premarketCreatedArgs) {
-  console.log("send to BE: premarket Created", args);
-
-  const payload = {
-    blockchain_info: {
-      name: args.mainInfo.name,
-      description: args.mainInfo.description,
-      symbol: args.mainInfo.symbol,
-      image_url: args.mainInfo.imageURL,
-      ipfs_uri: args.mainInfo.ipfsURI,
-      creator_id: args.userId,
-      creator_address: args.userWallet,
-      premarket_address: args.premarketPubKey,
-      links: {
-        telegram: args.mainInfo.links.telegram,
-        twitter: args.mainInfo.links.twitter,
-        web_site: args.mainInfo.links.webSite,
-      },
-      premarket_goal_sol_lamp: toDecString(args.mainInfo.premarketGoalSolLamp),
-      premarket_deadline: args.mainInfo.premarketDeadline,
-      premarket_created: args.mainInfo.premarketCreated,
-      mint_address: args.mainInfo.tokenMint,
-      state: args.mainInfo.state, 
-    },
-    community_info: {
-      description: args.communityInfo.description,
-      token_banner_url: args.communityInfo.tokenBannerURL,
-      links: args.communityInfo.links?.map((link) => ({
-        text: link.text,
-        url: link.url,
-        type: link.type,
-      })),
-    },
-  };
-
-  try {
-    await http.post(`${API_HOST}/premarket/created`, { json: payload, retry: RETRY_DEFAULT });
-    return;
-  } catch (e: any) {
-    console.log("failed with", payload);
-    throw new Error(`Failed to add premarket to whitelist: ${e.message ?? "Unknown error"}`);
-  }
-}
 
 export async function updateAboutCommunity(premarketPubkey: string, args: TokenCommunityInfo) {
   const payload = {
@@ -97,14 +36,15 @@ export async function updateAboutCommunity(premarketPubkey: string, args: TokenC
 export interface TokenAvailabilityInfo {
   isHided?: boolean;
   tokenShortUrlName?: string;
+  isWhitelistEnabled?: boolean;
 }
-
 
 export async function updateTokenAvailbility(premarketPubkey: string, args: TokenAvailabilityInfo) {
   const payload = {
     premarket_pubkey: premarketPubkey,
     network: NETWORK, // todo: remove me
     is_hided: args.isHided,
+    is_whitelist_enabled: args.isWhitelistEnabled,
     token_short_url_name: args.tokenShortUrlName, // todo: move to separated value
   };
 
@@ -117,71 +57,6 @@ export async function updateTokenAvailbility(premarketPubkey: string, args: Toke
   }
 }
 
-
-export async function extendedPremarket(args: {
-  premarketPubKey: string;
-  userWallet: string;
-  userId: string;
-  tx: string;
-  network: "devnet" | "mainnet-beta";
-  newDeadline: number; // unix timestamp
-}) {
-  const payload = {
-    base: {
-      premarket_pub_key: args.premarketPubKey,
-      user_wallet: args.userWallet,
-      user_id: args.userId,
-      tx: args.tx,
-    },
-    network: args.network,
-    new_deadline: args.newDeadline,
-  };
-  
-  try {
-    await http.post(`${API_HOST}/premarket/extended_premarket`, { json: payload, retry: RETRY_DEFAULT });
-    return;
-  } catch (e: any) {
-    console.log("failed with", payload);
-    throw new Error(`Failed to extend premarket: ${e.message ?? "Unknown error"}`);
-  }
-}
-
-export async function userJoinedToPremarket(args: userJoinedToPremarketArgs) {
-  const payload = {
-    premarket_pub_key: args.premarketPubKey,
-    user_wallet: args.userWallet,
-    user_id: args.userId ?? null,
-    tx: args.tx,
-    join_amount_in_sol_lamport: toDecString(args.joinAmountInSolLamport),
-  };
-
-  try {
-    await http.post(`${API_HOST}/premarket/user_joined`, { json: payload, retry: RETRY_DEFAULT });
-    return;
-  } catch (e: any) {
-    console.log("failed with", payload);
-    throw new Error(`Failed to add user to PM: ${e.message ?? "Unknown error"}`);
-  }
-}
-
-export async function userOutOfPremarket(args: premerketTransactionArgs) {
-  console.log("send to BE: user out of premarket", args);
-
-  const payload = {
-    premarket_pub_key: args.premarketPubKey,
-    user_wallet: args.userWallet,
-    user_id: args.userId ?? null,
-    tx: args.tx,
-  };
-
-  try {
-    await http.post(`${API_HOST}/premarket/user_out`, { json: payload, retry: RETRY_DEFAULT });
-    return;
-  } catch (e: any) {
-    console.log("failed with", payload);
-    throw new Error(`Failed to add user out: ${e.message ?? "Unknown error"}`);
-  }
-}
 
 export async function getPremarketInfo({
   tokenPubkeyOrShortUrl,
@@ -200,6 +75,14 @@ export async function getPremarketInfo({
   const url = `${API_HOST}/premarket/get_main_info?${params.toString()}`;
   const data = await http.get<any>(url, { retry: RETRY_DEFAULT });
 
+  console.log("[API] [MAIN_INFO] Premarket main info raw data:", data);
+
+  const vestingInfo: VestingBaseSettings | undefined = data.vesting_info ? {
+    unlockAtLaunchPercent: data.vesting_info.unlock_at_launch_percent,
+    vestingPeriodSec: data.vesting_info.vesting_period_sec,
+    enabled: data.vesting_info.enabled,
+  }: undefined;
+
   const mainInfo: TokenMainInfo = {
     id: data.blockchain_info.id,
     premarketPubkey: new PublicKey(data.blockchain_info.premarket_address), 
@@ -208,6 +91,7 @@ export async function getPremarketInfo({
     description: data.blockchain_info.description,
     symbol: data.blockchain_info.symbol,
     imageURL: data.blockchain_info.image_url || undefined,
+    imageFallbackURL: data.blockchain_info.image_fallback_url || undefined,
     ipfsURI: data.blockchain_info.ipfs_uri,
     links: {
       telegram: data.blockchain_info.links.telegram || undefined,
@@ -223,6 +107,8 @@ export async function getPremarketInfo({
     isExtended: (data.blockchain_info.premarket_is_extended|| undefined) ?? false,
     tokenMint: data.blockchain_info.mint_address,
     isHided: data.availability_info?.is_hided ?? false,
+    isWhitelistEnabled: data.availability_info?.is_whitelist_enabled ?? false,
+    vestingInfo: vestingInfo,
   };
 
   const communityInfo: TokenCommunityInfo = {
@@ -256,7 +142,8 @@ export async function getPremarketInfo({
   mainInfo.state = convertState();
 
   
-  console.log("Premarket dynamicInfo:", dynamicInfo);
+  console.log("[API] [MAIN_INFO] Premarket dynamicInfo:", dynamicInfo);
+  console.log("[API] [MAIN_INFO] Premarket mainInfo:", mainInfo);
 
   return {
     mainInfo,
@@ -283,6 +170,7 @@ export async function getPremarketList({
     description: b.blockchain_info.description,
     symbol: b.blockchain_info.symbol,
     imageURL: b.blockchain_info.image_url || undefined,
+    imageFallbackURL: b.blockchain_info.image_fallback_url || undefined,
     ipfsURI: b.blockchain_info.ipfs_uri,
     links: {
       telegram: b.blockchain_info.links?.telegram || undefined,
@@ -342,12 +230,41 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
       claimed: h.claimed ?? false,
     }))
     .sort((a: { joinTimestamp: number; }, b: { joinTimestamp: number; }) => a.joinTimestamp - b.joinTimestamp);
-  holders.forEach((holder: HoldersInfo) => {
-      holder.amountTokenDec = convertSolanaToTokenWithFee({
-        input_sol_lamp: holder.amountSolLamp,
-        before_lamp: cumulativeSolLamp,
+    holders.forEach((holder: HoldersInfo) => {
+        holder.amountTokenDec = convertSolanaToTokenWithFee({
+          input_sol_lamp: holder.amountSolLamp,
+          before_lamp: cumulativeSolLamp,
+        });
+        cumulativeSolLamp = cumulativeSolLamp.add(holder.amountSolLamp);
       });
-      cumulativeSolLamp = cumulativeSolLamp.add(holder.amountSolLamp);
+
+    const vestingRaw = raw.vesting_info ?? null;
+    const vestingEntry = vestingRaw?.entry ?? null;
+
+    const vesting =
+      vestingRaw && vestingEntry
+        ? {
+            starttime_ms: Number(vestingRaw.starttime_ms ?? 0),
+            endtime_ms: Number(vestingRaw.endtime_ms ?? 0),
+            total_amount:
+              vestingEntry.total_dec != null
+                ? new BN(String(vestingEntry.total_dec))
+                : undefined,
+            total_vested:
+              vestingEntry.vested_dec != null
+                ? new BN(String(vestingEntry.vested_dec))
+                : undefined,
+            total_claimed:
+              vestingEntry.claimed_dec != null
+                ? new BN(String(vestingEntry.claimed_dec))
+                : undefined,
+          }
+        : undefined;
+  
+    console.log("Vesting info calculation:", {
+      vestingRaw,
+      vestingEntry,
+      vesting,
     });
 
 
@@ -372,6 +289,7 @@ export async function fetchTokenDynamicInfo(premarketId: string): Promise<TokenD
     reservedSolLamp: reservedSolLamp,
     change24h: raw.change_24h,
     holders: holders,
+    vesting,
   };
 }
 
@@ -389,6 +307,7 @@ export interface TokenMainInfo {
     description: string;
     symbol: string;
     imageURL?: string;
+    imageFallbackURL?: string;
     ipfsURI: string;
     links: TokenLinks;
     premarketGoalSolLamp: BN;
@@ -399,7 +318,15 @@ export interface TokenMainInfo {
     finishDate?: number;
     isExtended: boolean;
     isHided: boolean;
+    isWhitelistEnabled: boolean;
     tokenMint?: string;
+    vestingInfo?: VestingBaseSettings
+}
+
+export interface VestingBaseSettings {
+  unlockAtLaunchPercent: number;
+  vestingPeriodSec: number;
+  enabled: boolean;
 }
 
 export interface TokenLinks {
@@ -428,6 +355,14 @@ export interface TokenDynamicInfo {
   reservedTokenLamp: BN;
   reservedSolLamp: BN;
   change24h: number;
+  
+  vesting?: {
+    starttime_ms: number;
+    endtime_ms: number;
+    total_amount?: BN;
+    total_vested?: BN;
+    total_claimed?: BN;
+  };
 }
 
 export interface HoldersInfo {
@@ -457,3 +392,349 @@ export async function getHolderEntryPrice({
     return data;
 }
 
+type UserEntryDataResponse = {
+  amount_sol_lamp: string | number;
+  token: {
+    total_dec: string;
+    vested_dec: string;
+    claimed_dec: string;
+  };
+  rank: number;
+};
+
+type UserEntryResponse = {
+  entry?: UserEntryDataResponse | null;
+  whitelist?: {
+    status: string;
+    updated_at: number;
+  } | null;
+  // backward compatibility with old API format
+  whitelist_status?: string | null;
+};
+
+export type UserEntry = {
+  amountSol: BN; 
+  token: {
+    totalDec: BN;   
+    claimedDec: BN;
+    vestedDec: BN; 
+  };
+  rankInPremarket: number;
+};
+
+export type UserEntryInfo = {
+  entry: UserEntry | null;
+  whitelistStatus?: string;
+  whitelistUpdatedAt?: number;
+};
+
+export async function fetchUserEntry(premarketId: string, userId: string): Promise<UserEntryInfo> {
+  const url = `${API_HOST}/premarket/get_user_entry?premarket_id=${premarketId}&holder_wallet=${userId}`;
+  const resp = await http.get<UserEntryResponse>(url, { retry: RETRY_DEFAULT });
+  const entry = resp?.entry;
+  if (!entry) {
+    return {
+      entry: null,
+      whitelistStatus: resp.whitelist?.status ?? resp.whitelist_status ?? undefined,
+      whitelistUpdatedAt:
+        resp.whitelist?.updated_at === null || resp.whitelist?.updated_at === undefined
+          ? undefined
+          : Number(resp.whitelist.updated_at),
+    };
+  }
+
+  return {
+    entry: {
+      amountSol: new BN(entry.amount_sol_lamp),
+      token: {
+        totalDec: new BN(entry.token.total_dec),
+        vestedDec: new BN(entry.token.vested_dec),
+        claimedDec: new BN(entry.token.claimed_dec),
+      },
+      rankInPremarket: entry.rank,
+    },
+    whitelistStatus: resp.whitelist?.status ?? resp.whitelist_status ?? undefined,
+    whitelistUpdatedAt:
+      resp.whitelist?.updated_at === null || resp.whitelist?.updated_at === undefined
+        ? undefined
+        : Number(resp.whitelist.updated_at),
+  }
+}
+
+export interface VestingInfoDTO {
+  unlock_at_launch_percent: number; 
+  vesting_period_sec: number; 
+  enabled: boolean;
+}
+
+export async function updateVestingInfo(premarketPubkey: string, userPubkey: string, args: VestingInfoDTO) {
+  const payload = {
+    network: NETWORK,
+    user_pubkey: userPubkey,
+    premarket_pubkey: premarketPubkey,
+    vesting_period_sec: args.vesting_period_sec,
+    unlock_at_launch_percent: args.unlock_at_launch_percent,
+    enabled: args.enabled,
+  };
+
+  try {
+    await http.post(`${API_HOST}/premarket/vesting/update_info`, {
+      json: payload,
+      retry: RETRY_DEFAULT,
+    });
+    return;
+  } catch (e: any) {
+    console.error("[updateVestingInfo] failed", { payload, error: e });
+    throw new Error(`Failed to update vesting: ${e?.message ?? "Unknown error"}`);
+  }
+}
+
+export interface AddWhitelistUserListDTO {
+  premarket_id: string;
+  user_pubkeys: string[];
+}
+
+export interface AddWhitelistUserDTO {
+  premarket_id: string;
+  user_id?: string;
+  user_pubkey?: string;
+}
+
+export async function addWhitelistUserList(args: AddWhitelistUserListDTO) {
+  const payload = {
+    network: NETWORK,
+    premarket_id: args.premarket_id,
+    user_pubkeys: args.user_pubkeys,
+  };
+
+  try {
+    await http.post(`${API_HOST}/premarket/whitelist/add_user_list`, {
+      json: payload,
+      retry: RETRY_DEFAULT,
+    });
+    return;
+  } catch (e: any) {
+    console.error("[addWhitelistUserList] failed", { payload, error: e });
+    throw new Error(`Failed to add whitelist users: ${e?.message ?? "Unknown error"}`);
+  }
+}
+
+export async function addWhitelistUser(args: AddWhitelistUserDTO) {
+  const payload = {
+    network: NETWORK,
+    premarket_id: args.premarket_id,
+    user_id: args.user_id,
+    user_pubkey: args.user_pubkey,
+  };
+
+  try {
+    await http.post(`${API_HOST}/premarket/whitelist/add_user`, {
+      json: payload,
+      retry: RETRY_DEFAULT,
+    });
+    return;
+  } catch (e: any) {
+    console.error("[addWhitelistUser] failed", { payload, error: e });
+    throw new Error(`Failed to add whitelist user: ${e?.message ?? "Unknown error"}`);
+  }
+}
+
+export interface RemoveWhitelistUserDTO {
+  premarket_id: string;
+  user_id?: string;
+  user_pubkey?: string;
+}
+
+export async function removeWhitelistUser(args: RemoveWhitelistUserDTO) {
+  const payload = {
+    network: NETWORK,
+    premarket_id: args.premarket_id,
+    user_id: args.user_id,
+    user_pubkey: args.user_pubkey,
+  };
+
+  try {
+    await http.post(`${API_HOST}/premarket/whitelist/remove_user`, {
+      json: payload,
+      retry: RETRY_DEFAULT,
+    });
+    return;
+  } catch (e: any) {
+    console.error("[removeWhitelistUser] failed", { payload, error: e });
+    throw new Error(`Failed to remove whitelist user: ${e?.message ?? "Unknown error"}`);
+  }
+}
+
+export interface GetWhitelistRequestDTO {
+  network?: string;
+  premarket_id: string;
+  status?: string;
+  cursor: number;
+  limit: number;
+}
+
+export interface WhitelistSetStatusDTO {
+  premarket_id: string;
+  user_id?: string;
+  user_pubkey?: string;
+}
+
+export interface ApplyWhitelistDTO {
+  premarket_id: string;
+  user_id?: string;
+  user_pubkey?: string;
+}
+
+export interface WhitelistUserDTO {
+  id: string;
+  username?: string;
+  avatar_url?: string;
+  wallets: string[];
+  status?: string;
+}
+
+export interface WhitelistUsersResultDTO {
+  items: WhitelistUserDTO[];
+  total?: number;
+}
+
+function parseWhitelistUserWallets(item: any): string[] {
+  const walletsFromArray =
+    item?.wallets ?? item?.wallet_addresses ?? item?.user_pubkeys ?? item?.addresses;
+
+  if (Array.isArray(walletsFromArray)) {
+    return walletsFromArray
+      .map((wallet: any) => String(wallet))
+      .filter((wallet: string) => wallet.length > 0);
+  }
+
+  const singleWallet =
+    item?.wallet_address ?? item?.wallet ?? item?.user_pubkey ?? item?.pubkey ?? item?.address;
+
+  return singleWallet ? [String(singleWallet)] : [];
+}
+
+export async function getWhitelistUsers(args: GetWhitelistRequestDTO): Promise<WhitelistUsersResultDTO> {
+  const payload = {
+    network: args.network ?? NETWORK,
+    premarket_id: args.premarket_id,
+    status: args.status,
+    cursor: args.cursor,
+    limit: args.limit,
+  };
+
+  const data = await http.post<any>(`${API_HOST}/premarket/whitelist/get`, {
+    json: payload,
+    retry: RETRY_DEFAULT,
+  });
+
+  const rawItems: any[] = Array.isArray(data?.items)
+    ? data.items
+    : Array.isArray(data?.users)
+    ? data.users
+    : Array.isArray(data?.entries)
+    ? data.entries
+    : Array.isArray(data)
+    ? data
+    : [];
+
+  return {
+    items: rawItems.map((item: any) => {
+      const wallets = parseWhitelistUserWallets(item);
+      return {
+        id: String(item?.id ?? item?.user_id ?? wallets[0] ?? ""),
+        username: item?.username ?? item?.name ?? undefined,
+        avatar_url: item?.avatar_url ?? item?.icon_url ?? item?.url ?? undefined,
+        wallets,
+        status: item?.status ?? item?.whitelist_status ?? undefined,
+      };
+    }),
+    total:
+      data?.total === null || data?.total === undefined
+        ? data?.count === null || data?.count === undefined
+          ? undefined
+          : Number(data.count)
+        : Number(data.total),
+  };
+}
+
+export async function getAllWhitelistUsers(args: Omit<GetWhitelistRequestDTO, "cursor" | "limit">): Promise<WhitelistUserDTO[]> {
+  const limit = 200;
+  let cursor = 0;
+  const items: WhitelistUserDTO[] = [];
+
+  while (true) {
+    const response = await getWhitelistUsers({
+      ...args,
+      cursor,
+      limit,
+    });
+
+    items.push(...response.items);
+
+    if (response.items.length < limit) {
+      break;
+    }
+
+    cursor += response.items.length;
+  }
+
+  return items;
+}
+
+export async function approveWhitelistUser(args: WhitelistSetStatusDTO) {
+  const payload = {
+    network: NETWORK,
+    premarket_id: args.premarket_id,
+    user_id: args.user_id,
+    user_pubkey: args.user_pubkey,
+  };
+
+  try {
+    await http.post(`${API_HOST}/premarket/whitelist/approve`, {
+      json: payload,
+      retry: RETRY_DEFAULT,
+    });
+  } catch (e: any) {
+    console.error("[approveWhitelistUser] failed", { payload, error: e });
+    throw new Error(`Failed to approve whitelist user: ${e?.message ?? "Unknown error"}`);
+  }
+}
+
+export async function rejectWhitelistUser(args: WhitelistSetStatusDTO) {
+  const payload = {
+    network: NETWORK,
+    premarket_id: args.premarket_id,
+    user_id: args.user_id,
+    user_pubkey: args.user_pubkey,
+  };
+
+  try {
+    await http.post(`${API_HOST}/premarket/whitelist/reject`, {
+      json: payload,
+      retry: RETRY_DEFAULT,
+    });
+  } catch (e: any) {
+    console.error("[rejectWhitelistUser] failed", { payload, error: e });
+    throw new Error(`Failed to reject whitelist user: ${e?.message ?? "Unknown error"}`);
+  }
+}
+
+export async function applyWhitelist(args: ApplyWhitelistDTO) {
+  const payload = {
+    network: NETWORK,
+    premarket_id: args.premarket_id,
+    user_id: args.user_id,
+    user_pubkey: args.user_pubkey,
+  };
+
+  try {
+    await http.post(`${API_HOST}/premarket/whitelist/apply`, {
+      json: payload,
+      retry: RETRY_DEFAULT,
+    });
+  } catch (e: any) {
+    console.error("[applyWhitelist] failed", { payload, error: e });
+    throw new Error(`Failed to apply for whitelist: ${e?.message ?? "Unknown error"}`);
+  }
+}

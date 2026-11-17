@@ -6,6 +6,8 @@ import { getConnectToWallet } from "@hooks/connectWallet";
 import { useWallet } from "@storage/wallet-adapter";
 import { useWalletLoginFlow } from "@hooks/useWalletLoginFlow";
 import GreenButton from "@components/login/buttons/GreenButton";
+import { useLoginModal } from "@providers/LoginModalContext";
+import { IS_SITE_SNAPSHOT } from "env";
 
 interface WalletButtonProps {
   afterClick: () => void;
@@ -34,6 +36,7 @@ export default function WalletButton({
   overrideSaveJwt,
 }: WalletButtonProps) {
   const theme = useTheme();
+  const { openMaintenance } = useLoginModal();
   const connectWallet = getConnectToWallet();
   const { run, busy } = useWalletLoginFlow(connectWallet, {
     onSuccess: afterClick,
@@ -44,7 +47,7 @@ export default function WalletButton({
   return (
     <Button
       mode="outlined"
-      onPress={() => run()}
+      onPress={IS_SITE_SNAPSHOT ? openMaintenance : () => run()}
       disabled={busy}
       labelStyle={{ ...theme.fonts.labelLarge}}
       style={{

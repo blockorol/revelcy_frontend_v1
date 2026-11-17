@@ -1,6 +1,6 @@
 import { MAX_WIDTH_MOBILE, useIsMobileForTwoScreenWithDemention } from "@hooks/useIsMobile";
 import { useAuth } from "@providers/AuthContext";
-import { useRouter } from "expo-router";
+import { useRouter } from "@hooks/useSafeRouter";
 import { useEffect } from "react";
 import { View, ScrollView, useWindowDimensions, StyleSheet } from "react-native";
 import { ActivityIndicator, useTheme, Text } from "react-native-paper";
@@ -13,12 +13,22 @@ import { PremarketAction } from "@components/premarket/PremarketAction";
 import { YourEntry } from "@components/premarket/YourEntry";
 import { usePremarketInfo } from "@hooks/usePremarketInfo";
 import { HoldersInfo } from "@components/premarket/HoldersInfo";
-import { TokenInfo } from "@api/token";
+import { TokenInfo, UserEntry } from "@api/token";
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import React from "react";
 import { Button } from "@components/ui/Button";
+import { useHolderEntryInfo } from "@hooks/useHolderEntryInfo";
+import { VestingCard } from "@components/premarket/VestingCard";
+import { VestingSetting } from "@components/premarket/VestingSetting";
 
 const SLIDER_HEIGHT = 48
+const ALLOWED_WHITELIST_STATUSES = new Set(["accepted", "approved", "whitelisted", "in_whitelist", "in-whitelist"]);
+
+function canJoinByWhitelist(isWhitelistEnabled: boolean, whitelistStatus?: string): boolean {
+  if (!isWhitelistEnabled) return true;
+  const normalized = whitelistStatus?.toLowerCase().trim();
+  return !!normalized && ALLOWED_WHITELIST_STATUSES.has(normalized);
+}
 
 interface TokenPremarketPageProps {
   tokenId: string;
@@ -30,9 +40,18 @@ export default function TokenPremarketPage({
   const { isMobile, left, right, screen } = useIsMobileForTwoScreenWithDemention();
   const router = useRouter();
 
-  const { token, loading, error, refetch } = usePremarketInfo(tokenId);
+  const { token, loading, error, refetch: refetchPremarketInfo } = usePremarketInfo(tokenId);
+  const {user} = useAuth();
+  const {holderEntryInfo, whitelistStatus, refetch: refetchHolder} = useHolderEntryInfo(token?.mainInfo.premarketPubkey.toBase58(), user?.walletAddress)
 
-
+  const refetch = async () => {
+    console.log("Refetching premarket and holder info...");
+    await Promise.all([
+      refetchPremarketInfo(),
+      refetchHolder(),
+    ]);
+    console.log("Refetched premarket and holder info");
+  };
 
   useEffect(() => {
     if (error) router.replace("/discover");
@@ -56,12 +75,16 @@ export default function TokenPremarketPage({
   return isMobile ? (
     <TokenPremarketPageMobile
       token={token}
+      holderEntryInfo={holderEntryInfo}
+      whitelistStatus={whitelistStatus}
       refetchTokenInfo={refetch}
       screenDem={screen}
     />
   ) : (
     <TokenPremarketPageNormal
       token={token}
+      holderEntryInfo={holderEntryInfo}
+      whitelistStatus={whitelistStatus}
       refetchTokenInfo={refetch}
       left={left}
       rigth={right}
@@ -73,11 +96,15 @@ export default function TokenPremarketPage({
 export function TokenPremarketPageNormal({
   token,
   refetchTokenInfo,
+  holderEntryInfo,
+  whitelistStatus,
   left,
   rigth,
   screenDem,
 }: {
   token: TokenInfo;
+  holderEntryInfo: UserEntry | null;
+  whitelistStatus?: string;
   refetchTokenInfo: () => Promise<void>;
   left: {
     width: number;
@@ -95,6 +122,7 @@ export function TokenPremarketPageNormal({
   const { user } = useAuth();
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
+  const canJoinWhitelist = canJoinByWhitelist(token.mainInfo.isWhitelistEnabled, whitelistStatus);
 
   return (
     <ScrollView
@@ -147,16 +175,27 @@ export function TokenPremarketPageNormal({
                 <PremarketAction
                   tokenMainInfo={token.mainInfo}
                   tokenDynamicInfo={token.dynamicInfo}
+                  holderEntryInfo={holderEntryInfo}
+                  whitelistStatus={whitelistStatus}
                   onUpdated={refetchTokenInfo}
                   isMobile={false}
                 />
+                
+                {(!(user && holderEntryInfo)) && !!token.mainInfo.vestingInfo?.enabled && (
+                  <VestingSetting
+                    paddingHorisontal={24}
+                    periodSec={token.mainInfo.vestingInfo?.vestingPeriodSec ?? 0}
+                    percentInit={token.mainInfo.vestingInfo?.unlockAtLaunchPercent ?? 0}
+                  />
+                )}
               </View>
             </View>
           </View>
-          {user && token.dynamicInfo.holders.find((h) => h.id === user.userId) !== undefined && (
+          {user && holderEntryInfo && (
             <YourEntry 
               premarketPubkey={token.mainInfo.premarketPubkey}
               user={user}
+              userEntry={holderEntryInfo}
               tokenDynamicInfo={token.dynamicInfo}
               tokenMainInfo={token.mainInfo}
               onUpdated={refetchTokenInfo}
@@ -179,15 +218,19 @@ export function TokenPremarketPageNormal({
               isMobile={false}
               width={rigth.width}
             />
+            <VestingCard
+              vesting={token.dynamicInfo.vesting}
+              isMobile={false}
+            />
             <PremarketInfo
               currentUserId={user?.userId}
               width={rigth.width}
               tokenInfo={token}
               isMobile={false}
               withJoinButton={
-                (user === null ||
-                token.dynamicInfo.holders.find((h) => h.id === user.userId) ===
-                  undefined) && token.mainInfo.premarketDeadline > Math.floor(Date.now() / 1000)
+                canJoinWhitelist &&
+                (user === null || holderEntryInfo === null) &&
+                token.mainInfo.premarketDeadline > Math.floor(Date.now() / 1000)
               }
               onUpdated={refetchTokenInfo}
             />
@@ -205,11 +248,13 @@ export function TokenPremarketPageNormal({
 }
 
 export function TokenPremarketPageMobile({
-  token,
+  token,holderEntryInfo, whitelistStatus,
   refetchTokenInfo,
   screenDem,
 }: {
   token: TokenInfo;
+  holderEntryInfo: UserEntry | null;
+  whitelistStatus?: string;
   refetchTokenInfo: () => Promise<void>;
   screenDem: {
     width: number;
@@ -222,7 +267,7 @@ export function TokenPremarketPageMobile({
   const [index, setIndex] = React.useState(0);
   const toPeopleSection = ()=>{setIndex(1)}
   const renderScene = SceneMap({
-    first: ()=>BriefMobile({token, refetchTokenInfo, screenDem, toPeopleSection}),
+    first: ()=>BriefMobile({token, holderEntryInfo, whitelistStatus, refetchTokenInfo, screenDem, toPeopleSection}),
     second:()=> PeopleMobile({token, refetchTokenInfo, screenDem}),
   });
   const layout = useWindowDimensions();
@@ -267,11 +312,15 @@ export function TokenPremarketPageMobile({
 
 function BriefMobile({
   token,
+  holderEntryInfo,
+  whitelistStatus,
   refetchTokenInfo,
   screenDem,
   toPeopleSection
 }: {
   token: TokenInfo;
+  holderEntryInfo: UserEntry | null;
+  whitelistStatus?: string;
   refetchTokenInfo: () => Promise<void>;
   screenDem: {
     width: number;
@@ -281,6 +330,7 @@ function BriefMobile({
 }) {
   const { user } = useAuth();
   const theme = useTheme();
+  const canJoinWhitelist = canJoinByWhitelist(token.mainInfo.isWhitelistEnabled, whitelistStatus);
 
   return (
     
@@ -314,16 +364,21 @@ function BriefMobile({
           tokenDynamicInfo={token.dynamicInfo}
           isMobile={true}
         />
-        {user && token.dynamicInfo.holders.find((h) => h.id === user.userId) !== undefined && (
+        {user && holderEntryInfo ?
           <YourEntry 
             user={user}
+            userEntry={holderEntryInfo}
             premarketPubkey={token.mainInfo.premarketPubkey}
             tokenDynamicInfo={token.dynamicInfo}
             tokenMainInfo={token.mainInfo}
             onUpdated={refetchTokenInfo}
             isMobile={true}
+          /> : !!token.mainInfo.vestingInfo?.enabled && <VestingSetting
+            paddingHorisontal={16}
+            periodSec={token.mainInfo.vestingInfo?.vestingPeriodSec ?? 0}
+            percentInit={token.mainInfo.vestingInfo?.unlockAtLaunchPercent ?? 0}
           />
-        )}
+        }
         <AboutCommunity
           isEditable={(token.mainInfo.createdByPubkey === user?.walletAddress) && (token.mainInfo.state === 'premarket' || token.mainInfo.state === 'expired')}
           premarketPubkey={token.mainInfo.premarketPubkey.toString()}
@@ -331,15 +386,19 @@ function BriefMobile({
           isMobile={true}
           width={screenDem.width}
         />
+        <VestingCard
+          vesting={token.dynamicInfo.vesting}
+          isMobile={true}
+        />
         <PremarketInfo
           currentUserId={user?.userId}
           width={screenDem.width}
           tokenInfo={token}
           isMobile={true}
           withJoinButton={
-            (user === null ||
-            token.dynamicInfo.holders.find((h) => h.id === user.userId) ===
-              undefined) && token.mainInfo.premarketDeadline > Math.floor(Date.now() / 1000)
+            canJoinWhitelist &&
+            (user === null || holderEntryInfo === null) &&
+            token.mainInfo.premarketDeadline > Math.floor(Date.now() / 1000)
           }
           onUpdated={refetchTokenInfo}
         />
@@ -360,7 +419,9 @@ function BriefMobile({
         }}>
         <PremarketAction
           tokenMainInfo={token.mainInfo}
-          tokenDynamicInfo={token.dynamicInfo}
+          tokenDynamicInfo={token.dynamicInfo}                 
+          holderEntryInfo={holderEntryInfo}
+          whitelistStatus={whitelistStatus}
           onUpdated={refetchTokenInfo}
           isMobile={true}
         />
@@ -381,6 +442,8 @@ function BriefMobile({
         <PremarketAction
           tokenMainInfo={token.mainInfo}
           tokenDynamicInfo={token.dynamicInfo}
+          holderEntryInfo={holderEntryInfo}
+          whitelistStatus={whitelistStatus}
           onUpdated={refetchTokenInfo}
           isMobile={true}
         />

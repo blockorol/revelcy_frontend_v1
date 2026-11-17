@@ -3,20 +3,22 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { kvStorage } from "@storage/kvStorage";
 
 /** Шаги мастера */
-export type FlowStep = 1 | 2 | 3 | 4 | 6 | 7;
+export type FlowStep = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 /** Структура черновика */
-export interface PremarketDraft<TMain, TTok, TPrem, TCustom> {
+export interface PremarketDraft<TMain, TTok, TPrem, TCustom, TVesting = unknown> {
   step: FlowStep;
   tokenMainData?: TMain;
   tokenomicsData?: TTok;
   premarketSettingsData?: TPrem;
   customizeTokenData?: TCustom;
+  whitelistData?: unknown;
+  vestingData?: TVesting;
   updatedAt: number;
   __v?: number;
 }
 
-const VERSION = 3;
+const VERSION = 4;
 
 /** Device-scoped ключ без привязки к пользователю/сети */
 export function draftKey() {
@@ -42,9 +44,9 @@ function withTimeout<T>(
   });
 }
 
-async function loadDraft<TMain, TTok, TPrem, TCustom>(
+async function loadDraft<TMain, TTok, TPrem, TCustom, TVesting>(
   key: string
-): Promise<PremarketDraft<TMain, TTok, TPrem, TCustom> | null> {
+): Promise<PremarketDraft<TMain, TTok, TPrem, TCustom, TVesting> | null> {
   try {
     const raw = await kvStorage.getItem(key);
     if (!raw) return null;
@@ -54,17 +56,19 @@ async function loadDraft<TMain, TTok, TPrem, TCustom>(
   }
 }
 
-async function saveDraft<TMain, TTok, TPrem, TCustom>(
+async function saveDraft<TMain, TTok, TPrem, TCustom, TVesting>(
   key: string,
-  patch: Partial<PremarketDraft<TMain, TTok, TPrem, TCustom>>
+  patch: Partial<PremarketDraft<TMain, TTok, TPrem, TCustom, TVesting>>
 ) {
-  const current = await loadDraft<TMain, TTok, TPrem, TCustom>(key);
-  const merged: PremarketDraft<TMain, TTok, TPrem, TCustom> = {
+  const current = await loadDraft<TMain, TTok, TPrem, TCustom, TVesting>(key);
+  const merged: PremarketDraft<TMain, TTok, TPrem, TCustom, TVesting> = {
     step: (current?.step ?? 1) as FlowStep,
     tokenMainData: current?.tokenMainData,
     tokenomicsData: current?.tokenomicsData,
     premarketSettingsData: current?.premarketSettingsData,
     customizeTokenData: current?.customizeTokenData,
+    whitelistData: current?.whitelistData,
+    vestingData: current?.vestingData,
     updatedAt: Date.now(),
     __v: VERSION,
     ...patch,
@@ -83,18 +87,18 @@ async function clearDraft(key: string) {
 
 /* ---------- hook ---------- */
 
-type UsePremarketDraftOptions<TMain, TTok, TPrem, TCustom> = {
+type UsePremarketDraftOptions<TMain, TTok, TPrem, TCustom, TVesting> = {
   key?: string;
   loadTimeoutMs?: number; // default 1500
   retry?: number; // default 0
   clearOnTimeout?: boolean; // default false
   normalizeStep?: (s: FlowStep) => FlowStep;
-  onRestore?: (d: PremarketDraft<TMain, TTok, TPrem, TCustom>) => void;
-  initialDraft?: Partial<PremarketDraft<TMain, TTok, TPrem, TCustom>>;
+  onRestore?: (d: PremarketDraft<TMain, TTok, TPrem, TCustom, TVesting>) => void;
+  initialDraft?: Partial<PremarketDraft<TMain, TTok, TPrem, TCustom, TVesting>>;
 };
 
-export function usePremarketDraft<TMain, TTok, TPrem, TCustom>(
-  opts: UsePremarketDraftOptions<TMain, TTok, TPrem, TCustom> = {}
+export function usePremarketDraft<TMain, TTok, TPrem, TCustom, TVesting = unknown>(
+  opts: UsePremarketDraftOptions<TMain, TTok, TPrem, TCustom, TVesting> = {}
 ) {
   const {
     key = draftKey(),
@@ -124,7 +128,8 @@ export function usePremarketDraft<TMain, TTok, TPrem, TCustom>(
     TMain,
     TTok,
     TPrem,
-    TCustom
+    TCustom,
+    TVesting
   > | null>(null);
   const [loading, setLoading] = useState(true); // только на ПЕРВОЙ загрузке
   const [ready, setReady] = useState(false); // данные готовы
@@ -141,12 +146,14 @@ export function usePremarketDraft<TMain, TTok, TPrem, TCustom>(
   const initializingRef = useRef(true); // true только до конца первой попытки (с ретраями)
 
   const reset = useCallback(async () => {
-    const base: PremarketDraft<TMain, TTok, TPrem, TCustom> = {
-      step: ((initialDraftRef.current?.step ?? 1) as FlowStep) ?? 1,
+    const base: PremarketDraft<TMain, TTok, TPrem, TCustom, TVesting> = {
+      step: ((initialDraftRef.current?.step ?? 1) as FlowStep),
       tokenMainData: initialDraftRef.current?.tokenMainData,
       tokenomicsData: initialDraftRef.current?.tokenomicsData,
       premarketSettingsData: initialDraftRef.current?.premarketSettingsData,
       customizeTokenData: initialDraftRef.current?.customizeTokenData,
+      whitelistData: initialDraftRef.current?.whitelistData,
+      vestingData: initialDraftRef.current?.vestingData,
       updatedAt: Date.now(),
       __v: VERSION,
     };
@@ -160,8 +167,8 @@ export function usePremarketDraft<TMain, TTok, TPrem, TCustom>(
   }, [key]);
 
   const patch = useCallback(
-    async (p: Partial<PremarketDraft<TMain, TTok, TPrem, TCustom>>) => {
-      const merged = await saveDraft<TMain, TTok, TPrem, TCustom>(key, p);
+    async (p: Partial<PremarketDraft<TMain, TTok, TPrem, TCustom, TVesting>>) => {
+      const merged = await saveDraft<TMain, TTok, TPrem, TCustom, TVesting>(key, p);
       if (mountedRef.current) setDraft(merged);
       return merged;
     },
@@ -169,7 +176,7 @@ export function usePremarketDraft<TMain, TTok, TPrem, TCustom>(
   );
 
   const saveNow = useCallback(
-    async (d: PremarketDraft<TMain, TTok, TPrem, TCustom>) => {
+    async (d: PremarketDraft<TMain, TTok, TPrem, TCustom, TVesting>) => {
       const toSave = { ...d, updatedAt: Date.now(), __v: VERSION };
       await kvStorage.setItem(key, JSON.stringify(toSave));
       if (mountedRef.current) setDraft(toSave);
@@ -188,7 +195,7 @@ export function usePremarketDraft<TMain, TTok, TPrem, TCustom>(
         if (mountedRef.current) setError(null);
 
         const loaded = await withTimeout(
-          loadDraft<TMain, TTok, TPrem, TCustom>(key),
+          loadDraft<TMain, TTok, TPrem, TCustom, TVesting>(key),
           loadTimeoutMs,
           "loadDraft timeout"
         );
@@ -203,13 +210,15 @@ export function usePremarketDraft<TMain, TTok, TPrem, TCustom>(
           onRestoreRef.current?.(normalized);
         } else {
           if (initialDraftRef.current) {
-            const base: PremarketDraft<TMain, TTok, TPrem, TCustom> = {
-              step: ((initialDraftRef.current.step ?? 1) as FlowStep) ?? 1,
+            const base: PremarketDraft<TMain, TTok, TPrem, TCustom, TVesting> = {
+              step: ((initialDraftRef.current.step ?? 1) as FlowStep),
               tokenMainData: initialDraftRef.current.tokenMainData,
               tokenomicsData: initialDraftRef.current.tokenomicsData,
               premarketSettingsData:
                 initialDraftRef.current.premarketSettingsData,
               customizeTokenData: initialDraftRef.current.customizeTokenData,
+              whitelistData: initialDraftRef.current.whitelistData,
+              vestingData: initialDraftRef.current.vestingData,
               updatedAt: Date.now(),
               __v: VERSION,
             };

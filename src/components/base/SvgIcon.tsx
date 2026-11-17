@@ -15,6 +15,7 @@ import Buy from "@assets/basic_icon/buy.svg";
 import CaretDown from "@assets/basic_icon/caret-down.svg";
 import CaretLeft from '@assets/basic_icon/caret-left.svg';
 import Check from "@assets/basic_icon/check.svg";
+import Clip from "@assets/basic_icon/clip.svg";
 import CopyIcon from "@assets/basic_icon/copy_icon.svg";
 import HeartOutlined from "@assets/basic_icon/heart-outlined.svg";
 import Heart from "@assets/basic_icon/heart.svg";
@@ -55,6 +56,8 @@ import WorldOutlined from "@assets/basic_icon/world-outlined.svg";
 import XCircleOutlined from "@assets/basic_icon/x-circle-outlined.svg";
 import XBase from "@assets/basic_icon/x-base.svg";
 import XLogo from "@assets/basic_icon/x-logo.svg";
+import Users from "@assets/basic_icon/users.svg";
+import EditSimple from "@assets/basic_icon/edit-simple.svg";
 import {
   TouchableOpacity,
   GestureResponderEvent,
@@ -78,6 +81,7 @@ export const icons = {
   "caret-down": CaretDown,
   'caret-left':CaretLeft,
   check: Check,
+  clip: Clip,
   "copy-icon": CopyIcon,
   "heart-outlined": HeartOutlined,
   heart: Heart,
@@ -118,6 +122,8 @@ export const icons = {
   "x-base": XBase,
   "x-circle-outlined": XCircleOutlined,
   "x-logo": XLogo,
+  "users": Users,
+  "edit-simple": EditSimple,
 };
 
 export const withStroke: Partial<Record<IconName, boolean>> = {

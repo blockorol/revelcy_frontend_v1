@@ -23,6 +23,7 @@ type CreateTokenFormProps = {
   totalSteps: number;
   presetData?: TokenMainData;
   onBack?: () => void;
+  submitLabel?: string;
 };
 
 export default function CreateTokenForm({
@@ -32,6 +33,7 @@ export default function CreateTokenForm({
   onBack,
   step,
   totalSteps,
+  submitLabel,
 }: CreateTokenFormProps) {
   const theme = useTheme();
   const colors = theme.colors as ExtendedMD3Colors;
@@ -318,6 +320,7 @@ export default function CreateTokenForm({
             handleSubmit={handleSubmit}
             isFilledAll={isFilledAll}
             onBack={onBack}
+            submitLabel={submitLabel}
           />
         </View>
       </View>
