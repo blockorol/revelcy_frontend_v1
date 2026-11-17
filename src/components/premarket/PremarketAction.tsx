@@ -19,6 +19,8 @@ import TextedLoader from "@components/ui/Loader";
 import { SvgIcon } from "@components/base/SvgIcon";
 import { AppTheme } from "@theme/types";
 import { IconName } from "@components/base/SvgIcon";
+import { useLoginModal } from "@providers/LoginModalContext";
+import { IS_SITE_SNAPSHOT } from "env";
 
 interface PremarketActionProps {
   tokenMainInfo: TokenMainInfo;
@@ -85,6 +87,7 @@ export function PremarketActionPremarket({
   const { colors } = useTheme();
   const { open, close } = useOverlay();
   const notify = useNotification();
+  const { openMaintenance } = useLoginModal();
   const currentURL = window.location.href;
 
   const isCreator = tokenMainInfo.createdByPubkey === user?.walletAddress;
@@ -132,6 +135,7 @@ export function PremarketActionPremarket({
   const contactUrl = resolveContactUrl(tokenMainInfo.links);
 
   const handleWhitelistActionPress = async () => {
+    if (IS_SITE_SNAPSHOT) return openMaintenance();
     if (!user?.walletAddress) {
       return;
     }
@@ -317,7 +321,7 @@ export function PremarketActionLaunched({
   const { colors } = useTheme();
   const notify = useNotification();
   const { network } = useNetwork();
-  const connection = getSolanaConnection(network);
+  const { openMaintenance } = useLoginModal();
   const { connected, connect } = useWallet();
   const wallet = useAnchorWalletSafe();
   const { open, close: closeOverlay } = useOverlay();
@@ -331,6 +335,7 @@ export function PremarketActionLaunched({
   };
 
   const handleClaimTokens = async () => {
+    if (IS_SITE_SNAPSHOT) return openMaintenance();
     if (!wallet || !connected) {
       notify.error("Wallet is not connected", {
         suggest: "Enable Phantom (or compatible) and try again",
@@ -362,7 +367,7 @@ export function PremarketActionLaunched({
       open(<TextedLoader text={"Claiming tokens..."} />);
       await claimTokens(
         wallet,
-        connection,
+        getSolanaConnection(network),
         network,
         tokenMainInfo.premarketPubkey,
         new PublicKey(tokenMainInfo.tokenMint),
@@ -401,7 +406,7 @@ export function PremarketActionLaunched({
             leftSvgIconName="buy"
             textColor={colors.onPrimary}
             style={{ width: 168, height: 40 }}
-            onPress={handleBuyPress}
+            onPress={IS_SITE_SNAPSHOT ? openMaintenance : handleBuyPress}
           >
             Buy
           </Button>

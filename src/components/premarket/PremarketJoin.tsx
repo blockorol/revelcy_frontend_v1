@@ -32,6 +32,7 @@ import { MobileBottomSheet } from "@components/ui/MobileBottomSheet";
 import { convertNumberWithRaw } from "@utils/setterWithValidate";
 import { convertSolanaToTokenWithFee } from "@services/pumpfun/convertors";
 import { useLoginModal } from "@providers/LoginModalContext";
+import { IS_SITE_SNAPSHOT } from "env";
 import TextedLoader from "@components/ui/Loader";
 
 const SUFFIX = " SOL"
@@ -86,13 +87,12 @@ function PremarketJoinBase({
 }: PremarketJoinProps) {
   const notify = useNotification();
   const { network } = useNetwork();
-  const currentConnection = getSolanaConnection(network);
   const { connected, connect } = useWallet();
 
   const wallet = useAnchorWalletSafe();
   const theme = useTheme();
   const { open, replace, close: closeOverlay } = useOverlay();
-  const { openLogin } = useLoginModal();
+  const { openLogin, openMaintenance } = useLoginModal();
 
   const [rawInput, setRawInput] = useState<string|undefined>(undefined);
   const [errorBalance, setErrorBalance] = useState<string|undefined>(undefined);
@@ -174,6 +174,7 @@ function PremarketJoinBase({
   };
 
   const handleJoin = async () => {
+    if (IS_SITE_SNAPSHOT) return openMaintenance();
     if (amountSol === undefined) {
       console.error("no amountSol");
       notify.warning("Please set amount in SOL");
@@ -213,7 +214,7 @@ function PremarketJoinBase({
       open(<TextedLoader text={"join to premarket..."}/>);
       await joinToPremarket(
         wallet,
-        currentConnection,
+        getSolanaConnection(network),
         network,
         tokenMainInfo.premarketPubkey,
         solInLamp,

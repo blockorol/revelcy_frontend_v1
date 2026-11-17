@@ -72,6 +72,8 @@ Auth lives in `src/providers/AuthContext.tsx`.
 
 Key behavior:
 
+In the default web build, auth stays in guest mode and the wallet provider skips auto-connect.
+
 - JWT is stored through `@react-native-async-storage/async-storage`.
 - JWT is decoded with `jwt-decode`.
 - `setAuthToken` from `src/services/api/http.ts` updates the shared API auth header.
@@ -83,6 +85,8 @@ Do not bypass auth checks or store JWTs in new places without explicit need.
 ## API Clients
 
 Shared HTTP behavior is in `src/services/api/http.ts`.
+
+The default web build serves the public snapshot through `src/services/api/mock.ts` before reaching HTTP, retries, or token refresh. The fixture JSON preserves the public response shapes and references local banners and avatars. Token covers use the Pump.fun image CDN with bundled copies as fallbacks. Direct auth, file upload, and IPFS helpers reject locally. `REVELCY_WEB_MODE=live` restores the live transport for a web build.
 
 Responsibilities:
 

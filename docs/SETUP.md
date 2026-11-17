@@ -7,9 +7,7 @@ How to run the Revelcy frontend locally.
 - Node.js 18 or newer
 - npm
 - A browser for the supported web target
-- Access to a Revelcy backend API
-- Required environment variables
-- Phantom wallet for wallet flows on web
+- For live web flows, access to the Revelcy API, the live environment variables, and Phantom
 
 Android and iOS scripts exist, but current practical support is web-first.
 
@@ -21,7 +19,7 @@ npm install
 
 ## Configure Environment
 
-Create a local `.env` file in the project root.
+The default web build uses a local snapshot. For live web development, create a local `.env` file in the project root and set `REVELCY_WEB_MODE=live`.
 
 Do not commit real secrets.
 

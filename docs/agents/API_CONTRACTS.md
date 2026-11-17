@@ -31,9 +31,11 @@ When completed, this file should document:
 Use this as a starting inventory only:
 
 - `src/services/api/http.ts`
-  Shared HTTP wrapper, auth token attachment, refresh, retry, timeout, response parsing.
+  Shared HTTP wrapper. In current maintenance mode it delegates to `src/services/api/mock.ts` before network access.
+- `src/services/api/mock.ts`
+  Public mainnet snapshot used by the default web build. It serves `get_list`, `get_main_info`, and `get_dynamic_info` from `mockData/` with the original response shapes. Auth and mutations fail locally with `503`. Unknown reads return `404`. No request falls through to the live backend in snapshot mode.
 - `src/services/api/auth.ts`
-  Auth API client.
+  Auth API client. In maintenance mode direct axios calls are short-circuited with the mock server error.
 - `src/services/api/wallet.ts`
   Wallet-related API client.
 - `src/services/api/users.ts`
@@ -43,7 +45,7 @@ Use this as a starting inventory only:
 - `src/services/api/tx_premarket.ts`
   Premarket transaction API client.
 - `src/services/api/files.ts`
-  File API client.
+  File API client. In maintenance mode uploads are short-circuited with the mock server error.
 - `src/services/api/apiError.ts`, `src/services/api/retry.ts`, `src/services/api/constant.ts`
   API helpers.
 

@@ -7,6 +7,9 @@ This file describes sequence and ownership. It does not define backend or web3 c
 
 Purpose: authenticate user, store JWT, attach token to API calls.
 
+In the default web build, login opens the shared paused-project dialog from `LoginModalProvider`. Invite deep links open the same dialog. The wallet flow below applies to live mode.
+The "Connect with Wallet" button is disabled, so wallet login should not start.
+
 Read:
 
 - `src/components/login/*`
@@ -97,6 +100,9 @@ High risk: dynamic route params, eligibility display, action availability.
 ## Create Premarket
 
 Purpose: collect token/premarket data, persist draft, upload metadata, create transaction, navigate to created page.
+
+In the default web build, Create Premarket opens the paused-project dialog on the current screen. Direct visits to `/token/create` and `/me` show the same dialog and go to Explore when dismissed. These routes skip the creation and profile screens. The token detail Buy action opens the dialog and View continues to Pump.fun.
+The Create Premarket navigation item remains clickable and opens this paused creation view.
 
 Read:
 

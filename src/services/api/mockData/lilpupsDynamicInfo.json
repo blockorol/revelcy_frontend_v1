@@ -1,0 +1,395 @@
+{
+  "holders_count": 43,
+  "current_price_lamp": "0",
+  "reserved_sol_lamp": "52450000000",
+  "change_24h": 0.01,
+  "holders": [
+    {
+      "id": "245a0ea5-c4f9-42cf-8dff-9a5ba6ae5f06",
+      "wallet_address": "D8pvuGj9s1JSAKkKEqaQRK5Vzd7AascqZKfjrezgyhjZ",
+      "join_timestamp": 1767966135258,
+      "icon_url": null,
+      "username": null,
+      "amount_sol_lamp": "1000000000",
+      "claimed": true
+    },
+    {
+      "id": "b8ea6201-ed87-4579-ae9d-f19f33c02559",
+      "wallet_address": "GDfVn9nLK6MtdfsowHguSRsG5WRcWT7vx7Xbh3ggypkj",
+      "join_timestamp": 1767963878058,
+      "icon_url": null,
+      "username": "hittagi",
+      "amount_sol_lamp": "1000000000",
+      "claimed": true
+    },
+    {
+      "id": "479ca370-c8b3-443e-b1f7-9cf62b0d7cbd",
+      "wallet_address": "47pEYVWkFABWvL6Zj4YypTQKn4i7H7cVd5fDGNfTVCJp",
+      "join_timestamp": 1767959534167,
+      "icon_url": null,
+      "username": "555Ava",
+      "amount_sol_lamp": "2000000000",
+      "claimed": true
+    },
+    {
+      "id": "28e257e3-ed5d-4b2d-b40b-52b785ef188d",
+      "wallet_address": "6ZRaPXpfKGggXinkpSoo6ztBq6ijHDyw583xHvLRqvF8",
+      "join_timestamp": 1767959407785,
+      "icon_url": null,
+      "username": "Michael",
+      "amount_sol_lamp": "2000000000",
+      "claimed": true
+    },
+    {
+      "id": "8cf34ba5-4406-4369-9b0c-136d0494399e",
+      "wallet_address": "7cLXS1j9z42jKM9bEpX2NAhoXj5FwUpnmVwkJ23gXk7K",
+      "join_timestamp": 1767940187967,
+      "icon_url": null,
+      "username": null,
+      "amount_sol_lamp": "600000000",
+      "claimed": true
+    },
+    {
+      "id": "1b46af1f-7026-46b7-87f0-93d6c3be265f",
+      "wallet_address": "35FPFCT5jTB6CnQEwdeGMesy3Awc1o23j8p8CKZ5tyFj",
+      "join_timestamp": 1767939910481,
+      "icon_url": null,
+      "username": "chirag",
+      "amount_sol_lamp": "270000000",
+      "claimed": true
+    },
+    {
+      "id": "0c9465b1-ae76-4b41-a4af-611700204f22",
+      "wallet_address": "92xDF6cEU877QCKrFXnUSS5gA7mhoLnBy1ug5wwsmBBS",
+      "join_timestamp": 1767924512843,
+      "icon_url": null,
+      "username": "senyang",
+      "amount_sol_lamp": "500000000",
+      "claimed": false
+    },
+    {
+      "id": "c777afb5-d600-4b8a-b0de-e208df7148aa",
+      "wallet_address": "LH8Lqxess9qjTVqZc3ihPcn3ohd3zWR2EoBXqS1JBqF",
+      "join_timestamp": 1767907956565,
+      "icon_url": "/premarket-snapshot/c777afb5-d600-4b8a-b0de-e208df7148aa.jpg",
+      "username": "macaroon",
+      "amount_sol_lamp": "380000000",
+      "claimed": true
+    },
+    {
+      "id": "e28d287b-d7e5-46bd-b2e6-a449a5e80060",
+      "wallet_address": "xXP64egzxz2KJvi1uEhhFccuazwQReE4KGuHrunDpnX",
+      "join_timestamp": 1767904431593,
+      "icon_url": null,
+      "username": null,
+      "amount_sol_lamp": "2000000000",
+      "claimed": true
+    },
+    {
+      "id": "62ccdfdc-fb0b-4e11-b159-3e349add9b44",
+      "wallet_address": "2tj3dx9mQfKXy8sj2bj7wZVqs3BAWqFv3xrqxU9ZGgxs",
+      "join_timestamp": 1767895818909,
+      "icon_url": "/premarket-snapshot/62ccdfdc-fb0b-4e11-b159-3e349add9b44.jpg",
+      "username": "AlemPresident",
+      "amount_sol_lamp": "490000000",
+      "claimed": true
+    },
+    {
+      "id": "cdbf38b6-27f6-4281-89dc-51d8afb6faec",
+      "wallet_address": "6MzCgzYh8UxAsgyPE5dFNMyPsG1EwPqeSBFcutHezhys",
+      "join_timestamp": 1767895610645,
+      "icon_url": null,
+      "username": null,
+      "amount_sol_lamp": "1000000000",
+      "claimed": true
+    },
+    {
+      "id": "3f42cb8b-e445-4319-889d-48a93901370a",
+      "wallet_address": "GLcqJQmGrchAKYhvULu2QopLnCK9xvG8m9ooEAZVDiKy",
+      "join_timestamp": 1767889519048,
+      "icon_url": null,
+      "username": "KONTOLO",
+      "amount_sol_lamp": "500000000",
+      "claimed": true
+    },
+    {
+      "id": "21c59a37-3627-4ff2-9276-4a4ea959cc05",
+      "wallet_address": "5gQya9VzadB4qUHEhvyGcw31spR4BpS5QMhaWxqGU69q",
+      "join_timestamp": 1767889488404,
+      "icon_url": null,
+      "username": "CrazyBear",
+      "amount_sol_lamp": "500000000",
+      "claimed": true
+    },
+    {
+      "id": "48a7e3f5-7f4e-4f11-9f57-e2de2e934537",
+      "wallet_address": "7KeKipX5XzLWMcGLV7RSS2Zur2whewPc4ZipycBdsrR5",
+      "join_timestamp": 1767889217606,
+      "icon_url": null,
+      "username": "NEGAN",
+      "amount_sol_lamp": "500000000",
+      "claimed": true
+    },
+    {
+      "id": "074c27e9-7836-42ea-a842-7dcf264b123a",
+      "wallet_address": "HbuonhDY99qfs9K4r2CV15V7MLobHby1ouZsPKA4xGkQ",
+      "join_timestamp": 1767888874446,
+      "icon_url": null,
+      "username": "Cryptolady",
+      "amount_sol_lamp": "500000000",
+      "claimed": true
+    },
+    {
+      "id": "39825fdf-6381-483f-8195-6be1a8e8dfa9",
+      "wallet_address": "DcEmn9sHojapvinuFztLnung1UQJzRJLpakKZBRqtvZC",
+      "join_timestamp": 1767888534799,
+      "icon_url": null,
+      "username": "SamGriffin7",
+      "amount_sol_lamp": "500000000",
+      "claimed": true
+    },
+    {
+      "id": "26c6cd06-25b1-4a6b-bba7-5000229a4241",
+      "wallet_address": "2iF8JDouxRcie6Xizpsa4VkCJVsG86SF2fZH7J5h2niY",
+      "join_timestamp": 1767886944574,
+      "icon_url": null,
+      "username": null,
+      "amount_sol_lamp": "500000000",
+      "claimed": true
+    },
+    {
+      "id": "683529fd-51f3-4cc2-8a7d-d7ed38a60a86",
+      "wallet_address": "2UscQpAomyFk7RZ7GjRyiKujbrh1ZUbSTTnqxzwsMyHE",
+      "join_timestamp": 1767886208565,
+      "icon_url": null,
+      "username": "dexter",
+      "amount_sol_lamp": "2000000000",
+      "claimed": true
+    },
+    {
+      "id": "60a6813c-f1c0-4d92-adc5-923a6d4ca9b3",
+      "wallet_address": "EBAGGGUbTwej9bNWsDdjFJ1W275CnGa23ccV4fJAvKqZ",
+      "join_timestamp": 1767886006252,
+      "icon_url": null,
+      "username": null,
+      "amount_sol_lamp": "2000000000",
+      "claimed": true
+    },
+    {
+      "id": "4b020554-8b57-4394-94ac-b54f975501e5",
+      "wallet_address": "EgqNnjLLun7Bsd9HMJ2E8YMqjH4keS9L2XCFZXRY7ECc",
+      "join_timestamp": 1767886000332,
+      "icon_url": null,
+      "username": "revelcy",
+      "amount_sol_lamp": "1000000000",
+      "claimed": true
+    },
+    {
+      "id": "ff865cff-faae-4592-852c-62bfeba36143",
+      "wallet_address": "3ht7wj8XQaamuD1XHRfkTHMbPn58FxK21Y6EWDQWNHPv",
+      "join_timestamp": 1767884607278,
+      "icon_url": null,
+      "username": null,
+      "amount_sol_lamp": "1000000000",
+      "claimed": true
+    },
+    {
+      "id": "030e109c-05a6-4d08-ac18-48d3033832ce",
+      "wallet_address": "ELnsM6EYXdKsAnRg5ZtQ4FgqYNF9bcQT6RS187WXPyck",
+      "join_timestamp": 1767883292180,
+      "icon_url": "/premarket-snapshot/030e109c-05a6-4d08-ac18-48d3033832ce.jpg",
+      "username": "shehatesplaton",
+      "amount_sol_lamp": "2000000000",
+      "claimed": true
+    },
+    {
+      "id": "cd987732-a7b8-4739-98aa-5e8936d93285",
+      "wallet_address": "2yPTWPNC1HcDUsdjwrdoUSWsBV5J7Yi4ZXGswc3Xhodt",
+      "join_timestamp": 1767883056212,
+      "icon_url": null,
+      "username": "bliss",
+      "amount_sol_lamp": "1500000000",
+      "claimed": true
+    },
+    {
+      "id": "78eff920-8928-4ba6-99cb-4199de6bab22",
+      "wallet_address": "8NgGEQ8pYX58HX6hZKXWdBPQWjstjVEQa54ksHSLwPQp",
+      "join_timestamp": 1767882787741,
+      "icon_url": null,
+      "username": null,
+      "amount_sol_lamp": "2000000000",
+      "claimed": true
+    },
+    {
+      "id": "0ca4e155-f84e-42b7-83de-e4f770db424b",
+      "wallet_address": "ETNsWZXHYTc3x4MbiNkMosKoWYiDLrH5595AVqgBm4WT",
+      "join_timestamp": 1767882699253,
+      "icon_url": "/premarket-snapshot/0ca4e155-f84e-42b7-83de-e4f770db424b.jpg",
+      "username": "90210",
+      "amount_sol_lamp": "2000000000",
+      "claimed": true
+    },
+    {
+      "id": "92592b11-38d0-4bc1-87ca-07adf3f93280",
+      "wallet_address": "6GcamEo1E5Vo8e5HsBYgz9jaQHioEYDEXC9FT92oTE1m",
+      "join_timestamp": 1767882524935,
+      "icon_url": "/premarket-snapshot/92592b11-38d0-4bc1-87ca-07adf3f93280.jpg",
+      "username": "clavara",
+      "amount_sol_lamp": "500000000",
+      "claimed": true
+    },
+    {
+      "id": "690d27c9-d23c-436a-ac4a-b3e6005ef9f0",
+      "wallet_address": "8gzMrMnnNJtVDuQHTuaT82e7ohT1Gn7HqzmwJyh2VHoE",
+      "join_timestamp": 1767882488929,
+      "icon_url": "/premarket-snapshot/690d27c9-d23c-436a-ac4a-b3e6005ef9f0.jpg",
+      "username": "marcusbart",
+      "amount_sol_lamp": "2000000000",
+      "claimed": true
+    },
+    {
+      "id": "91ae4472-1881-46b5-a3b7-28c2857a82d1",
+      "wallet_address": "4DLtww2gnaqxzBbrKyrzmxyKbnxPgCTpYSQYfNuPa7yr",
+      "join_timestamp": 1767882453080,
+      "icon_url": "/premarket-snapshot/91ae4472-1881-46b5-a3b7-28c2857a82d1.jpg",
+      "username": "solander",
+      "amount_sol_lamp": "300000000",
+      "claimed": true
+    },
+    {
+      "id": "515568e8-efe9-4307-b35d-b850652ef64c",
+      "wallet_address": "D6Xn2YnU7oX8D7GB2MhrqaymuMcKk5vo6gazmiNsXseP",
+      "join_timestamp": 1767882410751,
+      "icon_url": "/premarket-snapshot/515568e8-efe9-4307-b35d-b850652ef64c.jpg",
+      "username": "trencher",
+      "amount_sol_lamp": "2000000000",
+      "claimed": true
+    },
+    {
+      "id": "c0481bd5-0528-481e-9588-385c8e08d19d",
+      "wallet_address": "AEiD23rg81HWqioRJu7wbdNpGUUFKFqQ3gfNKEnafFAj",
+      "join_timestamp": 1767882286770,
+      "icon_url": "/premarket-snapshot/c0481bd5-0528-481e-9588-385c8e08d19d.jpg",
+      "username": "Brocode",
+      "amount_sol_lamp": "1500000000",
+      "claimed": true
+    },
+    {
+      "id": "b91128ff-64f1-477a-ae23-0a09092ef8ab",
+      "wallet_address": "EvTDT2ZufuuV7Fq2YmoogJC3a88dmcjfXbJpc78KqDEf",
+      "join_timestamp": 1767882265598,
+      "icon_url": "/premarket-snapshot/b91128ff-64f1-477a-ae23-0a09092ef8ab.jpg",
+      "username": "ivanrvlcy",
+      "amount_sol_lamp": "1000000000",
+      "claimed": true
+    },
+    {
+      "id": "1e759788-fdb4-402b-910c-1e45b76ab231",
+      "wallet_address": "FMxXro3ohKHs5w5V3r1KQ2eoccMQ68eedtGUCAqfRrqp",
+      "join_timestamp": 1767882113484,
+      "icon_url": null,
+      "username": "Lancelot",
+      "amount_sol_lamp": "2000000000",
+      "claimed": true
+    },
+    {
+      "id": "7c9ca079-2476-4ff7-b08b-cead59b8b3aa",
+      "wallet_address": "2rWH2vpj4XXGfYYPY22kQvXAJkgr93HbnksxmSCuMn2v",
+      "join_timestamp": 1767882070681,
+      "icon_url": null,
+      "username": "Lance1337",
+      "amount_sol_lamp": "1500000000",
+      "claimed": true
+    },
+    {
+      "id": "45c3d86a-9ef2-4ad0-8cd4-222ed454a673",
+      "wallet_address": "4iuvMTw54pcvhNXuQfBnpcwoWd21p3o4AKXtz9zeooGd",
+      "join_timestamp": 1767881736850,
+      "icon_url": "/premarket-snapshot/45c3d86a-9ef2-4ad0-8cd4-222ed454a673.jpg",
+      "username": "PinkyWinky",
+      "amount_sol_lamp": "2000000000",
+      "claimed": true
+    },
+    {
+      "id": "1b3bbc52-a42b-4666-bee8-7cc868a5c1ac",
+      "wallet_address": "FzG9sCFyjLW9qSr3Z6D6KexELaCsS9qB5K8GnKkXJZVz",
+      "join_timestamp": 1767881720112,
+      "icon_url": null,
+      "username": "gmgggn",
+      "amount_sol_lamp": "2000000000",
+      "claimed": true
+    },
+    {
+      "id": "341feea0-a6c5-4e59-9eb6-5d470e3e6a19",
+      "wallet_address": "9DevX6YQePT8Koj1wBrkZSseowpKSU7LTT47WQAiyJtd",
+      "join_timestamp": 1767881709212,
+      "icon_url": "/premarket-snapshot/341feea0-a6c5-4e59-9eb6-5d470e3e6a19.jpg",
+      "username": "Denniscrypto",
+      "amount_sol_lamp": "800000000",
+      "claimed": true
+    },
+    {
+      "id": "73703cd0-28fa-48bc-82a8-7f2198e6e1e7",
+      "wallet_address": "H5NxFiqNM61TF3X7ycSwPYJ6Zc4dsBzsnjvP7QT3VUgX",
+      "join_timestamp": 1767881687558,
+      "icon_url": "/premarket-snapshot/73703cd0-28fa-48bc-82a8-7f2198e6e1e7.jpg",
+      "username": "flyingsol",
+      "amount_sol_lamp": "1470000000",
+      "claimed": true
+    },
+    {
+      "id": "0b156d5d-8bae-40a0-855e-3ba4782bcc1a",
+      "wallet_address": "GaAgkVo8ENAan2Xv82ECac7uHhB9PB4zYj8sL8D5hRs6",
+      "join_timestamp": 1767881680751,
+      "icon_url": "/premarket-snapshot/0b156d5d-8bae-40a0-855e-3ba4782bcc1a.jpg",
+      "username": "Mehan",
+      "amount_sol_lamp": "2000000000",
+      "claimed": true
+    },
+    {
+      "id": "03adaa66-0c36-429e-b30d-6d3d664a6df9",
+      "wallet_address": "4GurT5Wgumd9JPM1xwNeQG4ajiLuA8MvUDc87tsqzJqc",
+      "join_timestamp": 1767881674954,
+      "icon_url": "/premarket-snapshot/03adaa66-0c36-429e-b30d-6d3d664a6df9.jpg",
+      "username": "Shieldmeta",
+      "amount_sol_lamp": "950000000",
+      "claimed": false
+    },
+    {
+      "id": "fa8f3fd3-1dad-4840-9b6a-af95be77b011",
+      "wallet_address": "4XjwGASFjGWVGsTUG4NLLiePsysfZUdWfaWn6XNxFFm5",
+      "join_timestamp": 1767881610143,
+      "icon_url": "/premarket-snapshot/fa8f3fd3-1dad-4840-9b6a-af95be77b011.jpg",
+      "username": "popcornglitter",
+      "amount_sol_lamp": "1500000000",
+      "claimed": true
+    },
+    {
+      "id": "443c887a-05be-4059-8ceb-d05ba8a670a0",
+      "wallet_address": "GXnihme6C1tDTZgqnP4AMYBDkxTm7xY32haekkfMURaD",
+      "join_timestamp": 1767881598986,
+      "icon_url": "/premarket-snapshot/443c887a-05be-4059-8ceb-d05ba8a670a0.jpg",
+      "username": "DutchWhale",
+      "amount_sol_lamp": "1000000000",
+      "claimed": true
+    },
+    {
+      "id": "e597fed0-e1c9-4912-89e3-e81a59b3fef5",
+      "wallet_address": "APRQm3cGxPXwyA1R8wcqU6guv66DCzXevWFp5sPjQi6B",
+      "join_timestamp": 1767881452639,
+      "icon_url": "/premarket-snapshot/e597fed0-e1c9-4912-89e3-e81a59b3fef5.jpg",
+      "username": "darksoll",
+      "amount_sol_lamp": "1190000000",
+      "claimed": true
+    },
+    {
+      "id": "4e3b1bfe-ecd2-433f-8cc7-bb52f9ce41a5",
+      "wallet_address": "CHAMpr6b1gDqfbur6FF2KgzSQnWE8jbiLz7LGiHn73HC",
+      "join_timestamp": 1767881229366,
+      "icon_url": "/premarket-snapshot/4e3b1bfe-ecd2-433f-8cc7-bb52f9ce41a5.jpg",
+      "username": "Lilpups",
+      "amount_sol_lamp": "1000000000",
+      "claimed": true
+    }
+  ]
+}

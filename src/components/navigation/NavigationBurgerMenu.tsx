@@ -10,6 +10,8 @@ import { openMailto, openTelegram, openX } from "@utils/openLinks";
 import { useNetwork } from "@providers/NetworkContext";
 import { openEmail } from "@utils/email";
 import { useNotification } from "@providers/NotificationContext";
+import { useLoginModal } from "@providers/LoginModalContext";
+import { IS_SITE_SNAPSHOT } from "env";
 
 export default function NavigationBurgerMenu() {
   const { open, close } = useOverlay();
@@ -31,6 +33,7 @@ function NavigationBurgerMenuItemsList({ onClose }: NavProps) {
   const pathname = usePathname();
   const {network} = useNetwork();
   const {success, warning}= useNotification();
+  const { openMaintenance } = useLoginModal();
   return (
     <View style={{ flexDirection:'column', width: '100%', height: '100%', justifyContent: 'flex-start', alignContent: 'flex-start', alignItems:'flex-start'}} >
       <View style={{ backgroundColor: colors.background, width: '100%',}}>
@@ -74,16 +77,17 @@ function NavigationBurgerMenuItemsList({ onClose }: NavProps) {
               label={navigationItem.labelShort}
               icon={navigationItem.iconActive}
               action={() => {
-                router.push(navigationItem.route);
                 onClose();
+                if (IS_SITE_SNAPSHOT && navigationItem.route === "/token/create") openMaintenance();
+                else router.push(navigationItem.route);
               }}
-              disabled={pathname === navigationItem.route}
+              disabled={navigationItem.disabled || pathname === navigationItem.route}
             />
           );
         })}
 
         <View style={[styles.lineContainer]}>
-          <NavigationProfileWidget style={styles.lineLogin} isMobile={false} />
+          <NavigationProfileWidget style={styles.lineLogin} isMobile={false} onLoginPress={onClose} />
         </View>
 
         <View style={[styles.lineContainer, styles.lineContact]}>

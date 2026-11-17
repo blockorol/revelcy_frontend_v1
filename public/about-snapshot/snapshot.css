@@ -1,0 +1,41 @@
+.snapshot-faq {
+  box-sizing: border-box;
+  width: 100%;
+  color: #c9c5cb;
+  background: #0e0e0e;
+  border-radius: 20px;
+  font-family: Inter, sans-serif;
+}
+
+.snapshot-faq summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.snapshot-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.snapshot-faq[open] .framer-1qmys0w {
+  rotate: 180deg;
+}
+
+.snapshot-answer {
+  padding: 0 24px 24px;
+  font-weight: 300;
+  line-height: 1.4;
+}
+
+.snapshot-answer p,
+.snapshot-answer li {
+  margin: 0 0 8px;
+}
+
+.snapshot-answer ol,
+.snapshot-answer ul {
+  padding-inline-start: 24px;
+}
+
+.snapshot-answer a {
+  color: #00ff77;
+}

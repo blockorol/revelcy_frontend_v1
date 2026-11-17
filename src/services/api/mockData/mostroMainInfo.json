@@ -1,0 +1,51 @@
+{
+  "blockchain_info": {
+    "id": "594f1fe1-0676-42f3-989d-6bd1ffdf402d",
+    "name": "Mostro Speakeasy",
+    "description": "SPKZ is a utility & community token from Mostro.xyz, a fan-powered artist tokenization platform.\n\n1M SPKZ unlocks access to the gated Discord channel, events, NFT music drops, pfp.",
+    "symbol": "SPKZ",
+    "image_url": "https://images.pump.fun/coin-image/FvzFDZjko5sLdhJqpr8Zg3X3AbgGseQ2RR4XkVR8pump",
+    "ipfs_uri": "https://ipfs.io/ipfs/Qma7NM5Now3eQUy2tt8Y2nTqd91YQEDG9ihkwQdtcVuGqN",
+    "creator_id": "d90e79af-93d5-4afa-a5b0-781ea0c101db",
+    "creator_address": "5e5XmS8wVy8YLy2VWEnU37rgQNsX2yYmbdYx3AXBZByJ",
+    "premarket_address": "Ht8uGBziZw9CE4dhv33hUyzUZmznosTmG4M2U81uhXDo",
+    "links": {
+      "telegram": "https://t.me/mostroxyz",
+      "twitter": "https://x.com/mostroxyz",
+      "web_site": "https://www.mostro.xyz"
+    },
+    "premarket_goal_sol_lamp": "3300000000",
+    "premarket_deadline": 1765387800,
+    "premarket_is_extended": false,
+    "premarket_created": 1765301998,
+    "premarket_finished": 1765389675,
+    "mint_address": "FvzFDZjko5sLdhJqpr8Zg3X3AbgGseQ2RR4XkVR8pump",
+    "state": "finished",
+    "image_fallback_url": "/premarket-snapshot/FvzFDZjko5sLdhJqpr8Zg3X3AbgGseQ2RR4XkVR8pump.png"
+  },
+  "community_info": {
+    "description": "🪩 Mostro.xyz is a fan-powered music tokenization platform. \n🔑 Speakeasy is Mostro's community access & utility token. \n\nIf you know, you know.\n\nEvery holder of 1M of Speakeasy gets access to:\n\n1️⃣ Gated Discord community\n2️⃣ Artist NFT drops\n3️⃣ Mostro private events & artist talks\n4️⃣ \"Creative\" status and special pfp on the platform \n\n15% of Mostro’s revenue will be used on $SPKZ buybacks. \nFirst batch of Mostro artists coming in Q1",
+    "token_banner_url": "/premarket-snapshot/Ht8uGBziZw9CE4dhv33hUyzUZmznosTmG4M2U81uhXDo_banner.png",
+    "links": [
+      {
+        "text": "Discord for holders",
+        "url": "https://discord.gg/uxkesgfebr",
+        "type": "other"
+      },
+      {
+        "text": "Check out the website",
+        "url": "https://mostro.xyz/",
+        "type": "other"
+      },
+      {
+        "text": "Sign up for newsletter",
+        "url": "https://zcmp.eu/qbsc",
+        "type": "other"
+      }
+    ]
+  },
+  "availability_info": {
+    "token_short_url_name": "mostro",
+    "is_hided": false
+  }
+}

@@ -14,6 +14,10 @@ Related config:
 
 ## Current Flags And Switches
 
+### `IS_SITE_SNAPSHOT`
+
+Default web mode. Set `REVELCY_WEB_MODE=live` before starting or building Expo to select the live transport and UI. The snapshot uses mainnet display settings and needs no backend, wallet RPC or IPFS credentials.
+
 ### `IsVestingEnable`
 
 Exported from `env.ts`.
@@ -58,7 +62,7 @@ Exported from `env.ts`.
 Current code:
 
 - Type allows `"devnet" | "mainnet-beta"`.
-- Defaults to `"devnet"`.
+- Defaults to `"devnet"` in live mode. The web snapshot always uses `"mainnet-beta"`.
 - Used to select `TOKEN_CONVERTOR_SETTINGS`.
 
 High risk:
@@ -81,7 +85,7 @@ High risk:
 
 ## Required Env Values
 
-These currently throw through `getRequired` when missing:
+In live mode these values throw through `getRequired` when missing:
 
 - `PINATA_JWT`
 - `PINATA_API_KEY`

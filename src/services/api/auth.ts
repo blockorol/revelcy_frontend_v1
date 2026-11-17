@@ -1,12 +1,13 @@
 // api/auth.ts
 import axios from 'axios';
 import base64js from 'base64-js';
-import { API_HOST } from 'env';
+import { API_HOST, IS_SITE_SNAPSHOT } from 'env';
 
 export const API_AUTH_URL = `${API_HOST}/auth`;
 export const API_USER_URL = `${API_HOST}/user`;
 
 import { extractApiError } from "@api/apiError";
+import { mockServerError } from "@api/mock";
 
 export type SetInviteCodeError =
   | { kind: "invite_code_not_found"; message?: string }
@@ -27,6 +28,8 @@ export async function setInviteCode({
   inviteCode: string;
   jwt: string;
 }): Promise<SetInviteCodeResult> {
+  if (IS_SITE_SNAPSHOT) mockServerError();
+
   try {
     const data = await axios.post(`${API_USER_URL}/set_invite_code`, {
       invite_code: inviteCode,
@@ -85,6 +88,8 @@ export async function updateUsername({
   username: string;
   jwt: string;
 }) {
+  if (IS_SITE_SNAPSHOT) mockServerError();
+
   const res = await axios.post(`${API_USER_URL}/update_username`, {
     username: username,
   }, {
@@ -103,6 +108,8 @@ export async function updateAvatar({
   file: File,
   jwt: string;
 }) {
+  if (IS_SITE_SNAPSHOT) mockServerError();
+
   const formData = new FormData();
   formData.append('file', file);
   const res = await axios.post(`${API_USER_URL}/update_avatar`, formData, {
@@ -115,6 +122,8 @@ export async function updateAvatar({
 }
 
 export async function startSession() {
+  if (IS_SITE_SNAPSHOT) mockServerError();
+
   const res = await axios.get(`${API_AUTH_URL}/start_session`, {
     headers: {
       'Content-Type': 'application/json',
@@ -132,6 +141,8 @@ export async function confirmLogin({
   signature: Uint8Array;
   jwt: string;
 }) {
+  if (IS_SITE_SNAPSHOT) mockServerError();
+
   const res = await axios.post(`${API_AUTH_URL}/confirm_login`, {
     wallet_address: walletAddress,
     signature: base64js.fromByteArray(signature),

@@ -110,6 +110,8 @@ Ownership: screens compose domain components, hooks, providers, and services. Ke
   Top navigation, menu, profile widget, navigation items.
 - `src/components/login/`
   Login/wallet UI and user identity widgets.
+- `src/components/maintenance/`
+  Shared paused-project dialog and the component for direct creation/profile visits.
 - `src/components/premarket/`
   Premarket cards, detail sections, join/action UI, bonding curve, vesting, holders, community, creation overview.
 - `src/components/token/create/`
@@ -128,6 +130,10 @@ API clients live in `src/services/api/`.
 
 - `http.ts`
   Shared request wrapper, auth token injection, retry/timeout, refresh handling, response parsing.
+- `mock.ts`
+  Request-level web snapshot backed by `src/services/api/mockData/`. Only captured public premarket reads are served.
+- `public/about-snapshot/` and `public/premarket-snapshot/`
+  Local About markup and media, and the public premarket banners, avatars and Pump.fun cover fallbacks.
 - `auth.ts`, `wallet.ts`, `token.ts`, `tx_premarket.ts`, `users.ts`, `files.ts`
   Endpoint-specific clients.
 - `apiError.ts`, `retry.ts`, `constant.ts`

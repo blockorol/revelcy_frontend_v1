@@ -25,6 +25,7 @@ export function NavigationList({isMobile}:Props) {
           iconNotActive={navigationItem.iconNotActive}
           label={navigationItem.label}
           route={navigationItem.route}
+          disabled={navigationItem.disabled}
           horizontal={!isMobile}
           />
       )}

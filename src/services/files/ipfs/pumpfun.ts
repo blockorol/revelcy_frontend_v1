@@ -1,5 +1,6 @@
 // api/uploadTokenMetadataToIPFS.ts
-import { API_HOST } from "env";
+import { API_HOST, IS_SITE_SNAPSHOT } from "env";
+import { mockServerError } from "@api/mock";
 import { withRetry } from '@services/api/retry';
 
 const PUMP_FUN_IPFS = `${API_HOST}/proxy/pump_ipfs`;
@@ -20,6 +21,8 @@ export async function uploadTokenMetadataToIPFS({
   avatar: string; // dataURL: "data:image/png;base64,...."
   tokenInfo: TokenInfo;
 }) {
+  if (IS_SITE_SNAPSHOT) mockServerError();
+
   const attemptOnce = async () => {
     const dataURL = await normalizeAvatarToDataURL(avatar);
 

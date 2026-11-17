@@ -40,7 +40,7 @@ Changing provider order is high risk. Check dependencies before moving providers
 
 File: `src/providers/AuthContext.tsx`.
 
-Current behavior:
+The web snapshot skips stored session restoration and wallet auto-connect. Live mode uses the following persistence.
 
 - JWT storage key: `auth-token`.
 - Storage backend: `@react-native-async-storage/async-storage`.
@@ -89,7 +89,7 @@ High-risk changes:
 ## Modal And Overlay State
 
 - `src/providers/LoginModalContext.tsx`
-  Login modal state.
+  Shared login and paused-project dialog state.
 - `storage/UserModalContext.tsx`
   User modal state.
 - `storage/UniversalOverlayProvider.tsx`

@@ -2,6 +2,8 @@
 
 High-level architecture of the Revelcy frontend.
 
+The default web export serves a static public snapshot. Explore and token details use local API response fixtures, About uses local markup and media, and account and token actions show a paused-project dialog. Live web builds opt in with `REVELCY_WEB_MODE=live`.
+
 ## Overview
 
 The app is an Expo / React Native frontend using:

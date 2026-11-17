@@ -40,9 +40,11 @@ Do not treat example routes as production routes unless the user explicitly asks
 ## Route To Screen Map
 
 - `app/discover.tsx` -> `screens/PremarketsPage.tsx`
-- `app/me.tsx` -> `screens/MeScreen.tsx`
-- `app/token/create.tsx` -> `screens/PremarketCreationFlow.tsx`
+- `app/me.tsx` -> `screens/MeScreen.tsx` in live mode
+- `app/token/create.tsx` -> `screens/PremarketCreationFlow.tsx` in live mode
 - `app/token/[premarketId].tsx` -> `screens/TokenPremarketPage.tsx`
+
+In the default web snapshot, `/token/create` and `/me` render `MaintenanceRoute`. The root route embeds the local About snapshot.
 
 Verify the actual route file before editing; this map should be refreshed if route files change.
 

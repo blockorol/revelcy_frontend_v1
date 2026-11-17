@@ -1,6 +1,7 @@
-// app/token/create.tsx
-import PremarketCreationFlow from '@screens/PremarketCreationFlow';
+import MaintenanceRoute from "@components/maintenance/MaintenanceRoute";
+import PremarketCreationFlow from "@screens/PremarketCreationFlow";
+import { IS_SITE_SNAPSHOT } from "env";
 
 export default function TokenCreationPage() {
-  return <PremarketCreationFlow />;
+  return IS_SITE_SNAPSHOT ? <MaintenanceRoute /> : <PremarketCreationFlow />;
 }

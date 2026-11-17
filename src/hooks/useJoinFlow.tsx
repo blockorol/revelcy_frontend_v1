@@ -12,16 +12,16 @@ import { joinToPremarket } from "@services/blockchain/premarket/joinPremarket";
 import { convertSmallCountToLamport } from "@utils/premarket";
 import TextedLoader from "@components/ui/Loader";
 import { useLoginModal } from "@providers/LoginModalContext";
+import { IS_SITE_SNAPSHOT } from "env";
 
 export type JoinOutcome = "ok" | "need-login" | "need-wallet" | "invalid-amount" | "error";
 
 export function useJoinFlow(onUpdated:()=>void) {
   const { user } = useAuth();
-  const { openLogin } = useLoginModal()
+  const { openLogin, openMaintenance } = useLoginModal();
   const { connected, connect } = useWallet();
   const wallet = useAnchorWalletSafe();
   const { network } = useNetwork();
-  const connection = getSolanaConnection(network);
   const notify = useNotification();
   const { open, replace, close: closeOverlay } = useOverlay();
 
@@ -29,6 +29,10 @@ export function useJoinFlow(onUpdated:()=>void) {
     premarketPubkey: PublicKey,
     amountLamp: BN
   ): Promise<JoinOutcome> => {
+    if (IS_SITE_SNAPSHOT) {
+      openMaintenance();
+      return "need-login";
+    }
     try {
         
       if (!amountLamp || amountLamp.isNeg() || amountLamp.isZero()) {
@@ -65,7 +69,7 @@ export function useJoinFlow(onUpdated:()=>void) {
       }
 
       open(<TextedLoader text={"join to premarket..."} />);
-      const res = await joinToPremarket(wallet, connection, network, premarketPubkey, amountLamp, amountLamp,
+      const res = await joinToPremarket(wallet, getSolanaConnection(network), network, premarketPubkey, amountLamp, amountLamp,
         (text) => {replace(<TextedLoader text={text} />)
       });
 

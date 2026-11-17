@@ -91,6 +91,7 @@ export async function getPremarketInfo({
     description: data.blockchain_info.description,
     symbol: data.blockchain_info.symbol,
     imageURL: data.blockchain_info.image_url || undefined,
+    imageFallbackURL: data.blockchain_info.image_fallback_url || undefined,
     ipfsURI: data.blockchain_info.ipfs_uri,
     links: {
       telegram: data.blockchain_info.links.telegram || undefined,
@@ -169,6 +170,7 @@ export async function getPremarketList({
     description: b.blockchain_info.description,
     symbol: b.blockchain_info.symbol,
     imageURL: b.blockchain_info.image_url || undefined,
+    imageFallbackURL: b.blockchain_info.image_fallback_url || undefined,
     ipfsURI: b.blockchain_info.ipfs_uri,
     links: {
       telegram: b.blockchain_info.links?.telegram || undefined,
@@ -305,6 +307,7 @@ export interface TokenMainInfo {
     description: string;
     symbol: string;
     imageURL?: string;
+    imageFallbackURL?: string;
     ipfsURI: string;
     links: TokenLinks;
     premarketGoalSolLamp: BN;

@@ -10,9 +10,11 @@ import { Avatar } from "@components/ui/Avatar";
 export function NavigationProfileWidget({
   isMobile,
   style,
+  onLoginPress,
 }: {
   isMobile: boolean;
   style?: ViewStyle;
+  onLoginPress?: () => void;
 }) {
   const { user } = useAuth();
   const { openPersonalUserModal } = useUserModal()
@@ -21,7 +23,7 @@ export function NavigationProfileWidget({
   const mdColors = colors as ExtendedMD3Colors;
 
   if (!user) {
-    return <LoginButton style={style} />;
+    return <LoginButton style={style} onPress={onLoginPress} />;
   }
 
   return (

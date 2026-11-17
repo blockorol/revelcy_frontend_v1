@@ -44,6 +44,12 @@ State validation gaps clearly in final responses.
 - `docs/agents/WEB3_CONTRACTS.md` is currently a TODO placeholder.
 - For contract-level changes, use an agent/session with access to both frontend and backend or explicit contract context.
 
+## Web Snapshot
+
+- The default web export contains the public mainnet catalog and token details captured on 2026-11-17. Refresh the versioned fixtures and media to change the public snapshot.
+- About contains local exported markup, local fonts and images, and native expandable FAQ entries. Framer animations and form delivery are removed.
+- Live deployment requires `REVELCY_WEB_MODE=live` and the existing live environment values.
+
 ## UI Checks
 
 - No automated visual regression setup is documented.

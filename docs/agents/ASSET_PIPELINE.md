@@ -11,7 +11,7 @@ Agent-facing guide for images, SVG icons, and visual assets.
 - `assets/*.png`
   Static images and brand assets.
 - `public/`
-  Static web assets such as favicon.
+  Static web assets such as favicon. `public/premarket-snapshot/` contains the banners, avatars, and Pump.fun cover fallbacks referenced by the premarket fixtures. `public/about-snapshot/` contains the static About page, with local images and fonts.
 - `src/components/base/SvgIcon.tsx`
   Central SVG icon registry and renderer.
 - `src/utils/imageValidation.ts`

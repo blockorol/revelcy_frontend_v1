@@ -1,5 +1,6 @@
 import React, { memo, useMemo } from "react";
-import { View, Pressable, Image } from "react-native";
+import { View, Pressable } from "react-native";
+import { PremarketCover } from "./PremarketCover";
 import { Text, useTheme } from "react-native-paper";
 import { router } from "expo-router";
 import { SvgIcon } from "@components/base/SvgIcon";
@@ -137,8 +138,9 @@ export const PremarketCard: React.FC<PremarketCardProps> = memo(({ mainInfo, dyn
         {/* Image Section */}
         {!!mainInfo.imageURL && (
           <View style={{ paddingBottom: 8, paddingTop: 0 }}>
-            <Image
-              source={{ uri: mainInfo.imageURL }}
+            <PremarketCover
+              uri={mainInfo.imageURL}
+              fallbackUri={mainInfo.imageFallbackURL}
               style={{
                 width: '100%',
                 aspectRatio: 1,

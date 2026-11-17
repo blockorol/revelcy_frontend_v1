@@ -1,0 +1,56 @@
+{
+  "blockchain_info": {
+    "id": "be48170a-1cc6-4666-8541-aff208e31163",
+    "name": "LilPupsClub",
+    "description": "Champie The Dogfluencer. Real Life, Real Puppies, Real Story",
+    "symbol": "LilPups",
+    "image_url": "https://images.pump.fun/coin-image/DY9akJ7uojBebkLKQdfExUx6DokQrbs9VgrL2cD6pump",
+    "ipfs_uri": "https://ipfs.io/ipfs/QmaqXfHguobNutnVsju2guYni2rSFy41jZX5wexESggVeD",
+    "creator_id": "4e3b1bfe-ecd2-433f-8cc7-bb52f9ce41a5",
+    "creator_address": "CHAMpr6b1gDqfbur6FF2KgzSQnWE8jbiLz7LGiHn73HC",
+    "premarket_address": "HY6n4yxZb8QHtw32Z27SjAiiLtteHQsWtfxf6tTT5Vno",
+    "links": {
+      "telegram": "https://t.me/lilpupsclub",
+      "twitter": "https://x.com/lilpupsclub",
+      "web_site": "https://lilpups.shop/"
+    },
+    "premarket_goal_sol_lamp": "20000000000",
+    "premarket_deadline": 1768071600,
+    "premarket_is_extended": false,
+    "premarket_created": 1767881214,
+    "premarket_finished": 1767990663,
+    "mint_address": "DY9akJ7uojBebkLKQdfExUx6DokQrbs9VgrL2cD6pump",
+    "state": "finished",
+    "image_fallback_url": "/premarket-snapshot/DY9akJ7uojBebkLKQdfExUx6DokQrbs9VgrL2cD6pump.jpg"
+  },
+  "community_info": {
+    "description": "Champie the Dogfluencer. Real Life, Real Puppies, Real Story",
+    "token_banner_url": "/premarket-snapshot/HY6n4yxZb8QHtw32Z27SjAiiLtteHQsWtfxf6tTT5Vno_banner.png",
+    "links": [
+      {
+        "text": "Join us on Telegram",
+        "url": "https://t.me/lilpupsclub",
+        "type": "tg"
+      },
+      {
+        "text": "Follow us on X",
+        "url": "https://x.com/lilpupsclub",
+        "type": "x"
+      },
+      {
+        "text": "Website",
+        "url": "https://lilpups.shop/",
+        "type": "other"
+      },
+      {
+        "text": "Follow us on Instagram",
+        "url": "https://www.instagram.com/champie.thefrenchie/?hl=nl",
+        "type": "other"
+      }
+    ]
+  },
+  "availability_info": {
+    "token_short_url_name": "lilpups",
+    "is_hided": false
+  }
+}
